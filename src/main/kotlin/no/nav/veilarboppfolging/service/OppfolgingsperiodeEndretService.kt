@@ -55,7 +55,6 @@ class OppfolgingsperiodeEndretService(
 
         kafkaProducerService.publiserOppfolgingsperiodeMedKontor(gjeldendeOppfolgingsperiode)
     }
-
 }
 
 enum class SisteEndringsType {

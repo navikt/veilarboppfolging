@@ -2,9 +2,8 @@ package no.nav.veilarboppfolging.kafka
 
 import no.nav.veilarboppfolging.service.OppfolgingsperiodeEndretService
 import org.apache.kafka.clients.consumer.ConsumerRecord
-import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
-import java.util.UUID
+import java.util.*
 
 @Service
 class ArbeidsoppfolgingskontortilordningConsumerService(
