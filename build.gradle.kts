@@ -123,6 +123,7 @@ dependencies {
         exclude(group = "com.vaadin.external.google", module = "android-json")
     }
     testImplementation("org.jetbrains.kotlin:kotlin-test")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:6.1.0")
 }
 
 tasks.withType<Test> {

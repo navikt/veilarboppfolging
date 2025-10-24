@@ -1,34 +1,32 @@
 package no.nav.veilarboppfolging.service
 
 import no.nav.common.client.aktoroppslag.AktorOppslagClient
-import org.mockito.ArgumentCaptor
 import no.nav.veilarboppfolging.kafka.OppfolgingskontorMelding
 import no.nav.veilarboppfolging.kafka.Tilordningstype
 import no.nav.veilarboppfolging.oppfolgingsbruker.StartetAvType
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity
 import org.assertj.core.api.Assertions.assertThat
-import org.mockito.Mock
-import org.mockito.Mockito.mock
-import org.mockito.Mockito.verify
-import org.mockito.Mockito.verifyNoInteractions
-import org.mockito.Mockito.`when`
+import org.junit.Test
+import org.junit.runner.RunWith
 import java.time.ZonedDateTime
 import java.util.*
-import kotlin.test.Test
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.doNothing
+import org.mockito.kotlin.doThrow
+import org.mockito.kotlin.verifyNoInteractions
 
 
+//@RunWith(MockitoJUnitRunner::class)
 class OppfolgingsperiodeEndretServiceTest {
 
-    @Mock
     val oppfolgingsPeriodeRepository: OppfolgingsPeriodeRepository = mock()
-
-    @Mock
     val kafkaProducerService: KafkaProducerService = mock()
-
-    @Mock
     val aktorOppslagClient: AktorOppslagClient = mock()
-
 
     private val oppfolgingsperiodeEndretService = OppfolgingsperiodeEndretService(oppfolgingsPeriodeRepository, kafkaProducerService, aktorOppslagClient)
 
@@ -43,14 +41,14 @@ class OppfolgingsperiodeEndretServiceTest {
     fun `Skal sende melding om OPPFOLGING_STARTET når  oppfolgingskontormelding mottas med tilordningstype KONTOR_VED_OPPFOLGINGSPERIODE_START`() {
         val aktorId = "1111111"
         val oppfolgingsperiode = oppfolgingsperiode(aktorId)
-        `when`(oppfolgingsPeriodeRepository.hentOppfolgingsperiode(oppfolgingsperiode.uuid.toString())).thenReturn(Optional.of(oppfolgingsperiode))
-        val oppfolgingskontorMelding = oppfolgingskontorMelding(aktorId = aktorId, tilordningstype = Tilordningstype.KONTOR_VED_OPPFOLGINGSPERIODE_START)
+        whenever(oppfolgingsPeriodeRepository.hentOppfolgingsperiode(oppfolgingsperiode.uuid.toString())).thenReturn(Optional.of(oppfolgingsperiode))
+        val oppfolgingskontorMelding = oppfolgingskontorMelding(aktorId = aktorId, tilordningstype = Tilordningstype.KONTOR_VED_OPPFOLGINGSPERIODE_START, oppfolgingsperiodeId = oppfolgingsperiode.uuid)
 
         oppfolgingsperiodeEndretService.håndterOppfolgingskontorMelding(oppfolgingskontorMelding)
 
-        val captor = ArgumentCaptor.forClass(SisteOppfolgingsperiodeDto::class.java)
+        val captor = argumentCaptor<SisteOppfolgingsperiodeDto>()
         verify(kafkaProducerService).publiserOppfolgingsperiodeMedKontor(captor.capture())
-        val oppfolgingsperiodeMelding = captor.value as GjeldendeOppfolgingsperiode
+        val oppfolgingsperiodeMelding = captor.firstValue as GjeldendeOppfolgingsperiode
         assertThat(oppfolgingsperiodeMelding.sisteEndringsType).isEqualTo(SisteEndringsType.OPPFOLGING_STARTET)
         assertThat(oppfolgingsperiodeMelding.aktorId).isEqualTo(oppfolgingskontorMelding.aktorId)
         assertThat(oppfolgingsperiodeMelding.ident).isEqualTo(oppfolgingskontorMelding.ident)
