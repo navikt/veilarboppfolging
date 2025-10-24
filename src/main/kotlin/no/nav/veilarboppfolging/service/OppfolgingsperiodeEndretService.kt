@@ -75,6 +75,7 @@ enum class SisteEndringsType {
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "hendelseType")
 @JsonSubTypes(
     JsonSubTypes.Type(value = GjeldendeOppfolgingsperiode::class, name = "OPPFOLGING_STARTET"),
+    JsonSubTypes.Type(value = GjeldendeOppfolgingsperiode::class, name = "ARBEIDSOPPFOLGINGSKONTOR_ENDRET"),
     JsonSubTypes.Type(value = AvsluttetOppfolgingsperiode::class, name = "OPPFOLGING_AVSLUTTET")
 )
 abstract class SisteOppfolgingsperiodeDto(
