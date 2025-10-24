@@ -83,27 +83,31 @@ abstract class SisteOppfolgingsperiodeDto(
     val sisteEndringsType: SisteEndringsType,
     val aktorId: String,
     val ident: String,
+    val startTidspunkt: ZonedDateTime,
+    val sluttTidspunkt: ZonedDateTime?,
+    val kontorId: String?,
+    val kontorNavn: String?,
     val producerTimestamp: ZonedDateTime = ZonedDateTime.now(),
 )
 
 class GjeldendeOppfolgingsperiode(
-    val oppfolgingsperiodeId: UUID,
-    val startTidspunkt: ZonedDateTime,
-    val kontorId: String,
-    val kontorNavn: String,
+    oppfolgingsperiodeId: UUID,
+    startTidspunkt: ZonedDateTime,
+    kontorId: String,
+    kontorNavn: String,
     aktorId: String,
     ident: String,
     sisteEndringsType: SisteEndringsType,
 ) : SisteOppfolgingsperiodeDto(
-    oppfolgingsperiodeId, sisteEndringsType, aktorId, ident
+    oppfolgingsperiodeId, sisteEndringsType, aktorId, ident, startTidspunkt, null, kontorId, kontorNavn
 )
 
 class AvsluttetOppfolgingsperiode(
-    val oppfolgingsperiodeId: UUID,
-    val startTidspunkt: ZonedDateTime,
-    val sluttTidspunkt: ZonedDateTime,
+    oppfolgingsperiodeId: UUID,
+    startTidspunkt: ZonedDateTime,
+    sluttTidspunkt: ZonedDateTime,
     aktorId: String,
     ident: String,
 ) : SisteOppfolgingsperiodeDto(
-    oppfolgingsperiodeId, SisteEndringsType.OPPFOLGING_AVSLUTTET, aktorId, ident
+    oppfolgingsperiodeId, SisteEndringsType.OPPFOLGING_AVSLUTTET, aktorId, ident, startTidspunkt, sluttTidspunkt, null, null
 )

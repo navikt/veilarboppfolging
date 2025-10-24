@@ -1,6 +1,8 @@
 package no.nav.veilarboppfolging.service
 
+import com.fasterxml.jackson.databind.JsonNode
 import no.nav.common.client.aktoroppslag.AktorOppslagClient
+import no.nav.common.json.JsonUtils
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.veilarboppfolging.kafka.OppfolgingskontorMelding
@@ -9,10 +11,15 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.StartetAvType
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.within
+import org.assertj.core.data.Offset
 import org.junit.Test
 import org.mockito.kotlin.*
+import java.time.ZoneId
 import java.time.ZonedDateTime
+import java.time.temporal.ChronoUnit
 import java.util.*
+import kotlin.time.Duration.Companion.seconds
 
 
 class OppfolgingsperiodeEndretServiceTest {
@@ -42,13 +49,17 @@ class OppfolgingsperiodeEndretServiceTest {
         val captor = argumentCaptor<SisteOppfolgingsperiodeDto>()
         verify(kafkaProducerService).publiserOppfolgingsperiodeMedKontor(captor.capture())
         val oppfolgingsperiodeMelding = captor.firstValue as GjeldendeOppfolgingsperiode
-        assertThat(oppfolgingsperiodeMelding.sisteEndringsType).isEqualTo(SisteEndringsType.OPPFOLGING_STARTET)
-        assertThat(oppfolgingsperiodeMelding.aktorId).isEqualTo(oppfolgingskontorMelding.aktorId)
-        assertThat(oppfolgingsperiodeMelding.ident).isEqualTo(oppfolgingskontorMelding.ident)
-        assertThat(oppfolgingsperiodeMelding.oppfolgingsperiodeUuid).isEqualTo(oppfolgingskontorMelding.oppfolgingsperiodeId)
-        assertThat(oppfolgingsperiodeMelding.kontorId).isEqualTo(oppfolgingskontorMelding.kontorId)
-        assertThat(oppfolgingsperiodeMelding.kontorNavn).isEqualTo(oppfolgingskontorMelding.kontorNavn)
-        assertThat(oppfolgingsperiodeMelding.startTidspunkt).isEqualTo(oppfolgingsperiode.startDato)
+        val meldingAsJson = JsonUtils.toJson(oppfolgingsperiodeMelding)
+        val jsonNode = JsonUtils.getMapper().readTree(meldingAsJson)
+        assertThat(jsonNode["sisteEndringsType"].asText()).isEqualTo("OPPFOLGING_STARTET")
+        assertThat(jsonNode["aktorId"].asText()).isEqualTo(oppfolgingsperiode.aktorId)
+        assertThat(jsonNode["ident"].asText()).isEqualTo(oppfolgingskontorMelding.ident)
+        assertThat(jsonNode["oppfolgingsperiodeUuid"].asText()).isEqualTo(oppfolgingsperiode.uuid.toString())
+        assertThat(jsonNode["startTidspunkt"].asZonedDateTime()).isEqualTo(oppfolgingsperiode.startDato)
+        assertThat(jsonNode["sluttTidspunkt"].isNull)
+        assertThat(jsonNode["producerTimestamp"].asZonedDateTime()).isCloseTo(ZonedDateTime.now(), within(1, ChronoUnit.SECONDS))
+        assertThat(jsonNode["kontorId"].asText()).isEqualTo(oppfolgingskontorMelding.kontorId)
+        assertThat(jsonNode["kontorNavn"].asText()).isEqualTo(oppfolgingskontorMelding.kontorNavn)
     }
 
     @Test
@@ -63,13 +74,17 @@ class OppfolgingsperiodeEndretServiceTest {
         val captor = argumentCaptor<SisteOppfolgingsperiodeDto>()
         verify(kafkaProducerService).publiserOppfolgingsperiodeMedKontor(captor.capture())
         val oppfolgingsperiodeMelding = captor.firstValue as GjeldendeOppfolgingsperiode
-        assertThat(oppfolgingsperiodeMelding.sisteEndringsType).isEqualTo(SisteEndringsType.ARBEIDSOPPFOLGINGSKONTOR_ENDRET)
-        assertThat(oppfolgingsperiodeMelding.aktorId).isEqualTo(oppfolgingskontorMelding.aktorId)
-        assertThat(oppfolgingsperiodeMelding.ident).isEqualTo(oppfolgingskontorMelding.ident)
-        assertThat(oppfolgingsperiodeMelding.oppfolgingsperiodeUuid).isEqualTo(oppfolgingskontorMelding.oppfolgingsperiodeId)
-        assertThat(oppfolgingsperiodeMelding.kontorId).isEqualTo(oppfolgingskontorMelding.kontorId)
-        assertThat(oppfolgingsperiodeMelding.kontorNavn).isEqualTo(oppfolgingskontorMelding.kontorNavn)
-        assertThat(oppfolgingsperiodeMelding.startTidspunkt).isEqualTo(oppfolgingsperiode.startDato)
+        val meldingAsJson = JsonUtils.toJson(oppfolgingsperiodeMelding)
+        val jsonNode = JsonUtils.getMapper().readTree(meldingAsJson)
+        assertThat(jsonNode["sisteEndringsType"].asText()).isEqualTo("ARBEIDSOPPFOLGINGSKONTOR_ENDRET")
+        assertThat(jsonNode["aktorId"].asText()).isEqualTo(oppfolgingsperiode.aktorId)
+        assertThat(jsonNode["ident"].asText()).isEqualTo(oppfolgingskontorMelding.ident)
+        assertThat(jsonNode["oppfolgingsperiodeUuid"].asText()).isEqualTo(oppfolgingsperiode.uuid.toString())
+        assertThat(jsonNode["startTidspunkt"].asZonedDateTime()).isEqualTo(oppfolgingsperiode.startDato)
+        assertThat(jsonNode["sluttTidspunkt"].isNull)
+        assertThat(jsonNode["producerTimestamp"].asZonedDateTime()).isCloseTo(ZonedDateTime.now(), within(1, ChronoUnit.SECONDS))
+        assertThat(jsonNode["kontorId"].asText()).isEqualTo(oppfolgingskontorMelding.kontorId)
+        assertThat(jsonNode["kontorNavn"].asText()).isEqualTo(oppfolgingskontorMelding.kontorNavn)
     }
 
     @Test
@@ -81,18 +96,26 @@ class OppfolgingsperiodeEndretServiceTest {
         val oppfolgingsperiode = oppfolgingsperiode(aktorId, startTidspunkt, sluttTidspunkt)
         whenever(aktorOppslagClient.hentFnr(AktorId.of(aktorId))).thenReturn(fnr)
 
-
         oppfolgingsperiodeEndretService.håndterOppfolgingAvsluttet(oppfolgingsperiode)
 
         val captor = argumentCaptor<SisteOppfolgingsperiodeDto>()
         verify(kafkaProducerService).publiserOppfolgingsperiodeMedKontor(captor.capture())
         val oppfolgingsperiodeMelding = captor.firstValue as AvsluttetOppfolgingsperiode
-        assertThat(oppfolgingsperiodeMelding.sisteEndringsType).isEqualTo(SisteEndringsType.OPPFOLGING_AVSLUTTET)
-        assertThat(oppfolgingsperiodeMelding.aktorId).isEqualTo(oppfolgingsperiode.aktorId)
-        assertThat(oppfolgingsperiodeMelding.ident).isEqualTo(fnr.get())
-        assertThat(oppfolgingsperiodeMelding.oppfolgingsperiodeUuid).isEqualTo(oppfolgingsperiode.uuid)
-        assertThat(oppfolgingsperiodeMelding.startTidspunkt).isEqualTo(oppfolgingsperiode.startDato)
-        assertThat(oppfolgingsperiodeMelding.sluttTidspunkt).isEqualTo(oppfolgingsperiode.sluttDato)
+        val meldingAsJson = JsonUtils.toJson(oppfolgingsperiodeMelding)
+        val jsonNode = JsonUtils.getMapper().readTree(meldingAsJson)
+        assertThat(jsonNode["sisteEndringsType"].asText()).isEqualTo("OPPFOLGING_AVSLUTTET")
+        assertThat(jsonNode["aktorId"].asText()).isEqualTo(oppfolgingsperiode.aktorId)
+        assertThat(jsonNode["ident"].asText()).isEqualTo(fnr.get())
+        assertThat(jsonNode["oppfolgingsperiodeUuid"].asText()).isEqualTo(oppfolgingsperiode.uuid.toString())
+        assertThat(jsonNode["startTidspunkt"].asZonedDateTime()).isEqualTo(oppfolgingsperiode.startDato)
+        assertThat(jsonNode["sluttTidspunkt"].asZonedDateTime()).isEqualTo(oppfolgingsperiode.sluttDato)
+        assertThat(jsonNode["producerTimestamp"].asZonedDateTime()).isCloseTo(ZonedDateTime.now(), within(1, ChronoUnit.SECONDS))
+        assertThat(jsonNode["kontorId"].isNull)
+        assertThat(jsonNode["kontorNavn"].isNull)
+    }
+
+    fun JsonNode.asZonedDateTime(): ZonedDateTime {
+        return ZonedDateTime.parse(this.asText())
     }
 
     private fun oppfolgingsperiode(aktorId: String, oppfolgingsperiodeStart: ZonedDateTime = ZonedDateTime.now(), oppfolgingsperiodeSlutt: ZonedDateTime? = null): OppfolgingsperiodeEntity {
