@@ -7,6 +7,8 @@ import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
+import java.util.UUID
 
 class ArbeidsoppfolgingskontortilordningConsumerServiceTest {
 
@@ -17,7 +19,7 @@ class ArbeidsoppfolgingskontortilordningConsumerServiceTest {
     @Test
     fun `Skal kalle service for å håndtere melding`() {
         val kafkamelding: ConsumerRecord<String, OppfolgingskontorMelding?> = mock()
-
+        whenever(kafkamelding.key()).thenReturn(UUID.randomUUID().toString())
         arbeidsoppfolgingskontortilordningConsumerService.consumeKontortilordning(kafkamelding)
 
         verify(oppfolgingsperiodeEndretService, times(1)).håndterOppfolgingskontorMelding(
