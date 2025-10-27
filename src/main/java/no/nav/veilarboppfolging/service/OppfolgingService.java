@@ -318,7 +318,7 @@ public class OppfolgingService {
             kafkaProducerService.publiserEndringPaManuellStatus(aktorId, false);
             kafkaProducerService.publiserOppfolgingsAvsluttet(OppfolgingsAvsluttetHendelseDto.Companion.of(avregistrering, sistePeriode, fnr));
             kafkaProducerService.publiserSkjulAoMinSideMicrofrontend(aktorId, fnr);
-            oppfolgingsperiodeEndretService.håndterOppfolgingAvsluttet(sistePeriode);
+            // oppfolgingsperiodeEndretService.håndterOppfolgingAvsluttet(sistePeriode); // TODO I en overgangsperiode lytter vi heller på tombstone fra ao-oppfolgingskontor
 
             bigQueryClient.loggAvsluttOppfolgingsperiode(sistePeriode.getUuid(), avregistrering.getAvregistreringsType());
         });

@@ -10,7 +10,7 @@ class ArbeidsoppfolgingskontortilordningConsumerService(
     val oppfolgingsperiodeEndretService: OppfolgingsperiodeEndretService
 ) {
     fun consumeKontortilordning(kafkaMelding: ConsumerRecord<String, OppfolgingskontorMelding?>) {
-        oppfolgingsperiodeEndretService.håndterOppfolgingskontorMelding(kafkaMelding.value())
+        oppfolgingsperiodeEndretService.håndterOppfolgingskontorMelding(kafkaMelding.key(), kafkaMelding.value())
     }
 }
 

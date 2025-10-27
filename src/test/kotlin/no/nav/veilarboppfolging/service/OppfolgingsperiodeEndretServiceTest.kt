@@ -12,14 +12,11 @@ import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within
-import org.assertj.core.data.Offset
 import org.junit.Test
 import org.mockito.kotlin.*
-import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*
-import kotlin.time.Duration.Companion.seconds
 
 
 class OppfolgingsperiodeEndretServiceTest {
@@ -32,7 +29,7 @@ class OppfolgingsperiodeEndretServiceTest {
 
     @Test
     fun `skal ignorere tom oppfolgingskontormelding`() {
-        oppfolgingsperiodeEndretService.håndterOppfolgingskontorMelding(null)
+        oppfolgingsperiodeEndretService.håndterOppfolgingskontorMelding(kafkaMelding.key(), null)
 
         verifyNoInteractions(kafkaProducerService, oppfolgingsPeriodeRepository, aktorOppslagClient)
     }
@@ -44,7 +41,7 @@ class OppfolgingsperiodeEndretServiceTest {
         whenever(oppfolgingsPeriodeRepository.hentOppfolgingsperiode(oppfolgingsperiode.uuid.toString())).thenReturn(Optional.of(oppfolgingsperiode))
         val oppfolgingskontorMelding = oppfolgingskontorMelding(aktorId = aktorId, tilordningstype = Tilordningstype.KONTOR_VED_OPPFOLGINGSPERIODE_START, oppfolgingsperiodeId = oppfolgingsperiode.uuid)
 
-        oppfolgingsperiodeEndretService.håndterOppfolgingskontorMelding(oppfolgingskontorMelding)
+        oppfolgingsperiodeEndretService.håndterOppfolgingskontorMelding(kafkaMelding.key(), oppfolgingskontorMelding)
 
         val captor = argumentCaptor<SisteOppfolgingsperiodeDto>()
         verify(kafkaProducerService).publiserOppfolgingsperiodeMedKontor(captor.capture())
@@ -69,7 +66,7 @@ class OppfolgingsperiodeEndretServiceTest {
         whenever(oppfolgingsPeriodeRepository.hentOppfolgingsperiode(oppfolgingsperiode.uuid.toString())).thenReturn(Optional.of(oppfolgingsperiode))
         val oppfolgingskontorMelding = oppfolgingskontorMelding(aktorId = aktorId, tilordningstype = Tilordningstype.ENDRET_KONTOR, oppfolgingsperiodeId = oppfolgingsperiode.uuid)
 
-        oppfolgingsperiodeEndretService.håndterOppfolgingskontorMelding(oppfolgingskontorMelding)
+        oppfolgingsperiodeEndretService.håndterOppfolgingskontorMelding(kafkaMelding.key(), oppfolgingskontorMelding)
 
         val captor = argumentCaptor<SisteOppfolgingsperiodeDto>()
         verify(kafkaProducerService).publiserOppfolgingsperiodeMedKontor(captor.capture())

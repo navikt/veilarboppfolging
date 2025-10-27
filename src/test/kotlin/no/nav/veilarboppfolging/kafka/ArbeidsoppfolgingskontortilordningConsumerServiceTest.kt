@@ -4,7 +4,6 @@ import no.nav.veilarboppfolging.service.OppfolgingsperiodeEndretService
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
@@ -18,7 +17,12 @@ class ArbeidsoppfolgingskontortilordningConsumerServiceTest {
     @Test
     fun `Skal kalle service for å håndtere melding`() {
         val kafkamelding: ConsumerRecord<String, OppfolgingskontorMelding?> = mock()
+
         arbeidsoppfolgingskontortilordningConsumerService.consumeKontortilordning(kafkamelding)
-        verify(oppfolgingsperiodeEndretService, times(1)).håndterOppfolgingskontorMelding(kafkamelding.value())
+
+        verify(oppfolgingsperiodeEndretService, times(1)).håndterOppfolgingskontorMelding(
+            kafkamelding.key(),
+            kafkamelding.value()
+        )
     }
 }

@@ -35,25 +35,30 @@ class OppfolgingsperiodeEndretService(
         kafkaProducerService.publiserOppfolgingsperiodeMedKontor(gjeldendeOppfolgingsperiode)
     }
 
-    fun håndterOppfolgingskontorMelding(melding: OppfolgingskontorMelding?) {
-        val erMeldingSomKanIgnoreres = melding == null
-        if (erMeldingSomKanIgnoreres) return
+    fun håndterOppfolgingskontorMelding(oppfolgingsperiodeId: String, melding: OppfolgingskontorMelding?) {
+        // TODO I en overgangsperiode lytter vi heller på tombstone fra ao-oppfolgingskontor
+        // val erMeldingSomKanIgnoreres = melding == null
+        // if (erMeldingSomKanIgnoreres) return
 
-        val periodeMedStartDato =
-            oppfolgingsPeriodeRepository.hentOppfolgingsperiode(melding.oppfolgingsperiodeId.toString())
+        val oppfolgingsperiode =
+            oppfolgingsPeriodeRepository.hentOppfolgingsperiode(oppfolgingsperiodeId)
                 .getOrElse { throw RuntimeException("Ugyldig oppfølgingsperiodeId, noe gikk veldig galt, dette skal aldri skje") }
 
-        val gjeldendeOppfolgingsperiode = GjeldendeOppfolgingsperiode(
-            oppfolgingsperiodeId = periodeMedStartDato.uuid,
-            startTidspunkt = periodeMedStartDato.startDato,
-            kontorId = melding.kontorId,
-            kontorNavn = melding.kontorNavn,
-            aktorId = melding.aktorId,
-            ident = melding.ident,
-            sisteEndringsType = SisteEndringsType.fromTilordningstype(melding.tilordningstype),
-        )
+        if (melding == null) {
+            håndterOppfolgingAvsluttet(oppfolgingsperiode)
+        } else {
+            val gjeldendeOppfolgingsperiode = GjeldendeOppfolgingsperiode(
+                oppfolgingsperiodeId = oppfolgingsperiode.uuid,
+                startTidspunkt = oppfolgingsperiode.startDato,
+                kontorId = melding.kontorId,
+                kontorNavn = melding.kontorNavn,
+                aktorId = melding.aktorId,
+                ident = melding.ident,
+                sisteEndringsType = SisteEndringsType.fromTilordningstype(melding.tilordningstype),
+            )
 
-        kafkaProducerService.publiserOppfolgingsperiodeMedKontor(gjeldendeOppfolgingsperiode)
+            kafkaProducerService.publiserOppfolgingsperiodeMedKontor(gjeldendeOppfolgingsperiode)
+        }
     }
 }
 
@@ -109,5 +114,12 @@ class AvsluttetOppfolgingsperiode(
     aktorId: String,
     ident: String,
 ) : SisteOppfolgingsperiodeDto(
-    oppfolgingsperiodeId, SisteEndringsType.OPPFOLGING_AVSLUTTET, aktorId, ident, startTidspunkt, sluttTidspunkt, null, null
+    oppfolgingsperiodeId,
+    SisteEndringsType.OPPFOLGING_AVSLUTTET,
+    aktorId,
+    ident,
+    startTidspunkt,
+    sluttTidspunkt,
+    null,
+    null
 )
