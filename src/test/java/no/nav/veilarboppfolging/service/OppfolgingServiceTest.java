@@ -24,8 +24,6 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.BrukerRegistrant;
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant;
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService;
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering;
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AdminAvregistrering;
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.Avregistrering;
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ManuellAvregistrering;
 import no.nav.veilarboppfolging.repository.KvpRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
@@ -80,6 +78,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     private OppfolgingService oppfolgingService;
     private StartOppfolgingService startOppfolgingService;
     private BigQueryClient bigQueryClient = mock(BigQueryClient.class);
+    private ArbeidsoppfolgingsKontorEndretService arbeidsoppfolgingsKontorEndretService = mock(ArbeidsoppfolgingsKontorEndretService.class);
 
     @Before
     public void setup() {
@@ -106,6 +105,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
                  transactor,
                 arenaYtelserService,
                 bigQueryClient,
+                arbeidsoppfolgingsKontorEndretService,
                 "https://test.nav.no"
                 );
 
@@ -162,6 +162,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         verify(kafkaProducerService).publiserEndringPaNyForVeileder(aktorId, false);
         verify(kafkaProducerService).publiserEndringPaManuellStatus(aktorId, false);
         verify(kafkaProducerService).publiserSkjulAoMinSideMicrofrontend(aktorId, fnr);
+//        verify(oppfolgingsperiodeEndretService).håndterOppfolgingAvsluttet(any(OppfolgingsperiodeEntity.class)); // TODO I en overgangsperiode lytter vi heller på tombstone fra ao-oppfolgingskontor
     }
 
     @Test

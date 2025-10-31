@@ -64,6 +64,7 @@ public class OppfolgingService {
     private final OppfolgingsStatusRepository oppfolgingsStatusRepository;
     private final OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
     private final ManuellStatusService manuellStatusService;
+    private final ArbeidsoppfolgingsKontorEndretService arbeidsoppfolgingsKontorEndretService;
 
     private final AmtDeltakerClient amtDeltakerClient;
 
@@ -91,6 +92,7 @@ public class OppfolgingService {
             TransactionTemplate transactor,
             ArenaYtelserService arenaYtelserService,
             BigQueryClient bigQueryClient,
+            ArbeidsoppfolgingsKontorEndretService arbeidsoppfolgingsKontorEndretService,
             @Value("${app.env.nav-no-url}") String navNoUrl) {
         this.kafkaProducerService = kafkaProducerService;
         this.kvpService = kvpService;
@@ -106,6 +108,7 @@ public class OppfolgingService {
         this.transactor = transactor;
         this.arenaYtelserService = arenaYtelserService;
         this.bigQueryClient = bigQueryClient;
+        this.arbeidsoppfolgingsKontorEndretService = arbeidsoppfolgingsKontorEndretService;
     }
 
     @Transactional // TODO: kan denne være read only?
@@ -315,6 +318,7 @@ public class OppfolgingService {
             kafkaProducerService.publiserEndringPaManuellStatus(aktorId, false);
             kafkaProducerService.publiserOppfolgingsAvsluttet(OppfolgingsAvsluttetHendelseDto.Companion.of(avregistrering, sistePeriode, fnr));
             kafkaProducerService.publiserSkjulAoMinSideMicrofrontend(aktorId, fnr);
+            // oppfolgingsperiodeEndretService.oppdaterSisteOppfolgingsperiodeV2MedAvsluttetStatus(sistePeriode); // TODO I en overgangsperiode lytter vi heller på tombstone fra ao-oppfolgingskontor
 
             bigQueryClient.loggAvsluttOppfolgingsperiode(sistePeriode.getUuid(), avregistrering.getAvregistreringsType());
         });

@@ -14,6 +14,7 @@ public class KafkaProperties {
     String veilederTilordnetTopic;
     String endringPaNyForVeilederTopic;
     String sisteOppfolgingsperiodeTopic;
+    String sisteOppfolgingsperiodeTopicV2;
     String oppfolgingsperiodeTopic;
     String sisteTilordnetVeilederTopic;
     String endringPaMalAiven;
@@ -24,4 +25,5 @@ public class KafkaProperties {
     String minSideAapenMicrofrontendV1;
     String minSideBrukerVarsel;
     String oppfolgingshendelseV1;
+    String arbeidsoppfolgingskontortilordningTopic;
 }
