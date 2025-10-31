@@ -26,12 +26,12 @@ class OppfolgingsperiodeEndretServiceTest {
     val kafkaProducerService: KafkaProducerService = mock()
     val aktorOppslagClient: AktorOppslagClient = mock()
 
-    private val oppfolgingsperiodeEndretService = OppfolgingsperiodeEndretService(oppfolgingsPeriodeRepository, kafkaProducerService, aktorOppslagClient)
+    private val arbeidsoppfolgingsKontorEndretService = ArbeidsoppfolgingsKontorEndretService(oppfolgingsPeriodeRepository, kafkaProducerService, aktorOppslagClient)
 
     @Ignore("Midlertidig deaktivert for å unngå at vi misser sluttmeldinger ut på nytt topic")
     @Test
     fun `skal ignorere tom oppfolgingskontormelding`() {
-        oppfolgingsperiodeEndretService.håndterOppfolgingskontorMelding(UUID.randomUUID().toString(), null)
+        arbeidsoppfolgingsKontorEndretService.håndterOppfolgingskontorMelding(UUID.randomUUID().toString(), null)
         verifyNoInteractions(kafkaProducerService, oppfolgingsPeriodeRepository, aktorOppslagClient)
     }
 
@@ -42,7 +42,7 @@ class OppfolgingsperiodeEndretServiceTest {
         whenever(oppfolgingsPeriodeRepository.hentOppfolgingsperiode(oppfolgingsperiode.uuid.toString())).thenReturn(Optional.of(oppfolgingsperiode))
         val oppfolgingskontorMelding = oppfolgingskontorMelding(aktorId = aktorId, tilordningstype = Tilordningstype.KONTOR_VED_OPPFOLGINGSPERIODE_START, oppfolgingsperiodeId = oppfolgingsperiode.uuid)
 
-        oppfolgingsperiodeEndretService.håndterOppfolgingskontorMelding(oppfolgingsperiode.uuid.toString(), oppfolgingskontorMelding)
+        arbeidsoppfolgingsKontorEndretService.håndterOppfolgingskontorMelding(oppfolgingsperiode.uuid.toString(), oppfolgingskontorMelding)
 
         val captor = argumentCaptor<SisteOppfolgingsperiodeDto>()
         verify(kafkaProducerService).publiserOppfolgingsperiodeMedKontor(captor.capture())
@@ -67,7 +67,7 @@ class OppfolgingsperiodeEndretServiceTest {
         whenever(oppfolgingsPeriodeRepository.hentOppfolgingsperiode(oppfolgingsperiode.uuid.toString())).thenReturn(Optional.of(oppfolgingsperiode))
         val oppfolgingskontorMelding = oppfolgingskontorMelding(aktorId = aktorId, tilordningstype = Tilordningstype.ENDRET_KONTOR, oppfolgingsperiodeId = oppfolgingsperiode.uuid)
 
-        oppfolgingsperiodeEndretService.håndterOppfolgingskontorMelding(oppfolgingsperiode.uuid.toString(), oppfolgingskontorMelding)
+        arbeidsoppfolgingsKontorEndretService.håndterOppfolgingskontorMelding(oppfolgingsperiode.uuid.toString(), oppfolgingskontorMelding)
 
         val captor = argumentCaptor<SisteOppfolgingsperiodeDto>()
         verify(kafkaProducerService).publiserOppfolgingsperiodeMedKontor(captor.capture())
@@ -94,7 +94,7 @@ class OppfolgingsperiodeEndretServiceTest {
         val oppfolgingsperiode = oppfolgingsperiode(aktorId, startTidspunkt, sluttTidspunkt)
         whenever(aktorOppslagClient.hentFnr(AktorId.of(aktorId))).thenReturn(fnr)
 
-        oppfolgingsperiodeEndretService.oppdaterSisteOppfolgingsperiodeV2MedAvsluttetStatus(oppfolgingsperiode)
+        arbeidsoppfolgingsKontorEndretService.publiserSisteOppfolgingsperiodeV2MedAvsluttetStatus(oppfolgingsperiode)
 
         val captor = argumentCaptor<SisteOppfolgingsperiodeDto>()
         verify(kafkaProducerService).publiserOppfolgingsperiodeMedKontor(captor.capture())

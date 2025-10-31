@@ -66,7 +66,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
     private StartOppfolgingService startOppfolgingService;
     private ArenaYtelserService arenaYtelserService = mock(ArenaYtelserService.class);
     private ArenaOppfolgingService arenaOppfolgingService = mock(ArenaOppfolgingService.class);
-    private OppfolgingsperiodeEndretService oppfolgingsperiodeEndretService = mock(OppfolgingsperiodeEndretService.class);
+    private ArbeidsoppfolgingsKontorEndretService arbeidsoppfolgingsKontorEndretService = mock(ArbeidsoppfolgingsKontorEndretService.class);
 
     @Before
     public void setup() {
@@ -96,7 +96,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
                 manuellStatusService,
                 mock(AmtDeltakerClient.class),
                 new KvpRepository(db, namedParameterJdbcTemplate, transactor), maalRepository,
-                new BrukerOppslagFlereOppfolgingAktorRepository(db), transactor, arenaYtelserService, mock(BigQueryClient.class), oppfolgingsperiodeEndretService,"https://test.nav.no");
+                new BrukerOppslagFlereOppfolgingAktorRepository(db), transactor, arenaYtelserService, mock(BigQueryClient.class), arbeidsoppfolgingsKontorEndretService,"https://test.nav.no");
 
         startOppfolgingService = new StartOppfolgingService(
                 manuellStatusService,

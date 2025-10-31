@@ -16,13 +16,16 @@ import java.util.UUID
 import kotlin.jvm.optionals.getOrElse
 
 @Service
-class OppfolgingsperiodeEndretService(
+class ArbeidsoppfolgingsKontorEndretService(
     val oppfolgingsPeriodeRepository: OppfolgingsPeriodeRepository,
     val kafkaProducerService: KafkaProducerService,
     val aktorOppslagClient: AktorOppslagClient
 ) {
 
-    fun oppdaterSisteOppfolgingsperiodeV2MedAvsluttetStatus(oppfolgingsperiode: OppfolgingsperiodeEntity) {
+    /**
+     * Avsluttet status betyr at kontorId og kontorNavn er nullet ut
+     * */
+    fun publiserSisteOppfolgingsperiodeV2MedAvsluttetStatus(oppfolgingsperiode: OppfolgingsperiodeEntity) {
         val ident = aktorOppslagClient.hentFnr(AktorId.of(oppfolgingsperiode.aktorId))
         val gjeldendeOppfolgingsperiode = AvsluttetOppfolgingsperiode(
             oppfolgingsperiodeId = oppfolgingsperiode.uuid,
@@ -45,7 +48,7 @@ class OppfolgingsperiodeEndretService(
                 .getOrElse { throw RuntimeException("Ugyldig oppfølgingsperiodeId, noe gikk veldig galt, dette skal aldri skje") }
 
         if (melding == null) {
-            oppdaterSisteOppfolgingsperiodeV2MedAvsluttetStatus(oppfolgingsperiode)
+            publiserSisteOppfolgingsperiodeV2MedAvsluttetStatus(oppfolgingsperiode)
         } else {
             val gjeldendeOppfolgingsperiode = GjeldendeOppfolgingsperiode(
                 oppfolgingsperiodeId = oppfolgingsperiode.uuid,

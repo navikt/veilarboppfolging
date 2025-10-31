@@ -1,7 +1,7 @@
 package no.nav.veilarboppfolging.kafka
 
 import no.nav.common.utils.EnvironmentUtils
-import no.nav.veilarboppfolging.service.OppfolgingsperiodeEndretService
+import no.nav.veilarboppfolging.service.ArbeidsoppfolgingsKontorEndretService
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.springframework.stereotype.Service
 import java.util.*
@@ -9,13 +9,13 @@ import kotlin.jvm.optionals.getOrElse
 
 @Service
 class ArbeidsoppfolgingskontortilordningConsumerService(
-    val oppfolgingsperiodeEndretService: OppfolgingsperiodeEndretService
+    val arbeidsoppfolgingsKontorEndretService: ArbeidsoppfolgingsKontorEndretService
 ) {
     fun consumeKontortilordning(kafkaMelding: ConsumerRecord<String, OppfolgingskontorMelding?>) {
         if (EnvironmentUtils.isProduction().getOrElse { true }) {
             // Hopper over melding i prod foreløpig
         } else {
-            oppfolgingsperiodeEndretService.håndterOppfolgingskontorMelding(kafkaMelding.key(), kafkaMelding.value())
+            arbeidsoppfolgingsKontorEndretService.håndterOppfolgingskontorMelding(kafkaMelding.key(), kafkaMelding.value())
         }
     }
 }
