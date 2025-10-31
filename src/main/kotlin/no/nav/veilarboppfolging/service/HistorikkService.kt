@@ -46,6 +46,7 @@ class HistorikkService(
             .dato(veilederTilordningHistorikk.sistTilordnet)
             .opprettetAv(KodeverkBruker.NAV)
             .opprettetAvBrukerId(veilederTilordningHistorikk.tilordnetAvVeileder)
+            .tildeltVeilederId(veilederTilordningHistorikk.veileder)
             .build()
     }
 

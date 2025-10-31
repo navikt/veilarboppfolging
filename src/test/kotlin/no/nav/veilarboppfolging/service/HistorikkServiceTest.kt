@@ -480,6 +480,7 @@ class HistorikkServiceTest {
             opprettetAvType,
             opprettetAv,
             null,
+            null,
             null
         )
     }
