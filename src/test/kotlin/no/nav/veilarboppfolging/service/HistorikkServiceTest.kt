@@ -128,7 +128,7 @@ class HistorikkServiceTest {
             tidspunkt = OPPFOLGING_START,
             begrunnelse = "Veileder startet arbeidsrettet oppfølging på bruker",
             opprettetAvType = KodeverkBruker.NAV,
-            opprettetAv = startetAvVeilder
+            opprettetAv = startetAvVeilder,
         ))
 
         Assertions.assertThat(periodeAvsluttetEvent).isEqualTo(historikkHendelse(
@@ -136,7 +136,7 @@ class HistorikkServiceTest {
             tidspunkt = OPPFOLGING_END,
             begrunnelse = avsluttetBegrunnelse,
             opprettetAvType = KodeverkBruker.NAV,
-            opprettetAv = avsluttetAvVeileder
+            opprettetAv = avsluttetAvVeileder,
         ))
     }
 
@@ -168,7 +168,7 @@ class HistorikkServiceTest {
             tidspunkt = OPPFOLGING_START,
             begrunnelse = "Bruker ble registrert som arbeidssøker av veileder",
             opprettetAvType = KodeverkBruker.NAV,
-            opprettetAv = startetAvVeilder
+            opprettetAv = startetAvVeilder,
         ))
 
         Assertions.assertThat(periodeAvsluttetEvent).isEqualTo(historikkHendelse(
@@ -176,7 +176,7 @@ class HistorikkServiceTest {
             tidspunkt = OPPFOLGING_END,
             begrunnelse = avsluttetBegrunnelse,
             opprettetAvType = KodeverkBruker.NAV,
-            opprettetAv = avsluttetAvVeileder
+            opprettetAv = avsluttetAvVeileder,
         ))
     }
 
@@ -207,7 +207,7 @@ class HistorikkServiceTest {
             tidspunkt = OPPFOLGING_START,
             begrunnelse = "Registrert som arbeidssøker i arena",
             opprettetAvType = KodeverkBruker.SYSTEM,
-            opprettetAv = null
+            opprettetAv = null,
         ))
 
         Assertions.assertThat(periodeAvsluttetEvent).isEqualTo(historikkHendelse(
@@ -215,7 +215,7 @@ class HistorikkServiceTest {
             tidspunkt = OPPFOLGING_END,
             begrunnelse = avsluttetBegrunnelse,
             opprettetAvType = KodeverkBruker.SYSTEM,
-            opprettetAv = null
+            opprettetAv = null,
         ))
     }
 
@@ -246,7 +246,7 @@ class HistorikkServiceTest {
             tidspunkt = OPPFOLGING_START,
             begrunnelse = "Bruker registrerte seg som arbeidssøker",
             opprettetAvType = KodeverkBruker.EKSTERN,
-            opprettetAv = null
+            opprettetAv = null,
         ))
 
         Assertions.assertThat(periodeAvsluttetEvent).isEqualTo(historikkHendelse(
@@ -254,7 +254,7 @@ class HistorikkServiceTest {
             tidspunkt = OPPFOLGING_END,
             begrunnelse = avsluttetBegrunnelse,
             opprettetAvType = KodeverkBruker.SYSTEM,
-            opprettetAv = null
+            opprettetAv = null,
         ))
     }
 
@@ -285,7 +285,7 @@ class HistorikkServiceTest {
             tidspunkt = OPPFOLGING_START,
             begrunnelse = "Startet arbeidsrettet oppfølging på bruker",
             opprettetAvType = null,
-            opprettetAv = null
+            opprettetAv = null,
         ))
 
         Assertions.assertThat(periodeAvsluttetEvent).isEqualTo(historikkHendelse(
@@ -293,7 +293,7 @@ class HistorikkServiceTest {
             tidspunkt = OPPFOLGING_END,
             begrunnelse = avsluttetBegrunnelse,
             opprettetAvType = KodeverkBruker.SYSTEM,
-            opprettetAv = null
+            opprettetAv = null,
         ))
     }
 
@@ -315,7 +315,7 @@ class HistorikkServiceTest {
             tidspunkt = OPPFOLGING_START,
             begrunnelse = "Startet arbeidsrettet oppfølging på bruker",
             opprettetAvType = KodeverkBruker.NAV,
-            opprettetAv = "defaultVeileder"
+            opprettetAv = "defaultVeileder",
         ))
 
         Assertions.assertThat(periodeReaktivertEvent).isEqualTo(historikkHendelse(
@@ -323,7 +323,7 @@ class HistorikkServiceTest {
             tidspunkt = OPPFOLGING_REAKTIVERT,
             begrunnelse = "Arbeidsrettet oppfølging ble reaktivert",
             opprettetAvType = KodeverkBruker.NAV,
-            opprettetAv = "veileder som reaktiverte"
+            opprettetAv = "veileder som reaktiverte",
         ))
     }
 
@@ -481,7 +481,7 @@ class HistorikkServiceTest {
             opprettetAv,
             null,
             null,
-            null,
+            null
         )
     }
 
