@@ -1,5 +1,6 @@
 package no.nav.veilarboppfolging.kafka
 
+import no.nav.common.utils.EnvironmentUtils
 import no.nav.veilarboppfolging.service.ArbeidsoppfolgingsKontorEndretService
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.junit.jupiter.api.Test
@@ -7,6 +8,7 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import java.util.Optional
 import java.util.UUID
 
 class ArbeidsoppfolgingskontortilordningConsumerServiceTest {
@@ -19,6 +21,7 @@ class ArbeidsoppfolgingskontortilordningConsumerServiceTest {
     fun `Skal kalle service for å håndtere melding`() {
         val kafkamelding: ConsumerRecord<String, OppfolgingskontorMelding?> = mock()
         whenever(kafkamelding.key()).thenReturn(UUID.randomUUID().toString())
+        EnvironmentUtils.setProperty("NAIS_CLUSTER_NAME", "not prod", EnvironmentUtils.Type.PUBLIC)
         arbeidsoppfolgingskontortilordningConsumerService.consumeKontortilordning(kafkamelding)
 
         verify(arbeidsoppfolgingsKontorEndretService, times(1)).håndterOppfolgingskontorMelding(
