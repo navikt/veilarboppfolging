@@ -34,12 +34,16 @@ class KafkaProducerService @Autowired constructor(
     private val authContextHolder: AuthContextHolder,
     private val producerRecordStorage: KafkaProducerRecordStorage,
     private val kafkaProperties: KafkaProperties,
-    @param:Value("\${app.kafka.enabled}") private val kafkaEnabled: Boolean
+    @param:Value("\${app.kafka.enabled}") private val kafkaEnabled: Boolean,
 ) {
     private val logger = LoggerFactory.getLogger(this::class.java)
 
     fun publiserValgtOppfolgingsperiode(oppfolgingsperiode: OppfolgingsperiodeDTO) {
         oppfolgingsperiode(oppfolgingsperiode)
+    }
+
+    fun publiserOppfolgingsperiodeMedKontor(gjeldendeOppfolgingsperiode: SisteOppfolgingsperiodeDto) {
+        oppfolgingsperiodeMedKontor(gjeldendeOppfolgingsperiode)
     }
 
     fun publiserOppfolgingsperiode(oppfolgingsperiode: OppfolgingsperiodeDTO) {
@@ -71,6 +75,14 @@ class KafkaProducerService @Autowired constructor(
         )
     }
 
+    private fun oppfolgingsperiodeMedKontor(sisteOppfolgingsperiode: SisteOppfolgingsperiodeDto) {
+        store(
+            kafkaProperties.sisteOppfolgingsperiodeTopicV2,
+            sisteOppfolgingsperiode.oppfolgingsperiodeUuid.toString(),
+            sisteOppfolgingsperiode
+        )
+    }
+
     fun publiserSisteTilordnetVeileder(recordValue: SisteTilordnetVeilederV1) {
         store(kafkaProperties.sisteTilordnetVeilederTopic, recordValue.aktorId, recordValue)
     }
@@ -85,8 +97,8 @@ class KafkaProducerService @Autowired constructor(
         store(kafkaProperties.endringPaNyForVeilederTopic, aktorId.get(), recordValue)
     }
 
-    fun publiserVeilederTilordnet(aktorId: AktorId, tildeltVeilederId: String?) {
-        val recordValue = VeilederTilordnetV1(aktorId.get(), tildeltVeilederId)
+    fun publiserVeilederTilordnet(aktorId: AktorId, tildeltVeilederId: String?, tilordnetTidspunkt: ZonedDateTime? ) {
+        val recordValue = VeilederTilordnetV2(aktorId.get(), tildeltVeilederId, tilordnetTidspunkt)
         store(kafkaProperties.veilederTilordnetTopic, aktorId.get(), recordValue)
     }
 

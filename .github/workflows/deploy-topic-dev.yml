@@ -5,6 +5,7 @@ on:
       - main
     paths:
       - "kafka-topics/privat-oppfolgingshendelse-dev.yaml"
+      - "kafka-topics/siste-oppfolgingsperiode-v2-dev.yaml"
   workflow_dispatch:
 
 jobs:
@@ -15,10 +16,16 @@ jobs:
       id-token: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Deploy kafka topics
         uses: nais/deploy/actions/deploy@v2
         env:
           CLUSTER: dev-gcp
           RESOURCE: kafka-topics/privat-oppfolgingshendelse-dev.yaml
+          PRINT_PAYLOAD: true
+      - name: Deploy kafka topic siste-oppfolgingsperiode-v2-dev
+        uses: nais/deploy/actions/deploy@v2
+        env:
+          CLUSTER: dev-gcp
+          RESOURCE: kafka-topics/siste-oppfolgingsperiode-v2-dev.yaml
           PRINT_PAYLOAD: true
