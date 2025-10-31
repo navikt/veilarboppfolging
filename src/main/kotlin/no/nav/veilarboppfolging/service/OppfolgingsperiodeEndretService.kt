@@ -22,7 +22,7 @@ class OppfolgingsperiodeEndretService(
     val aktorOppslagClient: AktorOppslagClient
 ) {
 
-    fun håndterOppfolgingAvsluttet(oppfolgingsperiode: OppfolgingsperiodeEntity) {
+    fun oppdaterSisteOppfolgingsperiodeV2MedAvsluttetStatus(oppfolgingsperiode: OppfolgingsperiodeEntity) {
         val ident = aktorOppslagClient.hentFnr(AktorId.of(oppfolgingsperiode.aktorId))
         val gjeldendeOppfolgingsperiode = AvsluttetOppfolgingsperiode(
             oppfolgingsperiodeId = oppfolgingsperiode.uuid,
@@ -45,7 +45,7 @@ class OppfolgingsperiodeEndretService(
                 .getOrElse { throw RuntimeException("Ugyldig oppfølgingsperiodeId, noe gikk veldig galt, dette skal aldri skje") }
 
         if (melding == null) {
-            håndterOppfolgingAvsluttet(oppfolgingsperiode)
+            oppdaterSisteOppfolgingsperiodeV2MedAvsluttetStatus(oppfolgingsperiode)
         } else {
             val gjeldendeOppfolgingsperiode = GjeldendeOppfolgingsperiode(
                 oppfolgingsperiodeId = oppfolgingsperiode.uuid,

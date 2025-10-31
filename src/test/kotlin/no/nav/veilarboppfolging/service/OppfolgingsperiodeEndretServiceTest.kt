@@ -94,7 +94,7 @@ class OppfolgingsperiodeEndretServiceTest {
         val oppfolgingsperiode = oppfolgingsperiode(aktorId, startTidspunkt, sluttTidspunkt)
         whenever(aktorOppslagClient.hentFnr(AktorId.of(aktorId))).thenReturn(fnr)
 
-        oppfolgingsperiodeEndretService.håndterOppfolgingAvsluttet(oppfolgingsperiode)
+        oppfolgingsperiodeEndretService.oppdaterSisteOppfolgingsperiodeV2MedAvsluttetStatus(oppfolgingsperiode)
 
         val captor = argumentCaptor<SisteOppfolgingsperiodeDto>()
         verify(kafkaProducerService).publiserOppfolgingsperiodeMedKontor(captor.capture())
