@@ -112,7 +112,7 @@ dependencies {
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
     testImplementation("no.nav.common:test:$commonVersion")
-    testImplementation("org.springframework.graphql:spring-graphql-test:1.4.1")
+    testImplementation("org.springframework.graphql:spring-graphql-test:1.4.3")
     testImplementation("io.zonky.test:embedded-database-spring-test:2.6.0")
     testImplementation("io.zonky.test:embedded-postgres:2.1.0")
     testImplementation("junit:junit")
