@@ -1,4 +1,4 @@
-val kotlinVersion = "2.2.10"
+val kotlinVersion = "2.2.21"
 val dependencyManagementVersion = "1.1.3"
 val jacocoVersion = "0.8.12"
 val flywayVersion = "11.12.0"
@@ -12,7 +12,7 @@ val springDoc = "2.8.9"
 val tmsMicrofrontendBuilder = "3.0.0"
 val tmsVarselBuilder = "2.1.1"
 val avroVersion = "1.12.0"
-val confluentKafkaAvroVersion = "8.0.0"
+val confluentKafkaAvroVersion = "8.1.0"
 
 plugins {
     kotlin("jvm") version "2.2.10"
