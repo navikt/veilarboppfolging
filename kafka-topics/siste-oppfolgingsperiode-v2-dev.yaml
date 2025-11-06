@@ -1,0 +1,23 @@
+apiVersion: kafka.nais.io/v1
+kind: Topic
+metadata:
+  name: siste-oppfolgingsperiode-v2
+  namespace: poao
+  labels:
+    team: poao
+  annotations:
+    kafka.nais.io/removeDataWhenResourceIsDeleted: "true"
+spec:
+  pool: nav-dev
+  config:
+    cleanupPolicy: compact
+    retentionHours: -1 # Evig
+    minimumInSyncReplicas: 1
+    partitions: 8
+  acl:
+    - team: pto
+      application: pto-kafka-manager
+      access: read
+    - team: poao
+      application: veilarboppfolging
+      access: write

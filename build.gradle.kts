@@ -1,18 +1,18 @@
-val kotlinVersion = "2.2.10"
+val kotlinVersion = "2.2.21"
 val dependencyManagementVersion = "1.1.3"
 val jacocoVersion = "0.8.12"
 val flywayVersion = "11.12.0"
-val commonVersion = "3.2025.06.23_14.50-3af3985d8555"
-val ptoSchemaVersion = "1.2025.01.13_12.58-3e81bd940198"
+val commonVersion = "3.2025.10.10_08.21-bb7c7830d93c"
+val ptoSchemaVersion = "1.2025.09.29_11.36-6e568fa24c23"
 val poaoTilgangVersion = "2025.07.04_08.56-814fa50f6740"
 val wiremockVersion = "3.0.1"
 val schedlockVersion = "6.10.0"
-val googleCloudLibrariesBomVersion = "26.68.0"
+val googleCloudLibrariesBomVersion = "26.71.0"
 val springDoc = "2.8.9"
 val tmsMicrofrontendBuilder = "3.0.0"
 val tmsVarselBuilder = "2.1.1"
 val avroVersion = "1.12.0"
-val confluentKafkaAvroVersion = "8.0.0"
+val confluentKafkaAvroVersion = "8.1.0"
 
 plugins {
     kotlin("jvm") version "2.2.10"
@@ -21,7 +21,7 @@ plugins {
     id("org.springframework.boot") version "3.5.5"
     id("io.spring.dependency-management") version "1.1.7"
     id("jacoco")
-    id("org.sonarqube") version "6.2.0.5505"
+    id("org.sonarqube") version "6.3.1.5724"
 }
 
 group = "no.nav"
@@ -112,9 +112,9 @@ dependencies {
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
     testImplementation("no.nav.common:test:$commonVersion")
-    testImplementation("org.springframework.graphql:spring-graphql-test:1.4.1")
+    testImplementation("org.springframework.graphql:spring-graphql-test:1.4.3")
     testImplementation("io.zonky.test:embedded-database-spring-test:2.6.0")
-    testImplementation("io.zonky.test:embedded-postgres:2.1.0")
+    testImplementation("io.zonky.test:embedded-postgres:2.1.1")
     testImplementation("junit:junit")
     testImplementation("org.junit.vintage:junit-vintage-engine")
     testImplementation("org.springframework.kafka:spring-kafka-test")
@@ -123,6 +123,7 @@ dependencies {
         exclude(group = "com.vaadin.external.google", module = "android-json")
     }
     testImplementation("org.jetbrains.kotlin:kotlin-test")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:6.1.0")
 }
 
 tasks.withType<Test> {

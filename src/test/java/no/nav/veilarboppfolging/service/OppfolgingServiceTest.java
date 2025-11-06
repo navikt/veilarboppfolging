@@ -24,8 +24,6 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.BrukerRegistrant;
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant;
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService;
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering;
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AdminAvregistrering;
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.Avregistrering;
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ManuellAvregistrering;
 import no.nav.veilarboppfolging.repository.KvpRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
@@ -81,6 +79,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     private OppfolgingService oppfolgingService;
     private StartOppfolgingService startOppfolgingService;
     private BigQueryClient bigQueryClient = mock(BigQueryClient.class);
+    private ArbeidsoppfolgingsKontorEndretService arbeidsoppfolgingsKontorEndretService = mock(ArbeidsoppfolgingsKontorEndretService.class);
 
     @Before
     public void setup() {
@@ -107,6 +106,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
                  transactor,
                 arenaYtelserService,
                 bigQueryClient,
+                arbeidsoppfolgingsKontorEndretService,
                 "https://test.nav.no"
                 );
 
@@ -161,10 +161,11 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         oppfolgingService.avsluttOppfolging(new ManuellAvregistrering(aktorId, new VeilederRegistrant(new NavIdent(VEILEDER)), ""));
 
         verify(kafkaProducerService).publiserOppfolgingsperiode(any(OppfolgingsperiodeDTO.class));
-        verify(kafkaProducerService).publiserVeilederTilordnet(aktorId, null);
+        verify(kafkaProducerService).publiserVeilederTilordnet(aktorId, null, null);
         verify(kafkaProducerService).publiserEndringPaNyForVeileder(aktorId, false);
         verify(kafkaProducerService).publiserEndringPaManuellStatus(aktorId, false);
         verify(kafkaProducerService).publiserSkjulAoMinSideMicrofrontend(aktorId, fnr);
+//        verify(oppfolgingsperiodeEndretService).håndterOppfolgingAvsluttet(any(OppfolgingsperiodeEntity.class)); // TODO I en overgangsperiode lytter vi heller på tombstone fra ao-oppfolgingskontor
     }
 
     @Test
@@ -223,7 +224,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         UnderOppfolgingDTO underOppfolgingDTO2 = oppfolgingService.oppfolgingData(fnr);
         Assertions.assertThat(underOppfolgingDTO2.isUnderOppfolging()).isFalse();
         verify(kafkaProducerService).publiserOppfolgingsperiode(any(OppfolgingsperiodeDTO.class));
-        verify(kafkaProducerService).publiserVeilederTilordnet(aktorId, null);
+        verify(kafkaProducerService).publiserVeilederTilordnet(aktorId, null, null);
         verify(kafkaProducerService).publiserEndringPaNyForVeileder(aktorId, false);
         verify(kafkaProducerService).publiserEndringPaManuellStatus(aktorId, false);
         verify(kafkaProducerService).publiserSkjulAoMinSideMicrofrontend(aktorId, fnr);
@@ -246,7 +247,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         UnderOppfolgingDTO underOppfolgingDTO2 = oppfolgingService.oppfolgingData(fnr);
         Assertions.assertThat(underOppfolgingDTO2.isUnderOppfolging()).isFalse();
         verify(kafkaProducerService).publiserOppfolgingsperiode(any(OppfolgingsperiodeDTO.class));
-        verify(kafkaProducerService).publiserVeilederTilordnet(aktorId, null);
+        verify(kafkaProducerService).publiserVeilederTilordnet(aktorId, null, null);
         verify(kafkaProducerService).publiserEndringPaNyForVeileder(aktorId, false);
         verify(kafkaProducerService).publiserEndringPaManuellStatus(aktorId, false);
         verify(kafkaProducerService).publiserSkjulAoMinSideMicrofrontend(aktorId, fnr);

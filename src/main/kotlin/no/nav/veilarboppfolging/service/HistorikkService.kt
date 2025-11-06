@@ -46,6 +46,7 @@ class HistorikkService(
             .dato(veilederTilordningHistorikk.sistTilordnet)
             .opprettetAv(KodeverkBruker.NAV)
             .opprettetAvBrukerId(veilederTilordningHistorikk.tilordnetAvVeileder)
+            .tildeltVeilederId(veilederTilordningHistorikk.veileder)
             .build()
     }
 
@@ -112,7 +113,7 @@ class HistorikkService(
                 }
             }
             OppfolgingStartBegrunnelse.ARENA_SYNC_ARBS -> "Registrert som arbeidssøker i arena"
-            OppfolgingStartBegrunnelse.ARENA_SYNC_IARBS -> "Registrert 14a vedtak i arena eller sykmeldt uten arbeidsgiver (VURDU)"
+            OppfolgingStartBegrunnelse.ARENA_SYNC_IARBS -> "Registrert som sykmeldt uten arbeidsgiver (VURDU) i Arena"
             OppfolgingStartBegrunnelse.MANUELL_REGISTRERING_VEILEDER -> "Veileder startet arbeidsrettet oppfølging på bruker"
             OppfolgingStartBegrunnelse.REAKTIVERT_OPPFØLGING -> "Arbeidsrettet oppfølging ble reaktivert"
             else -> "Startet arbeidsrettet oppfølging på bruker"
