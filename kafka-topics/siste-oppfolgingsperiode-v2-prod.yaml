@@ -21,3 +21,6 @@ spec:
     - team: poao
       application: veilarboppfolging
       access: write
+    - team: obo
+      application: veilarbportefolje
+      access: read
