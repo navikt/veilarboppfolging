@@ -8,6 +8,7 @@ import no.nav.common.types.identer.Fnr
 import no.nav.veilarboppfolging.kafka.OppfolgingskontorMelding
 import no.nav.veilarboppfolging.kafka.Tilordningstype
 import no.nav.veilarboppfolging.oppfolgingsbruker.StartetAvType
+import no.nav.veilarboppfolging.repository.ArbeidsoppfolgingskontorRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity
 import org.assertj.core.api.Assertions.assertThat
@@ -25,8 +26,9 @@ class OppfolgingsperiodeEndretServiceTest {
     val oppfolgingsPeriodeRepository: OppfolgingsPeriodeRepository = mock()
     val kafkaProducerService: KafkaProducerService = mock()
     val aktorOppslagClient: AktorOppslagClient = mock()
+    val ArbeidsoppfolgingskontorRepository: ArbeidsoppfolgingskontorRepository = mock()
 
-    private val arbeidsoppfolgingsKontorEndretService = ArbeidsoppfolgingsKontorEndretService(oppfolgingsPeriodeRepository, kafkaProducerService, aktorOppslagClient)
+    private val arbeidsoppfolgingsKontorEndretService = ArbeidsoppfolgingsKontorEndretService(oppfolgingsPeriodeRepository, kafkaProducerService, aktorOppslagClient, ArbeidsoppfolgingskontorRepository)
 
     @Ignore("Midlertidig deaktivert for å unngå at vi misser sluttmeldinger ut på nytt topic")
     @Test
