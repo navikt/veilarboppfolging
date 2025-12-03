@@ -11,7 +11,6 @@ import no.nav.poao_tilgang.client.NorskIdent
 import no.nav.poao_tilgang.client.PoaoTilgangClient
 import no.nav.poao_tilgang.client.TilgangType
 import no.nav.veilarboppfolging.client.pdl.PdlFolkeregisterStatusClient
-import no.nav.veilarboppfolging.kafka.dto.StartetBegrunnelseDTO
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ALLEREDE_UNDER_OPPFOLGING
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ALLEREDE_UNDER_OPPFOLGING.oppfolgingSjekk
@@ -26,6 +25,7 @@ import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity
 import no.nav.veilarboppfolging.service.AuthService
+import no.nav.veilarboppfolging.service.ManuellStatusService
 import org.slf4j.LoggerFactory
 import org.springframework.graphql.data.method.annotation.Argument
 import org.springframework.graphql.data.method.annotation.QueryMapping
@@ -71,6 +71,8 @@ data class OppfolgingDto(
     val erUnderOppfolging: Boolean,
     val kanStarteOppfolging: KanStarteOppfolgingDto?,
     val norskIdent: NorskIdent? = null,
+    val manuell: Boolean? = null,
+    val reservertIKrr: Boolean? = null
 )
 
 data class OppfolgingsperiodeDto(
@@ -90,7 +92,8 @@ class GraphqlController(
     private val poaoTilgangClient: PoaoTilgangClient,
     private val oppfolgingsPeriodeRepository: OppfolgingsPeriodeRepository,
     private val pdlFolkeregisterStatusClient: PdlFolkeregisterStatusClient,
-    private val arenaService: ArenaOppfolgingService
+    private val arenaService: ArenaOppfolgingService,
+    private val manuellService: ManuellStatusService
 ) {
     private val logger = LoggerFactory.getLogger(GraphqlController::class.java)
 
@@ -115,7 +118,7 @@ class GraphqlController(
         if (aktorId == null) throw FantIkkeAktorIdForFnrError()
         val erUnderOppfolging: Boolean = oppfolgingsStatusRepository.hentOppfolging(aktorId)
             .map<Boolean> { it.isUnderOppfolging }.orElse(false)
-        return OppfolgingDto(erUnderOppfolging, null, fnr)
+        return OppfolgingDto(erUnderOppfolging, null, fnr, null, null)
     }
 
     @QueryMapping
@@ -182,6 +185,18 @@ class GraphqlController(
         val gyldigTilgang = lazy { evaluerNavAnsattTilgangTilEksternBruker(oppfolgingDto.norskIdent).toKanStarteOppfolging() }
         val gyldigFregStatus = lazy { kanStarteOppfolgingMtpFregStatus(Fnr.of(oppfolgingDto.norskIdent)) }
         return oppfolgingSjekk(gyldigOppfolging, gyldigTilgang, gyldigFregStatus)
+    }
+
+    @SchemaMapping(typeName = "OppfolgingDto", field = "manuell")
+    fun manuell(oppfolgingDto: OppfolgingDto): Boolean? {
+        val fnr = Fnr.of(oppfolgingDto.norskIdent)
+        return manuellService.erManuell(fnr)
+    }
+
+    @SchemaMapping(typeName = "OppfolgingDto", field = "reservertIKrr")
+    fun reservertIKrr(oppfolgingDto: OppfolgingDto): Boolean? {
+        val fnr = Fnr.of(oppfolgingDto.norskIdent)
+        return manuellService.hentDigdirKontaktinfo(fnr).isReservert
     }
 
     fun hentDefaultEnhetFraNorg(fnr: Fnr): Pair<EnhetId, KildeDto>? {

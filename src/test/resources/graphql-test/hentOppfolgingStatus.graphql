@@ -1,0 +1,6 @@
+query hentOppfolgingStatus($fnr: String!) {
+    oppfolging(fnr: $fnr) {
+        manuell
+        reservertIKrr
+    }
+}

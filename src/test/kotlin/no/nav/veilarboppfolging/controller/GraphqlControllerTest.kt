@@ -328,4 +328,21 @@ class GraphqlControllerTest: IntegrationTest() {
             [ { sluttTidspunkt: null } ]
         """.trimIndent())
     }
+
+    @Test
+    fun `skal returnere manuell status og reservert på bruker`() {
+        val veilederId = UUID.randomUUID()
+        val (fnr, aktorId) = defaultBruker()
+        mockInternBrukerAuthOk(veilederId, aktorId, fnr)
+        mockPoaoTilgangHarTilgangTilBruker(veilederId, fnr, Decision.Permit)
+        setBrukerUnderOppfolging(aktorId, fnr)
+        mockDigdir(fnr, reservertMotDigitalKommunikasjon = true)
+
+        /* Query is hidden in test/resources/graphl-test :) */
+        val result = tester.documentName("hentOppfolgingStatus").variable("fnr", fnr.get()).execute()
+        result.errors().verify()
+        result.path("oppfolging").matchesJson("""
+            { manuell: false, reservertIKrr: true }
+        """.trimIndent())
+    }
 }
