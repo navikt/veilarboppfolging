@@ -27,21 +27,13 @@ import static no.nav.veilarboppfolging.utils.SecureLog.secureLog;
 @Service
 @RequiredArgsConstructor
 public class ManuellStatusService {
-
     private final AuthService authService;
-
     private final ManuellStatusRepository manuellStatusRepository;
-
     private final ArenaOppfolgingService arenaOppfolgingService;
-
     private final OppfolgingService oppfolgingService;
-
     private final OppfolgingsStatusRepository oppfolgingsStatusRepository;
-
     private final DigdirClient digdirClient;
-
     private final KafkaProducerService kafkaProducerService;
-
     private final TransactionTemplate transactor;
 
     public Optional<ManuellStatusEntity> hentManuellStatus(AktorId aktorId) {

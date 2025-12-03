@@ -24,6 +24,8 @@ import no.nav.poao_tilgang.client.api.NetworkApiException
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
 import no.nav.tms.varsel.builder.BuilderEnvironment
+import no.nav.veilarboppfolging.client.digdir_krr.DigdirClient
+import no.nav.veilarboppfolging.client.digdir_krr.KRRData
 import no.nav.veilarboppfolging.client.norg.INorgTilhorighetClient
 import no.nav.veilarboppfolging.client.pdl.FregStatusOgStatsborgerskap
 import no.nav.veilarboppfolging.client.pdl.GTType
@@ -107,6 +109,9 @@ open class IntegrationTest {
 
     @MockitoBean
     lateinit var norg2Client: Norg2Client
+
+    @MockitoBean
+    lateinit var digdir: DigdirClient
 
     @MockitoBean
     lateinit var geografiskTilknytningClient: GeografiskTilknytningClient
@@ -285,6 +290,15 @@ open class IntegrationTest {
     fun mockNorgEnhetsNavn(enhetsNr: String, enhetsNavn: String) {
         val enhet = Enhet().also { it.navn = enhetsNavn }
         `when`(norg2Client.hentEnhet(enhetsNr)).thenReturn(enhet)
+    }
+
+    fun mockDigdir(fnr: Fnr, aktiv: Boolean = true, kanVarsles: Boolean = true, reservertMotDigitalKommunikasjon: Boolean = false) {
+        `when`(digdir.hentKontaktInfo(fnr)).thenReturn(Optional.of(KRRData(
+            aktiv,
+            fnr.get(),
+             kanVarsles,
+            reservertMotDigitalKommunikasjon
+        )))
     }
 
     fun mockVeilarbArenaOppfolgingsStatus(fnr: Fnr, formidlingsgruppe: Formidlingsgruppe? = Formidlingsgruppe.ARBS, kanEnkeltReaktiveres: Boolean? = false, serviceGruppe: String? = "IVURD", oppfolgingsEnhet: String? = "1234", inaktiveringsDato: LocalDate? = null) {
