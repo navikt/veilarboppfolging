@@ -12,11 +12,7 @@ class ArbeidsoppfolgingskontortilordningConsumerService(
     val arbeidsoppfolgingsKontorEndretService: ArbeidsoppfolgingsKontorEndretService
 ) {
     fun consumeKontortilordning(kafkaMelding: ConsumerRecord<String, OppfolgingskontorMelding?>) {
-        if (EnvironmentUtils.isProduction().getOrElse { true }) {
-            // Hopper over melding i prod foreløpig
-        } else {
-            arbeidsoppfolgingsKontorEndretService.håndterOppfolgingskontorMelding(kafkaMelding.key(), kafkaMelding.value())
-        }
+        arbeidsoppfolgingsKontorEndretService.håndterOppfolgingskontorMelding(kafkaMelding.key(), kafkaMelding.value())
     }
 }
 

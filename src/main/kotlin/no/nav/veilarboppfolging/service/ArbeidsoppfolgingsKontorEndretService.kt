@@ -8,6 +8,7 @@ import no.nav.veilarboppfolging.kafka.OppfolgingskontorMelding
 import no.nav.veilarboppfolging.kafka.Tilordningstype
 import no.nav.veilarboppfolging.kafka.Tilordningstype.ENDRET_KONTOR
 import no.nav.veilarboppfolging.kafka.Tilordningstype.KONTOR_VED_OPPFOLGINGSPERIODE_START
+import no.nav.veilarboppfolging.repository.ArbeidsoppfolgingskontorRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity
 import org.springframework.stereotype.Service
@@ -19,7 +20,8 @@ import kotlin.jvm.optionals.getOrElse
 class ArbeidsoppfolgingsKontorEndretService(
     val oppfolgingsPeriodeRepository: OppfolgingsPeriodeRepository,
     val kafkaProducerService: KafkaProducerService,
-    val aktorOppslagClient: AktorOppslagClient
+    val aktorOppslagClient: AktorOppslagClient,
+    val arbeidsoppfolgingskontorRepository: ArbeidsoppfolgingskontorRepository,
 ) {
 
     /**
@@ -34,7 +36,6 @@ class ArbeidsoppfolgingsKontorEndretService(
             aktorId = oppfolgingsperiode.aktorId,
             ident = ident.get(),
         )
-
         kafkaProducerService.publiserOppfolgingsperiodeMedKontor(gjeldendeOppfolgingsperiode)
     }
 
@@ -49,6 +50,7 @@ class ArbeidsoppfolgingsKontorEndretService(
 
         if (melding == null) {
             publiserSisteOppfolgingsperiodeV2MedAvsluttetStatus(oppfolgingsperiode)
+            arbeidsoppfolgingskontorRepository.slettNavKontor(oppfolgingsperiode.uuid)
         } else {
             val gjeldendeOppfolgingsperiode = GjeldendeOppfolgingsperiode(
                 oppfolgingsperiodeId = oppfolgingsperiode.uuid,
@@ -60,6 +62,12 @@ class ArbeidsoppfolgingsKontorEndretService(
                 sisteEndringsType = SisteEndringsType.fromTilordningstype(melding.tilordningstype),
             )
 
+            arbeidsoppfolgingskontorRepository.settNavKontor(
+                melding.ident,
+                melding.aktorId,
+                melding.oppfolgingsperiodeId,
+                melding.kontorId
+            )
             kafkaProducerService.publiserOppfolgingsperiodeMedKontor(gjeldendeOppfolgingsperiode)
         }
     }
