@@ -107,7 +107,7 @@ class KanStarteOppfolgingTest {
             ForenkletFolkeregisterStatus.dNummer,
             listOf("GBR"),
         )
-        assertEquals(gbr.toKanStarteOppfolging(), FREG_STATUS_OK)
+        assertEquals(gbr.toKanStarteOppfolging(), FREG_STATUS_KREVER_MANUELL_GODKJENNING_PGA_DNUMMER_IKKE_EOS_GBR)
     }
 
     @Test
