@@ -15,6 +15,15 @@ import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.veilarboppfolging.client.pdl.PdlFolkeregisterStatusClient
 import no.nav.veilarboppfolging.controller.FantIkkeAktorIdForFnrError
 import no.nav.veilarboppfolging.controller.PoaoTilgangError
+import no.nav.veilarboppfolging.controller.graphql.brukerStatus.BrukerStatusArenaDto
+import no.nav.veilarboppfolging.controller.graphql.brukerStatus.BrukerStatusDto
+import no.nav.veilarboppfolging.controller.graphql.brukerStatus.BrukerStatusKrrDto
+import no.nav.veilarboppfolging.controller.graphql.oppfolging.EnhetDto
+import no.nav.veilarboppfolging.controller.graphql.oppfolging.KildeDto
+import no.nav.veilarboppfolging.controller.graphql.oppfolging.OppfolgingDto
+import no.nav.veilarboppfolging.controller.graphql.oppfolging.OppfolgingsEnhetQueryDto
+import no.nav.veilarboppfolging.controller.graphql.oppfolging.OppfolgingsperiodeDto
+import no.nav.veilarboppfolging.controller.graphql.veilederTilgang.VeilederTilgangDto
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.*
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ALLEREDE_UNDER_OPPFOLGING.oppfolgingSjekk
@@ -35,28 +44,6 @@ import org.springframework.web.server.ResponseStatusException
 import java.time.format.DateTimeFormatter
 import kotlin.jvm.optionals.getOrNull
 
-
-data class OppfolgingsEnhetQueryDto(
-    val enhet: EnhetDto?, // Nullable because graphql
-    val fnr: String // Only used to pass fnr to "sub-queries"
-)
-
-data class EnhetDto(
-    val id: String,
-    val navn: String,
-    val kilde: KildeDto
-)
-
-enum class KildeDto {
-    ARENA,
-    NORG
-}
-
-data class VeilederTilgangDto(
-    val harTilgang: Boolean?,
-    val tilgang: TilgangResultat?
-)
-
 enum class TilgangResultat {
     HAR_TILGANG,
     IKKE_TILGANG_FORTROLIG_ADRESSE,
@@ -65,18 +52,6 @@ enum class TilgangResultat {
     IKKE_TILGANG_ENHET,
     IKKE_TILGANG_MODIA
 }
-
-data class OppfolgingDto(
-    val erUnderOppfolging: Boolean?,
-    val kanStarteOppfolging: KanStarteOppfolgingDto?,
-)
-
-data class OppfolgingsperiodeDto(
-    val startTidspunkt: String,
-    val sluttTidspunkt: String?,
-    val id: String,
-    val startetBegrunnelse: String?
-)
 
 @Controller
 class GraphqlController(
@@ -218,7 +193,7 @@ class GraphqlController(
 
             EnhetDto(
                 id = enhetsNr.get(),
-                navn = enhet?.navn?: "Ukjent enhet",
+                navn = enhet?.navn ?: "Ukjent enhet",
                 kilde = kilde
             )
         }

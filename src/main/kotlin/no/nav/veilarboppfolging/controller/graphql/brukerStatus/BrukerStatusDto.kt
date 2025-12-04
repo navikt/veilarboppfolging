@@ -1,4 +1,4 @@
-package no.nav.veilarboppfolging.controller.graphql
+package no.nav.veilarboppfolging.controller.graphql.brukerStatus
 
 data class BrukerStatusDto(
     val erKontorSperret: Boolean? = null,
