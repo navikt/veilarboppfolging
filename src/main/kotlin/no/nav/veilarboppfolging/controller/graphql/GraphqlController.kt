@@ -103,7 +103,6 @@ class GraphqlController(
         }
 
         return dataFetchResult.localContext(localContext).data(data).build()
-
     }
 
     @QueryMapping
