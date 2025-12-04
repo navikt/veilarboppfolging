@@ -84,11 +84,14 @@ class GraphqlControllerTest: IntegrationTest() {
 
     @Test
     fun `skal returnere oppfolgingsEnhet`() {
-        val (fnr, _) = defaultBruker()
+        val (fnr, aktorId) = defaultBruker()
         val kontor = "7414"
         val kontorNavn = "Nav Graphql Kontor"
         val skjermet = false
+        val veilederUuid = UUID.randomUUID()
         mockPdlGeografiskTilknytning(fnr, kontor)
+        mockInternBrukerAuthOk(veilederUuid, aktorId, fnr)
+        mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Permit)
         mockPoaoTilgangTilgangsAttributter(kontor, skjermet)
         mockNorgEnhetsNavn(kontor, kontorNavn)
 
@@ -102,9 +105,12 @@ class GraphqlControllerTest: IntegrationTest() {
 
     @Test
     fun `skal returnere ukjent oppfolgingsenhet hvis enhet mangler i norg`() {
-        val (fnr, _) = defaultBruker()
+        val (fnr, aktorId) = defaultBruker()
         val kontor = "7414"
         val skjermet = false
+        val veilederUuid = UUID.randomUUID()
+        mockInternBrukerAuthOk(veilederUuid, aktorId, fnr)
+        mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Permit)
         mockPdlGeografiskTilknytning(fnr, kontor)
         mockPoaoTilgangTilgangsAttributter(kontor, skjermet)
        // mockNorgEnhetsNavn(kontor, kontorNavn)
@@ -119,7 +125,10 @@ class GraphqlControllerTest: IntegrationTest() {
 
     @Test
     fun `skal returnere error på oppfolgingsEnhet når noe skjer`() {
-        val (fnr, _) = defaultBruker()
+        val (fnr, aktorId) = defaultBruker()
+        val veilederUuid = UUID.randomUUID()
+        mockInternBrukerAuthOk(veilederUuid, aktorId, fnr)
+        mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Permit)
         mockPoaoTilgangTilgangsAttributterFeiler()
         val expectedError = PoaoTilgangError(IllegalArgumentException("LOL"))
 
@@ -134,6 +143,9 @@ class GraphqlControllerTest: IntegrationTest() {
     @Test
     fun `skal returnere erUnderOppfolging - true når bruker ER under oppfølging`() {
         val (fnr, aktorId) = defaultBruker()
+        val veilederUuid = UUID.randomUUID()
+        mockInternBrukerAuthOk(veilederUuid, aktorId, fnr)
+        mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Permit)
         setBrukerUnderOppfolging(aktorId, fnr)
 
         /* Query is hidden in test/resources/graphl-test :) */
@@ -146,7 +158,10 @@ class GraphqlControllerTest: IntegrationTest() {
 
     @Test
     fun `skal returnere erUnderOppfolging - false når bruker ikke under oppfølging`() {
-        val (fnr, _) = defaultBruker()
+        val (fnr, aktorId) = defaultBruker()
+        val veilederUuid = UUID.randomUUID()
+        mockInternBrukerAuthOk(veilederUuid, aktorId, fnr)
+        mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Permit)
 
         /* Query is hidden in test/resources/graphl-test :) */
         val result = tester.documentName("getUnderOppfolging").variable("fnr", fnr.get()).execute()

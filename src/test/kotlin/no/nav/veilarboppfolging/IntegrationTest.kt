@@ -237,6 +237,12 @@ open class IntegrationTest {
         `when`(aktorOppslagClient.hentFnr(aktørId)).thenReturn(fnr)
     }
 
+    fun mockEksternBrukerAuthOk(fnr: Fnr) {
+            `when`(authContextHolder.getRole()).thenReturn(Optional.of(UserRole.EKSTERN))
+            `when`(authContextHolder.erEksternBruker()).thenReturn(true)
+            `when`(authContextHolder.uid).thenReturn(Optional.of(fnr.get()))
+    }
+
     fun mockInternBrukerAuthOk(veilederIOD: UUID,aktørId: AktorId, fnr: Fnr, navIdent: String = "A123456") {
         val claims = JWTClaimsSet.Builder()
             .issuer("microsoftonline.com")
