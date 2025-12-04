@@ -3,7 +3,7 @@ package no.nav.veilarboppfolging.oppfolgingsbruker.inngang
 import no.nav.veilarboppfolging.client.pdl.ForenkletFolkeregisterStatus
 import no.nav.veilarboppfolging.client.pdl.FregStatusOgStatsborgerskap
 import no.nav.veilarboppfolging.client.pdl.eeaLand
-import no.nav.veilarboppfolging.controller.TilgangResultat
+import no.nav.veilarboppfolging.controller.graphql.TilgangResultat
 
 sealed class KanStarteOppfolgingSjekk {
     fun oppfolgingSjekk(erBrukerUnderOppfolging: Lazy<ErBrukerUnderOppfolging>,

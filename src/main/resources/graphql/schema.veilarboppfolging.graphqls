@@ -1,6 +1,7 @@
 type Query {
     oppfolgingsEnhet(fnr: String!): OppfolgingsEnhetsInfo
     oppfolging(fnr: String!): OppfolgingDto
+    brukerStatus(fnr: String!): BrukerStatusDto
     oppfolgingsPerioder(fnr: String!): [Oppfolgingsperiode]
     veilederLeseTilgangModia(fnr: String!): VeilederTilgang
     gjeldendeOppfolgingsperiode: Oppfolgingsperiode
@@ -8,6 +9,7 @@ type Query {
 
 type VeilederTilgang {
     harTilgang: Boolean!
+    harSkriveTilgang: Boolean!
     tilgang: TilgangResultat
 }
 
@@ -55,10 +57,28 @@ enum KanStarteOppfolging {
 }
 
 type OppfolgingDto {
-    erUnderOppfolging: Boolean!
+    erUnderOppfolging: Boolean
     kanStarteOppfolging: KanStarteOppfolging
-    manuell: Boolean!
+}
+
+type KrrStatusDto {
     reservertIKrr: Boolean!
+    kanVarsles: Boolean!
+    registrertIKrr: Boolean!
+}
+
+type BrukerStatusDto {
+    manuell: Boolean!
+    erKontorsperret: Boolean!
+    krr: KrrStatusDto
+    arena: BrukerStatusArenaDto
+}
+
+type BrukerStatusArenaDto {
+    inaktivIArena: Boolean!
+    kanReaktiveres: Boolean
+    inaktiveringsdato: String
+    kvalifiseringsgruppe: String
 }
 
 enum OppfolgingStartetBegrunnelse {

@@ -7,6 +7,7 @@ import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.veilarboppfolging.IntegrationTest
 import no.nav.veilarboppfolging.client.pdl.ForenkletFolkeregisterStatus
 import no.nav.veilarboppfolging.client.pdl.FregStatusOgStatsborgerskap
+import no.nav.veilarboppfolging.controller.graphql.AdGruppeNavn
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.KanStarteOppfolgingDto
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.verifyNoInteractions
@@ -336,13 +337,29 @@ class GraphqlControllerTest: IntegrationTest() {
         mockInternBrukerAuthOk(veilederId, aktorId, fnr)
         mockPoaoTilgangHarTilgangTilBruker(veilederId, fnr, Decision.Permit)
         setBrukerUnderOppfolging(aktorId, fnr)
-        mockDigdir(fnr, reservertMotDigitalKommunikasjon = true)
+        setLocalArenaOppfolging(aktorId)
+        mockDigdir(fnr, reservertMotDigitalKommunikasjon = true, kanVarsles = false)
 
         /* Query is hidden in test/resources/graphl-test :) */
-        val result = tester.documentName("hentOppfolgingStatus").variable("fnr", fnr.get()).execute()
+        val result = tester.documentName("hentBrukerStatus").variable("fnr", fnr.get()).execute()
         result.errors().verify()
-        result.path("oppfolging").matchesJson("""
-            { manuell: false, reservertIKrr: true }
+        result.path("brukerStatus").matchesJson(
+            """
+            { 
+              "manuell": false, 
+              "erKontorsperret": false,
+              "krr": {
+                  "registrertIKrr": true,
+                  "reservertIKrr": true,
+                  "kanVarsles": false
+              },
+              "arena": {
+                "inaktivIArena": false,
+                "kanReaktiveres": null,
+                "inaktiveringsdato": null,
+                "kvalifiseringsgruppe": "VURDI"
+              }
+            }
         """.trimIndent())
     }
 }

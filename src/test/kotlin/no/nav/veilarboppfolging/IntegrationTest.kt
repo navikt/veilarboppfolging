@@ -22,6 +22,7 @@ import no.nav.poao_tilgang.client.TilgangType
 import no.nav.poao_tilgang.client.api.ApiResult
 import no.nav.poao_tilgang.client.api.NetworkApiException
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
+import no.nav.pto_schema.enums.arena.Hovedmaal
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
 import no.nav.tms.varsel.builder.BuilderEnvironment
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirClient
@@ -43,6 +44,7 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.BrukerRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
+import no.nav.veilarboppfolging.oppfolgingsbruker.arena.LocalArenaOppfolging
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.AktiverBrukerManueltService
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ManuellAvregistrering
 import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.OppfolgingsHendelseDto
@@ -196,6 +198,17 @@ open class IntegrationTest {
         val bruker = OppfolgingsRegistrering.arbeidssokerRegistrering(fnr, aktorId, BrukerRegistrant(fnr))
         oppfolgingsStatusRepository.opprettOppfolging(aktorId)
         oppfolgingsPeriodeRepository.start(bruker)
+    }
+
+    fun setLocalArenaOppfolging(aktorId: AktorId) {
+        oppfolgingsStatusRepository.oppdaterArenaOppfolgingStatus(aktorId, false,
+            LocalArenaOppfolging(
+                Hovedmaal.BEHOLDEA,
+                Kvalifiseringsgruppe.VURDI,
+                Formidlingsgruppe.IARBS,
+                null,
+                null,
+            ))
     }
 
     fun hentOppfolgingsperioder(fnr: Fnr) = oppfolgingController.hentOppfolgingsperioder(fnr)

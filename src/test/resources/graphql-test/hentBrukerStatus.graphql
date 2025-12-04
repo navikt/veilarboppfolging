@@ -1,0 +1,17 @@
+query hentBrukerStatus($fnr: String!) {
+    brukerStatus(fnr: $fnr) {
+        erKontorsperret
+        manuell
+        krr {
+            registrertIKrr
+            kanVarsles
+            reservertIKrr
+        }
+        arena {
+            inaktivIArena
+            kanReaktiveres
+            inaktiveringsdato
+            kvalifiseringsgruppe
+        }
+    }
+}
