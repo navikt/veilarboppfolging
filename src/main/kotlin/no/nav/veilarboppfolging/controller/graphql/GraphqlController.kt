@@ -34,6 +34,7 @@ import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity
 import no.nav.veilarboppfolging.service.AuthService
 import no.nav.veilarboppfolging.service.ManuellStatusService
+import no.nav.veilarboppfolging.service.OppfolgingService
 import org.slf4j.LoggerFactory
 import org.springframework.graphql.data.method.annotation.Argument
 import org.springframework.graphql.data.method.annotation.LocalContextValue
@@ -65,7 +66,8 @@ class GraphqlController(
     private val oppfolgingsPeriodeRepository: OppfolgingsPeriodeRepository,
     private val pdlFolkeregisterStatusClient: PdlFolkeregisterStatusClient,
     private val arenaService: ArenaOppfolgingService,
-    private val manuellService: ManuellStatusService
+    private val manuellService: ManuellStatusService,
+    private val oppfolgingService: OppfolgingService
 ) {
     private val logger = LoggerFactory.getLogger(GraphqlController::class.java)
 
@@ -107,16 +109,26 @@ class GraphqlController(
     }
 
     @QueryMapping
-    fun veilederLeseTilgangModia(@Argument fnr: String?): VeilederTilgangDto {
+    fun veilederLeseTilgangModia(@Argument fnr: String?): DataFetcherResult<VeilederTilgangDto> {
         val fnr = sjekkTilgang(fnr, Tilgang.IKKE_EKSTERNBRUKERE).getFnrFromContextOrThrow()
+        val result = DataFetcherResult.newResult<VeilederTilgangDto>()
+        val context = GraphQLContext.getDefault().put("fnr", fnr)
         return evaluerNavAnsattTilgangTilEksternBruker(fnr.get())
             .let {
                 VeilederTilgangDto(
                     harTilgang = it == TilgangResultat.HAR_TILGANG,
-                    tilgang = it
+                    tilgang = it,
+                    harSkriveTilgang = null
                 )
-            }
+            }.let { result.localContext(context).data(it).build() }
     }
+
+    @SchemaMapping(typeName = "VeilederTilgangDto", field = "harSkriveTilgang")
+    fun harSkriveTilgang(tilgang: VeilederTilgangDto, @LocalContextValue fnr: Fnr): Boolean {
+        val aktorId = aktorOppslagClient.hentAktorId(fnr)
+        return oppfolgingService.harSkriveTilgang(aktorId)
+    }
+
 
     @QueryMapping
     fun brukerStatus(@Argument fnr: String?): DataFetcherResult<BrukerStatusDto> {
