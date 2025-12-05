@@ -399,13 +399,7 @@ public class OppfolgingService {
                 .map(s -> kanSettesUnderOppfolging(EnumUtils.valueOf(Formidlingsgruppe.class, s.getFormidlingsgruppe()), EnumUtils.valueOf(Kvalifiseringsgruppe.class, s.getServicegruppe())))
                 .orElse(false);
 
-        long kvpId = kvpRepository.gjeldendeKvp(aktorId);
-        boolean harSkrivetilgangTilBruker = !kvpService.erUnderKvp(kvpId)
-                || authService.harTilgangTilEnhet(
-                kvpRepository.hentKvpPeriode(kvpId)
-                        .orElseThrow()
-                        .getEnhet()
-        );
+        boolean harSkrivetilgangTilBruker = harVeilederTilgangTilKontorsperretEnhet(aktorId);
 
         Boolean erInaktivIArena = maybeArenaOppfolging.map(ao -> erIserv(EnumUtils.valueOf(Formidlingsgruppe.class, ao.getFormidlingsgruppe()))).orElse(null);
 
@@ -445,6 +439,16 @@ public class OppfolgingService {
                 .setFormidlingsgruppe(maybeArenaOppfolging.map(VeilarbArenaOppfolgingsStatus::getFormidlingsgruppe).orElse(null))
                 .setRettighetsgruppe(maybeArenaOppfolging.map(VeilarbArenaOppfolgingsStatus::getRettighetsgruppe).orElse(null))
                 .setKanVarsles(!erManuell && digdirKontaktinfo.isKanVarsles());
+    }
+
+    public Boolean harVeilederTilgangTilKontorsperretEnhet(AktorId aktorId) {
+        long kvpId = kvpRepository.gjeldendeKvp(aktorId);
+        boolean brukerErUtenKontorSperre = !kvpService.erUnderKvp(kvpId);
+        return brukerErUtenKontorSperre || authService.harTilgangTilEnhet(
+                kvpRepository.hentKvpPeriode(kvpId)
+                        .orElseThrow()
+                        .getEnhet()
+        );
     }
 
     private AvslutningStatusData getAvslutningStatus(Fnr fnr) {
