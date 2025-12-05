@@ -123,10 +123,10 @@ class GraphqlController(
             }.let { result.localContext(context).data(it).build() }
     }
 
-    @SchemaMapping(typeName = "VeilederTilgangDto", field = "harSkriveTilgang")
+    @SchemaMapping(typeName = "VeilederTilgangDto", field = "harVeilederLeseTilgangTilKontorsperretBruker")
     fun harSkriveTilgang(tilgang: VeilederTilgangDto, @LocalContextValue fnr: Fnr): Boolean {
         val aktorId = aktorOppslagClient.hentAktorId(fnr)
-        return oppfolgingService.harSkriveTilgang(aktorId)
+        return oppfolgingService.harVeilederTilgangTilKontorsperretEnhet(aktorId)
     }
 
 

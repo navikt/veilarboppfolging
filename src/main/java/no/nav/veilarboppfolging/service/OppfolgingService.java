@@ -399,7 +399,7 @@ public class OppfolgingService {
                 .map(s -> kanSettesUnderOppfolging(EnumUtils.valueOf(Formidlingsgruppe.class, s.getFormidlingsgruppe()), EnumUtils.valueOf(Kvalifiseringsgruppe.class, s.getServicegruppe())))
                 .orElse(false);
 
-        boolean harSkrivetilgangTilBruker = harSkriveTilgang(aktorId);
+        boolean harSkrivetilgangTilBruker = harVeilederTilgangTilKontorsperretEnhet(aktorId);
 
         Boolean erInaktivIArena = maybeArenaOppfolging.map(ao -> erIserv(EnumUtils.valueOf(Formidlingsgruppe.class, ao.getFormidlingsgruppe()))).orElse(null);
 
@@ -441,10 +441,10 @@ public class OppfolgingService {
                 .setKanVarsles(!erManuell && digdirKontaktinfo.isKanVarsles());
     }
 
-    public Boolean harSkriveTilgang(AktorId aktorId) {
+    public Boolean harVeilederTilgangTilKontorsperretEnhet(AktorId aktorId) {
         long kvpId = kvpRepository.gjeldendeKvp(aktorId);
-        return !kvpService.erUnderKvp(kvpId)
-                || authService.harTilgangTilEnhet(
+        boolean brukerErUtenKontorSperre = !kvpService.erUnderKvp(kvpId);
+        return brukerErUtenKontorSperre || authService.harTilgangTilEnhet(
                 kvpRepository.hentKvpPeriode(kvpId)
                         .orElseThrow()
                         .getEnhet()

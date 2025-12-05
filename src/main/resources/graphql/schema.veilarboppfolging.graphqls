@@ -8,11 +8,15 @@ type Query {
 }
 
 type VeilederTilgang {
-    harTilgang: Boolean!
-    harSkriveTilgang: Boolean!
+    harTilgang: Boolean! @deprecated(reason: "Erstattet av harVeilederLeseTilgangTIlBruker som er mer beskrivende")
+    harVeilederLeseTilgangTilBruker: Boolean!
+    harVeilederLeseTilgangTilKontorsperretBruker: Boolean!
+    harVeilederLeseTilgangTilBrukersEnhet: Boolean!
     tilgang: TilgangResultat
 }
 
+# Svaret på Evaluerering av Policy-en som heter NavAnsattTilgangTilEksternBruker i POAO-Tilgang
+# Kan kjøres på både lese og skrive tilgang (modia-oppfolging vs modia generell) men er foreløpig bare brukt til lesetilgang
 enum TilgangResultat {
     HAR_TILGANG,
     IKKE_TILGANG_FORTROLIG_ADRESSE,
