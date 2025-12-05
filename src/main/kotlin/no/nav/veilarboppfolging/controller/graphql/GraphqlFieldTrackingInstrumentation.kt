@@ -10,23 +10,27 @@ import no.nav.veilarboppfolging.service.AuthService
 import org.springframework.stereotype.Component
 
 @Component
-class ConsumerInstrumentation(
+class GraphqlFieldTrackingInstrumentation(
     val authService: AuthService,
     val meterRegistry: MeterRegistry,
 ): SimplePerformantInstrumentation() {
 
     override fun beginFieldFetch(
         parameters: InstrumentationFieldFetchParameters,
-        state: InstrumentationState
+        state: InstrumentationState?
     ): InstrumentationContext<in Any>? {
-        val fetchingAppName = authService.hentApplikasjonFraContext()
-        val fieldName = parameters.environment.field.name
+        val context = parameters.environment.graphQlContext
+        val apiConsumer = context.get<String?>("apiConsumer")
 
-        Counter.builder("graphql_field_fetch")
-            .tag("field", fieldName)
-            .tag("consumer", fetchingAppName)
-            .register(meterRegistry)
-            .increment()
+        if (apiConsumer != null) {
+            val fieldName = parameters.environment.field.name
+
+            Counter.builder("graphql_field_fetch")
+                .tag("field", fieldName)
+                .tag("consumer", apiConsumer)
+                .register(meterRegistry)
+                .increment()
+        }
 
         return super.beginFieldFetch(parameters, state)
     }

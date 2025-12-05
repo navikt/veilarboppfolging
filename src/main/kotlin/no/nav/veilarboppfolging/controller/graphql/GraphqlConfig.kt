@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Configuration
 class GraphqlConfig {
 
     @Bean
-    fun configure(instrumentation: ConsumerInstrumentation): GraphQlSourceBuilderCustomizer {
+    fun configure(instrumentation: GraphqlFieldTrackingInstrumentation): GraphQlSourceBuilderCustomizer {
         return GraphQlSourceBuilderCustomizer { builder ->
             builder.configureGraphQl { graphQLBuilder ->
                 graphQLBuilder.instrumentation(instrumentation)
