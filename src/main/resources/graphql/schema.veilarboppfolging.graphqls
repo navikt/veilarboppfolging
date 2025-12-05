@@ -85,7 +85,7 @@ type BrukerStatusArenaDto {
 
 type BrukerStatusManuellDto {
     erManuell: Boolean
-    tidspunkt: String
+    opprettetTidspunkt: String
     begrunnelse: String
     endretAvType: String
     endretAvIdent: String
