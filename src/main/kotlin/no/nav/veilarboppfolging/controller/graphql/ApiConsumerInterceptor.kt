@@ -16,18 +16,9 @@ class ApiConsumerInterceptor(
         val apiConsumer = authService.hentApplikasjonFraContext()
 
         request.configureExecutionInput { input, builder ->
-//            input.graphQLContext.put("apiConsumer", apiConsumer)
             builder.graphQLContext {
                 it.put("apiConsumer", apiConsumer)
             }.build()
-//            input.transform { builder ->
-//                builder.graphQLContext { ctx ->
-//                    ctx.put("apiConsumer", apiConsumer)
-//                }.build()
-//            }
-//            input.transform { builderConsumer ->
-//                builderConsumer
-//            }
         }
 
         return chain.next(request)
