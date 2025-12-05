@@ -49,9 +49,12 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.AktiverBrukerManueltSe
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ManuellAvregistrering
 import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.OppfolgingsHendelseDto
 import no.nav.veilarboppfolging.repository.EnhetRepository
+import no.nav.veilarboppfolging.repository.ManuellStatusRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
 import no.nav.veilarboppfolging.repository.SakRepository
+import no.nav.veilarboppfolging.repository.entity.ManuellStatusEntity
+import no.nav.veilarboppfolging.repository.enums.KodeverkBruker
 import no.nav.veilarboppfolging.service.AuthService
 import no.nav.veilarboppfolging.service.MetricsService
 import no.nav.veilarboppfolging.service.OppfolgingService
@@ -154,6 +157,9 @@ open class IntegrationTest {
     @Autowired
     lateinit var oppfolgingsStatusRepository: OppfolgingsStatusRepository
 
+    @Autowired
+    lateinit var manuellStatusRepository: ManuellStatusRepository
+
     @MockitoBean
     lateinit var azureMachineToMachineTokenClient: ErrorMappedAzureAdMachineToMachineTokenClient
 
@@ -209,6 +215,17 @@ open class IntegrationTest {
                 null,
                 null,
             ))
+    }
+
+    fun setManuellStatus(aktorId: AktorId) {
+        manuellStatusRepository.create(ManuellStatusEntity()
+            .setAktorId(aktorId.get())
+            .setManuell(true)
+            .setBegrunnelse("Fordi")
+            .setDato(ZonedDateTime.now())
+            .setOpprettetAv(KodeverkBruker.NAV)
+            .setOpprettetAvBrukerId("A112211")
+        )
     }
 
     fun hentOppfolgingsperioder(fnr: Fnr) = oppfolgingController.hentOppfolgingsperioder(fnr)

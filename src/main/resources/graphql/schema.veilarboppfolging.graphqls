@@ -70,7 +70,7 @@ type KrrStatusDto {
 }
 
 type BrukerStatusDto {
-    manuell: Boolean!
+    manuell: BrukerStatusManuellDto
     erKontorsperret: Boolean!
     krr: KrrStatusDto
     arena: BrukerStatusArenaDto
@@ -81,6 +81,14 @@ type BrukerStatusArenaDto {
     kanReaktiveres: Boolean
     inaktiveringsdato: String
     kvalifiseringsgruppe: String
+}
+
+type BrukerStatusManuellDto {
+    erManuell: Boolean
+    tidspunkt: String
+    begrunnelse: String
+    endretAvType: String
+    endretAvIdent: String
 }
 
 enum OppfolgingStartetBegrunnelse {

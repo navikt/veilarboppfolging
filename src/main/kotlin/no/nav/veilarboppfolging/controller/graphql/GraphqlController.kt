@@ -18,6 +18,7 @@ import no.nav.veilarboppfolging.controller.PoaoTilgangError
 import no.nav.veilarboppfolging.controller.graphql.brukerStatus.BrukerStatusArenaDto
 import no.nav.veilarboppfolging.controller.graphql.brukerStatus.BrukerStatusDto
 import no.nav.veilarboppfolging.controller.graphql.brukerStatus.BrukerStatusKrrDto
+import no.nav.veilarboppfolging.controller.graphql.brukerStatus.BrukerStatusManuellDto
 import no.nav.veilarboppfolging.controller.graphql.oppfolging.EnhetDto
 import no.nav.veilarboppfolging.controller.graphql.oppfolging.KildeDto
 import no.nav.veilarboppfolging.controller.graphql.oppfolging.OppfolgingDto
@@ -216,8 +217,16 @@ class GraphqlController(
     }
 
     @SchemaMapping(typeName = "BrukerStatusDto", field = "manuell")
-    fun manuell(brukerStatusDto: BrukerStatusDto, @LocalContextValue fnr: Fnr): Boolean? {
-        return manuellService.erManuell(fnr)
+    fun manuell(brukerStatusDto: BrukerStatusDto, @LocalContextValue aktorId: AktorId): BrukerStatusManuellDto? {
+        return manuellService.hentManuellStatus(aktorId)
+            .map { BrukerStatusManuellDto(
+                it.isManuell,
+                it.dato.toString(),
+                it.begrunnelse,
+                it.opprettetAv.toString(),
+                it.opprettetAvBrukerId
+            ) }
+            .getOrNull()
     }
 
     @SchemaMapping(typeName = "BrukerStatusDto", field = "erKontorsperret")

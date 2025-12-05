@@ -353,6 +353,7 @@ class GraphqlControllerTest: IntegrationTest() {
         mockPoaoTilgangHarTilgangTilBruker(veilederId, fnr, Decision.Permit)
         setBrukerUnderOppfolging(aktorId, fnr)
         setLocalArenaOppfolging(aktorId)
+        setManuellStatus(aktorId)
         mockDigdir(fnr, reservertMotDigitalKommunikasjon = true, kanVarsles = false)
 
         /* Query is hidden in test/resources/graphl-test :) */
@@ -361,7 +362,12 @@ class GraphqlControllerTest: IntegrationTest() {
         result.path("brukerStatus").matchesJson(
             """
             { 
-              "manuell": false, 
+              "manuell": {
+                "erManuell": true,
+                "begrunnelse": "Fordi",
+                "endretAvType": "NAV",
+                "endretAvIdent": "A112211"
+              }, 
               "erKontorsperret": false,
               "krr": {
                   "registrertIKrr": true,
