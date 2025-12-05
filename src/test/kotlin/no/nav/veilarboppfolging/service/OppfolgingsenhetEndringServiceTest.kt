@@ -16,6 +16,7 @@ import org.junit.Before
 import org.junit.Test
 import org.mockito.Mockito
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
+import java.time.ZonedDateTime
 
 class OppfolgingsenhetEndringServiceTest {
     private val authService: AuthService = Mockito.mock<AuthService>(AuthService::class.java)
@@ -107,6 +108,7 @@ class OppfolgingsenhetEndringServiceTest {
             fodselsnummer = FNR.get(),
             oppfolgingsenhet = navKontor.get(),
             formidlingsgruppe = Formidlingsgruppe.ARBS,
+            sistEndretDato = ZonedDateTime.now()
         )
 
         oppfolgingsenhetEndringService.behandleBrukerEndring(arenaEndring)
