@@ -305,15 +305,11 @@ class GraphqlController(
             UserRole.EKSTERN -> {
                 Fnr.of(authService.innloggetBrukerIdent)
             }
+            UserRole.SYSTEM,
             UserRole.INTERN -> {
                 fnr?.let { Fnr.of(it) }
                     ?.also { authService.sjekkLesetilgangMedFnr(it) }
-                    ?: throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Fnr er påkrevd for systembruker")
-            }
-            UserRole.SYSTEM -> {
-                fnr?.let { Fnr.of(it) }
-                    ?.also { authService.sjekkLesetilgangMedFnr(it) }
-                    ?: throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Fnr er påkrevd for systembruker")
+                    ?: throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Fnr er påkrevd for ${userRole.name}-bruker")
             }
         }
     }

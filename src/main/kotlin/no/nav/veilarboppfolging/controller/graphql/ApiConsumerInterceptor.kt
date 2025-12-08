@@ -15,7 +15,7 @@ class ApiConsumerInterceptor(
     override fun intercept(request: WebGraphQlRequest, chain: WebGraphQlInterceptor.Chain): Mono<WebGraphQlResponse?> {
         val apiConsumer = authService.hentApplikasjonFraContext()
 
-        request.configureExecutionInput { input, builder ->
+        request.configureExecutionInput { _, builder ->
             builder.graphQLContext {
                 it.put("apiConsumer", apiConsumer)
             }.build()
