@@ -1,6 +1,7 @@
 package no.nav.veilarboppfolging.controller
 
 import no.nav.common.types.identer.AktorId
+import no.nav.common.types.identer.EnhetId
 import no.nav.common.types.identer.Fnr
 import no.nav.poao_tilgang.client.Decision
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
@@ -327,6 +328,29 @@ class GraphqlControllerTest: IntegrationTest() {
                 { "kanStarteOppfolging": "$kanStarteOppfolgingResult" }
             """.trimIndent())
         }
+    }
+
+    @Test
+    fun `skal ha tilgang til brukers sjekke veileders tilganger til bruker`() {
+        val veilederUuid = UUID.randomUUID()
+        val fnr = Fnr.of("12444678910")
+        val aktorId = AktorId.of("12444678919")
+        val enhetId = EnhetId("3131")
+        setBrukerUnderOppfolging(aktorId, fnr)
+        setBrukerUnderKvp(aktorId, enhetId.get(), veilederUuid.toString())
+        mockInternBrukerAuthOk(veilederUuid, aktorId, fnr)
+        mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Permit)
+        mockPoaoTilgangHarTilgangTilEnhet(veilederUuid, enhetId, Decision.Deny("NEI", "FORDI"))
+        /* Query is hidden in test/resources/graphl-test :) */
+        val result = tester.documentName("veilederTilganger").variable("fnr", fnr.get()).execute()
+        result.errors().verify()
+        result.path("veilederLeseTilgangModia").matchesJson("""
+            { 
+                "harVeilederLeseTilgangTilBruker": true,
+                "harVeilederLeseTilgangTilBrukersKontorsperre": false,
+                "tilgang": "HAR_TILGANG"
+            }
+        """.trimIndent())
     }
 
     @Test

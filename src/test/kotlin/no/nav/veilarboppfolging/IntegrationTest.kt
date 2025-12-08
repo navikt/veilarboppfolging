@@ -49,6 +49,7 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.AktiverBrukerManueltSe
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ManuellAvregistrering
 import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.OppfolgingsHendelseDto
 import no.nav.veilarboppfolging.repository.EnhetRepository
+import no.nav.veilarboppfolging.repository.KvpRepository
 import no.nav.veilarboppfolging.repository.ManuellStatusRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
@@ -56,6 +57,7 @@ import no.nav.veilarboppfolging.repository.SakRepository
 import no.nav.veilarboppfolging.repository.entity.ManuellStatusEntity
 import no.nav.veilarboppfolging.repository.enums.KodeverkBruker
 import no.nav.veilarboppfolging.service.AuthService
+import no.nav.veilarboppfolging.service.KvpService
 import no.nav.veilarboppfolging.service.MetricsService
 import no.nav.veilarboppfolging.service.OppfolgingService
 import no.nav.veilarboppfolging.service.StartOppfolgingService
@@ -160,6 +162,9 @@ open class IntegrationTest {
     @Autowired
     lateinit var manuellStatusRepository: ManuellStatusRepository
 
+    @Autowired
+    lateinit var kvpRepository: KvpRepository
+
     @MockitoBean
     lateinit var azureMachineToMachineTokenClient: ErrorMappedAzureAdMachineToMachineTokenClient
 
@@ -204,6 +209,10 @@ open class IntegrationTest {
         val bruker = OppfolgingsRegistrering.arbeidssokerRegistrering(fnr, aktorId, BrukerRegistrant(fnr))
         oppfolgingsStatusRepository.opprettOppfolging(aktorId)
         oppfolgingsPeriodeRepository.start(bruker)
+    }
+
+    fun setBrukerUnderKvp(aktorId: AktorId, enhetId: String, veilederId: String) {
+        kvpRepository.startKvp(aktorId, enhetId, veilederId, "fordi", ZonedDateTime.now())
     }
 
     fun setLocalArenaOppfolging(aktorId: AktorId) {
@@ -318,9 +327,9 @@ open class IntegrationTest {
         doReturn(apiResult).`when`(poaoTilgangClient).evaluatePolicy(policyInput)
     }
 
-    fun mockPoaoTilgangHarTilgangTilEnhet(veilederUuid: UUID, enhetId: EnhetId) {
+    fun mockPoaoTilgangHarTilgangTilEnhet(veilederUuid: UUID, enhetId: EnhetId, result: Decision = Decision.Permit) {
         val policyInput = NavAnsattTilgangTilNavEnhetPolicyInput(veilederUuid, enhetId.get())
-        doReturn(ApiResult.success(Decision.Permit)).`when`(poaoTilgangClient).evaluatePolicy(policyInput)
+        doReturn(ApiResult.success(result)).`when`(poaoTilgangClient).evaluatePolicy(policyInput)
     }
 
     fun mockNorgEnhetsNavn(enhetsNr: String, enhetsNavn: String) {

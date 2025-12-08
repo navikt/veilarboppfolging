@@ -45,6 +45,7 @@ import org.springframework.stereotype.Controller
 import org.springframework.web.server.ResponseStatusException
 import java.time.format.DateTimeFormatter
 import kotlin.jvm.optionals.getOrNull
+import kotlin.text.isEmpty
 
 enum class TilgangResultat {
     HAR_TILGANG,
@@ -110,25 +111,26 @@ class GraphqlController(
 
     @QueryMapping
     fun veilederLeseTilgangModia(@Argument fnr: String?): DataFetcherResult<VeilederTilgangDto> {
-        val fnr = sjekkTilgang(fnr, Tilgang.IKKE_EKSTERNBRUKERE).getFnrFromContextOrThrow()
+        if (fnr == null || fnr.isEmpty()) throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Fnr er påkrevd")
         val result = DataFetcherResult.newResult<VeilederTilgangDto>()
-        val context = GraphQLContext.getDefault().put("fnr", fnr)
-        return evaluerNavAnsattTilgangTilEksternBruker(fnr.get())
+        val context = GraphQLContext.getDefault().put("fnr", Fnr.of(fnr))
+        return evaluerNavAnsattTilgangTilEksternBruker(fnr)
             .let {
                 VeilederTilgangDto(
                     harTilgang = it == TilgangResultat.HAR_TILGANG,
+                    harVeilederLeseTilgangTilBruker = it == TilgangResultat.HAR_TILGANG,
                     tilgang = it,
-                    harSkriveTilgang = null
+                    harVeilederLeseTilgangTilKontorsperretBruker = null,
+                    harVeilederLeseTilgangTilBrukersEnhet = null
                 )
             }.let { result.localContext(context).data(it).build() }
     }
 
-    @SchemaMapping(typeName = "VeilederTilgangDto", field = "harVeilederLeseTilgangTilKontorsperretBruker")
-    fun harSkriveTilgang(tilgang: VeilederTilgangDto, @LocalContextValue fnr: Fnr): Boolean {
+    @SchemaMapping(typeName = "VeilederTilgang", field = "harVeilederLeseTilgangTilBrukersKontorsperre")
+    fun harVeilederLeseTilgangTilBrukersKontorsperre(tilgang: VeilederTilgangDto, @LocalContextValue fnr: Fnr): Boolean {
         val aktorId = aktorOppslagClient.hentAktorId(fnr)
         return oppfolgingService.harVeilederTilgangTilKontorsperretEnhet(aktorId)
     }
-
 
     @QueryMapping
     fun brukerStatus(@Argument fnr: String?): DataFetcherResult<BrukerStatusDto> {
