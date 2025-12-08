@@ -22,6 +22,7 @@ import no.nav.poao_tilgang.client.TilgangType
 import no.nav.poao_tilgang.client.api.ApiResult
 import no.nav.poao_tilgang.client.api.NetworkApiException
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
+import no.nav.pto_schema.enums.arena.Hovedmaal
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
 import no.nav.tms.varsel.builder.BuilderEnvironment
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirClient
@@ -43,14 +44,20 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.BrukerRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
+import no.nav.veilarboppfolging.oppfolgingsbruker.arena.LocalArenaOppfolging
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.AktiverBrukerManueltService
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ManuellAvregistrering
 import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.OppfolgingsHendelseDto
 import no.nav.veilarboppfolging.repository.EnhetRepository
+import no.nav.veilarboppfolging.repository.KvpRepository
+import no.nav.veilarboppfolging.repository.ManuellStatusRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
 import no.nav.veilarboppfolging.repository.SakRepository
+import no.nav.veilarboppfolging.repository.entity.ManuellStatusEntity
+import no.nav.veilarboppfolging.repository.enums.KodeverkBruker
 import no.nav.veilarboppfolging.service.AuthService
+import no.nav.veilarboppfolging.service.KvpService
 import no.nav.veilarboppfolging.service.MetricsService
 import no.nav.veilarboppfolging.service.OppfolgingService
 import no.nav.veilarboppfolging.service.StartOppfolgingService
@@ -152,6 +159,12 @@ open class IntegrationTest {
     @Autowired
     lateinit var oppfolgingsStatusRepository: OppfolgingsStatusRepository
 
+    @Autowired
+    lateinit var manuellStatusRepository: ManuellStatusRepository
+
+    @Autowired
+    lateinit var kvpRepository: KvpRepository
+
     @MockitoBean
     lateinit var azureMachineToMachineTokenClient: ErrorMappedAzureAdMachineToMachineTokenClient
 
@@ -198,6 +211,32 @@ open class IntegrationTest {
         oppfolgingsPeriodeRepository.start(bruker)
     }
 
+    fun setBrukerUnderKvp(aktorId: AktorId, enhetId: String, veilederId: String) {
+        kvpRepository.startKvp(aktorId, enhetId, veilederId, "fordi", ZonedDateTime.now())
+    }
+
+    fun setLocalArenaOppfolging(aktorId: AktorId) {
+        oppfolgingsStatusRepository.oppdaterArenaOppfolgingStatus(aktorId, false,
+            LocalArenaOppfolging(
+                Hovedmaal.BEHOLDEA,
+                Kvalifiseringsgruppe.VURDI,
+                Formidlingsgruppe.IARBS,
+                null,
+                null,
+            ))
+    }
+
+    fun setManuellStatus(aktorId: AktorId) {
+        manuellStatusRepository.create(ManuellStatusEntity()
+            .setAktorId(aktorId.get())
+            .setManuell(true)
+            .setBegrunnelse("Fordi")
+            .setDato(ZonedDateTime.now())
+            .setOpprettetAv(KodeverkBruker.NAV)
+            .setOpprettetAvBrukerId("A112211")
+        )
+    }
+
     fun hentOppfolgingsperioder(fnr: Fnr) = oppfolgingController.hentOppfolgingsperioder(fnr)
 
     fun avsluttOppfolgingManueltSomVeileder(aktorId: AktorId, veileder: String = "veileder", begrunnelse: String = "Begrunnelse") {
@@ -222,6 +261,12 @@ open class IntegrationTest {
         `when`(authContextHolder.erSystemBruker()).thenReturn(true)
         `when`(aktorOppslagClient.hentAktorId(fnr)).thenReturn(aktørId)
         `when`(aktorOppslagClient.hentFnr(aktørId)).thenReturn(fnr)
+    }
+
+    fun mockEksternBrukerAuthOk(fnr: Fnr) {
+            `when`(authContextHolder.getRole()).thenReturn(Optional.of(UserRole.EKSTERN))
+            `when`(authContextHolder.erEksternBruker()).thenReturn(true)
+            `when`(authContextHolder.uid).thenReturn(Optional.of(fnr.get()))
     }
 
     fun mockInternBrukerAuthOk(veilederIOD: UUID,aktørId: AktorId, fnr: Fnr, navIdent: String = "A123456") {
@@ -282,9 +327,9 @@ open class IntegrationTest {
         doReturn(apiResult).`when`(poaoTilgangClient).evaluatePolicy(policyInput)
     }
 
-    fun mockPoaoTilgangHarTilgangTilEnhet(veilederUuid: UUID, enhetId: EnhetId) {
+    fun mockPoaoTilgangHarTilgangTilEnhet(veilederUuid: UUID, enhetId: EnhetId, result: Decision = Decision.Permit) {
         val policyInput = NavAnsattTilgangTilNavEnhetPolicyInput(veilederUuid, enhetId.get())
-        doReturn(ApiResult.success(Decision.Permit)).`when`(poaoTilgangClient).evaluatePolicy(policyInput)
+        doReturn(ApiResult.success(result)).`when`(poaoTilgangClient).evaluatePolicy(policyInput)
     }
 
     fun mockNorgEnhetsNavn(enhetsNr: String, enhetsNavn: String) {

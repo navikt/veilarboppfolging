@@ -1,16 +1,21 @@
 type Query {
     oppfolgingsEnhet(fnr: String!): OppfolgingsEnhetsInfo
     oppfolging(fnr: String!): OppfolgingDto
+    brukerStatus(fnr: String!): BrukerStatusDto
     oppfolgingsPerioder(fnr: String!): [Oppfolgingsperiode]
     veilederLeseTilgangModia(fnr: String!): VeilederTilgang
     gjeldendeOppfolgingsperiode: Oppfolgingsperiode
 }
 
 type VeilederTilgang {
-    harTilgang: Boolean!
+    harTilgang: Boolean! @deprecated(reason: "Erstattet av harVeilederLeseTilgangTIlBruker som er mer beskrivende")
+    harVeilederLeseTilgangTilBruker: Boolean!
+    harVeilederLeseTilgangTilBrukersKontorsperre: Boolean
     tilgang: TilgangResultat
 }
 
+# Svaret på Evaluerering av Policy-en som heter NavAnsattTilgangTilEksternBruker i POAO-Tilgang
+# Kan kjøres på både lese og skrive tilgang (modia-oppfolging vs modia generell) men er foreløpig bare brukt til lesetilgang
 enum TilgangResultat {
     HAR_TILGANG,
     IKKE_TILGANG_FORTROLIG_ADRESSE,
@@ -55,10 +60,38 @@ enum KanStarteOppfolging {
 }
 
 type OppfolgingDto {
-    erUnderOppfolging: Boolean!
+    erUnderOppfolging: Boolean
     kanStarteOppfolging: KanStarteOppfolging
     manuell: Boolean!
     reservertIKrr: Boolean!
+}
+
+type KrrStatusDto {
+    reservertIKrr: Boolean!
+    kanVarsles: Boolean!
+    registrertIKrr: Boolean!
+}
+
+type BrukerStatusDto {
+    manuell: BrukerStatusManuellDto
+    erKontorsperret: Boolean!
+    krr: KrrStatusDto
+    arena: BrukerStatusArenaDto
+}
+
+type BrukerStatusArenaDto {
+    inaktivIArena: Boolean!
+    kanReaktiveres: Boolean
+    inaktiveringsdato: String
+    kvalifiseringsgruppe: String
+}
+
+type BrukerStatusManuellDto {
+    erManuell: Boolean
+    opprettetTidspunkt: String
+    begrunnelse: String
+    endretAvType: String
+    endretAvIdent: String
 }
 
 enum OppfolgingStartetBegrunnelse {
