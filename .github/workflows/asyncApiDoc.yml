@@ -22,6 +22,12 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v5
 
+      - name: Validat AsyncAPI document
+        uses: asyncapi/cli@v2.16.0 # You can use any version you want
+        with:
+          command: 'validate'
+          filepath: ./src/main/resources/schemas/veilarboppfolging.asyncapi.yml
+
       - name: Generating HTML from my AsyncAPI document
         uses: asyncapi/cli@v2.16.0 # You can use any version you want
         with:
