@@ -90,6 +90,9 @@ operations:
 
   siste-oppfolgingsperiode-v2:
     description: Oppfølgingperiode compacted på aktørId (alle caser; STARTET, KONTOR_ENDRET, AVSLUTTET)
+    tags:
+      - name: Oppfolgingsperiode
+        description: Oppfolgingsperioden til bruker
     action: send
     channel:
       $ref: "#/channels/siste-oppfolgingsperiode-v2"
@@ -135,6 +138,9 @@ components:
       name: oppfolgingsperiodeV2
       title: Oppfølgingsperiode v2
       summary: Oppfølgingperiode-meldinger med start, endret eller avsluttet. Felter kan være nullable.
+      tags:
+        - name: siste-oppfolgingsperiode-v2
+          description: Siste oppfolgingsperiode v2
       payload:
         oneOf:
           - $ref: oppfolgingsperiode.v2.startet.schema.yml
