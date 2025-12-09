@@ -24,22 +24,28 @@ channels:
   siste-oppfolgingsperiode-v1:
     address: siste-oppfolgingsperiode-v1
     description: Deprecated. Se siste-oppfolgingsperiode-v2
-    deprecated: true
     messages:
       oppfolgingsperideStartEllerSlutt:
         $ref: '#/components/messages/oppfolgingsperiode'
   siste-oppfolgingsperiode-v2:
     address: siste-oppfolgingsperiode-v2
-    description: Topic overtar for v1 og inneholder alle caser
-    publish:
-      messages:
-        oppfolgingsperiodeStartet:
-        - $ref: '#/components/messages/oppfolgingsperiodeStartet'
-        - $ref: '#/components/messages/oppfolgingsperiodeKontorEndret'
-        - $ref: '#/components/messages/oppfolgingsperiodeAvsluttet'
-      bindings:
-        kafka:
-          topic: siste-oppfolgingsperiode-v2
+    description: Topic overtar for v1 og inneholder i tillegg kontor
+    messages:
+      oppfolgingsperiodeStartet:
+        $ref: '#/components/messages/oppfolgingsperiodeStartet'
+        bindings:
+          kafka:
+            topic: siste-oppfolgingsperiode-v2
+      oppfolgingsperiodeKontorEndret:
+        $ref: '#/components/messages/oppfolgingsperiodeKontorEndret'
+        bindings:
+          kafka:
+            topic: siste-oppfolgingsperiode-v2
+      oppfolgingsperiodeAvsluttet:
+        $ref: '#/components/messages/oppfolgingsperiodeAvsluttet'
+        bindings:
+          kafka:
+            topic: siste-oppfolgingsperiode-v2
   kvp-perioder-v1:
     address: pto.kvp-perioder-v1
     messages:
@@ -78,9 +84,6 @@ operations:
     action: send
     channel:
       $ref: "#/channels/siste-oppfolgingsperiode-v2"
-    messages:
-      - $ref: '#/channels/siste-oppfolgingsperiode-v2'
-
 
   endring-pa-oppfolgingsbruker:
     description: Endring på oppfølgingsbrukere fra Arena
@@ -93,6 +96,7 @@ operations:
 components:
   messages:
     oppfolgingsperiode:
+      deprecated: true
       name: oppfolgingsperiode
       title: Oppfølgingsperiode
       summary: Oppdatert oppfølgingsperiode etter enten start eller slutt. sluttDato null betyr at oppfølgingsperioden er åpen (bruker er fortsatt under oppfølging)
