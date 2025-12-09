@@ -1,0 +1,38 @@
+"$schema": https://json-schema.org/draft-07/schema
+"$id": "https://navikt.github.io/veilarboppfolging/schemas/oppfolgingsperiode.v2.start.schema.yml"
+required:
+  - oppfolgingsperiodeUuid
+  - sisteEndringsType
+  - aktorId
+  - startTidspunkt
+  - producerTimestamp
+type: object
+additionalProperties: false
+properties:
+  oppfolgingsperiodeUuid:
+    type: string
+    format: uuid
+  sisteEndringsType:
+    type: string
+    enum:
+      - OPPFOLGING_STARTET,
+      - ARBEIDSOPPFOLGINGSKONTOR_ENDRET,
+      - OPPFOLGING_AVSLUTTET
+  aktorId:
+    type: string
+  startTidspunkt:
+    type: string
+    format: date-time
+  sluttTidspunkt:
+    type: string
+    format: date-time
+    nullable: true
+  kontorId:
+    type: string
+    nullable: true
+  kontorNavn:
+    type: string
+    nullable: true
+  producerTimestamp:
+    type: string
+    format: date-time
