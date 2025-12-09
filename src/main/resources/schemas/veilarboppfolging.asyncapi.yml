@@ -35,17 +35,26 @@ channels:
         $ref: '#/components/messages/oppfolgingsperiodeStartet'
         bindings:
           kafka:
-            topic: siste-oppfolgingsperiode-v2
+            key:
+              type: uuid
+              description: oppfolgingsperiodeUuid
       oppfolgingsperiodeKontorEndret:
         $ref: '#/components/messages/oppfolgingsperiodeKontorEndret'
         bindings:
           kafka:
-            topic: siste-oppfolgingsperiode-v2
+            key:
+              type: uuid
+              description: oppfolgingsperiodeUuid
       oppfolgingsperiodeAvsluttet:
         $ref: '#/components/messages/oppfolgingsperiodeAvsluttet'
         bindings:
           kafka:
-            topic: siste-oppfolgingsperiode-v2
+            key:
+              type: uuid
+              description: oppfolgingsperiodeUuid
+    bindings:
+      kafka:
+        topic: siste-oppfolgingsperiode-v2
   kvp-perioder-v1:
     address: pto.kvp-perioder-v1
     messages:

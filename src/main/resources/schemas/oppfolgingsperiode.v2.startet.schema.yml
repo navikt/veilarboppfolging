@@ -5,6 +5,8 @@ required:
   - sisteEndringsType
   - aktorId
   - startTidspunkt
+  - kontorId
+  - kontorNavn
   - producerTimestamp
 type: object
 additionalProperties: false
@@ -27,10 +29,8 @@ properties:
     nullable: true
   kontorId:
     type: string
-    nullable: true
   kontorNavn:
     type: string
-    nullable: true
   producerTimestamp:
     type: string
     format: date-time
