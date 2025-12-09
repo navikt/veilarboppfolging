@@ -22,19 +22,29 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v5
 
-      - name: Validat AsyncAPI document
-        uses: asyncapi/cli@v2.16.0 # You can use any version you want
-        with:
-          command: 'validate'
-          filepath: ./src/main/resources/schemas/veilarboppfolging.asyncapi.yml
+      #- name: Validat AsyncAPI document
+      #  uses: asyncapi/cli@v2.16.0 # You can use any version you want
+      #  with:
+      #    command: 'validate'
+      #    filepath: ./src/main/resources/schemas/veilarboppfolging.asyncapi.yml
+
+      #- name: Generating HTML from my AsyncAPI document
+      #  uses: asyncapi/cli@v2.16.0 # You can use any version you want
+      #  with:
+      #    filepath: ./src/main/resources/schemas/veilarboppfolging.asyncapi.yml
+      #    template: "@asyncapi/html-template@3.4.0"
+      #    output: veilarboppfolging-doc
+      #    parameters: '--use-new-generator'
+
+      - name: Install bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install AsyncApi/cli
+        run: bun install -g @asyncapi/cli
 
       - name: Generating HTML from my AsyncAPI document
-        uses: asyncapi/cli@v2.16.0 # You can use any version you want
-        with:
-          filepath: ./src/main/resources/schemas/veilarboppfolging.asyncapi.yml
-          template: "@asyncapi/html-template@3.4.0"
-          output: veilarboppfolging-doc
-          parameters: '--use-new-generator'
+        working-directory: src/main/resources/schemas
+        run: asyncapi generate fromTemplate src/main/resources/schemas/veilarboppfolging.asyncapi.yml @asyncapi/html-template@3.0.0 --use-new-generator -o ./veilarboppfolging-doc
 
  #     - name: generate documentaion (denne tar litt tid)
  #       working-directory: src/main/resources/schemas
@@ -44,5 +54,5 @@ jobs:
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          folder: veilarboppfolging-doc
+          folder: src/main/resources/schemas/veilarboppfolging-doc
           target-folder: veilarboppfolgingV1
