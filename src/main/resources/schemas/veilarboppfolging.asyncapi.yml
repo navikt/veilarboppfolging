@@ -25,6 +25,11 @@ channels:
     messages:
       oppfolgingsperideStartEllerSlutt:
         $ref: '#/components/messages/oppfolgingsperiode'
+  siste-oppfolgingsperiode-v2:
+    address: siste-oppfolgingsperiode-v2
+    messages:
+      oppfolgingsperideStartEllerSlutt:
+        $ref: '#/components/messages/oppfolgingsperiode'
   kvp-perioder-v1:
     address: pto.kvp-perioder-v1
     messages:
