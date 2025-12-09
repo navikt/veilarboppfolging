@@ -28,6 +28,9 @@ jobs:
       - name: install generator
         run: npm install -g @asyncapi/generator
 
+      - name: install html template
+        run: npm install -g @asyncapi/html-template
+
       - name: generate documentaion (denne tar litt tid)
         working-directory: src/main/resources/schemas
         run: ag veilarboppfolging.asyncapi.yml @asyncapi/html-template -o ./veilarboppfolging-doc
