@@ -22,12 +22,13 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v5
 
-      - name: Generating Markdown from my AsyncAPI document
+      - name: Generating HTML from my AsyncAPI document
         uses: asyncapi/cli@v2.16.0 # You can use any version you want
         with:
           filepath: ./src/main/resources/schemas/veilarboppfolging.asyncapi.yml
           template: "@asyncapi/html-template@3.4.0"
           output: veilarboppfolging-doc
+          parameters: '--use-new-generator'
 
  #     - name: generate documentaion (denne tar litt tid)
  #       working-directory: src/main/resources/schemas
