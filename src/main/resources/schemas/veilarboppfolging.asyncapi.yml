@@ -134,12 +134,19 @@ components:
         - name: siste-oppfolgingsperiode-v2
           description: Siste oppfolgingsperiode v2
       payload:
+        discriminator: "sisteEndringsType"
         oneOf:
           - $ref: oppfolgingsperiode.v2.startet.schema.yml
+            description: test startet
+            $id: startet-id
             name: Oppfolgingsperiode startet
           - $ref: oppfolgingsperiode.v2.kontorEndret.schema.yml
+            description: test kontor endret
+            $id: startet-kontor-endret
             name: Kontor endret
           - $ref: oppfolgingsperiode.v2.avsluttet.schema.yml
+            description: test avsluttet
+            $id: startet-avsluttet
             name: Oppfolgingsperiode avsluttet
     kvpperiode:
       name: kvpperiode
