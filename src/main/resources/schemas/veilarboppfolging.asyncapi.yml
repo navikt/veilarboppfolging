@@ -22,14 +22,20 @@ channels:
     description: Start eller slutt på oppfølgingsperioder
   siste-oppfolgingsperiode-v1:
     address: siste-oppfolgingsperiode-v1
+    description: Deprecated. Se siste-oppfolgingsperiode-v2
+    deprecated: true
     messages:
       oppfolgingsperideStartEllerSlutt:
         $ref: '#/components/messages/oppfolgingsperiode'
   siste-oppfolgingsperiode-v2:
     address: siste-oppfolgingsperiode-v2
-    messages:
-      oppfolgingsperideStartEllerSlutt:
-        $ref: '#/components/messages/oppfolgingsperiode'
+    description: Topic overtar for siste-oppfolgingsperiode-v1 og inneholder kontor
+    publish:
+      messages:
+        - $ref: '#/components/messages/oppfolgingsperiodeV2'
+      bindings:
+        kafka:
+          topic: siste-oppfolgingsperiode-v2
   kvp-perioder-v1:
     address: pto.kvp-perioder-v1
     messages:
@@ -78,15 +84,28 @@ components:
       summary: Oppdatert oppfølgingsperiode etter enten start eller slutt. sluttDato null betyr at oppfølgingsperioden er åpen (bruker er fortsatt under oppfølging)
       payload:
         $ref: oppfolgingsperiode.v1.schema.yml
+
+    oppfolgingsperiodeV2:
+      name: oppfolgingsperiodeV2
+      title: Oppfølgingsperiode v2
+      summary: Oppfølgingperiode-meldinger med start, endret eller avsluttet. Felter kan være nullable.
+      payload:
+        oneOf:
+          - $ref: oppfolgingsperiode.v2.startet.schema.yml
+          - $ref: oppfolgingsperiode.v2.kontorEndret.schema.yml
+          - $ref: oppfolgingsperiode.v2.avsluttet.schema.yml
+
     kvpperiode:
       name: kvpperiode
       title: KVP-periode
       summary: KVP-perioder for en bruker
       payload:
         $ref: kvpperiode.v1.schema.yml
+
     oppfolgingsbruker:
       name: oppfolgingsbruker
       title: Oppfølgingsbruker fra veilarbarena
       summary: Oppfølgings-status på en bruker fra Arena
       payload:
         $ref: oppfolgingsbruker.v1.schema.yml
+
