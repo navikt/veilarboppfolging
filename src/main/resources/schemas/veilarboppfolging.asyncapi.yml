@@ -29,24 +29,16 @@ channels:
         $ref: '#/components/messages/oppfolgingsperiode'
   siste-oppfolgingsperiode-v2:
     address: siste-oppfolgingsperiode-v2
-    description: Topic overtar for v1 og inneholder i tillegg kontor
+    description: | 
+      ## Dettet topicet overtar for siste-oppfolgingsperiode-v1 og inneholder i tillegg kontorId, kontorNavn og feltet sisteEndringsType som beskriver hva den siste endringstypen var. 
+      Det kommer melding når:
+      - Oppfølging på en bruker starter (sluttTidspunkt vil være null)
+      - Kontoret til en bruker endrer seg (sluttTidspunkt vil være null)
+      - Oppfølging på en bruker blir avsluttet (sluttTidspunkt vil være satt)
+      - Meldinger blir "re-publisert" manuelt. Da blir siste tilstand publisert på nytt
     messages:
-      oppfolgingsperiodeStartet:
-        $ref: '#/components/messages/oppfolgingsperiodeStartet'
-        bindings:
-          kafka:
-            key:
-              type: uuid
-              description: oppfolgingsperiodeUuid
-      oppfolgingsperiodeKontorEndret:
-        $ref: '#/components/messages/oppfolgingsperiodeKontorEndret'
-        bindings:
-          kafka:
-            key:
-              type: uuid
-              description: oppfolgingsperiodeUuid
-      oppfolgingsperiodeAvsluttet:
-        $ref: '#/components/messages/oppfolgingsperiodeAvsluttet'
+      oppfolgingsperiodeV2:
+        $ref: '#/components/messages/oppfolgingsperiodeV2'
         bindings:
           kafka:
             key:
@@ -132,7 +124,6 @@ components:
         title: Oppfølging avsluttet
         payload:
           $ref: oppfolgingsperiode.v2.avsluttet.schema.yml
-
 
     oppfolgingsperiodeV2:
       name: oppfolgingsperiodeV2
