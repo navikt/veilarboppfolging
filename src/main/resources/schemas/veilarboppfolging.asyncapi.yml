@@ -30,7 +30,8 @@ channels:
   siste-oppfolgingsperiode-v2:
     address: siste-oppfolgingsperiode-v2
     description: | 
-      ## Dettet topicet overtar for siste-oppfolgingsperiode-v1 og inneholder i tillegg kontorId, kontorNavn og feltet sisteEndringsType som beskriver hva den siste endringstypen var. 
+      ## Siste oppfolgingsperiode v2
+      Dette topicet overtar for siste-oppfolgingsperiode-v1 og inneholder i tillegg kontorId, kontorNavn og feltet sisteEndringsType som beskriver hva den siste endringstypen var.
       Det kommer melding når:
       - Oppfølging på en bruker starter (sluttTidspunkt vil være null)
       - Kontoret til en bruker endrer seg (sluttTidspunkt vil være null)
@@ -134,9 +135,12 @@ components:
           description: Siste oppfolgingsperiode v2
       payload:
         oneOf:
-          - $ref: oppfolgingsperiode.v2.startet.schema.yml
-          - $ref: oppfolgingsperiode.v2.kontorEndret.schema.yml
-          - $ref: oppfolgingsperiode.v2.avsluttet.schema.yml
+          - name: Oppfolgingsperiode startet
+            $ref: oppfolgingsperiode.v2.startet.schema.yml
+          - name: Kontor endret
+            $ref: oppfolgingsperiode.v2.kontorEndret.schema.yml
+          - name: Oppfolgingsperiode avsluttet
+            $ref: oppfolgingsperiode.v2.avsluttet.schema.yml
 
     kvpperiode:
       name: kvpperiode
