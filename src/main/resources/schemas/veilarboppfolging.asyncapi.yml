@@ -136,11 +136,11 @@ components:
       payload:
         oneOf:
           - $ref: oppfolgingsperiode.v2.startet.schema.yml
-#            name: Oppfolgingsperiode startet
+            name: Oppfolgingsperiode startet
           - $ref: oppfolgingsperiode.v2.kontorEndret.schema.yml
-#            name: Kontor endret
+            name: Kontor endret
           - $ref: oppfolgingsperiode.v2.avsluttet.schema.yml
-#            name: Oppfolgingsperiode avsluttet
+            name: Oppfolgingsperiode avsluttet
     kvpperiode:
       name: kvpperiode
       title: KVP-periode
