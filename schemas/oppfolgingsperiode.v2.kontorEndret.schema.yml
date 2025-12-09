@@ -5,9 +5,9 @@ required:
   - sisteEndringsType
   - aktorId
   - startTidspunkt
-  - producerTimestamp
   - kontorId
   - kontorNavn
+  - producerTimestamp
 type: object
 additionalProperties: false
 properties:
