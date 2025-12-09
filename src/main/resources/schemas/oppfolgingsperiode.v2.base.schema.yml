@@ -25,10 +25,6 @@ properties:
   startTidspunkt:
     type: string
     format: date-time
-  sluttTidspunkt:
-    type: string
-    format: date-time
-    nullable: true
   kontorId:
     type: string
   kontorNavn:

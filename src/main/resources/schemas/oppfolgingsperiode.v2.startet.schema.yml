@@ -4,7 +4,7 @@ required:
   - sisteEndringsType
 type: object
 allOf:
-  - $ref: "https://navikt.github.io/veilarboppfolging/schemas/oppfolgingsperiode.v2.base.schema.yml"
+  - $ref: "./oppfolgingsperiode.v2.base.schema.yml"
 additionalProperties: false
 properties:
   sisteEndringsType:
@@ -12,6 +12,6 @@ properties:
     enum:
       - OPPFOLGING_STARTET
   sluttTidspunkt:
-    type: [string, null]
+    type: string
     format: date-time
     nullable: true

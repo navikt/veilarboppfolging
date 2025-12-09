@@ -135,13 +135,12 @@ components:
           description: Siste oppfolgingsperiode v2
       payload:
         oneOf:
-          - name: Oppfolgingsperiode startet
-            $ref: oppfolgingsperiode.v2.startet.schema.yml
-          - name: Kontor endret
-            $ref: oppfolgingsperiode.v2.kontorEndret.schema.yml
-          - name: Oppfolgingsperiode avsluttet
-            $ref: oppfolgingsperiode.v2.avsluttet.schema.yml
-
+          - $ref: oppfolgingsperiode.v2.startet.schema.yml
+#            name: Oppfolgingsperiode startet
+          - $ref: oppfolgingsperiode.v2.kontorEndret.schema.yml
+#            name: Kontor endret
+          - $ref: oppfolgingsperiode.v2.avsluttet.schema.yml
+#            name: Oppfolgingsperiode avsluttet
     kvpperiode:
       name: kvpperiode
       title: KVP-periode
