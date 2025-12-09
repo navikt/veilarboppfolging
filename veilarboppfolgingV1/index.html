@@ -39,9 +39,16 @@
   <span class="hljs-attr">"startet_begrunnelse"</span>: <span class="hljs-string">"ARBEIDSSOKER"</span>
 }
 </code></pre>
-</div><h6 class="text-xs font-bold text-gray-600 italic mt-2">This example has been generated automatically.</h6></div></div></div></div></div></div></div></div></div></div></li><li class="mb-12" id="operation-send-siste-oppfolgingsperiode-v2"><div><div class="panel-item--center px-8"><div class="mb-4"><h3><span class="font-mono border uppercase p-1 rounded mr-2 border-blue-600 text-blue-500" title="send">SEND</span> <span class="font-mono text-base">siste-oppfolgingsperiode-v2</span></h3></div><div class="mt-2"><div class="prose max-w-none text-sm"><p>Topic overtar for v1 og inneholder i tillegg kontor</p>
+</div><h6 class="text-xs font-bold text-gray-600 italic mt-2">This example has been generated automatically.</h6></div></div></div></div></div></div></div></div></div></div></li><li class="mb-12" id="operation-send-siste-oppfolgingsperiode-v2"><div><div class="panel-item--center px-8"><div class="mb-4"><h3><span class="font-mono border uppercase p-1 rounded mr-2 border-blue-600 text-blue-500" title="send">SEND</span> <span class="font-mono text-base">siste-oppfolgingsperiode-v2</span></h3></div><div class="mt-2"><div class="prose max-w-none text-sm"><h2 id="dettet-topicet-overtar-for-siste-oppfolgingsperiode-v1-og-inneholder-i-tillegg-kontorid-kontornavn-og-feltet-sisteendringstype-som-beskriver-hva-den-siste-endringstypen-var">Dettet topicet overtar for siste-oppfolgingsperiode-v1 og inneholder i tillegg kontorId, kontorNavn og feltet sisteEndringsType som beskriver hva den siste endringstypen var.</h2>
+<p>Det kommer melding når:</p>
+<ul>
+<li>Oppfølging på en bruker starter (sluttTidspunkt vil være null)</li>
+<li>Kontoret til en bruker endrer seg (sluttTidspunkt vil være null)</li>
+<li>Oppfølging på en bruker blir avsluttet (sluttTidspunkt vil være satt)</li>
+<li>Meldinger blir "re-publisert" manuelt. Da blir siste tilstand publisert på nytt</li>
+</ul>
 </div></div><div class="mt-2"><div class="prose max-w-none text-sm"><p>Oppfølgingperiode compacted på aktørId (alle caser; STARTET, KONTOR_ENDRET, AVSLUTTET)</p>
-</div></div><div class="border bg-gray-100 rounded px-4 py-2 mt-2"><div class="text-sm text-gray-700">Operation ID<span class="border text-orange-600 rounded text-xs ml-2 py-0 px-2">siste-oppfolgingsperiode-v2</span></div></div><div class="mt-2" id="operation-send-siste-oppfolgingsperiode-v2-security"></div><div class="mt-2"><div><div class="flex py-2"><div class=" mr-2"><button class="focus:outline-none undefined" type="button"><div class="inline-block"><div class="inline-block text-sm"><span>Channel specific information</span><span class="bg-teal-500 font-bold no-underline text-white uppercase rounded mx-2 px-2 py-1 text-xs">kafka</span></div></div><svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 20 20" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg" class="inline-block align-baseline cursor-pointer ml-0.5 -mb-1 w-5 h-5 transform transition-transform duration-150 ease-linear  "><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg></button><button type="button" class="ml-1 text-sm text-gray-500">Expand all</button></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">object</div><div class="inline-block"></div></div></div></div><div class="rounded p-4 py-2 border bg-gray-100  hidden"><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><span class="break-anywhere text-sm italic">topic</span></div><div><div class="text-sm">siste-oppfolgingsperiode-v2</div></div></div></div></div></div></div><div class="mt-2"></div><div class="mt-2"><ul class="flex flex-wrap leading-normal"><li class="inline-block mt-2 mr-2"><div title="Oppfolgingsperioden til bruker" class="border border-solid border-blue-300 hover:bg-blue-300 hover:text-blue-600 text-blue-500 font-bold no-underline text-xs rounded px-3 py-1"><span class="">#Oppfolgingsperiode</span></div></li></ul></div></div><div class="w-full mt-4" id="operation-send-siste-oppfolgingsperiode-v2-message"><div class="mt-2"><p class="px-8">Accepts <strong>one of</strong> the following messages:</p><ul><li class="mt-4"><div class="panel-item"><div class="panel-item--center px-8"><div class="shadow rounded bg-gray-200 p-4 border"><div><span class="text-gray-700 font-bold mr-2">#<!-- -->0</span><span class="text-gray-700 mr-2">Oppfølging startet</span><span class="border text-orange-600 rounded text-xs py-0 px-2">oppfolgingsperiodeStartet</span></div><ul class="leading-normal mt-2 mb-4 space-x-2 space-y-2"><li class="inline-block"><a href="https://www.iana.org/assignments/media-types/application/json" class="border border-solid border-orange-300 hover:bg-orange-300 hover:text-orange-600 text-orange-500 font-bold no-underline text-xs uppercase rounded px-3 py-1" target="_blank" rel="nofollow noopener noreferrer"><span>application/json</span></a></li></ul><div class="border bg-gray-100 rounded px-4 py-2 mt-2"><div class="text-sm text-gray-700">Message ID<span class="border text-orange-600 rounded text-xs ml-2 py-0 px-2">oppfolgingsperiodeStartet</span></div></div><div class="mt-2"><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><button class="focus:outline-none undefined" type="button"><div class="inline-block"><span class="break-anywhere text-sm ">Payload</span></div><svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 20 20" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg" class="inline-block align-baseline cursor-pointer ml-0.5 -mb-1 w-5 h-5 transform transition-transform duration-150 ease-linear  "><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg></button><button type="button" class="ml-1 text-sm text-gray-500">Expand all</button></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">object</div><div class="inline-block"><span class="border text-orange-600 rounded mr-2 p-1 text-xs">uid: <!-- -->https://navikt.github.io/veilarboppfolging/schemas/oppfolgingsperiode.v2.start.schema.yml</span></div></div></div></div><div class="rounded p-4 py-2 border bg-gray-100  hidden"><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><span class="break-anywhere text-sm italic">oppfolgingsperiodeUuid</span><div class="text-red-600 text-xs">required</div></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">string</div><div class="inline-block"><span class="bg-yellow-600 font-bold no-underline text-white rounded lowercase mr-2 p-1 text-xs">format: <!-- -->uuid</span></div></div></div></div></div><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><span class="break-anywhere text-sm italic">sisteEndringsType</span><div class="text-red-600 text-xs">required</div></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">string</div><div class="inline-block"></div><ul class="text-xs">Allowed values:<!-- --> <li class="border inline-block text-orange-600 rounded ml-1 py-0 px-2"><span>&quot;OPPFOLGING_STARTET&quot;</span></li></ul></div></div></div></div><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><span class="break-anywhere text-sm italic">aktorId</span><div class="text-red-600 text-xs">required</div></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">string</div><div class="inline-block"></div></div></div></div></div><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><span class="break-anywhere text-sm italic">startTidspunkt</span><div class="text-red-600 text-xs">required</div></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">string</div><div class="inline-block"><span class="bg-yellow-600 font-bold no-underline text-white rounded lowercase mr-2 p-1 text-xs">format: <!-- -->date-time</span></div></div></div></div></div><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><span class="break-anywhere text-sm italic">sluttTidspunkt</span></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">string</div><div class="inline-block"><span class="bg-yellow-600 font-bold no-underline text-white rounded lowercase mr-2 p-1 text-xs">format: <!-- -->date-time</span></div></div></div></div></div><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><span class="break-anywhere text-sm italic">kontorId</span><div class="text-red-600 text-xs">required</div></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">string</div><div class="inline-block"></div></div></div></div></div><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><span class="break-anywhere text-sm italic">kontorNavn</span><div class="text-red-600 text-xs">required</div></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">string</div><div class="inline-block"></div></div></div></div></div><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><span class="break-anywhere text-sm italic">producerTimestamp</span><div class="text-red-600 text-xs">required</div></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">string</div><div class="inline-block"><span class="bg-yellow-600 font-bold no-underline text-white rounded lowercase mr-2 p-1 text-xs">format: <!-- -->date-time</span></div></div></div></div></div><p class="mt-2 text-xs text-gray-700">Additional properties are <strong>NOT</strong> allowed.</p></div></div></div></div></div><div class="panel-item--right px-8"><div class="bg-gray-800 px-8 py-4 mt-4 -mx-8 2xl:mx-0 2xl:px-4 2xl:rounded examples"><h4 class="text-white text-lg">Examples</h4><div class="mt-4"><div><button class="focus:outline-none undefined" type="button"><div class="inline-block"><span class="inline-block w-20 py-0.5 mr-1 text-gray-200 text-sm border text-center rounded focus:outline-none">Payload</span></div><svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 20 20" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg" class="inline-block align-baseline cursor-pointer ml-0.5 -mb-1 w-5 h-5 transform transition-transform duration-150 ease-linear  fill-current text-gray-200"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg></button></div><div class="hidden"><div class="mt-4"><div class="prose max-w-none text-sm"><pre><code class="hljs language-json">{
+</div></div><div class="border bg-gray-100 rounded px-4 py-2 mt-2"><div class="text-sm text-gray-700">Operation ID<span class="border text-orange-600 rounded text-xs ml-2 py-0 px-2">siste-oppfolgingsperiode-v2</span></div></div><div class="mt-2" id="operation-send-siste-oppfolgingsperiode-v2-security"></div><div class="mt-2"><div><div class="flex py-2"><div class=" mr-2"><button class="focus:outline-none undefined" type="button"><div class="inline-block"><div class="inline-block text-sm"><span>Channel specific information</span><span class="bg-teal-500 font-bold no-underline text-white uppercase rounded mx-2 px-2 py-1 text-xs">kafka</span></div></div><svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 20 20" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg" class="inline-block align-baseline cursor-pointer ml-0.5 -mb-1 w-5 h-5 transform transition-transform duration-150 ease-linear  "><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg></button><button type="button" class="ml-1 text-sm text-gray-500">Expand all</button></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">object</div><div class="inline-block"></div></div></div></div><div class="rounded p-4 py-2 border bg-gray-100  hidden"><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><span class="break-anywhere text-sm italic">topic</span></div><div><div class="text-sm">siste-oppfolgingsperiode-v2</div></div></div></div></div></div></div><div class="mt-2"></div><div class="mt-2"><ul class="flex flex-wrap leading-normal"><li class="inline-block mt-2 mr-2"><div title="Oppfolgingsperioden til bruker" class="border border-solid border-blue-300 hover:bg-blue-300 hover:text-blue-600 text-blue-500 font-bold no-underline text-xs rounded px-3 py-1"><span class="">#Oppfolgingsperiode</span></div></li></ul></div></div><div class="w-full mt-4" id="operation-send-siste-oppfolgingsperiode-v2-message"><div class="mt-2"><p class="px-8">Accepts the following message:</p><div class="mt-2"><div class="panel-item"><div class="panel-item--center px-8"><div class="shadow rounded bg-gray-200 p-4 border"><div><span class="text-gray-700 mr-2">Oppfølgingsperiode v2</span><span class="border text-orange-600 rounded text-xs py-0 px-2">oppfolgingsperiodeV2</span></div><p class="text-gray-600 text-sm">Oppfølgingperiode-meldinger med start, endret eller avsluttet. Felter kan være nullable.</p><ul class="leading-normal mt-2 mb-4 space-x-2 space-y-2"><li class="inline-block"><a href="https://www.iana.org/assignments/media-types/application/json" class="border border-solid border-orange-300 hover:bg-orange-300 hover:text-orange-600 text-orange-500 font-bold no-underline text-xs uppercase rounded px-3 py-1" target="_blank" rel="nofollow noopener noreferrer"><span>application/json</span></a></li></ul><div class="border bg-gray-100 rounded px-4 py-2 mt-2"><div class="text-sm text-gray-700">Message ID<span class="border text-orange-600 rounded text-xs ml-2 py-0 px-2">oppfolgingsperiodeV2</span></div></div><div class="mt-2"><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><button class="focus:outline-none undefined" type="button"><div class="inline-block"><span class="break-anywhere text-sm ">Payload</span></div><svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 20 20" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg" class="inline-block align-baseline cursor-pointer ml-0.5 -mb-1 w-5 h-5 transform transition-transform duration-150 ease-linear  "><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg></button><button type="button" class="ml-1 text-sm text-gray-500">Expand all</button></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">oneOf</div><div class="inline-block"></div></div></div></div><div class="rounded p-4 py-2 border bg-gray-100  hidden"><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><button class="focus:outline-none undefined" type="button"><div class="inline-block"><span class="break-anywhere text-sm ">Adheres to:</span></div><svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 20 20" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg" class="inline-block align-baseline cursor-pointer ml-0.5 -mb-1 w-5 h-5 transform transition-transform duration-150 ease-linear  "><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg></button><button type="button" class="ml-1 text-sm text-gray-500">Expand all</button></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">object</div><div class="inline-block"><span class="border text-orange-600 rounded mr-2 p-1 text-xs">uid: <!-- -->https://navikt.github.io/veilarboppfolging/schemas/oppfolgingsperiode.v2.start.schema.yml</span></div></div></div></div><div class="rounded p-4 py-2 border bg-gray-100 bg-gray-200 hidden"><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><span class="break-anywhere text-sm italic">oppfolgingsperiodeUuid</span><div class="text-red-600 text-xs">required</div></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">string</div><div class="inline-block"><span class="bg-yellow-600 font-bold no-underline text-white rounded lowercase mr-2 p-1 text-xs">format: <!-- -->uuid</span></div></div></div></div></div><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><span class="break-anywhere text-sm italic">sisteEndringsType</span><div class="text-red-600 text-xs">required</div></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">string</div><div class="inline-block"></div><ul class="text-xs">Allowed values:<!-- --> <li class="border inline-block text-orange-600 rounded ml-1 py-0 px-2"><span>&quot;OPPFOLGING_STARTET&quot;</span></li></ul></div></div></div></div><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><span class="break-anywhere text-sm italic">aktorId</span><div class="text-red-600 text-xs">required</div></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">string</div><div class="inline-block"></div></div></div></div></div><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><span class="break-anywhere text-sm italic">startTidspunkt</span><div class="text-red-600 text-xs">required</div></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">string</div><div class="inline-block"><span class="bg-yellow-600 font-bold no-underline text-white rounded lowercase mr-2 p-1 text-xs">format: <!-- -->date-time</span></div></div></div></div></div><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><span class="break-anywhere text-sm italic">sluttTidspunkt</span></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">string</div><div class="inline-block"><span class="bg-yellow-600 font-bold no-underline text-white rounded lowercase mr-2 p-1 text-xs">format: <!-- -->date-time</span></div></div></div></div></div><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><span class="break-anywhere text-sm italic">kontorId</span><div class="text-red-600 text-xs">required</div></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">string</div><div class="inline-block"></div></div></div></div></div><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><span class="break-anywhere text-sm italic">kontorNavn</span><div class="text-red-600 text-xs">required</div></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">string</div><div class="inline-block"></div></div></div></div></div><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><span class="break-anywhere text-sm italic">producerTimestamp</span><div class="text-red-600 text-xs">required</div></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">string</div><div class="inline-block"><span class="bg-yellow-600 font-bold no-underline text-white rounded lowercase mr-2 p-1 text-xs">format: <!-- -->date-time</span></div></div></div></div></div><p class="mt-2 text-xs text-gray-700">Additional properties are <strong>NOT</strong> allowed.</p></div></div><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><button class="focus:outline-none undefined" type="button"><div class="inline-block"><span class="break-anywhere text-sm ">Or to:</span></div><svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 20 20" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg" class="inline-block align-baseline cursor-pointer ml-0.5 -mb-1 w-5 h-5 transform transition-transform duration-150 ease-linear  "><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg></button><button type="button" class="ml-1 text-sm text-gray-500">Expand all</button></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">object</div><div class="inline-block"><span class="border text-orange-600 rounded mr-2 p-1 text-xs">uid: <!-- -->https://navikt.github.io/veilarboppfolging/schemas/oppfolgingsperiode.v2.kontorEndret.schema.yml</span></div></div></div></div><div class="rounded p-4 py-2 border bg-gray-100 bg-gray-200 hidden"><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><span class="break-anywhere text-sm italic">oppfolgingsperiodeUuid</span><div class="text-red-600 text-xs">required</div></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">string</div><div class="inline-block"><span class="bg-yellow-600 font-bold no-underline text-white rounded lowercase mr-2 p-1 text-xs">format: <!-- -->uuid</span></div></div></div></div></div><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><span class="break-anywhere text-sm italic">sisteEndringsType</span><div class="text-red-600 text-xs">required</div></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">string</div><div class="inline-block"></div><ul class="text-xs">Allowed values:<!-- --> <li class="border inline-block text-orange-600 rounded ml-1 py-0 px-2"><span>&quot;ARBEIDSOPPFOLGINGSKONTOR_ENDRET&quot;</span></li></ul></div></div></div></div><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><span class="break-anywhere text-sm italic">aktorId</span><div class="text-red-600 text-xs">required</div></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">string</div><div class="inline-block"></div></div></div></div></div><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><span class="break-anywhere text-sm italic">startTidspunkt</span><div class="text-red-600 text-xs">required</div></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">string</div><div class="inline-block"><span class="bg-yellow-600 font-bold no-underline text-white rounded lowercase mr-2 p-1 text-xs">format: <!-- -->date-time</span></div></div></div></div></div><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><span class="break-anywhere text-sm italic">sluttTidspunkt</span></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">string</div><div class="inline-block"><span class="bg-yellow-600 font-bold no-underline text-white rounded lowercase mr-2 p-1 text-xs">format: <!-- -->date-time</span></div></div></div></div></div><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><span class="break-anywhere text-sm italic">kontorId</span><div class="text-red-600 text-xs">required</div></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">string</div><div class="inline-block"></div></div></div></div></div><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><span class="break-anywhere text-sm italic">kontorNavn</span><div class="text-red-600 text-xs">required</div></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">string</div><div class="inline-block"></div></div></div></div></div><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><span class="break-anywhere text-sm italic">producerTimestamp</span><div class="text-red-600 text-xs">required</div></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">string</div><div class="inline-block"><span class="bg-yellow-600 font-bold no-underline text-white rounded lowercase mr-2 p-1 text-xs">format: <!-- -->date-time</span></div></div></div></div></div><p class="mt-2 text-xs text-gray-700">Additional properties are <strong>NOT</strong> allowed.</p></div></div><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><button class="focus:outline-none undefined" type="button"><div class="inline-block"><span class="break-anywhere text-sm ">Or to:</span></div><svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 20 20" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg" class="inline-block align-baseline cursor-pointer ml-0.5 -mb-1 w-5 h-5 transform transition-transform duration-150 ease-linear  "><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg></button><button type="button" class="ml-1 text-sm text-gray-500">Expand all</button></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">object</div><div class="inline-block"><span class="border text-orange-600 rounded mr-2 p-1 text-xs">uid: <!-- -->https://navikt.github.io/veilarboppfolging/schemas/oppfolgingsperiode.v2.avsluttet.schema.yml</span></div></div></div></div><div class="rounded p-4 py-2 border bg-gray-100 bg-gray-200 hidden"><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><span class="break-anywhere text-sm italic">oppfolgingsperiodeUuid</span><div class="text-red-600 text-xs">required</div></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">string</div><div class="inline-block"><span class="bg-yellow-600 font-bold no-underline text-white rounded lowercase mr-2 p-1 text-xs">format: <!-- -->uuid</span></div></div></div></div></div><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><span class="break-anywhere text-sm italic">sisteEndringsType</span><div class="text-red-600 text-xs">required</div></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">string</div><div class="inline-block"></div><ul class="text-xs">Allowed values:<!-- --> <li class="border inline-block text-orange-600 rounded ml-1 py-0 px-2"><span>&quot;OPPFOLGING_AVSLUTTET&quot;</span></li></ul></div></div></div></div><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><span class="break-anywhere text-sm italic">aktorId</span><div class="text-red-600 text-xs">required</div></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">string</div><div class="inline-block"></div></div></div></div></div><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><span class="break-anywhere text-sm italic">startTidspunkt</span><div class="text-red-600 text-xs">required</div></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">string</div><div class="inline-block"><span class="bg-yellow-600 font-bold no-underline text-white rounded lowercase mr-2 p-1 text-xs">format: <!-- -->date-time</span></div></div></div></div></div><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><span class="break-anywhere text-sm italic">sluttTidspunkt</span><div class="text-red-600 text-xs">required</div></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">string</div><div class="inline-block"><span class="bg-yellow-600 font-bold no-underline text-white rounded lowercase mr-2 p-1 text-xs">format: <!-- -->date-time</span></div></div></div></div></div><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><span class="break-anywhere text-sm italic">kontorId</span></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">string</div><div class="inline-block"></div></div></div></div></div><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><span class="break-anywhere text-sm italic">kontorNavn</span></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">string</div><div class="inline-block"></div></div></div></div></div><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><span class="break-anywhere text-sm italic">producerTimestamp</span><div class="text-red-600 text-xs">required</div></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">string</div><div class="inline-block"><span class="bg-yellow-600 font-bold no-underline text-white rounded lowercase mr-2 p-1 text-xs">format: <!-- -->date-time</span></div></div></div></div></div><p class="mt-2 text-xs text-gray-700">Additional properties are <strong>NOT</strong> allowed.</p></div></div></div></div></div><div class="mt-2"><ul class="flex flex-wrap leading-normal"><li class="inline-block mt-2 mr-2"><div title="Siste oppfolgingsperiode v2" class="border border-solid border-blue-300 hover:bg-blue-300 hover:text-blue-600 text-blue-500 font-bold no-underline text-xs rounded px-3 py-1"><span class="">#siste-oppfolgingsperiode-v2</span></div></li></ul></div></div></div><div class="panel-item--right px-8"><div class="bg-gray-800 px-8 py-4 mt-4 -mx-8 2xl:mx-0 2xl:px-4 2xl:rounded examples"><h4 class="text-white text-lg">Examples</h4><div class="mt-4"><div><button class="focus:outline-none undefined" type="button"><div class="inline-block"><span class="inline-block w-20 py-0.5 mr-1 text-gray-200 text-sm border text-center rounded focus:outline-none">Payload</span></div><svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 20 20" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg" class="inline-block align-baseline cursor-pointer ml-0.5 -mb-1 w-5 h-5 transform transition-transform duration-150 ease-linear  fill-current text-gray-200"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg></button></div><div class="hidden"><div class="mt-4"><div class="prose max-w-none text-sm"><pre><code class="hljs language-json">{
   <span class="hljs-attr">"oppfolgingsperiodeUuid"</span>: <span class="hljs-string">"0219b63d-2adc-4ab9-9aef-57e194c50eab"</span>,
   <span class="hljs-attr">"sisteEndringsType"</span>: <span class="hljs-string">"OPPFOLGING_STARTET"</span>,
   <span class="hljs-attr">"aktorId"</span>: <span class="hljs-string">"string"</span>,
@@ -52,29 +59,7 @@
   <span class="hljs-attr">"producerTimestamp"</span>: <span class="hljs-string">"2019-08-24T14:15:22Z"</span>
 }
 </code></pre>
-</div><h6 class="text-xs font-bold text-gray-600 italic mt-2">This example has been generated automatically.</h6></div></div></div></div></div></div></li><li class="mt-4"><div class="panel-item"><div class="panel-item--center px-8"><div class="shadow rounded bg-gray-200 p-4 border"><div><span class="text-gray-700 font-bold mr-2">#<!-- -->1</span><span class="text-gray-700 mr-2">Kontor endret</span><span class="border text-orange-600 rounded text-xs py-0 px-2">oppfolgingsperiodeKontorEndret</span></div><ul class="leading-normal mt-2 mb-4 space-x-2 space-y-2"><li class="inline-block"><a href="https://www.iana.org/assignments/media-types/application/json" class="border border-solid border-orange-300 hover:bg-orange-300 hover:text-orange-600 text-orange-500 font-bold no-underline text-xs uppercase rounded px-3 py-1" target="_blank" rel="nofollow noopener noreferrer"><span>application/json</span></a></li></ul><div class="border bg-gray-100 rounded px-4 py-2 mt-2"><div class="text-sm text-gray-700">Message ID<span class="border text-orange-600 rounded text-xs ml-2 py-0 px-2">oppfolgingsperiodeKontorEndret</span></div></div><div class="mt-2"><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><button class="focus:outline-none undefined" type="button"><div class="inline-block"><span class="break-anywhere text-sm ">Payload</span></div><svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 20 20" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg" class="inline-block align-baseline cursor-pointer ml-0.5 -mb-1 w-5 h-5 transform transition-transform duration-150 ease-linear  "><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg></button><button type="button" class="ml-1 text-sm text-gray-500">Expand all</button></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">object</div><div class="inline-block"><span class="border text-orange-600 rounded mr-2 p-1 text-xs">uid: <!-- -->https://navikt.github.io/veilarboppfolging/schemas/oppfolgingsperiode.v2.kontorEndret.schema.yml</span></div></div></div></div><div class="rounded p-4 py-2 border bg-gray-100  hidden"><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><span class="break-anywhere text-sm italic">oppfolgingsperiodeUuid</span><div class="text-red-600 text-xs">required</div></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">string</div><div class="inline-block"><span class="bg-yellow-600 font-bold no-underline text-white rounded lowercase mr-2 p-1 text-xs">format: <!-- -->uuid</span></div></div></div></div></div><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><span class="break-anywhere text-sm italic">sisteEndringsType</span><div class="text-red-600 text-xs">required</div></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">string</div><div class="inline-block"></div><ul class="text-xs">Allowed values:<!-- --> <li class="border inline-block text-orange-600 rounded ml-1 py-0 px-2"><span>&quot;ARBEIDSOPPFOLGINGSKONTOR_ENDRET&quot;</span></li></ul></div></div></div></div><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><span class="break-anywhere text-sm italic">aktorId</span><div class="text-red-600 text-xs">required</div></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">string</div><div class="inline-block"></div></div></div></div></div><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><span class="break-anywhere text-sm italic">startTidspunkt</span><div class="text-red-600 text-xs">required</div></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">string</div><div class="inline-block"><span class="bg-yellow-600 font-bold no-underline text-white rounded lowercase mr-2 p-1 text-xs">format: <!-- -->date-time</span></div></div></div></div></div><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><span class="break-anywhere text-sm italic">sluttTidspunkt</span></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">string</div><div class="inline-block"><span class="bg-yellow-600 font-bold no-underline text-white rounded lowercase mr-2 p-1 text-xs">format: <!-- -->date-time</span></div></div></div></div></div><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><span class="break-anywhere text-sm italic">kontorId</span><div class="text-red-600 text-xs">required</div></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">string</div><div class="inline-block"></div></div></div></div></div><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><span class="break-anywhere text-sm italic">kontorNavn</span><div class="text-red-600 text-xs">required</div></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">string</div><div class="inline-block"></div></div></div></div></div><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><span class="break-anywhere text-sm italic">producerTimestamp</span><div class="text-red-600 text-xs">required</div></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">string</div><div class="inline-block"><span class="bg-yellow-600 font-bold no-underline text-white rounded lowercase mr-2 p-1 text-xs">format: <!-- -->date-time</span></div></div></div></div></div><p class="mt-2 text-xs text-gray-700">Additional properties are <strong>NOT</strong> allowed.</p></div></div></div></div></div><div class="panel-item--right px-8"><div class="bg-gray-800 px-8 py-4 mt-4 -mx-8 2xl:mx-0 2xl:px-4 2xl:rounded examples"><h4 class="text-white text-lg">Examples</h4><div class="mt-4"><div><button class="focus:outline-none undefined" type="button"><div class="inline-block"><span class="inline-block w-20 py-0.5 mr-1 text-gray-200 text-sm border text-center rounded focus:outline-none">Payload</span></div><svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 20 20" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg" class="inline-block align-baseline cursor-pointer ml-0.5 -mb-1 w-5 h-5 transform transition-transform duration-150 ease-linear  fill-current text-gray-200"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg></button></div><div class="hidden"><div class="mt-4"><div class="prose max-w-none text-sm"><pre><code class="hljs language-json">{
-  <span class="hljs-attr">"oppfolgingsperiodeUuid"</span>: <span class="hljs-string">"0219b63d-2adc-4ab9-9aef-57e194c50eab"</span>,
-  <span class="hljs-attr">"sisteEndringsType"</span>: <span class="hljs-string">"ARBEIDSOPPFOLGINGSKONTOR_ENDRET"</span>,
-  <span class="hljs-attr">"aktorId"</span>: <span class="hljs-string">"string"</span>,
-  <span class="hljs-attr">"startTidspunkt"</span>: <span class="hljs-string">"2019-08-24T14:15:22Z"</span>,
-  <span class="hljs-attr">"sluttTidspunkt"</span>: <span class="hljs-string">"2019-08-24T14:15:22Z"</span>,
-  <span class="hljs-attr">"kontorId"</span>: <span class="hljs-string">"string"</span>,
-  <span class="hljs-attr">"kontorNavn"</span>: <span class="hljs-string">"string"</span>,
-  <span class="hljs-attr">"producerTimestamp"</span>: <span class="hljs-string">"2019-08-24T14:15:22Z"</span>
-}
-</code></pre>
-</div><h6 class="text-xs font-bold text-gray-600 italic mt-2">This example has been generated automatically.</h6></div></div></div></div></div></div></li><li class="mt-4"><div class="panel-item"><div class="panel-item--center px-8"><div class="shadow rounded bg-gray-200 p-4 border"><div><span class="text-gray-700 font-bold mr-2">#<!-- -->2</span><span class="text-gray-700 mr-2">Oppfølging avsluttet</span><span class="border text-orange-600 rounded text-xs py-0 px-2">oppfolgingsperiodeAvsluttet</span></div><ul class="leading-normal mt-2 mb-4 space-x-2 space-y-2"><li class="inline-block"><a href="https://www.iana.org/assignments/media-types/application/json" class="border border-solid border-orange-300 hover:bg-orange-300 hover:text-orange-600 text-orange-500 font-bold no-underline text-xs uppercase rounded px-3 py-1" target="_blank" rel="nofollow noopener noreferrer"><span>application/json</span></a></li></ul><div class="border bg-gray-100 rounded px-4 py-2 mt-2"><div class="text-sm text-gray-700">Message ID<span class="border text-orange-600 rounded text-xs ml-2 py-0 px-2">oppfolgingsperiodeAvsluttet</span></div></div><div class="mt-2"><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><button class="focus:outline-none undefined" type="button"><div class="inline-block"><span class="break-anywhere text-sm ">Payload</span></div><svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 20 20" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg" class="inline-block align-baseline cursor-pointer ml-0.5 -mb-1 w-5 h-5 transform transition-transform duration-150 ease-linear  "><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg></button><button type="button" class="ml-1 text-sm text-gray-500">Expand all</button></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">object</div><div class="inline-block"><span class="border text-orange-600 rounded mr-2 p-1 text-xs">uid: <!-- -->https://navikt.github.io/veilarboppfolging/schemas/oppfolgingsperiode.v2.avsluttet.schema.yml</span></div></div></div></div><div class="rounded p-4 py-2 border bg-gray-100  hidden"><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><span class="break-anywhere text-sm italic">oppfolgingsperiodeUuid</span><div class="text-red-600 text-xs">required</div></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">string</div><div class="inline-block"><span class="bg-yellow-600 font-bold no-underline text-white rounded lowercase mr-2 p-1 text-xs">format: <!-- -->uuid</span></div></div></div></div></div><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><span class="break-anywhere text-sm italic">sisteEndringsType</span><div class="text-red-600 text-xs">required</div></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">string</div><div class="inline-block"></div><ul class="text-xs">Allowed values:<!-- --> <li class="border inline-block text-orange-600 rounded ml-1 py-0 px-2"><span>&quot;OPPFOLGING_AVSLUTTET&quot;</span></li></ul></div></div></div></div><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><span class="break-anywhere text-sm italic">aktorId</span><div class="text-red-600 text-xs">required</div></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">string</div><div class="inline-block"></div></div></div></div></div><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><span class="break-anywhere text-sm italic">startTidspunkt</span><div class="text-red-600 text-xs">required</div></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">string</div><div class="inline-block"><span class="bg-yellow-600 font-bold no-underline text-white rounded lowercase mr-2 p-1 text-xs">format: <!-- -->date-time</span></div></div></div></div></div><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><span class="break-anywhere text-sm italic">sluttTidspunkt</span><div class="text-red-600 text-xs">required</div></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">string</div><div class="inline-block"><span class="bg-yellow-600 font-bold no-underline text-white rounded lowercase mr-2 p-1 text-xs">format: <!-- -->date-time</span></div></div></div></div></div><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><span class="break-anywhere text-sm italic">kontorId</span></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">string</div><div class="inline-block"></div></div></div></div></div><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><span class="break-anywhere text-sm italic">kontorNavn</span></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">string</div><div class="inline-block"></div></div></div></div></div><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><span class="break-anywhere text-sm italic">producerTimestamp</span><div class="text-red-600 text-xs">required</div></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">string</div><div class="inline-block"><span class="bg-yellow-600 font-bold no-underline text-white rounded lowercase mr-2 p-1 text-xs">format: <!-- -->date-time</span></div></div></div></div></div><p class="mt-2 text-xs text-gray-700">Additional properties are <strong>NOT</strong> allowed.</p></div></div></div></div></div><div class="panel-item--right px-8"><div class="bg-gray-800 px-8 py-4 mt-4 -mx-8 2xl:mx-0 2xl:px-4 2xl:rounded examples"><h4 class="text-white text-lg">Examples</h4><div class="mt-4"><div><button class="focus:outline-none undefined" type="button"><div class="inline-block"><span class="inline-block w-20 py-0.5 mr-1 text-gray-200 text-sm border text-center rounded focus:outline-none">Payload</span></div><svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 20 20" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg" class="inline-block align-baseline cursor-pointer ml-0.5 -mb-1 w-5 h-5 transform transition-transform duration-150 ease-linear  fill-current text-gray-200"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg></button></div><div class="hidden"><div class="mt-4"><div class="prose max-w-none text-sm"><pre><code class="hljs language-json">{
-  <span class="hljs-attr">"oppfolgingsperiodeUuid"</span>: <span class="hljs-string">"0219b63d-2adc-4ab9-9aef-57e194c50eab"</span>,
-  <span class="hljs-attr">"sisteEndringsType"</span>: <span class="hljs-string">"OPPFOLGING_AVSLUTTET"</span>,
-  <span class="hljs-attr">"aktorId"</span>: <span class="hljs-string">"string"</span>,
-  <span class="hljs-attr">"startTidspunkt"</span>: <span class="hljs-string">"2019-08-24T14:15:22Z"</span>,
-  <span class="hljs-attr">"sluttTidspunkt"</span>: <span class="hljs-string">"2019-08-24T14:15:22Z"</span>,
-  <span class="hljs-attr">"kontorId"</span>: <span class="hljs-string">"string"</span>,
-  <span class="hljs-attr">"kontorNavn"</span>: <span class="hljs-string">"string"</span>,
-  <span class="hljs-attr">"producerTimestamp"</span>: <span class="hljs-string">"2019-08-24T14:15:22Z"</span>
-}
-</code></pre>
-</div><h6 class="text-xs font-bold text-gray-600 italic mt-2">This example has been generated automatically.</h6></div></div></div></div></div></div></li></ul></div></div></div></li><li class="mb-12" id="operation-receive-endring-pa-oppfolgingsbruker"><div><div class="panel-item--center px-8"><div class="mb-4"><h3><span class="font-mono border uppercase p-1 rounded mr-2 border-green-600 text-green-600" title="receive">RECEIVE</span> <span class="font-mono text-base">pto.endring-paa-oppfolgingsbruker-v2</span></h3></div><div class="mt-2"><div class="prose max-w-none text-sm"><p>Endring på oppfølgingsbrukere fra Arena</p>
+</div><h6 class="text-xs font-bold text-gray-600 italic mt-2">This example has been generated automatically.</h6></div></div></div></div></div></div></div></div></div></div></li><li class="mb-12" id="operation-receive-endring-pa-oppfolgingsbruker"><div><div class="panel-item--center px-8"><div class="mb-4"><h3><span class="font-mono border uppercase p-1 rounded mr-2 border-green-600 text-green-600" title="receive">RECEIVE</span> <span class="font-mono text-base">pto.endring-paa-oppfolgingsbruker-v2</span></h3></div><div class="mt-2"><div class="prose max-w-none text-sm"><p>Endring på oppfølgingsbrukere fra Arena</p>
 </div></div><div class="border bg-gray-100 rounded px-4 py-2 mt-2"><div class="text-sm text-gray-700">Operation ID<span class="border text-orange-600 rounded text-xs ml-2 py-0 px-2">endring-pa-oppfolgingsbruker</span></div></div><div class="mt-2" id="operation-receive-pto.endring-paa-oppfolgingsbruker-v2-security"></div><div class="mt-2"></div><div class="mt-2"></div><div class="mt-2"></div></div><div class="w-full mt-4" id="operation-receive-pto.endring-paa-oppfolgingsbruker-v2-message"><div class="mt-2"><p class="px-8">Accepts the following message:</p><div class="mt-2"><div class="panel-item"><div class="panel-item--center px-8"><div class="shadow rounded bg-gray-200 p-4 border"><div><span class="text-gray-700 mr-2">Oppfølgingsbruker fra veilarbarena</span><span class="border text-orange-600 rounded text-xs py-0 px-2">oppfolgingsbruker</span></div><p class="text-gray-600 text-sm">Oppfølgings-status på en bruker fra Arena</p><ul class="leading-normal mt-2 mb-4 space-x-2 space-y-2"><li class="inline-block"><a href="https://www.iana.org/assignments/media-types/application/json" class="border border-solid border-orange-300 hover:bg-orange-300 hover:text-orange-600 text-orange-500 font-bold no-underline text-xs uppercase rounded px-3 py-1" target="_blank" rel="nofollow noopener noreferrer"><span>application/json</span></a></li></ul><div class="border bg-gray-100 rounded px-4 py-2 mt-2"><div class="text-sm text-gray-700">Message ID<span class="border text-orange-600 rounded text-xs ml-2 py-0 px-2">oppfolgingsbruker</span></div></div><div class="mt-2"><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><button class="focus:outline-none undefined" type="button"><div class="inline-block"><span class="break-anywhere text-sm ">Payload</span></div><svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 20 20" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg" class="inline-block align-baseline cursor-pointer ml-0.5 -mb-1 w-5 h-5 transform transition-transform duration-150 ease-linear  "><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg></button><button type="button" class="ml-1 text-sm text-gray-500">Expand all</button></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">object</div><div class="inline-block"><span class="border text-orange-600 rounded mr-2 p-1 text-xs">uid: <!-- -->https://navikt.github.io/veilarboppfolging/schemas/oppfolgingsbruker.v1.scheam.yml</span></div></div></div></div><div class="rounded p-4 py-2 border bg-gray-100  hidden"><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><span class="break-anywhere text-sm italic">fodselsnummer</span></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">string</div><div class="inline-block"></div></div></div></div></div><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><span class="break-anywhere text-sm italic">formidlingsgruppe</span></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">string</div><div class="inline-block"></div><ul class="text-xs">Allowed values:<!-- --> <li class="border inline-block text-orange-600 rounded ml-1 py-0 px-2"><span>&quot;ARBS&quot;</span></li><li class="border inline-block text-orange-600 rounded ml-1 py-0 px-2"><span>&quot;IARBS&quot;</span></li><li class="border inline-block text-orange-600 rounded ml-1 py-0 px-2"><span>&quot;ISERV&quot;</span></li></ul></div></div></div></div><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><span class="break-anywhere text-sm italic">iservFraDato</span></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">string</div><div class="inline-block"><span class="bg-yellow-600 font-bold no-underline text-white rounded lowercase mr-2 p-1 text-xs">format: <!-- -->LocalDate</span></div></div></div></div></div><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><span class="break-anywhere text-sm italic">fornavn</span></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">string</div><div class="inline-block"></div></div></div></div></div><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><span class="break-anywhere text-sm italic">etternavn</span></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">string</div><div class="inline-block"></div></div></div></div></div><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><span class="break-anywhere text-sm italic">oppfolgingsenhet</span></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">string</div><div class="inline-block"></div></div></div></div></div><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><span class="break-anywhere text-sm italic">kvalifiseringsgruppe</span></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">string</div><div class="inline-block"></div><ul class="text-xs">Allowed values:<!-- --> <li class="border inline-block text-orange-600 rounded ml-1 py-0 px-2"><span>&quot;adas&quot;</span></li></ul></div></div></div></div><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><span class="break-anywhere text-sm italic">rettighetsgruppe</span></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">string</div><div class="inline-block"></div><ul class="text-xs">Allowed values:<!-- --> <li class="border inline-block text-orange-600 rounded ml-1 py-0 px-2"><span>&quot;Rettighetsgruppe&quot;</span></li></ul></div></div></div></div><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><span class="break-anywhere text-sm italic">hovedmaal</span></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">string</div><div class="inline-block"></div><ul class="text-xs">Allowed values:<!-- --> <li class="border inline-block text-orange-600 rounded ml-1 py-0 px-2"><span>&quot;BEHOLDEA&quot;</span></li><li class="border inline-block text-orange-600 rounded ml-1 py-0 px-2"><span>&quot;OKEDELT&quot;</span></li><li class="border inline-block text-orange-600 rounded ml-1 py-0 px-2"><span>&quot;SKAFFEA&quot;</span></li></ul></div></div></div></div><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><span class="break-anywhere text-sm italic">sikkerhetstiltakType</span></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">string</div><div class="inline-block"></div><ul class="text-xs">Allowed values:<!-- --> <li class="border inline-block text-orange-600 rounded ml-1 py-0 px-2"><span>&quot;FTUS&quot;</span></li><li class="border inline-block text-orange-600 rounded ml-1 py-0 px-2"><span>&quot;FYUS&quot;</span></li><li class="border inline-block text-orange-600 rounded ml-1 py-0 px-2"><span>&quot;TOAN&quot;</span></li><li class="border inline-block text-orange-600 rounded ml-1 py-0 px-2"><span>&quot;TFUS&quot;</span></li></ul></div></div></div></div><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><span class="break-anywhere text-sm italic">diskresjonskode</span></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">string</div><div class="inline-block"></div></div></div></div></div><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><span class="break-anywhere text-sm italic">harOppfolgingssak</span></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">boolean</div><div class="inline-block"></div></div></div></div></div><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><span class="break-anywhere text-sm italic">sperretAnsatt</span></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">boolean</div><div class="inline-block"></div></div></div></div></div><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><span class="break-anywhere text-sm italic">erDoed</span></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">boolean</div><div class="inline-block"></div></div></div></div></div><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><span class="break-anywhere text-sm italic">doedFraDato</span></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">string</div><div class="inline-block"></div></div></div></div></div><div><div class="flex py-2"><div class="min-w-1/4 mr-2"><span class="break-anywhere text-sm italic">sistEndretDato</span></div><div><div><div class="capitalize text-sm text-teal-500 font-bold inline-block mr-2">string</div><div class="inline-block"><span class="bg-yellow-600 font-bold no-underline text-white rounded lowercase mr-2 p-1 text-xs">format: <!-- -->ZonedDateTime</span></div></div></div></div></div><p class="mt-2 text-xs text-gray-700">Additional properties are <strong>NOT</strong> allowed.</p></div></div></div></div></div><div class="panel-item--right px-8"><div class="bg-gray-800 px-8 py-4 mt-4 -mx-8 2xl:mx-0 2xl:px-4 2xl:rounded examples"><h4 class="text-white text-lg">Examples</h4><div class="mt-4"><div><button class="focus:outline-none undefined" type="button"><div class="inline-block"><span class="inline-block w-20 py-0.5 mr-1 text-gray-200 text-sm border text-center rounded focus:outline-none">Payload</span></div><svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 20 20" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg" class="inline-block align-baseline cursor-pointer ml-0.5 -mb-1 w-5 h-5 transform transition-transform duration-150 ease-linear  fill-current text-gray-200"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg></button></div><div class="hidden"><div class="mt-4"><div class="prose max-w-none text-sm"><pre><code class="hljs language-json">{
   <span class="hljs-attr">"fodselsnummer"</span>: <span class="hljs-string">"string"</span>,
   <span class="hljs-attr">"formidlingsgruppe"</span>: <span class="hljs-string">"ARBS"</span>,
@@ -177,193 +162,195 @@
     },
     "siste-oppfolgingsperiode-v2": {
       "address": "siste-oppfolgingsperiode-v2",
-      "description": "Topic overtar for v1 og inneholder i tillegg kontor",
+      "description": "## Dettet topicet overtar for siste-oppfolgingsperiode-v1 og inneholder i tillegg kontorId, kontorNavn og feltet sisteEndringsType som beskriver hva den siste endringstypen var. \nDet kommer melding når:\n- Oppfølging på en bruker starter (sluttTidspunkt vil være null)\n- Kontoret til en bruker endrer seg (sluttTidspunkt vil være null)\n- Oppfølging på en bruker blir avsluttet (sluttTidspunkt vil være satt)\n- Meldinger blir \"re-publisert\" manuelt. Da blir siste tilstand publisert på nytt\n",
       "messages": {
-        "oppfolgingsperiodeStartet": {
-          "name": "oppfolgingsperiodeStartet",
-          "title": "Oppfølging startet",
-          "payload": {
-            "$schema": "https://json-schema.org/draft-07/schema",
-            "$id": "https://navikt.github.io/veilarboppfolging/schemas/oppfolgingsperiode.v2.start.schema.yml",
-            "required": [
-              "oppfolgingsperiodeUuid",
-              "sisteEndringsType",
-              "aktorId",
-              "startTidspunkt",
-              "kontorId",
-              "kontorNavn",
-              "producerTimestamp"
-            ],
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-              "oppfolgingsperiodeUuid": {
-                "type": "string",
-                "format": "uuid",
-                "x-parser-schema-id": "<anonymous-schema-6>"
-              },
-              "sisteEndringsType": {
-                "type": "string",
-                "enum": [
-                  "OPPFOLGING_STARTET"
-                ],
-                "x-parser-schema-id": "<anonymous-schema-7>"
-              },
-              "aktorId": {
-                "type": "string",
-                "x-parser-schema-id": "<anonymous-schema-8>"
-              },
-              "startTidspunkt": {
-                "type": "string",
-                "format": "date-time",
-                "x-parser-schema-id": "<anonymous-schema-9>"
-              },
-              "sluttTidspunkt": {
-                "type": "string",
-                "format": "date-time",
-                "nullable": true,
-                "x-parser-schema-id": "<anonymous-schema-10>"
-              },
-              "kontorId": {
-                "type": "string",
-                "x-parser-schema-id": "<anonymous-schema-11>"
-              },
-              "kontorNavn": {
-                "type": "string",
-                "x-parser-schema-id": "<anonymous-schema-12>"
-              },
-              "producerTimestamp": {
-                "type": "string",
-                "format": "date-time",
-                "x-parser-schema-id": "<anonymous-schema-13>"
-              }
+        "oppfolgingsperiodeV2": {
+          "name": "oppfolgingsperiodeV2",
+          "title": "Oppfølgingsperiode v2",
+          "summary": "Oppfølgingperiode-meldinger med start, endret eller avsluttet. Felter kan være nullable.",
+          "tags": [
+            {
+              "name": "siste-oppfolgingsperiode-v2",
+              "description": "Siste oppfolgingsperiode v2"
             }
-          },
-          "x-parser-unique-object-id": "oppfolgingsperiodeStartet"
-        },
-        "oppfolgingsperiodeKontorEndret": {
-          "name": "oppfolgingsperiodeKontorEndret",
-          "title": "Kontor endret",
+          ],
           "payload": {
-            "$schema": "https://json-schema.org/draft-07/schema",
-            "$id": "https://navikt.github.io/veilarboppfolging/schemas/oppfolgingsperiode.v2.kontorEndret.schema.yml",
-            "required": [
-              "oppfolgingsperiodeUuid",
-              "sisteEndringsType",
-              "aktorId",
-              "startTidspunkt",
-              "kontorId",
-              "kontorNavn",
-              "producerTimestamp"
-            ],
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-              "oppfolgingsperiodeUuid": {
-                "type": "string",
-                "format": "uuid",
-                "x-parser-schema-id": "<anonymous-schema-14>"
-              },
-              "sisteEndringsType": {
-                "type": "string",
-                "enum": [
-                  "ARBEIDSOPPFOLGINGSKONTOR_ENDRET"
+            "oneOf": [
+              {
+                "$schema": "https://json-schema.org/draft-07/schema",
+                "$id": "https://navikt.github.io/veilarboppfolging/schemas/oppfolgingsperiode.v2.start.schema.yml",
+                "required": [
+                  "oppfolgingsperiodeUuid",
+                  "sisteEndringsType",
+                  "aktorId",
+                  "startTidspunkt",
+                  "kontorId",
+                  "kontorNavn",
+                  "producerTimestamp"
                 ],
-                "x-parser-schema-id": "<anonymous-schema-15>"
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "oppfolgingsperiodeUuid": {
+                    "type": "string",
+                    "format": "uuid",
+                    "x-parser-schema-id": "<anonymous-schema-7>"
+                  },
+                  "sisteEndringsType": {
+                    "type": "string",
+                    "enum": [
+                      "OPPFOLGING_STARTET"
+                    ],
+                    "x-parser-schema-id": "<anonymous-schema-8>"
+                  },
+                  "aktorId": {
+                    "type": "string",
+                    "x-parser-schema-id": "<anonymous-schema-9>"
+                  },
+                  "startTidspunkt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "x-parser-schema-id": "<anonymous-schema-10>"
+                  },
+                  "sluttTidspunkt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "nullable": true,
+                    "x-parser-schema-id": "<anonymous-schema-11>"
+                  },
+                  "kontorId": {
+                    "type": "string",
+                    "x-parser-schema-id": "<anonymous-schema-12>"
+                  },
+                  "kontorNavn": {
+                    "type": "string",
+                    "x-parser-schema-id": "<anonymous-schema-13>"
+                  },
+                  "producerTimestamp": {
+                    "type": "string",
+                    "format": "date-time",
+                    "x-parser-schema-id": "<anonymous-schema-14>"
+                  }
+                }
               },
-              "aktorId": {
-                "type": "string",
-                "x-parser-schema-id": "<anonymous-schema-16>"
-              },
-              "startTidspunkt": {
-                "type": "string",
-                "format": "date-time",
-                "x-parser-schema-id": "<anonymous-schema-17>"
-              },
-              "sluttTidspunkt": {
-                "type": "string",
-                "format": "date-time",
-                "nullable": true,
-                "x-parser-schema-id": "<anonymous-schema-18>"
-              },
-              "kontorId": {
-                "type": "string",
-                "x-parser-schema-id": "<anonymous-schema-19>"
-              },
-              "kontorNavn": {
-                "type": "string",
-                "x-parser-schema-id": "<anonymous-schema-20>"
-              },
-              "producerTimestamp": {
-                "type": "string",
-                "format": "date-time",
-                "x-parser-schema-id": "<anonymous-schema-21>"
-              }
-            }
-          },
-          "x-parser-unique-object-id": "oppfolgingsperiodeKontorEndret"
-        },
-        "oppfolgingsperiodeAvsluttet": {
-          "name": "oppfolgingsperiodeAvsluttet",
-          "title": "Oppfølging avsluttet",
-          "payload": {
-            "$schema": "https://json-schema.org/draft-07/schema",
-            "$id": "https://navikt.github.io/veilarboppfolging/schemas/oppfolgingsperiode.v2.avsluttet.schema.yml",
-            "required": [
-              "oppfolgingsperiodeUuid",
-              "sisteEndringsType",
-              "aktorId",
-              "startTidspunkt",
-              "sluttTidspunkt",
-              "producerTimestamp"
-            ],
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-              "oppfolgingsperiodeUuid": {
-                "type": "string",
-                "format": "uuid",
-                "x-parser-schema-id": "<anonymous-schema-22>"
-              },
-              "sisteEndringsType": {
-                "type": "string",
-                "enum": [
-                  "OPPFOLGING_AVSLUTTET"
+              {
+                "$schema": "https://json-schema.org/draft-07/schema",
+                "$id": "https://navikt.github.io/veilarboppfolging/schemas/oppfolgingsperiode.v2.kontorEndret.schema.yml",
+                "required": [
+                  "oppfolgingsperiodeUuid",
+                  "sisteEndringsType",
+                  "aktorId",
+                  "startTidspunkt",
+                  "kontorId",
+                  "kontorNavn",
+                  "producerTimestamp"
                 ],
-                "x-parser-schema-id": "<anonymous-schema-23>"
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "oppfolgingsperiodeUuid": {
+                    "type": "string",
+                    "format": "uuid",
+                    "x-parser-schema-id": "<anonymous-schema-15>"
+                  },
+                  "sisteEndringsType": {
+                    "type": "string",
+                    "enum": [
+                      "ARBEIDSOPPFOLGINGSKONTOR_ENDRET"
+                    ],
+                    "x-parser-schema-id": "<anonymous-schema-16>"
+                  },
+                  "aktorId": {
+                    "type": "string",
+                    "x-parser-schema-id": "<anonymous-schema-17>"
+                  },
+                  "startTidspunkt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "x-parser-schema-id": "<anonymous-schema-18>"
+                  },
+                  "sluttTidspunkt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "nullable": true,
+                    "x-parser-schema-id": "<anonymous-schema-19>"
+                  },
+                  "kontorId": {
+                    "type": "string",
+                    "x-parser-schema-id": "<anonymous-schema-20>"
+                  },
+                  "kontorNavn": {
+                    "type": "string",
+                    "x-parser-schema-id": "<anonymous-schema-21>"
+                  },
+                  "producerTimestamp": {
+                    "type": "string",
+                    "format": "date-time",
+                    "x-parser-schema-id": "<anonymous-schema-22>"
+                  }
+                }
               },
-              "aktorId": {
-                "type": "string",
-                "x-parser-schema-id": "<anonymous-schema-24>"
-              },
-              "startTidspunkt": {
-                "type": "string",
-                "format": "date-time",
-                "x-parser-schema-id": "<anonymous-schema-25>"
-              },
-              "sluttTidspunkt": {
-                "type": "string",
-                "format": "date-time",
-                "x-parser-schema-id": "<anonymous-schema-26>"
-              },
-              "kontorId": {
-                "type": "string",
-                "nullable": true,
-                "x-parser-schema-id": "<anonymous-schema-27>"
-              },
-              "kontorNavn": {
-                "type": "string",
-                "nullable": true,
-                "x-parser-schema-id": "<anonymous-schema-28>"
-              },
-              "producerTimestamp": {
-                "type": "string",
-                "format": "date-time",
-                "x-parser-schema-id": "<anonymous-schema-29>"
+              {
+                "$schema": "https://json-schema.org/draft-07/schema",
+                "$id": "https://navikt.github.io/veilarboppfolging/schemas/oppfolgingsperiode.v2.avsluttet.schema.yml",
+                "required": [
+                  "oppfolgingsperiodeUuid",
+                  "sisteEndringsType",
+                  "aktorId",
+                  "startTidspunkt",
+                  "sluttTidspunkt",
+                  "producerTimestamp"
+                ],
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "oppfolgingsperiodeUuid": {
+                    "type": "string",
+                    "format": "uuid",
+                    "x-parser-schema-id": "<anonymous-schema-23>"
+                  },
+                  "sisteEndringsType": {
+                    "type": "string",
+                    "enum": [
+                      "OPPFOLGING_AVSLUTTET"
+                    ],
+                    "x-parser-schema-id": "<anonymous-schema-24>"
+                  },
+                  "aktorId": {
+                    "type": "string",
+                    "x-parser-schema-id": "<anonymous-schema-25>"
+                  },
+                  "startTidspunkt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "x-parser-schema-id": "<anonymous-schema-26>"
+                  },
+                  "sluttTidspunkt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "x-parser-schema-id": "<anonymous-schema-27>"
+                  },
+                  "kontorId": {
+                    "type": "string",
+                    "nullable": true,
+                    "x-parser-schema-id": "<anonymous-schema-28>"
+                  },
+                  "kontorNavn": {
+                    "type": "string",
+                    "nullable": true,
+                    "x-parser-schema-id": "<anonymous-schema-29>"
+                  },
+                  "producerTimestamp": {
+                    "type": "string",
+                    "format": "date-time",
+                    "x-parser-schema-id": "<anonymous-schema-30>"
+                  }
+                }
               }
-            }
+            ],
+            "x-parser-schema-id": "<anonymous-schema-6>"
           },
-          "x-parser-unique-object-id": "oppfolgingsperiodeAvsluttet"
+          "x-parser-unique-object-id": "oppfolgingsperiodeV2"
         }
       },
       "bindings": {
@@ -399,26 +386,26 @@
                   "STARTET",
                   "AVSLUTTET"
                 ],
-                "x-parser-schema-id": "<anonymous-schema-30>"
+                "x-parser-schema-id": "<anonymous-schema-31>"
               },
               "enhetId": {
                 "type": "string",
                 "format": "EnhetId",
-                "x-parser-schema-id": "<anonymous-schema-31>"
+                "x-parser-schema-id": "<anonymous-schema-32>"
               },
               "startet": {
                 "type": "string",
                 "format": "date-time",
-                "x-parser-schema-id": "<anonymous-schema-32>"
+                "x-parser-schema-id": "<anonymous-schema-33>"
               },
               "avsluttet": {
                 "type": "string",
                 "format": "date-time",
-                "x-parser-schema-id": "<anonymous-schema-33>"
+                "x-parser-schema-id": "<anonymous-schema-34>"
               },
               "aktorId": {
                 "type": "string",
-                "x-parser-schema-id": "<anonymous-schema-34>"
+                "x-parser-schema-id": "<anonymous-schema-35>"
               }
             }
           },
@@ -448,7 +435,7 @@
             "properties": {
               "fodselsnummer": {
                 "type": "string",
-                "x-parser-schema-id": "<anonymous-schema-35>"
+                "x-parser-schema-id": "<anonymous-schema-36>"
               },
               "formidlingsgruppe": {
                 "type": "string",
@@ -457,38 +444,38 @@
                   "IARBS",
                   "ISERV"
                 ],
-                "x-parser-schema-id": "<anonymous-schema-36>"
+                "x-parser-schema-id": "<anonymous-schema-37>"
               },
               "iservFraDato": {
                 "type": "string",
                 "format": "LocalDate",
-                "x-parser-schema-id": "<anonymous-schema-37>"
+                "x-parser-schema-id": "<anonymous-schema-38>"
               },
               "fornavn": {
                 "type": "string",
-                "x-parser-schema-id": "<anonymous-schema-38>"
+                "x-parser-schema-id": "<anonymous-schema-39>"
               },
               "etternavn": {
                 "type": "string",
-                "x-parser-schema-id": "<anonymous-schema-39>"
+                "x-parser-schema-id": "<anonymous-schema-40>"
               },
               "oppfolgingsenhet": {
                 "type": "string",
-                "x-parser-schema-id": "<anonymous-schema-40>"
+                "x-parser-schema-id": "<anonymous-schema-41>"
               },
               "kvalifiseringsgruppe": {
                 "type": "string",
                 "enum": [
                   "adas"
                 ],
-                "x-parser-schema-id": "<anonymous-schema-41>"
+                "x-parser-schema-id": "<anonymous-schema-42>"
               },
               "rettighetsgruppe": {
                 "type": "string",
                 "enum": [
                   "Rettighetsgruppe"
                 ],
-                "x-parser-schema-id": "<anonymous-schema-42>"
+                "x-parser-schema-id": "<anonymous-schema-43>"
               },
               "hovedmaal": {
                 "type": "string",
@@ -497,7 +484,7 @@
                   "OKEDELT",
                   "SKAFFEA"
                 ],
-                "x-parser-schema-id": "<anonymous-schema-43>"
+                "x-parser-schema-id": "<anonymous-schema-44>"
               },
               "sikkerhetstiltakType": {
                 "type": "string",
@@ -507,32 +494,32 @@
                   "TOAN",
                   "TFUS"
                 ],
-                "x-parser-schema-id": "<anonymous-schema-44>"
+                "x-parser-schema-id": "<anonymous-schema-45>"
               },
               "diskresjonskode": {
                 "type": "string",
-                "x-parser-schema-id": "<anonymous-schema-45>"
+                "x-parser-schema-id": "<anonymous-schema-46>"
               },
               "harOppfolgingssak": {
                 "type": "boolean",
-                "x-parser-schema-id": "<anonymous-schema-46>"
+                "x-parser-schema-id": "<anonymous-schema-47>"
               },
               "sperretAnsatt": {
                 "type": "boolean",
-                "x-parser-schema-id": "<anonymous-schema-47>"
+                "x-parser-schema-id": "<anonymous-schema-48>"
               },
               "erDoed": {
                 "type": "boolean",
-                "x-parser-schema-id": "<anonymous-schema-48>"
+                "x-parser-schema-id": "<anonymous-schema-49>"
               },
               "doedFraDato": {
                 "type": "string",
-                "x-parser-schema-id": "<anonymous-schema-49>"
+                "x-parser-schema-id": "<anonymous-schema-50>"
               },
               "sistEndretDato": {
                 "type": "string",
                 "format": "ZonedDateTime",
-                "x-parser-schema-id": "<anonymous-schema-50>"
+                "x-parser-schema-id": "<anonymous-schema-51>"
               }
             }
           },
@@ -593,29 +580,25 @@
   "components": {
     "messages": {
       "oppfolgingsperiode": "$ref:$.channels.pto.oppfolgingsperiode-v1.messages.oppfolgingsperideStartEllerSlutt",
-      "oppfolgingsperiodeStartet": "$ref:$.channels.siste-oppfolgingsperiode-v2.messages.oppfolgingsperiodeStartet",
-      "oppfolgingsperiodeKontorEndret": "$ref:$.channels.siste-oppfolgingsperiode-v2.messages.oppfolgingsperiodeKontorEndret",
-      "oppfolgingsperiodeAvsluttet": "$ref:$.channels.siste-oppfolgingsperiode-v2.messages.oppfolgingsperiodeAvsluttet",
-      "oppfolgingsperiodeV2": {
-        "name": "oppfolgingsperiodeV2",
-        "title": "Oppfølgingsperiode v2",
-        "summary": "Oppfølgingperiode-meldinger med start, endret eller avsluttet. Felter kan være nullable.",
-        "tags": [
-          {
-            "name": "siste-oppfolgingsperiode-v2",
-            "description": "Siste oppfolgingsperiode v2"
-          }
-        ],
-        "payload": {
-          "oneOf": [
-            "$ref:$.channels.siste-oppfolgingsperiode-v2.messages.oppfolgingsperiodeStartet.payload",
-            "$ref:$.channels.siste-oppfolgingsperiode-v2.messages.oppfolgingsperiodeKontorEndret.payload",
-            "$ref:$.channels.siste-oppfolgingsperiode-v2.messages.oppfolgingsperiodeAvsluttet.payload"
-          ],
-          "x-parser-schema-id": "<anonymous-schema-51>"
-        },
-        "x-parser-unique-object-id": "oppfolgingsperiodeV2"
+      "oppfolgingsperiodeStartet": {
+        "name": "oppfolgingsperiodeStartet",
+        "title": "Oppfølging startet",
+        "payload": "$ref:$.channels.siste-oppfolgingsperiode-v2.messages.oppfolgingsperiodeV2.payload.oneOf[0]",
+        "x-parser-unique-object-id": "oppfolgingsperiodeStartet"
       },
+      "oppfolgingsperiodeKontorEndret": {
+        "name": "oppfolgingsperiodeKontorEndret",
+        "title": "Kontor endret",
+        "payload": "$ref:$.channels.siste-oppfolgingsperiode-v2.messages.oppfolgingsperiodeV2.payload.oneOf[1]",
+        "x-parser-unique-object-id": "oppfolgingsperiodeKontorEndret"
+      },
+      "oppfolgingsperiodeAvsluttet": {
+        "name": "oppfolgingsperiodeAvsluttet",
+        "title": "Oppfølging avsluttet",
+        "payload": "$ref:$.channels.siste-oppfolgingsperiode-v2.messages.oppfolgingsperiodeV2.payload.oneOf[2]",
+        "x-parser-unique-object-id": "oppfolgingsperiodeAvsluttet"
+      },
+      "oppfolgingsperiodeV2": "$ref:$.channels.siste-oppfolgingsperiode-v2.messages.oppfolgingsperiodeV2",
       "kvpperiode": "$ref:$.channels.kvp-perioder-v1.messages.kvpperiode",
       "oppfolgingsbruker": "$ref:$.channels.endring-pa-oppfolgingsbruker.messages.oppfolgingsbruker"
     }
