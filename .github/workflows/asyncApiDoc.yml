@@ -44,7 +44,7 @@ jobs:
 
       - name: Generating HTML from my AsyncAPI document
         working-directory: src/main/resources/schemas
-        run: asyncapi generate fromTemplate src/main/resources/schemas/veilarboppfolging.asyncapi.yml @asyncapi/html-template@3.0.0 --use-new-generator -o ./veilarboppfolging-doc
+        run: asyncapi generate fromTemplate veilarboppfolging.asyncapi.yml @asyncapi/html-template@3.0.0 --use-new-generator -o ./veilarboppfolging-doc
 
  #     - name: generate documentaion (denne tar litt tid)
  #       working-directory: src/main/resources/schemas
