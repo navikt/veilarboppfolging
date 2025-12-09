@@ -5,6 +5,7 @@ required:
   - sisteEndringsType
   - aktorId
   - startTidspunkt
+  - sluttTidspunkt
   - producerTimestamp
 type: object
 additionalProperties: false
@@ -15,7 +16,7 @@ properties:
   sisteEndringsType:
     type: string
     enum:
-      - OPPFOLGING_STARTET
+      - OPPFOLGING_AVSLUTTET
   aktorId:
     type: string
   startTidspunkt:
@@ -24,7 +25,6 @@ properties:
   sluttTidspunkt:
     type: string
     format: date-time
-    nullable: true
   kontorId:
     type: string
     nullable: true
