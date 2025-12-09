@@ -8,6 +8,7 @@ info:
     name: Team Dab
     url: 'https://nav-it.slack.com/archives/C04HS60F283'
 defaultContentType: application/json
+
 channels:
   pto.oppfolgingsperiode-v1:
     address: pto.oppfolgingsperiode-v1
@@ -29,10 +30,13 @@ channels:
         $ref: '#/components/messages/oppfolgingsperiode'
   siste-oppfolgingsperiode-v2:
     address: siste-oppfolgingsperiode-v2
-    description: Topic overtar for siste-oppfolgingsperiode-v1 og inneholder kontor
+    description: Topic overtar for v1 og inneholder alle caser
     publish:
       messages:
-        - $ref: '#/components/messages/oppfolgingsperiodeV2'
+        oppfolgingsperiodeStartet:
+        - $ref: '#/components/messages/oppfolgingsperiodeStartet'
+        - $ref: '#/components/messages/oppfolgingsperiodeKontorEndret'
+        - $ref: '#/components/messages/oppfolgingsperiodeAvsluttet'
       bindings:
         kafka:
           topic: siste-oppfolgingsperiode-v2
@@ -68,6 +72,16 @@ operations:
       $ref: "#/channels/siste-oppfolgingsperiode-v1"
     messages:
       - $ref: '#/channels/siste-oppfolgingsperiode-v1/messages/oppfolgingsperideStartEllerSlutt'
+
+  siste-oppfolgingsperiode-v2:
+    description: Oppfølgingperiode compacted på aktørId (alle caser; STARTET, KONTOR_ENDRET, AVSLUTTET)
+    action: send
+    channel:
+      $ref: "#/channels/siste-oppfolgingsperiode-v2"
+    messages:
+      - $ref: '#/channels/siste-oppfolgingsperiode-v2'
+
+
   endring-pa-oppfolgingsbruker:
     description: Endring på oppfølgingsbrukere fra Arena
     action: receive
@@ -84,6 +98,25 @@ components:
       summary: Oppdatert oppfølgingsperiode etter enten start eller slutt. sluttDato null betyr at oppfølgingsperioden er åpen (bruker er fortsatt under oppfølging)
       payload:
         $ref: oppfolgingsperiode.v1.schema.yml
+
+    oppfolgingsperiodeStartet:
+      name: oppfolgingsperiodeStartet
+      title: Oppfølging startet
+      payload:
+        $ref: oppfolgingsperiode.v2.startet.schema.yml
+
+    oppfolgingsperiodeKontorEndret:
+        name: oppfolgingsperiodeKontorEndret
+        title: Kontor endret
+        payload:
+          $ref: oppfolgingsperiode.v2.kontorEndret.schema.yml
+
+    oppfolgingsperiodeAvsluttet:
+        name: oppfolgingsperiodeAvsluttet
+        title: Oppfølging avsluttet
+        payload:
+          $ref: oppfolgingsperiode.v2.avsluttet.schema.yml
+
 
     oppfolgingsperiodeV2:
       name: oppfolgingsperiodeV2
