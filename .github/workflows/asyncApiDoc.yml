@@ -25,11 +25,8 @@ jobs:
         with:
           node-version: 22
 
-      - name: install generator
-        run: npm install -g @asyncapi/generator
-
-      - name: install html template
-        run: npm install -g @asyncapi/html-template
+      - name: install generator and html template
+        run: npm install @asyncapi/generator @asyncapi/html-template
 
       - name: generate documentaion (denne tar litt tid)
         working-directory: src/main/resources/schemas
