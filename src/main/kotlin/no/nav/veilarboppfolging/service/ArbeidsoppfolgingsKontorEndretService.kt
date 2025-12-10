@@ -56,8 +56,8 @@ class ArbeidsoppfolgingsKontorEndretService(
                 oppfolgingsperiodeId = oppfolgingsperiode.uuid,
                 startTidspunkt = oppfolgingsperiode.startDato,
                 kontor = KontorDto(
-                    melding.kontorId,
-                    melding.kontorNavn
+                    melding.kontorNavn,
+                    melding.kontorId
                 ),
                 aktorId = melding.aktorId,
                 ident = melding.ident,
