@@ -100,24 +100,38 @@ operations:
 
 components:
   schemas:
+    OppfolgingsPeriodeStartet:
+      $ref: oppfolgingsperiode.v2.startet.schema.yml
+      $id: startet-id
+      name: Oppfolgingsperiode startet
+      title: Oppfolgingsperiode startet
+      tags:
+        - name: siste-oppfolgingsperiode-v2
+          description: Siste oppfolgingsperiode v2
+    KontorEndret:
+      $ref: oppfolgingsperiode.v2.kontorEndret.schema.yml
+      description: test kontor endret
+      $id: startet-kontor-endret
+      name: Kontor endret
+      title: Kontor endret
+      tags:
+        - name: siste-oppfolgingsperiode-v2
+          description: Siste oppfolgingsperiode v2
+    OppfolgingsperiodeAvsluttet:
+      $ref: oppfolgingsperiode.v2.avsluttet.schema.yml
+      description: test avsluttet
+      $id: startet-avsluttet
+      name: Oppfolgingsperiode avsluttet
+      title: Oppfolgingsperiode avsluttet
+      tags:
+        - name: siste-oppfolgingsperiode-v2
+          description: Siste oppfolgingsperiode v2
     SisteOppfolgingsperiodeV2:
       discriminator: sisteEndringsType
       oneOf:
-        - $ref: oppfolgingsperiode.v2.startet.schema.yml
-          description: test startet
-          $id: startet-id
-          name: Oppfolgingsperiode startet
-          title: Oppfolgingsperiode startet
-        - $ref: oppfolgingsperiode.v2.kontorEndret.schema.yml
-          description: test kontor endret
-          $id: startet-kontor-endret
-          name: Kontor endret
-          title: Kontor endret
-        - $ref: oppfolgingsperiode.v2.avsluttet.schema.yml
-          description: test avsluttet
-          $id: startet-avsluttet
-          name: Oppfolgingsperiode avsluttet
-          title: Oppfolgingsperiode avsluttet
+        - $ref: "#/components/schemas/OppfolgingsPeriodeStartet"
+        - $ref: "#/components/schemas/KontorEndret"
+        - $ref: "#/components/schemas/OppfolgingsperiodeAvsluttet"
   messages:
     oppfolgingsperiode:
       deprecated: true
