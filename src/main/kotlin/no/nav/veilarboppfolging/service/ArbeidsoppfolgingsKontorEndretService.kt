@@ -55,8 +55,10 @@ class ArbeidsoppfolgingsKontorEndretService(
             val gjeldendeOppfolgingsperiode = GjeldendeOppfolgingsperiode(
                 oppfolgingsperiodeId = oppfolgingsperiode.uuid,
                 startTidspunkt = oppfolgingsperiode.startDato,
-                kontorId = melding.kontorId,
-                kontorNavn = melding.kontorNavn,
+                kontor = KontorDto(
+                    melding.kontorId,
+                    melding.kontorNavn
+                ),
                 aktorId = melding.aktorId,
                 ident = melding.ident,
                 sisteEndringsType = SisteEndringsType.fromTilordningstype(melding.tilordningstype),
@@ -88,6 +90,11 @@ enum class SisteEndringsType {
     }
 }
 
+data class KontorDto(
+    val kontorNavn: String,
+    val kontorId: String,
+)
+
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "hendelseType")
 @JsonSubTypes(
     JsonSubTypes.Type(value = GjeldendeOppfolgingsperiode::class, name = "OPPFOLGING_STARTET"),
@@ -101,16 +108,14 @@ abstract class SisteOppfolgingsperiodeDto(
     val ident: String,
     val startTidspunkt: ZonedDateTime,
     val sluttTidspunkt: ZonedDateTime?,
-    val kontorId: String?,
-    val kontorNavn: String?,
+    val kontor: KontorDto?,
     val producerTimestamp: ZonedDateTime = ZonedDateTime.now(),
 )
 
 class GjeldendeOppfolgingsperiode(
     oppfolgingsperiodeId: UUID,
     startTidspunkt: ZonedDateTime,
-    kontorId: String,
-    kontorNavn: String,
+    kontor: KontorDto,
     aktorId: String,
     ident: String,
     sisteEndringsType: SisteEndringsType,
@@ -132,5 +137,4 @@ class AvsluttetOppfolgingsperiode(
     startTidspunkt,
     sluttTidspunkt,
     null,
-    null
 )

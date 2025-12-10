@@ -100,38 +100,100 @@ operations:
 
 components:
   schemas:
+    Kontor:
+      required:
+        - kontorNavn
+        - kontorId
+      properties:
+        kontorNavn:
+          type: string
+        kontorId:
+          type: string
+    OppfolgingsperiodeV2Base:
+      required:
+        - oppfolgingsperiodeUuid
+        - sisteEndringsType
+        - aktorId
+        - startTidspunkt
+        - producerTimestamp
+        - ident
+      type: object
+      additionalProperties: false
+      tags:
+        - name: siste-oppfolgingsperiode-v2
+          description: Siste oppfolgingsperiode v2
+      properties:
+        oppfolgingsperiodeUuid:
+          type: string
+          format: uuid
+        aktorId:
+          type: string
+        ident:
+          type: string
+        startTidspunkt:
+          type: string
+          format: date-time
+        producerTimestamp:
+          type: string
+          format: date-time
     OppfolgingsPeriodeStartet:
-      $ref: oppfolgingsperiode.v2.startet.schema.yml
-      $id: startet-id
-      name: Oppfolgingsperiode startet
-      title: Oppfolgingsperiode startet
-      tags:
-        - name: siste-oppfolgingsperiode-v2
-          description: Siste oppfolgingsperiode v2
+      allOf:
+        - $ref: "#/components/schemas/OppfolgingsperiodeV2Base"
+      properties:
+        kontor:
+          $ref: "#/components/schemas/Kontor"
+        sisteEndringsType:
+          type: string
+          enum:
+            - OPPFOLGING_STARTET
+        sluttTidspunkt:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+        - sisteEndringsType
+        - kontor
     KontorEndret:
-      $ref: oppfolgingsperiode.v2.kontorEndret.schema.yml
-      description: test kontor endret
-      $id: startet-kontor-endret
-      name: Kontor endret
-      title: Kontor endret
-      tags:
-        - name: siste-oppfolgingsperiode-v2
-          description: Siste oppfolgingsperiode v2
+      allOf:
+        - $ref: "#/components/schemas/OppfolgingsperiodeV2Base"
+      required:
+        - sisteEndringsType
+        - kontor
+      properties:
+        kontor:
+          $ref: "#/components/schemas/Kontor"
+        sisteEndringsType:
+          type: string
+          enum:
+            - ARBEIDSOPPFOLGINGSKONTOR_ENDRET
+        sluttTidspunkt:
+          type: string
+          format: date-time
+          nullable: true
     OppfolgingsperiodeAvsluttet:
-      $ref: oppfolgingsperiode.v2.avsluttet.schema.yml
-      description: test avsluttet
-      $id: startet-avsluttet
-      name: Oppfolgingsperiode avsluttet
-      title: Oppfolgingsperiode avsluttet
-      tags:
-        - name: siste-oppfolgingsperiode-v2
-          description: Siste oppfolgingsperiode v2
+      allOf:
+        - $ref: "#/components/schemas/OppfolgingsperiodeV2Base"
+      properties:
+        kontor:
+          $ref: "#/components/schemas/Kontor"
+          nullable: true
+        sisteEndringsType:
+          type: string
+          enum:
+            - ARBEIDSOPPFOLGINGSKONTOR_ENDRET
+        sluttTidspunkt:
+          type: string
+          format: date-time
+      required:
+        - sluttTidspunkt
+        - sisteEndringsType
     SisteOppfolgingsperiodeV2:
       discriminator: sisteEndringsType
       oneOf:
         - $ref: "#/components/schemas/OppfolgingsPeriodeStartet"
         - $ref: "#/components/schemas/KontorEndret"
         - $ref: "#/components/schemas/OppfolgingsperiodeAvsluttet"
+
   messages:
     oppfolgingsperiode:
       deprecated: true
@@ -141,24 +203,6 @@ components:
       payload:
         $ref: oppfolgingsperiode.v1.schema.yml
 
-    oppfolgingsperiodeStartet:
-      name: oppfolgingsperiodeStartet
-      title: Oppfølging startet
-      payload:
-        $ref: oppfolgingsperiode.v2.startet.schema.yml
-
-    oppfolgingsperiodeKontorEndret:
-        name: oppfolgingsperiodeKontorEndret
-        title: Kontor endret
-        payload:
-          $ref: oppfolgingsperiode.v2.kontorEndret.schema.yml
-
-    oppfolgingsperiodeAvsluttet:
-        name: oppfolgingsperiodeAvsluttet
-        title: Oppfølging avsluttet
-        payload:
-          $ref: oppfolgingsperiode.v2.avsluttet.schema.yml
-
     oppfolgingsperiodeV2:
       name: oppfolgingsperiodeV2
       title: Oppfølgingsperiode v2
@@ -167,6 +211,7 @@ components:
         - name: siste-oppfolgingsperiode-v2
           description: Siste oppfolgingsperiode v2
       payload:
+        discriminator: sisteEndringsType
         $ref: "#/components/schemas/SisteOppfolgingsperiodeV2"
 
     kvpperiode:
@@ -182,4 +227,3 @@ components:
       summary: Oppfølgings-status på en bruker fra Arena
       payload:
         $ref: oppfolgingsbruker.v1.schema.yml
-
