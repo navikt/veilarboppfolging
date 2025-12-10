@@ -37,6 +37,7 @@ channels:
       - Kontoret til en bruker endrer seg (sluttTidspunkt vil være null)
       - Oppfølging på en bruker blir avsluttet (sluttTidspunkt vil være satt)
       - Meldinger blir "re-publisert" manuelt. Da blir siste tilstand publisert på nytt
+      OBS! Når brukers periode blir avsluttet blir kontoret alltid satt til null
     messages:
       oppfolgingsperiodeV2:
         $ref: '#/components/messages/oppfolgingsperiodeV2'
