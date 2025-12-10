@@ -140,14 +140,17 @@ components:
             description: test startet
             $id: startet-id
             name: Oppfolgingsperiode startet
+            title: Oppfolgingsperiode startet
           - $ref: oppfolgingsperiode.v2.kontorEndret.schema.yml
             description: test kontor endret
             $id: startet-kontor-endret
             name: Kontor endret
+            title: Kontor endret
           - $ref: oppfolgingsperiode.v2.avsluttet.schema.yml
             description: test avsluttet
             $id: startet-avsluttet
             name: Oppfolgingsperiode avsluttet
+            title: Oppfolgingsperiode avsluttet
     kvpperiode:
       name: kvpperiode
       title: KVP-periode
