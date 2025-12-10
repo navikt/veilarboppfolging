@@ -99,6 +99,25 @@ operations:
       - $ref: '#/channels/endring-pa-oppfolgingsbruker/messages/oppfolgingsbruker'
 
 components:
+  schemas:
+    SisteOppfolgingsperiodeV2:
+      discriminator: sisteEndringsType
+      oneOf:
+        - $ref: oppfolgingsperiode.v2.startet.schema.yml
+          description: test startet
+          $id: startet-id
+          name: Oppfolgingsperiode startet
+          title: Oppfolgingsperiode startet
+        - $ref: oppfolgingsperiode.v2.kontorEndret.schema.yml
+          description: test kontor endret
+          $id: startet-kontor-endret
+          name: Kontor endret
+          title: Kontor endret
+        - $ref: oppfolgingsperiode.v2.avsluttet.schema.yml
+          description: test avsluttet
+          $id: startet-avsluttet
+          name: Oppfolgingsperiode avsluttet
+          title: Oppfolgingsperiode avsluttet
   messages:
     oppfolgingsperiode:
       deprecated: true
@@ -134,23 +153,8 @@ components:
         - name: siste-oppfolgingsperiode-v2
           description: Siste oppfolgingsperiode v2
       payload:
-        discriminator: "sisteEndringsType"
-        oneOf:
-          - $ref: oppfolgingsperiode.v2.startet.schema.yml
-            description: test startet
-            $id: startet-id
-            name: Oppfolgingsperiode startet
-            title: Oppfolgingsperiode startet
-          - $ref: oppfolgingsperiode.v2.kontorEndret.schema.yml
-            description: test kontor endret
-            $id: startet-kontor-endret
-            name: Kontor endret
-            title: Kontor endret
-          - $ref: oppfolgingsperiode.v2.avsluttet.schema.yml
-            description: test avsluttet
-            $id: startet-avsluttet
-            name: Oppfolgingsperiode avsluttet
-            title: Oppfolgingsperiode avsluttet
+        $ref: "#/components/schemas/SisteOppfolgingsperiodeV2"
+
     kvpperiode:
       name: kvpperiode
       title: KVP-periode
