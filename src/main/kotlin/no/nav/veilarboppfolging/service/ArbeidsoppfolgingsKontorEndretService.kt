@@ -120,7 +120,7 @@ class GjeldendeOppfolgingsperiode(
     ident: String,
     sisteEndringsType: SisteEndringsType,
 ) : SisteOppfolgingsperiodeDto(
-    oppfolgingsperiodeId, sisteEndringsType, aktorId, ident, startTidspunkt, null, kontorId, kontorNavn
+    oppfolgingsperiodeId, sisteEndringsType, aktorId, ident, startTidspunkt, null, kontor
 )
 
 class AvsluttetOppfolgingsperiode(

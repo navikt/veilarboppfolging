@@ -32,12 +32,13 @@ channels:
     description: | 
       ## Siste oppfolgingsperiode v2
       Dette topicet overtar for siste-oppfolgingsperiode-v1 og inneholder i tillegg kontorId, kontorNavn og feltet sisteEndringsType som beskriver hva den siste endringstypen var.
+      OBS! Når brukers periode blir avsluttet blir kontoret alltid satt til null
       Det kommer melding når:
       - Oppfølging på en bruker starter (sluttTidspunkt vil være null)
       - Kontoret til en bruker endrer seg (sluttTidspunkt vil være null)
       - Oppfølging på en bruker blir avsluttet (sluttTidspunkt vil være satt)
       - Meldinger blir "re-publisert" manuelt. Da blir siste tilstand publisert på nytt
-      OBS! Når brukers periode blir avsluttet blir kontoret alltid satt til null
+
     messages:
       oppfolgingsperiodeV2:
         $ref: '#/components/messages/oppfolgingsperiodeV2'
@@ -83,7 +84,7 @@ operations:
       - $ref: '#/channels/siste-oppfolgingsperiode-v1/messages/oppfolgingsperideStartEllerSlutt'
 
   siste-oppfolgingsperiode-v2:
-    description: Oppfølgingperiode compacted på aktørId (alle caser; STARTET, KONTOR_ENDRET, AVSLUTTET)
+    description: Oppfølgingperiode compacted på oppfolgingsperiodeUuid (alle caser; STARTET, KONTOR_ENDRET, AVSLUTTET)
     tags:
       - name: Oppfolgingsperiode
         description: Oppfolgingsperioden til bruker
