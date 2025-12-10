@@ -5,8 +5,7 @@ required:
   - sisteEndringsType
   - aktorId
   - startTidspunkt
-  - kontorId
-  - kontorNavn
+  - kontor
   - producerTimestamp
 type: object
 additionalProperties: false
@@ -14,21 +13,11 @@ properties:
   oppfolgingsperiodeUuid:
     type: string
     format: uuid
-  sisteEndringsType:
-    type: string
-    enum:
-      - ARBEIDSOPPFOLGINGSKONTOR_ENDRET
-      - OPPFOLGING_STARTET
-      - OPPFOLGING_AVSLUTTET
   aktorId:
     type: string
   startTidspunkt:
     type: string
     format: date-time
-  kontorId:
-    type: string
-  kontorNavn:
-    type: string
   producerTimestamp:
     type: string
     format: date-time

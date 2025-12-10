@@ -100,101 +100,6 @@ operations:
       - $ref: '#/channels/endring-pa-oppfolgingsbruker/messages/oppfolgingsbruker'
 
 components:
-  schemas:
-    Kontor:
-      required:
-        - kontorNavn
-        - kontorId
-      properties:
-        kontorNavn:
-          type: string
-        kontorId:
-          type: string
-    OppfolgingsperiodeV2Base:
-      required:
-        - oppfolgingsperiodeUuid
-        - sisteEndringsType
-        - aktorId
-        - startTidspunkt
-        - producerTimestamp
-        - ident
-      type: object
-      additionalProperties: false
-      tags:
-        - name: siste-oppfolgingsperiode-v2
-          description: Siste oppfolgingsperiode v2
-      properties:
-        oppfolgingsperiodeUuid:
-          type: string
-          format: uuid
-        aktorId:
-          type: string
-        ident:
-          type: string
-        startTidspunkt:
-          type: string
-          format: date-time
-        producerTimestamp:
-          type: string
-          format: date-time
-    OppfolgingsPeriodeStartet:
-      allOf:
-        - $ref: "#/components/schemas/OppfolgingsperiodeV2Base"
-      properties:
-        kontor:
-          $ref: "#/components/schemas/Kontor"
-        sisteEndringsType:
-          type: string
-          enum:
-            - OPPFOLGING_STARTET
-        sluttTidspunkt:
-          type: string
-          format: date-time
-          nullable: true
-      required:
-        - sisteEndringsType
-        - kontor
-    KontorEndret:
-      allOf:
-        - $ref: "#/components/schemas/OppfolgingsperiodeV2Base"
-      required:
-        - sisteEndringsType
-        - kontor
-      properties:
-        kontor:
-          $ref: "#/components/schemas/Kontor"
-        sisteEndringsType:
-          type: string
-          enum:
-            - ARBEIDSOPPFOLGINGSKONTOR_ENDRET
-        sluttTidspunkt:
-          type: string
-          format: date-time
-          nullable: true
-    OppfolgingsperiodeAvsluttet:
-      allOf:
-        - $ref: "#/components/schemas/OppfolgingsperiodeV2Base"
-      properties:
-        kontor:
-          $ref: "#/components/schemas/Kontor"
-          nullable: true
-        sisteEndringsType:
-          type: string
-          enum:
-            - ARBEIDSOPPFOLGINGSKONTOR_ENDRET
-        sluttTidspunkt:
-          type: string
-          format: date-time
-      required:
-        - sluttTidspunkt
-        - sisteEndringsType
-    SisteOppfolgingsperiodeV2:
-      discriminator: sisteEndringsType
-      oneOf:
-        - $ref: "#/components/schemas/OppfolgingsPeriodeStartet"
-        - $ref: "#/components/schemas/KontorEndret"
-        - $ref: "#/components/schemas/OppfolgingsperiodeAvsluttet"
-
   messages:
     oppfolgingsperiode:
       deprecated: true
@@ -213,7 +118,10 @@ components:
           description: Siste oppfolgingsperiode v2
       payload:
         discriminator: sisteEndringsType
-        $ref: "#/components/schemas/SisteOppfolgingsperiodeV2"
+        oneOf:
+          - $ref: oppfolgingsperiode.v2.startet.schema.yml
+          - $ref: oppfolgingsperiode.v2.kontorEndret.schema.yml
+          - $ref: oppfolgingsperiode.v2.avsluttet.schema.yml
 
     kvpperiode:
       name: kvpperiode

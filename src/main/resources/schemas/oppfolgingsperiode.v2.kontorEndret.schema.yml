@@ -2,11 +2,14 @@
 "$id": "https://navikt.github.io/veilarboppfolging/schemas/oppfolgingsperiode.v2.kontorEndret.schema.yml"
 required:
   - sisteEndringsType
+  - kontor
 type: object
 allOf:
   - $ref: "./oppfolgingsperiode.v2.base.schema.yml"
 additionalProperties: false
 properties:
+  kontor:
+    $ref: 'oppfolgingsperiode.v2.kontor.schema.yml'
   sisteEndringsType:
     type: string
     enum:
