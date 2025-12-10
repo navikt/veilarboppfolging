@@ -30,12 +30,15 @@ channels:
   siste-oppfolgingsperiode-v2:
     address: siste-oppfolgingsperiode-v2
     description: | 
-      ## Dettet topicet overtar for siste-oppfolgingsperiode-v1 og inneholder i tillegg kontorId, kontorNavn og feltet sisteEndringsType som beskriver hva den siste endringstypen var. 
+      ## Siste oppfolgingsperiode v2
+      Dette topicet overtar for siste-oppfolgingsperiode-v1 og inneholder i tillegg kontorId, kontorNavn og feltet sisteEndringsType som beskriver hva den siste endringstypen var.
+      OBS! Når brukers periode blir avsluttet blir kontoret alltid satt til null
       Det kommer melding når:
       - Oppfølging på en bruker starter (sluttTidspunkt vil være null)
       - Kontoret til en bruker endrer seg (sluttTidspunkt vil være null)
       - Oppfølging på en bruker blir avsluttet (sluttTidspunkt vil være satt)
       - Meldinger blir "re-publisert" manuelt. Da blir siste tilstand publisert på nytt
+
     messages:
       oppfolgingsperiodeV2:
         $ref: '#/components/messages/oppfolgingsperiodeV2'
@@ -81,7 +84,7 @@ operations:
       - $ref: '#/channels/siste-oppfolgingsperiode-v1/messages/oppfolgingsperideStartEllerSlutt'
 
   siste-oppfolgingsperiode-v2:
-    description: Oppfølgingperiode compacted på aktørId (alle caser; STARTET, KONTOR_ENDRET, AVSLUTTET)
+    description: Oppfølgingperiode compacted på oppfolgingsperiodeUuid (alle caser; STARTET, KONTOR_ENDRET, AVSLUTTET)
     tags:
       - name: Oppfolgingsperiode
         description: Oppfolgingsperioden til bruker
@@ -107,24 +110,6 @@ components:
       payload:
         $ref: oppfolgingsperiode.v1.schema.yml
 
-    oppfolgingsperiodeStartet:
-      name: oppfolgingsperiodeStartet
-      title: Oppfølging startet
-      payload:
-        $ref: oppfolgingsperiode.v2.startet.schema.yml
-
-    oppfolgingsperiodeKontorEndret:
-        name: oppfolgingsperiodeKontorEndret
-        title: Kontor endret
-        payload:
-          $ref: oppfolgingsperiode.v2.kontorEndret.schema.yml
-
-    oppfolgingsperiodeAvsluttet:
-        name: oppfolgingsperiodeAvsluttet
-        title: Oppfølging avsluttet
-        payload:
-          $ref: oppfolgingsperiode.v2.avsluttet.schema.yml
-
     oppfolgingsperiodeV2:
       name: oppfolgingsperiodeV2
       title: Oppfølgingsperiode v2
@@ -133,6 +118,7 @@ components:
         - name: siste-oppfolgingsperiode-v2
           description: Siste oppfolgingsperiode v2
       payload:
+        discriminator: sisteEndringsType
         oneOf:
           - $ref: oppfolgingsperiode.v2.startet.schema.yml
           - $ref: oppfolgingsperiode.v2.kontorEndret.schema.yml
@@ -151,4 +137,3 @@ components:
       summary: Oppfølgings-status på en bruker fra Arena
       payload:
         $ref: oppfolgingsbruker.v1.schema.yml
-
