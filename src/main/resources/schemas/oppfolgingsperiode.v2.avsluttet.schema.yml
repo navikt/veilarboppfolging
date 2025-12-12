@@ -15,3 +15,6 @@ properties:
   sluttTidspunkt:
     type: string
     format: date-time
+  kontor:
+    type: "null"
+    description: Kontor blir nullet ut når oppfølgingsperioden er avsluttet
