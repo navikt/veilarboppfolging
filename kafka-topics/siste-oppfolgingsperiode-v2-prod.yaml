@@ -20,7 +20,7 @@ spec:
       access: readwrite
     - team: poao
       application: veilarboppfolging
-      access: readwrite
+      access: write
     - team: obo
       application: veilarbportefolje
       access: read
