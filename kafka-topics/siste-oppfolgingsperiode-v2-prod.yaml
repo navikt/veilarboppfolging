@@ -17,10 +17,10 @@ spec:
   acl:
     - team: pto
       application: pto-kafka-manager
-      access: write
+      access: readwrite
     - team: poao
       application: veilarboppfolging
-      access: write
+      access: readwrite
     - team: obo
       application: veilarbportefolje
       access: read
