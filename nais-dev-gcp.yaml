@@ -88,8 +88,6 @@ spec:
       value: "https://www.ansatt.dev.nav.no"
     - name: EXPOSE_GRAPHIQL
       value: "true"
-  secureLogs:
-    enabled: true
   kafka:
     pool: nav-dev
   azure:
@@ -115,6 +113,8 @@ spec:
           namespace: amt
         - application: norg2
           namespace: org
+        - application: logging
+          namespace: nais-system
       external:
         - host: veilarbarena.dev-fss-pub.nais.io
         - host: norg2.dev-fss-pub.nais.io
