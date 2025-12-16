@@ -15,6 +15,7 @@ properties:
     enum:
       - OPPFOLGING_STARTET
   sluttTidspunkt:
-    type: string
+    type: "null"
     format: date-time
     nullable: true
+    description: Sluttdato finnes bare når oppfølgingsperiode er avsluttet

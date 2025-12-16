@@ -15,6 +15,9 @@ properties:
     format: uuid
   aktorId:
     type: string
+  ident:
+    type: string
+    description: DNR, FNR eller NPID. Denne kan skifte. Feks hvis en bruker med DNR får et FNR så vil nyeste ident (FNR) bli brukt på neste melding.
   startTidspunkt:
     type: string
     format: date-time

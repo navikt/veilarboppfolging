@@ -15,7 +15,7 @@ properties:
     enum:
       - ARBEIDSOPPFOLGINGSKONTOR_ENDRET
   sluttTidspunkt:
-    type: string
+    type: "null"
     format: date-time
     nullable: true
-
+    description: Sluttdato finnes bare når oppfølgingsperiode er avsluttet
