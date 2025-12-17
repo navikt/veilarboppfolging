@@ -12,11 +12,20 @@ class BigQueryLoggerCron(
 ) {
 
     @Scheduled(cron = "@midnight")
-    fun hentAntallAvvikendeArenaOgAoKontorCron() {
+    fun loggAntallAvvikendeArenaOgAoKontorCron() {
         val jobTimestamp = ZonedDateTime.now(ZoneOffset.UTC)
 
         val arenakontorUtenAoKontor = kontorMetrikkerDAO.hentAvvikendeArenaOgAoKontor()
 
         bigQueryClientKontor.loggAvvikendeArenaOgAoKontor(arenakontorUtenAoKontor, jobTimestamp)
+    }
+
+    @Scheduled(cron = "@midnight")
+    fun loggOppfolgingsperioderUtenAoKontorCron() {
+        val jobTimestamp = ZonedDateTime.now(ZoneOffset.UTC)
+
+        val oppfolgingsperioderUtenAoKontor = kontorMetrikkerDAO.hentOppfolgingsperioderUtenAoKontor()
+
+        bigQueryClientKontor.loggOppfolgingsperioderUtenAoKontor(oppfolgingsperioderUtenAoKontor, jobTimestamp)
     }
 }
