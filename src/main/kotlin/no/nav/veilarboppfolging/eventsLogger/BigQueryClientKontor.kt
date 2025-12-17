@@ -8,9 +8,14 @@ import java.time.ZoneOffset
 import java.time.ZonedDateTime
 
 class BigQueryClientKontor(projectId: String) {
-    val DATASET_NAME = "kontor_metrikker"
-    val ARENAKONTOR_UTEN_AO_KONTOR = "ARENAKONTOR_UTEN_AO_KONTOR"
+    companion object{
+        val DATASET_NAME = "kontor_metrikker"
+        val ARENAKONTOR_UTEN_AO_KONTOR = "ARENAKONTOR_UTEN_AO_KONTOR"
+        val OPPFOLGINGSPERIODE_UTEN_AO_KONTOR = "OPPFOLGINGSPERIODE_UTEN_AO_KONTOR"
+    }
+
     val arenaKontorUtenAoKontorTable = TableId.of(DATASET_NAME, ARENAKONTOR_UTEN_AO_KONTOR)
+    val oppfolgingsperiodeUtenAoKontorTable = TableId.of(DATASET_NAME, OPPFOLGINGSPERIODE_UTEN_AO_KONTOR)
 
     val bigQuery = BigQueryOptions.newBuilder().setProjectId(projectId).build().service
     val log = LoggerFactory.getLogger(BigQueryClientKontor::class.java)
@@ -26,23 +31,16 @@ class BigQueryClientKontor(projectId: String) {
             .toOffsetDateTime()
             .toString()
 
-        val request = InsertAllRequest.newBuilder(arenaKontorUtenAoKontorTable)
-            .also { builder ->
-                arenakontorUtenAoKontor.forEach {
-                    builder.addRow(
-                        it.oppfolgingsperiodeId, // insertId (idempotent)
-                        mapOf(
-                            "oppfolgingsperiodeId" to it.oppfolgingsperiodeId,
-                            "arenaKontor" to it.arenaKontor,
-                            "aoKontor" to it.aoKontor,
-                            "timestamp" to timestamp
-                        )
-                    )
-                }
-            }
-            .build()
+        val rows = arenakontorUtenAoKontor.map {
+            mapOf(
+                "oppfolgingsperiodeId" to it.oppfolgingsperiodeId,
+                "arenaKontor" to it.arenaKontor,
+                "aoKontor" to it.aoKontor,
+                "timestamp" to timestamp
+            )
+        }
 
-        insertWhileToleratingErrors(request)
+        sendTilBigQuery(arenaKontorUtenAoKontorTable, rows)
     }
 
     fun loggOppfolgingsperioderUtenAoKontor(
@@ -56,20 +54,21 @@ class BigQueryClientKontor(projectId: String) {
             .toOffsetDateTime()
             .toString()
 
-        val request = InsertAllRequest.newBuilder(arenaKontorUtenAoKontorTable)
-            .also { builder ->
-                oppfolgingsperioderUtenAoKontor.forEach {
-                    builder.addRow(
-                        it.oppfolgingsperiodeId, // insertId (idempotent)
-                        mapOf(
-                            "oppfolgingsperiodeId" to it.oppfolgingsperiodeId,
-                            "timestamp" to timestamp
-                        )
-                    )
-                }
-            }
-            .build()
+        val rows = oppfolgingsperioderUtenAoKontor.map {
+            mapOf(
+                "oppfolgingsperiodeId" to it.oppfolgingsperiodeId,
+                "timestamp" to timestamp
+            )
+        }
 
+        sendTilBigQuery(oppfolgingsperiodeUtenAoKontorTable, rows)
+    }
+
+    private fun sendTilBigQuery(table: TableId, rows: List<Map<String, Any>>) {
+        if (rows.isEmpty()) return
+        val request = InsertAllRequest.newBuilder(table)
+            .also { builder -> rows.forEach { builder.addRow(it) } }
+            .build()
         insertWhileToleratingErrors(request)
     }
 
@@ -87,7 +86,7 @@ class BigQueryClientKontor(projectId: String) {
 }
 
 data class ArenakontorUtenAoKontor(
-    val oppfolgingsperiodeId: String, // Er det lov?
+    val oppfolgingsperiodeId: String,
     val arenaKontor: String,
     val aoKontor: String
 )
