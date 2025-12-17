@@ -12,30 +12,36 @@ class BigQueryClientKontor(projectId: String) {
     val ARENAKONTOR_UTEN_AO_KONTOR = "ARENAKONTOR_UTEN_AO_KONTOR"
     val arenaKontorUtenAoKontorTable = TableId.of(DATASET_NAME, ARENAKONTOR_UTEN_AO_KONTOR)
 
-    private fun TableId.insertRequest(row: Map<String, Any>): InsertAllRequest {
-        return InsertAllRequest.newBuilder(this).addRow(row).build()
-    }
-
     val bigQuery = BigQueryOptions.newBuilder().setProjectId(projectId).build().service
-    val log = LoggerFactory.getLogger(BigQueryClient::class.java)
+    val log = LoggerFactory.getLogger(BigQueryClientKontor::class.java)
 
-    fun loggAntallAvvikendeArenaOgAoKontor() {
-        val fordelingRow = mapOf(
-            "antallAvvik" to AntallArenakontorUtenAoKontor.antallAvvik,
-            "timestamp" to ZonedDateTime.now().withZoneSameInstant(ZoneOffset.UTC).toOffsetDateTime().toString(),
-        )
-        val request = arenaKontorUtenAoKontorTable.insertRequest(fordelingRow)
-        insertWhileToleratingErrors(request)
-    }
+    fun loggAvvikendeArenaOgAoKontor(
+        arenakontorUtenAoKontor: List<ArenakontorUtenAoKontor>,
+        jobTimestamp: ZonedDateTime
+    ) {
+        if (arenakontorUtenAoKontor.isEmpty()) return
 
-    fun loggAvvikendeArenaOgAoKontor() {
-        val fordelingRow = mapOf(
-            "oppfølgingsperiodeId" to ArenakontorUtenAoKontor.oppfolgingsperiodeId,
-            "arenaKontor" to ArenakontorUtenAoKontor.arenaKontor,
-            "aoKontor" to ArenakontorUtenAoKontor.aoKontor,
-            "timestamp" to ZonedDateTime.now().withZoneSameInstant(ZoneOffset.UTC).toOffsetDateTime().toString(),
-        )
-        val request = arenaKontorUtenAoKontorTable.insertRequest(fordelingRow)
+        val timestamp = jobTimestamp
+            .withZoneSameInstant(ZoneOffset.UTC)
+            .toOffsetDateTime()
+            .toString()
+
+        val request = InsertAllRequest.newBuilder(arenaKontorUtenAoKontorTable)
+            .also { builder ->
+                arenakontorUtenAoKontor.forEach {
+                    builder.addRow(
+                        it.oppfolgingsperiodeId, // insertId (idempotent)
+                        mapOf(
+                            "oppfolgingsperiodeId" to it.oppfolgingsperiodeId,
+                            "arenaKontor" to it.arenaKontor,
+                            "aoKontor" to it.aoKontor,
+                            "timestamp" to timestamp
+                        )
+                    )
+                }
+            }
+            .build()
+
         insertWhileToleratingErrors(request)
     }
 
@@ -52,12 +58,9 @@ class BigQueryClientKontor(projectId: String) {
     }
 }
 
-data class AntallArenakontorUtenAoKontor(
-    val antallAvvik: Int
-)
-
 data class ArenakontorUtenAoKontor(
     val oppfolgingsperiodeId: String, // Er det lov?
     val arenaKontor: String,
     val aoKontor: String
 )
+
