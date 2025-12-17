@@ -3,7 +3,6 @@
 <configuration>
 <include resource="no/nav/common/log/logback-naudit.xml"/>
 <include resource="no/nav/common/log/logback-cxf.xml"/>
-<include resource="no/nav/common/log/logback-securelogs.xml"/>
 
 <appender name="STDOUT_JSON" class="ch.qos.logback.core.ConsoleAppender">
    <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
