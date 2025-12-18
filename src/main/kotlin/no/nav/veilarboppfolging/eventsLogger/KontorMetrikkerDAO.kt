@@ -1,7 +1,9 @@
 package no.nav.veilarboppfolging.eventsLogger
 
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
+import org.springframework.stereotype.Repository
 
+@Repository
 class KontorMetrikkerDAO(val db: NamedParameterJdbcTemplate) {
 
     fun hentAvvikendeArenaOgAoKontor(): List<ArenakontorUtenAoKontor> {
