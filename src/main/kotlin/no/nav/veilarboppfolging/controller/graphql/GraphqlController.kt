@@ -19,6 +19,7 @@ import no.nav.veilarboppfolging.controller.graphql.brukerStatus.BrukerStatusAren
 import no.nav.veilarboppfolging.controller.graphql.brukerStatus.BrukerStatusDto
 import no.nav.veilarboppfolging.controller.graphql.brukerStatus.BrukerStatusKrrDto
 import no.nav.veilarboppfolging.controller.graphql.brukerStatus.BrukerStatusManuellDto
+import no.nav.veilarboppfolging.controller.graphql.brukerStatus.KontorSperre
 import no.nav.veilarboppfolging.controller.graphql.oppfolging.EnhetDto
 import no.nav.veilarboppfolging.controller.graphql.oppfolging.KildeDto
 import no.nav.veilarboppfolging.controller.graphql.oppfolging.OppfolgingDto
@@ -29,6 +30,7 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.*
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ALLEREDE_UNDER_OPPFOLGING.oppfolgingSjekk
 import no.nav.veilarboppfolging.repository.EnhetRepository
+import no.nav.veilarboppfolging.repository.KvpRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity
@@ -68,7 +70,8 @@ class GraphqlController(
     private val pdlFolkeregisterStatusClient: PdlFolkeregisterStatusClient,
     private val arenaService: ArenaOppfolgingService,
     private val manuellService: ManuellStatusService,
-    private val oppfolgingService: OppfolgingService
+    private val oppfolgingService: OppfolgingService,
+    private val kvpRepository: KvpRepository
 ) {
     private val logger = LoggerFactory.getLogger(GraphqlController::class.java)
 
@@ -141,7 +144,7 @@ class GraphqlController(
             .put("fnr", fnr)
             .put("aktorId", aktorId)
         return result.localContext(localContext)
-            .data(BrukerStatusDto(null, null, null, null))
+            .data(BrukerStatusDto())
             .build()
     }
 
@@ -247,6 +250,13 @@ class GraphqlController(
     fun erKontorsperret(brukerStatusDto: BrukerStatusDto, @LocalContextValue aktorId: AktorId): Boolean? {
         return oppfolgingsStatusRepository.hentOppfolging(aktorId)
             .map { it.gjeldendeKvpId != null && it.gjeldendeKvpId != 0L }.orElse(false)
+    }
+
+    @SchemaMapping(typeName = "BrukerStatusDto", field = "kontorSperre")
+    fun kontorSperre(brukerStatusDto: BrukerStatusDto, @LocalContextValue aktorId: AktorId): KontorSperre? {
+        return kvpRepository.hentGjeldendeKvpPeriode(aktorId)
+            .map { it.enhet }.getOrNull()
+            ?.let { KontorSperre(it) }
     }
 
     @SchemaMapping(typeName = "BrukerStatusDto", field = "krr")

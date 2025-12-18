@@ -4,4 +4,9 @@ query sjekkVeilederTilganger($fnr: String!) {
         harVeilederLeseTilgangTilBrukersKontorsperre
         tilgang
     }
+    brukerStatus(fnr: $fnr) {
+        kontorSperre {
+            kontorId
+        }
+    }
 }
