@@ -1,5 +1,6 @@
 package no.nav.veilarboppfolging.eventsLogger
 
+import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.scheduling.annotation.Scheduled
@@ -14,22 +15,25 @@ class BigQueryLoggerCron(
     val bigQueryClientKontor: BigQueryClientKontor,
     val kontorMetrikkerDAO: KontorMetrikkerDAO
 ) {
+    val log = LoggerFactory.getLogger(BigQueryLoggerCron::class.java)
 
-    @Scheduled(cron = "0 41 9 * * *")
+    @Scheduled(cron = "0 58 9 * * *")
     fun loggAntallAvvikendeArenaOgAoKontorCron() {
-        val jobTimestamp = ZonedDateTime.now(ZoneOffset.UTC)
-
+        log.info("Starter cron for å logge avvikende arena og ao kontor til BigQuery")
         val arenakontorUtenAoKontor = kontorMetrikkerDAO.hentAvvikendeArenaOgAoKontor()
+        log.info("Fant ${arenakontorUtenAoKontor.size} avvikende arena og ao kontor")
 
+        val jobTimestamp = ZonedDateTime.now(ZoneOffset.UTC)
         bigQueryClientKontor.loggAvvikendeArenaOgAoKontor(arenakontorUtenAoKontor, jobTimestamp)
     }
 
-    @Scheduled(cron = "0 40 9 * * *")
+    @Scheduled(cron = "0 57 9 * * *")
     fun loggOppfolgingsperioderUtenAoKontorCron() {
-        val jobTimestamp = ZonedDateTime.now(ZoneOffset.UTC)
-
+        log.info("Starter cron for å logge oppfølgingsperioder uten ao kontor til BigQuery")
         val oppfolgingsperioderUtenAoKontor = kontorMetrikkerDAO.hentOppfolgingsperioderUtenAoKontor()
+        log.info("Fant ${oppfolgingsperioderUtenAoKontor.size} oppfølgingsperioder uten ao kontor")
 
+        val jobTimestamp = ZonedDateTime.now(ZoneOffset.UTC)
         bigQueryClientKontor.loggOppfolgingsperioderUtenAoKontor(oppfolgingsperioderUtenAoKontor, jobTimestamp)
     }
 }

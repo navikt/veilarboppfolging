@@ -39,7 +39,7 @@ class BigQueryClientKontor(projectId: String) {
                 "timestamp" to timestamp
             )
         }
-
+        log.info("Sender ${rows.size} rader til BigQuery for avvikende arena og ao kontor")
         sendTilBigQuery(arenaKontorUtenAoKontorTable, rows)
     }
 
@@ -61,6 +61,7 @@ class BigQueryClientKontor(projectId: String) {
             )
         }
 
+        log.info("Sender ${rows.size} rader til BigQuery for oppfolgingsperioder uten ao kontor")
         sendTilBigQuery(oppfolgingsperiodeUtenAoKontorTable, rows)
     }
 
