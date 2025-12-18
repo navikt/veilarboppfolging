@@ -351,6 +351,13 @@ class GraphqlControllerTest: IntegrationTest() {
                 "tilgang": "HAR_TILGANG"
             }
         """.trimIndent())
+        result.path("brukerStatus").matchesJson("""
+            { 
+                "kontorSperre": {
+                    "kontorId": "${enhetId.get()}"
+                }
+            }
+        """.trimIndent())
     }
 
     @Test
@@ -391,7 +398,8 @@ class GraphqlControllerTest: IntegrationTest() {
                 "begrunnelse": "Fordi",
                 "endretAvType": "NAV",
                 "endretAvIdent": "A112211"
-              }, 
+              },
+              "kontorSperre": null,
               "erKontorsperret": false,
               "krr": {
                   "registrertIKrr": true,
