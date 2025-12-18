@@ -58,8 +58,8 @@ class OppfolgingsperiodeEndretServiceTest {
         assertThat(jsonNode["startTidspunkt"].asZonedDateTime()).isEqualTo(oppfolgingsperiode.startDato)
         assertThat(jsonNode["sluttTidspunkt"].isNull)
         assertThat(jsonNode["producerTimestamp"].asZonedDateTime()).isCloseTo(ZonedDateTime.now(), within(1, ChronoUnit.SECONDS))
-        assertThat(jsonNode["kontorId"].asText()).isEqualTo(oppfolgingskontorMelding.kontorId)
-        assertThat(jsonNode["kontorNavn"].asText()).isEqualTo(oppfolgingskontorMelding.kontorNavn)
+        assertThat(jsonNode["kontor"]["kontorId"].asText()).isEqualTo(oppfolgingskontorMelding.kontorId)
+        assertThat(jsonNode["kontor"]["kontorNavn"].asText()).isEqualTo(oppfolgingskontorMelding.kontorNavn)
     }
 
     @Test
@@ -83,8 +83,8 @@ class OppfolgingsperiodeEndretServiceTest {
         assertThat(jsonNode["startTidspunkt"].asZonedDateTime()).isEqualTo(oppfolgingsperiode.startDato)
         assertThat(jsonNode["sluttTidspunkt"].isNull)
         assertThat(jsonNode["producerTimestamp"].asZonedDateTime()).isCloseTo(ZonedDateTime.now(), within(1, ChronoUnit.SECONDS))
-        assertThat(jsonNode["kontorId"].asText()).isEqualTo(oppfolgingskontorMelding.kontorId)
-        assertThat(jsonNode["kontorNavn"].asText()).isEqualTo(oppfolgingskontorMelding.kontorNavn)
+        assertThat(jsonNode["kontor"]["kontorId"].asText()).isEqualTo(oppfolgingskontorMelding.kontorId)
+        assertThat(jsonNode["kontor"]["kontorNavn"].asText()).isEqualTo(oppfolgingskontorMelding.kontorNavn)
     }
 
     @Test
@@ -110,8 +110,7 @@ class OppfolgingsperiodeEndretServiceTest {
         assertThat(jsonNode["startTidspunkt"].asZonedDateTime()).isEqualTo(oppfolgingsperiode.startDato)
         assertThat(jsonNode["sluttTidspunkt"].asZonedDateTime()).isEqualTo(oppfolgingsperiode.sluttDato)
         assertThat(jsonNode["producerTimestamp"].asZonedDateTime()).isCloseTo(ZonedDateTime.now(), within(1, ChronoUnit.SECONDS))
-        assertThat(jsonNode["kontorId"].isNull)
-        assertThat(jsonNode["kontorNavn"].isNull)
+        assertThat(jsonNode["kontor"].isNull)
     }
 
     fun JsonNode.asZonedDateTime(): ZonedDateTime {
