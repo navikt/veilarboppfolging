@@ -12,6 +12,7 @@ val springDoc = "2.8.9"
 val tmsMicrofrontendBuilder = "3.0.0"
 val tmsVarselBuilder = "2.1.1"
 val avroVersion = "1.12.0"
+val logstashVersion = "8.1"
 val confluentKafkaAvroVersion = "8.1.0"
 
 plugins {
@@ -109,6 +110,7 @@ dependencies {
     implementation("no.nav.tms.varsel:kotlin-builder:$tmsVarselBuilder")
     implementation(platform("com.google.cloud:libraries-bom:$googleCloudLibrariesBomVersion"))
     implementation("com.google.cloud:google-cloud-bigquery")
+    implementation("net.logstash.logback:logstash-logback-encoder:$logstashVersion")
 
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
