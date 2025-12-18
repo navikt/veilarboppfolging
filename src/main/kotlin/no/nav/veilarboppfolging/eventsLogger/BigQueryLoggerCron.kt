@@ -11,6 +11,7 @@ import java.time.ZonedDateTime
 
 @Profile("!test")
 @Component
+@EnableScheduling
 class BigQueryLoggerCron(
     val bigQueryClientKontor: BigQueryClientKontor,
     val kontorMetrikkerDAO: KontorMetrikkerDAO
