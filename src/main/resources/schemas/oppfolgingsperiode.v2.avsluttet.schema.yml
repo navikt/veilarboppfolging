@@ -1,0 +1,20 @@
+"$schema": https://json-schema.org/draft-07/schema
+"$id": "https://navikt.github.io/veilarboppfolging/schemas/oppfolgingsperiode.v2.avsluttet.schema.yml"
+required:
+  - sisteEndringsType
+  - sluttTidspunkt
+type: object
+allOf:
+  - $ref: "./oppfolgingsperiode.v2.base.schema.yml"
+additionalProperties: false
+properties:
+  sisteEndringsType:
+    type: string
+    enum:
+      - OPPFOLGING_AVSLUTTET
+  sluttTidspunkt:
+    type: string
+    format: date-time
+  kontor:
+    type: "null"
+    description: Kontor blir nullet ut når oppfølgingsperioden er avsluttet
