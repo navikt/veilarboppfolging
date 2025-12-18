@@ -17,7 +17,7 @@ class BigQueryLoggerCron(
 ) {
     val log = LoggerFactory.getLogger(BigQueryLoggerCron::class.java)
 
-    @Scheduled(cron = "0 58 9 * * *")
+    @Scheduled(initialDelay = 60000, fixedDelay = Long.MAX_VALUE)
     fun loggAntallAvvikendeArenaOgAoKontorCron() {
         log.info("Starter cron for å logge avvikende arena og ao kontor til BigQuery")
         val arenakontorUtenAoKontor = kontorMetrikkerDAO.hentAvvikendeArenaOgAoKontor()
@@ -27,7 +27,7 @@ class BigQueryLoggerCron(
         bigQueryClientKontor.loggAvvikendeArenaOgAoKontor(arenakontorUtenAoKontor, jobTimestamp)
     }
 
-    @Scheduled(cron = "0 57 9 * * *")
+    @Scheduled(initialDelay = 30000, fixedDelay = Long.MAX_VALUE)
     fun loggOppfolgingsperioderUtenAoKontorCron() {
         log.info("Starter cron for å logge oppfølgingsperioder uten ao kontor til BigQuery")
         val oppfolgingsperioderUtenAoKontor = kontorMetrikkerDAO.hentOppfolgingsperioderUtenAoKontor()
