@@ -26,7 +26,7 @@ class BigQueryClientKontor(projectId: String) {
     ) {
         if (arenakontorUtenAoKontor.isEmpty()) return
 
-        val timestamp = jobTimestamp
+        val tidspunkt = jobTimestamp
             .withZoneSameInstant(ZoneOffset.UTC)
             .toOffsetDateTime()
             .toString()
@@ -36,7 +36,7 @@ class BigQueryClientKontor(projectId: String) {
                 "oppfolgingsperiodeId" to it.oppfolgingsperiodeId,
                 "arenaKontor" to it.arenaKontor,
                 "aoKontor" to it.aoKontor,
-                "timestamp" to timestamp
+                "tidspunkt" to tidspunkt
             )
         }
         log.info("Sender ${rows.size} rader til BigQuery for avvikende arena og ao kontor")
@@ -49,7 +49,7 @@ class BigQueryClientKontor(projectId: String) {
     ) {
         if (oppfolgingsperioderUtenAoKontor.isEmpty()) return
 
-        val timestamp = jobTimestamp
+        val tidspunkt = jobTimestamp
             .withZoneSameInstant(ZoneOffset.UTC)
             .toOffsetDateTime()
             .toString()
@@ -57,7 +57,7 @@ class BigQueryClientKontor(projectId: String) {
         val rows = oppfolgingsperioderUtenAoKontor.map {
             mapOf(
                 "oppfolgingsperiodeId" to it.oppfolgingsperiodeId,
-                "timestamp" to timestamp
+                "tidspunkt" to tidspunkt
             )
         }
 
