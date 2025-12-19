@@ -15,7 +15,7 @@ spec:
       - description: Metrikker for veilarboppfolging
         name: oppfolging_metrikker
         permission: READWRITE
-      - description: Metrikker for overvåkning av kontorbrukere
+      - description: Metrikker for overvåkning av kontor
         name: kontor_metrikker
         permission: READWRITE
     sqlInstances:
