@@ -1,6 +1,9 @@
 query hentBrukerStatus($fnr: String!) {
     brukerStatus(fnr: $fnr) {
         erKontorsperret
+        kontorSperre {
+            kontorId
+        }
         manuell {
             erManuell
             begrunnelse

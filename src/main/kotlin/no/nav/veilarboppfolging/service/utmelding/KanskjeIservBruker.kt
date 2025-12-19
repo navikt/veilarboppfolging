@@ -65,7 +65,7 @@ data class KanskjeIservBruker(
 
     private fun resolveUpsertHendelse(erBrukerIUtmeldingsTabell :() -> Boolean): UpsertIUtmelding {
         if (iservFraDato == null) {
-            secureLog.error("Kan ikke oppdatere utmeldingstabell med bruker siden iservFraDato mangler. aktorId={}", aktorId);
+            secureLog.error("Kan ikke oppdatere utmeldingstabell med bruker siden iservFraDato mangler. aktorId=$aktorId");
             throw IllegalArgumentException("iservFraDato mangler på EndringPaaOppfoelgingsBrukerV2");
         }
         return when (erBrukerIUtmeldingsTabell()) {

@@ -12,12 +12,13 @@ val springDoc = "2.8.9"
 val tmsMicrofrontendBuilder = "3.0.0"
 val tmsVarselBuilder = "2.1.1"
 val avroVersion = "1.12.0"
+val logstashVersion = "8.1"
 val confluentKafkaAvroVersion = "8.1.0"
 
 plugins {
-    kotlin("jvm") version "2.2.10"
+    kotlin("jvm") version "2.2.21"
     kotlin("plugin.spring") version "2.2.10"
-    kotlin("plugin.lombok") version "2.2.10"
+    kotlin("plugin.lombok") version "2.2.21"
     id("org.springframework.boot") version "3.5.6"
     id("io.spring.dependency-management") version "1.1.7"
     id("jacoco")
@@ -65,8 +66,8 @@ repositories {
 }
 
 dependencies {
-    annotationProcessor("org.projectlombok:lombok:1.18.38")
-    testAnnotationProcessor("org.projectlombok:lombok:1.18.38")
+    annotationProcessor("org.projectlombok:lombok:1.18.42")
+    testAnnotationProcessor("org.projectlombok:lombok:1.18.42")
 
     implementation("com.github.ben-manes.caffeine:caffeine")
     implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
@@ -81,7 +82,7 @@ dependencies {
     implementation("io.micrometer:micrometer-observation")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:$springDoc")
     implementation("org.springframework.boot:spring-boot-devtools")
-    implementation("org.projectlombok:lombok:1.18.38")
+    implementation("org.projectlombok:lombok:1.18.42")
     implementation("org.springframework.boot:spring-boot-configuration-processor")
     implementation("no.nav.poao-tilgang:client:$poaoTilgangVersion")
     implementation("com.zaxxer:HikariCP")
@@ -109,13 +110,14 @@ dependencies {
     implementation("no.nav.tms.varsel:kotlin-builder:$tmsVarselBuilder")
     implementation(platform("com.google.cloud:libraries-bom:$googleCloudLibrariesBomVersion"))
     implementation("com.google.cloud:google-cloud-bigquery")
+    implementation("net.logstash.logback:logstash-logback-encoder:$logstashVersion")
 
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
     testImplementation("no.nav.common:test:$commonVersion")
     testImplementation("org.springframework.graphql:spring-graphql-test:1.4.3")
     testImplementation("io.zonky.test:embedded-database-spring-test:2.6.0")
-    testImplementation("io.zonky.test:embedded-postgres:2.1.1")
+    testImplementation("io.zonky.test:embedded-postgres:2.2.0")
     testImplementation("junit:junit")
     testImplementation("org.junit.vintage:junit-vintage-engine")
     testImplementation("org.springframework.kafka:spring-kafka-test")

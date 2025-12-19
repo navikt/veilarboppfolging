@@ -60,8 +60,7 @@ open class StartOppfolgingService(
                     oppfolgingsStatusRepository.opprettOppfolging(aktorId)
                 } catch (e: DuplicateKeyException) {
                     SecureLog.secureLog.warn(
-                        "Race condition oppstod under oppretting av ny oppfølging for bruker: {}",
-                        aktorId
+                        "Race condition oppstod under oppretting av ny oppfølging for bruker: $aktorId"
                     )
                     return@executeWithoutResult
                 }

@@ -72,9 +72,14 @@ type KrrStatusDto {
     registrertIKrr: Boolean!
 }
 
+type KontorSperre {
+    kontorId: String!
+}
+
 type BrukerStatusDto {
     manuell: BrukerStatusManuellDto
     erKontorsperret: Boolean!
+    kontorSperre: KontorSperre
     krr: KrrStatusDto
     arena: BrukerStatusArenaDto
 }
