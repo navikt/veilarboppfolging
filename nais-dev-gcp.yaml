@@ -15,6 +15,9 @@ spec:
       - description: Metrikker for veilarboppfolging
         name: oppfolging_metrikker
         permission: READWRITE
+      - description: Metrikker for overvåkning av kontorbrukere
+        name: kontorbruker_metrikker
+        permission: READWRITE
     sqlInstances:
       - name: veilarboppfolging
         type: POSTGRES_14
