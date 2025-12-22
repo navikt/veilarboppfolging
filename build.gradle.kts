@@ -116,7 +116,7 @@ dependencies {
 
     testImplementation("no.nav.common:test:$commonVersion")
     testImplementation("org.springframework.graphql:spring-graphql-test:1.4.3")
-    testImplementation("io.zonky.test:embedded-database-spring-test:2.6.0")
+    testImplementation("io.zonky.test:embedded-database-spring-test:2.7.1")
     testImplementation("io.zonky.test:embedded-postgres:2.2.0")
     testImplementation("junit:junit")
     testImplementation("org.junit.vintage:junit-vintage-engine")
