@@ -19,7 +19,7 @@ plugins {
     kotlin("jvm") version "2.2.21"
     kotlin("plugin.spring") version "2.2.10"
     kotlin("plugin.lombok") version "2.2.21"
-    id("org.springframework.boot") version "3.5.6"
+    id("org.springframework.boot") version "4.0.1"
     id("io.spring.dependency-management") version "1.1.7"
     id("jacoco")
     id("org.sonarqube") version "6.3.1.5724"
