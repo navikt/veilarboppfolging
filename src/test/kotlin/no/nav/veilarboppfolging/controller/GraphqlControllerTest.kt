@@ -435,4 +435,18 @@ class GraphqlControllerTest: IntegrationTest() {
             }
         """.trimIndent())
     }
+
+    @Test
+    fun `eksternbruker skal ikke kunne spørre om oppfolging`() {
+        val (fnr, aktorId) = defaultBruker()
+        mockEksternBrukerAuthOk(fnr)
+
+        val result = tester.documentName("altQuery").variable("fnr", fnr.get()).execute()
+        result.errors()
+            .expect { it.path == "oppfolgingsEnhet" && it.message == "403 FORBIDDEN" }
+            .expect { it.path == "brukerStatus" && it.message == "403 FORBIDDEN" }
+            .expect { it.path == "veilederLeseTilgangModia" && it.message == "Må være intern bruker" }
+            .expect { it.path == "oppfolging.kanStarteOppfolging" && it.message == "Må være intern bruker" }
+            .verify()
+    }
 }

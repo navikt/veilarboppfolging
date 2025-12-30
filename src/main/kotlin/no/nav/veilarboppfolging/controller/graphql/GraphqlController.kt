@@ -9,13 +9,11 @@ import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.EksternBrukerId
 import no.nav.common.types.identer.EnhetId
 import no.nav.common.types.identer.Fnr
-import no.nav.common.types.identer.NorskIdent
 import no.nav.poao_tilgang.client.Decision
 import no.nav.poao_tilgang.client.PoaoTilgangClient
 import no.nav.poao_tilgang.client.TilgangType
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.veilarboppfolging.client.pdl.PdlFolkeregisterStatusClient
-import no.nav.veilarboppfolging.controller.FantIkkeAktorIdForFnrError
 import no.nav.veilarboppfolging.controller.PoaoTilgangError
 import no.nav.veilarboppfolging.controller.graphql.brukerStatus.BrukerStatusArenaDto
 import no.nav.veilarboppfolging.controller.graphql.brukerStatus.BrukerStatusDto
