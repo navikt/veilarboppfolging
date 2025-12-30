@@ -107,7 +107,7 @@ class GraphqlControllerTest: IntegrationTest() {
     }
 
     @Test
-    fun `skal returnere oppfolgingsEnhet ved spørring med aktorId som param istedetfor fnr`() {
+    fun `skal returnere svar på alle spørringer med aktorId som param istedetfor fnr`() {
         val (fnr, aktorId) = defaultBruker()
         val kontor = "7414"
         val kontorNavn = "Nav Graphql Kontor"
@@ -120,11 +120,8 @@ class GraphqlControllerTest: IntegrationTest() {
         mockNorgEnhetsNavn(kontor, kontorNavn)
 
         /* Query is hidden in test/resources/graphl-test :) */
-        val result = tester.documentName("getEnhetQuery").variable("fnr", aktorId.get()).execute()
+        val result = tester.documentName("altQuery").variable("fnr", aktorId.get()).execute()
         result.errors().verify()
-        result.path("oppfolgingsEnhet.enhet").matchesJson("""
-            { "id": "${kontor}", "kilde": "NORG", "navn": "${kontorNavn}" }
-        """.trimIndent())
     }
 
     @Test

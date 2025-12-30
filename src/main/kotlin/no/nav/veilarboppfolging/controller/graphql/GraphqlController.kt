@@ -120,10 +120,11 @@ class GraphqlController(
 
     @QueryMapping
     fun veilederLeseTilgangModia(@Argument fnr: String?): DataFetcherResult<VeilederTilgangDto> {
-        if (fnr == null || fnr.isEmpty()) throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Fnr er påkrevd")
+        val eksternBrukerId = fnrFraContext(fnr)
+        val fnr = eksternBrukerId.getFnr()
         val result = DataFetcherResult.newResult<VeilederTilgangDto>()
-        val context = GraphQLContext.getDefault().put("fnr", Fnr.of(fnr))
-        return evaluerNavAnsattTilgangTilEksternBruker(fnr)
+        val context = GraphQLContext.getDefault().put("fnr", fnr)
+        return evaluerNavAnsattTilgangTilEksternBruker(fnr.get())
             .let {
                 VeilederTilgangDto(
                     harTilgang = it == TilgangResultat.HAR_TILGANG,
@@ -325,23 +326,24 @@ class GraphqlController(
             .getOrNull()
     }
 
-    private fun sjekkLeseTilgang(fnr: String?): Fnr {
+    private fun sjekkLeseTilgang(fnr: String?): EksternBrukerId {
+        val eksternBrukerId = fnrFraContext(fnr)
         val userRole = authService.role.get()
         return when (userRole) {
-            UserRole.EKSTERN -> Fnr.of(authService.innloggetBrukerIdent)
+            UserRole.EKSTERN -> eksternBrukerId as Fnr
             UserRole.SYSTEM,
             UserRole.INTERN -> {
-                fnr?.let { Fnr.of(it) }
-                    ?.also { authService.sjekkLesetilgangMedFnr(it) }
-                    ?: throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Fnr er påkrevd for ${userRole.name}-bruker")
+                val aktorId = eksternBrukerId.getAktorId()
+                authService.sjekkLesetilgangMedAktorId(aktorId)
+                eksternBrukerId
             }
         }
     }
 
     @QueryMapping
     fun oppfolgingsPerioder(@Argument fnr: String?): List<OppfolgingsperiodeDto> {
-        val fnr = sjekkLeseTilgang(fnr)
-        val aktorId = aktorOppslagClient.hentAktorId(fnr)
+        val eksternBrukerId = sjekkLeseTilgang(fnr)
+        val aktorId = eksternBrukerId.getAktorId()
         return oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId)
             .map { it.toOppfolgingsperiodeDto() }
     }
