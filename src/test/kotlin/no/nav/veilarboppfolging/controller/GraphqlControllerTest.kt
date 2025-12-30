@@ -9,6 +9,8 @@ import no.nav.veilarboppfolging.IntegrationTest
 import no.nav.veilarboppfolging.client.pdl.ForenkletFolkeregisterStatus
 import no.nav.veilarboppfolging.client.pdl.FregStatusOgStatsborgerskap
 import no.nav.veilarboppfolging.controller.graphql.AdGruppeNavn
+import no.nav.veilarboppfolging.ident.randomAktorId
+import no.nav.veilarboppfolging.ident.randomFnr
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.KanStarteOppfolgingDto
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.verifyNoInteractions
@@ -38,8 +40,8 @@ class GraphqlControllerTest: IntegrationTest() {
     val norskStatsborgerskap = listOf("NOR")
 
     fun defaultBruker(): Pair<Fnr, AktorId> {
-        val fnr = Fnr("12345678910")
-        val aktorId = AktorId("22345678910")
+        val fnr = randomFnr()
+        val aktorId = randomAktorId()
         mockSytemBrukerAuthOk(aktorId, fnr)
         mockPdlFolkeregisterStatus(fnr, FregStatusOgStatsborgerskap(ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven, norskStatsborgerskap))
         return fnr to aktorId
@@ -98,6 +100,27 @@ class GraphqlControllerTest: IntegrationTest() {
 
         /* Query is hidden in test/resources/graphl-test :) */
         val result = tester.documentName("getEnhetQuery").variable("fnr", fnr.get()).execute()
+        result.errors().verify()
+        result.path("oppfolgingsEnhet.enhet").matchesJson("""
+            { "id": "${kontor}", "kilde": "NORG", "navn": "${kontorNavn}" }
+        """.trimIndent())
+    }
+
+    @Test
+    fun `skal returnere oppfolgingsEnhet ved spørring med aktorId som param istedetfor fnr`() {
+        val (fnr, aktorId) = defaultBruker()
+        val kontor = "7414"
+        val kontorNavn = "Nav Graphql Kontor"
+        val skjermet = false
+        val veilederUuid = UUID.randomUUID()
+        mockPdlGeografiskTilknytning(fnr, kontor)
+        mockInternBrukerAuthOk(veilederUuid, aktorId, fnr)
+        mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Permit)
+        mockPoaoTilgangTilgangsAttributter(kontor, skjermet)
+        mockNorgEnhetsNavn(kontor, kontorNavn)
+
+        /* Query is hidden in test/resources/graphl-test :) */
+        val result = tester.documentName("getEnhetQuery").variable("fnr", aktorId.get()).execute()
         result.errors().verify()
         result.path("oppfolgingsEnhet.enhet").matchesJson("""
             { "id": "${kontor}", "kilde": "NORG", "navn": "${kontorNavn}" }
@@ -175,8 +198,8 @@ class GraphqlControllerTest: IntegrationTest() {
     @Test
     fun `skal returnere kanStarteOppfolging - JA når veileder har tilgang`() {
         val veilederUuid = UUID.randomUUID()
-        val fnr = Fnr.of("12444678910")
-        val aktorId = AktorId.of("12444678919")
+        val fnr = randomFnr()
+        val aktorId = randomAktorId()
         mockInternBrukerAuthOk(veilederUuid, aktorId, fnr)
         mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Permit)
         mockPdlFolkeregisterStatus(fnr, FregStatusOgStatsborgerskap(ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven, norskStatsborgerskap))
@@ -191,8 +214,8 @@ class GraphqlControllerTest: IntegrationTest() {
     @Test
     fun `skal returnere kanStarteOppfolging - ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT når bruker allerede under oppfølging men ISERV+kanReaktiveres i Arena`() {
         val veilederUuid = UUID.randomUUID()
-        val fnr = Fnr.of("12444678910")
-        val aktorId = AktorId.of("12444678919")
+        val fnr = randomFnr()
+        val aktorId = randomAktorId()
         setBrukerUnderOppfolging(aktorId, fnr)
         mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Permit)
         mockPdlFolkeregisterStatus(fnr, FregStatusOgStatsborgerskap(ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven, norskStatsborgerskap))
@@ -210,8 +233,8 @@ class GraphqlControllerTest: IntegrationTest() {
     @Test
     fun `skal returnere kanStarteOppfolging - ALLEREDE_UNDER_OPPFOLGING når bruker allerede under oppfølging`() {
         val veilederUuid = UUID.randomUUID()
-        val fnr = Fnr.of("12444678910")
-        val aktorId = AktorId.of("12444678919")
+        val fnr = randomFnr()
+        val aktorId = randomAktorId()
         setBrukerUnderOppfolging(aktorId, fnr)
         mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Permit)
         mockPdlFolkeregisterStatus(fnr, FregStatusOgStatsborgerskap(ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven, norskStatsborgerskap))
@@ -229,8 +252,8 @@ class GraphqlControllerTest: IntegrationTest() {
     fun `skal ikke kalle pdl for bosattstatus dersom veileder ikke tilgang til bruker`() {
         // Kallet mot pdl vil feile dersom det blir kalt for en bruker med diskresjonskode hvis veileder ikke har spesielle rettigheter
         val veilederUuid = UUID.randomUUID()
-        val fnr = Fnr.of("12444678910")
-        val aktorId = AktorId.of("12444678919")
+        val fnr = randomFnr()
+        val aktorId = randomAktorId()
        // setBrukerUnderOppfolging(aktorId)
         mockInternBrukerAuthOk(veilederUuid, aktorId, fnr)
         mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Deny(
@@ -249,8 +272,8 @@ class GraphqlControllerTest: IntegrationTest() {
     @Test
     fun `skal returnere kanStarteOppfolging - skal returnere hvorfor veileder ikke har tilgang`() {
         val veilederUuid = UUID.randomUUID()
-        val fnr = Fnr.of("12444678910")
-        val aktorId = AktorId.of("12444678919")
+        val fnr = randomFnr()
+        val aktorId = randomAktorId()
         mockInternBrukerAuthOk(veilederUuid, aktorId, fnr)
 
         listOf(
@@ -276,8 +299,8 @@ class GraphqlControllerTest: IntegrationTest() {
     @Test
     fun `skal returnere kanStarteOppfolging - norsk statsborger - skal returnere hvorfor veileder starte oppfølging på brukere som har feil status i freg`() {
         val veilederUuid = UUID.randomUUID()
-        val fnr = Fnr.of("12444678910")
-        val aktorId = AktorId.of("12444678919")
+        val fnr = randomFnr()
+        val aktorId = randomAktorId()
         mockInternBrukerAuthOk(veilederUuid, aktorId, fnr)
         mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Permit)
 
@@ -304,8 +327,8 @@ class GraphqlControllerTest: IntegrationTest() {
     @Test
     fun `skal returnere kanStarteOppfolging - tredjelandsborger - skal returnere hvorfor veileder starte oppfølging på brukere som har feil status i freg`() {
         val veilederUuid = UUID.randomUUID()
-        val fnr = Fnr.of("12444678910")
-        val aktorId = AktorId.of("12444678919")
+        val fnr = randomFnr()
+        val aktorId = randomAktorId()
         val tredjelandsStatsborgerskap = listOf("RUS")
         mockInternBrukerAuthOk(veilederUuid, aktorId, fnr)
         mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Permit)
@@ -333,8 +356,8 @@ class GraphqlControllerTest: IntegrationTest() {
     @Test
     fun `skal ha tilgang til brukers sjekke veileders tilganger til bruker`() {
         val veilederUuid = UUID.randomUUID()
-        val fnr = Fnr.of("12444678910")
-        val aktorId = AktorId.of("12444678919")
+        val fnr = randomFnr()
+        val aktorId = randomAktorId()
         val enhetId = EnhetId("3131")
         setBrukerUnderOppfolging(aktorId, fnr)
         setBrukerUnderKvp(aktorId, enhetId.get(), veilederUuid.toString())
