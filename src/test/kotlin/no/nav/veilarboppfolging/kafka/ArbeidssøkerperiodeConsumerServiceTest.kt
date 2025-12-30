@@ -39,9 +39,13 @@ import no.nav.paw.arbeidssokerregisteret.api.v1.Metadata as MetaData
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ArbeidssøkerperiodeConsumerServiceTest(
+    @Autowired
     val arbeidssøkerperiodeConsumerService: ArbeidssøkerperiodeConsumerService,
+    @Autowired
     val kafkaConsumerService: KafkaConsumerService,
+    @Autowired
     val oppfølgingService: OppfolgingService,
+    @Autowired
     val utmeldingRepository: UtmeldingRepository,
 ): IntegrationTest() {
 
