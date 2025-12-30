@@ -62,8 +62,6 @@ enum KanStarteOppfolging {
 type OppfolgingDto {
     erUnderOppfolging: Boolean
     kanStarteOppfolging: KanStarteOppfolging
-    manuell: Boolean!
-    reservertIKrr: Boolean!
 }
 
 type KrrStatusDto {
