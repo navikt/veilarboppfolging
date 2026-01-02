@@ -128,4 +128,5 @@ type Oppfolgingsperiode {
     sluttTidspunkt: String
     id: String!
     startetBegrunnelse: OppfolgingStartetBegrunnelse
+    avsluttetAv: String
 }

@@ -5,6 +5,7 @@ import no.nav.common.types.identer.EnhetId
 import no.nav.common.types.identer.Fnr
 import no.nav.common.types.identer.NavIdent
 import no.nav.poao_tilgang.client.Decision
+import no.nav.poao_tilgang.client.TilgangType
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.veilarboppfolging.IntegrationTest
 import no.nav.veilarboppfolging.client.pdl.ForenkletFolkeregisterStatus
@@ -384,16 +385,22 @@ class GraphqlControllerTest: IntegrationTest() {
     @Test
     fun `skal returnere oppfolgingsperiodene til bruker`() {
         val veilederId = UUID.randomUUID()
+        val veilederNavIdent = NavIdent("B143314")
+        val enhet = EnhetId("1212")
         val (fnr, aktorId) = defaultBruker()
         mockInternBrukerAuthOk(veilederId, aktorId, fnr)
-        mockPoaoTilgangHarTilgangTilBruker(veilederId, fnr, Decision.Permit)
+        mockPoaoTilgangHarTilgangTilBruker(veilederId, fnr, Decision.Permit, tilgangType = TilgangType.SKRIVE)
+        mockPoaoTilgangHarTilgangTilBruker(veilederId, fnr, Decision.Permit, tilgangType = TilgangType.LESE)
+        mockPoaoTilgangHarTilgangTilEnhet(veilederId, enhet, Decision.Permit)
         setBrukerUnderOppfolging(aktorId, fnr)
+        setLocalArenaOppfolging(aktorId, Formidlingsgruppe.ISERV, enhet = enhet)
+        avsluttOppfolgingManueltSomVeileder(aktorId, veilederNavIdent, "fordi")
 
         /* Query is hidden in test/resources/graphl-test :) */
         val result = tester.documentName("getOppfolgingsperioder").variable("fnr", fnr.get()).execute()
         result.errors().verify()
         result.path("oppfolgingsPerioder").matchesJson("""
-            [ { sluttTidspunkt: null } ]
+            [ { avsluttetAv: "${veilederNavIdent.get()}" } ]
         """.trimIndent())
     }
 

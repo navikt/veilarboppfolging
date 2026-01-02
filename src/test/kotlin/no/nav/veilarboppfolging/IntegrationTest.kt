@@ -223,13 +223,13 @@ open class IntegrationTest {
         kvpRepository.startKvp(aktorId, enhetId, veilederId, "fordi", ZonedDateTime.now())
     }
 
-    fun setLocalArenaOppfolging(aktorId: AktorId) {
+    fun setLocalArenaOppfolging(aktorId: AktorId, formidlingsgruppe: Formidlingsgruppe = Formidlingsgruppe.IARBS, enhet: EnhetId? = null) {
         oppfolgingsStatusRepository.oppdaterArenaOppfolgingStatus(aktorId, false,
             LocalArenaOppfolging(
                 Hovedmaal.BEHOLDEA,
                 Kvalifiseringsgruppe.VURDI,
-                Formidlingsgruppe.IARBS,
-                null,
+                formidlingsgruppe,
+                enhet,
                 null,
             ))
     }
@@ -247,9 +247,9 @@ open class IntegrationTest {
 
     fun hentOppfolgingsperioder(fnr: Fnr) = oppfolgingController.hentOppfolgingsperioder(fnr)
 
-    fun avsluttOppfolgingManueltSomVeileder(aktorId: AktorId, veileder: String = "veileder", begrunnelse: String = "Begrunnelse") {
+    fun avsluttOppfolgingManueltSomVeileder(aktorId: AktorId, veileder: NavIdent = NavIdent("veileder"), begrunnelse: String = "Begrunnelse") {
         oppfolgingService.avsluttOppfolging(
-            ManuellAvregistrering(aktorId, VeilederRegistrant(NavIdent.of(veileder)), begrunnelse),
+            ManuellAvregistrering(aktorId, VeilederRegistrant(veileder), begrunnelse),
         )
     }
 
@@ -277,7 +277,7 @@ open class IntegrationTest {
             `when`(authContextHolder.uid).thenReturn(Optional.of(fnr.get()))
     }
 
-    fun mockInternBrukerAuthOk(veilederIOD: UUID,aktørId: AktorId, fnr: Fnr, navIdent: String = "A123456") {
+    fun mockInternBrukerAuthOk(veilederIOD: UUID,aktørId: AktorId, fnr: Fnr, navIdent: NavIdent = NavIdent("A123456")) {
         val claims = JWTClaimsSet.Builder()
             .issuer("microsoftonline.com")
             .claim("azp_name", "cluster:team:veilarbregistrering")
@@ -296,7 +296,7 @@ open class IntegrationTest {
         `when`(authContextHolder.erEksternBruker()).thenReturn(false)
         `when`(aktorOppslagClient.hentAktorId(fnr)).thenReturn(aktørId)
         `when`(aktorOppslagClient.hentFnr(aktørId)).thenReturn(fnr)
-        `when`(authContextHolder.uid).thenReturn(Optional.of(navIdent))
+        `when`(authContextHolder.uid).thenReturn(Optional.of(navIdent.get()))
     }
 
     fun mockPdlGeografiskTilknytning(fnr: Fnr, enhetsNr: String, gtType: GTType = GTType.BYDEL) {

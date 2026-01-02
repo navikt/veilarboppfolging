@@ -400,7 +400,8 @@ fun OppfolgingsperiodeEntity.toOppfolgingsperiodeDto(): OppfolgingsperiodeDto {
             } else {
                 it.name
             }
-        }
+        },
+        avsluttetAv = this.avsluttetAv
     )
 }
 

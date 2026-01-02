@@ -3,6 +3,7 @@ package no.nav.veilarboppfolging.service
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.EnhetId
 import no.nav.common.types.identer.Fnr
+import no.nav.common.types.identer.NavIdent
 import no.nav.poao_tilgang.client.Decision
 import no.nav.poao_tilgang.client.TilgangType
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
@@ -56,7 +57,7 @@ class AktiverBrukerIntegrationTest : IntegrationTest() {
 
     @Test
     fun `Skal lagre OppfolgingStartetHendelse-melding i utboks når oppfølging startes manuelt`() {
-        val veilederIdent = "B654321"
+        val veilederIdent = NavIdent("B654321")
         val kontorSattAvVeileder = "4321"
         mockInternBrukerAuthOk(UUID.randomUUID(), AKTOR_ID, FNR, veilederIdent)
         val oppfolgingFør = oppfolgingService.hentOppfolging(AKTOR_ID)
@@ -81,7 +82,7 @@ class AktiverBrukerIntegrationTest : IntegrationTest() {
 
     @Test
     fun `Skal lagre OppfolgingStartetHendelse-melding i utboks når oppfølging av arbeidssøkerregistrering startes`() {
-        val veilederIdent = "B654321"
+        val veilederIdent = NavIdent("B654321")
         mockInternBrukerAuthOk(UUID.randomUUID(), AKTOR_ID, FNR, veilederIdent)
         val oppfolgingFør = oppfolgingService.hentOppfolging(AKTOR_ID)
         assertThat(oppfolgingFør.isEmpty).isTrue()
@@ -98,7 +99,7 @@ class AktiverBrukerIntegrationTest : IntegrationTest() {
 
     @Test
     fun `Skal lagre OppfolgingAvsluttetHendelse-melding i utboks når oppfølging avsluttes`() {
-        val veilederIdent = "B654321"
+        val veilederIdent = NavIdent("B654321")
         val veilederUUID = UUID.randomUUID()
         val enhetId = EnhetId.of("3333")
         val avsluttBegrunnelse = "avslutt begrunnelse"
