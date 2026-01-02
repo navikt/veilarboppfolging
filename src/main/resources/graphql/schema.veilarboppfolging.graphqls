@@ -64,6 +64,10 @@ type OppfolgingDto {
     kanStarteOppfolging: KanStarteOppfolging
 }
 
+type VeilederTilordningDto {
+    veilederIdent: String
+}
+
 type KrrStatusDto {
     reservertIKrr: Boolean!
     kanVarsles: Boolean!
@@ -80,6 +84,7 @@ type BrukerStatusDto {
     kontorSperre: KontorSperre
     krr: KrrStatusDto
     arena: BrukerStatusArenaDto
+    veilederTilordning: VeilederTilordningDto
 }
 
 type BrukerStatusArenaDto {

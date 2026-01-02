@@ -54,6 +54,7 @@ import no.nav.veilarboppfolging.repository.ManuellStatusRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
 import no.nav.veilarboppfolging.repository.SakRepository
+import no.nav.veilarboppfolging.repository.VeilederTilordningerRepository
 import no.nav.veilarboppfolging.repository.entity.ManuellStatusEntity
 import no.nav.veilarboppfolging.repository.enums.KodeverkBruker
 import no.nav.veilarboppfolging.service.AuthService
@@ -190,6 +191,9 @@ open class IntegrationTest {
     lateinit var aktiverBrukerManueltService: AktiverBrukerManueltService
 
     @Autowired
+    lateinit var veilederTilordningerRepository: VeilederTilordningerRepository
+
+    @Autowired
     lateinit var kafkaProperties: KafkaProperties
 
     @Autowired
@@ -209,6 +213,10 @@ open class IntegrationTest {
         val bruker = OppfolgingsRegistrering.arbeidssokerRegistrering(fnr, aktorId, BrukerRegistrant(fnr))
         oppfolgingsStatusRepository.opprettOppfolging(aktorId)
         oppfolgingsPeriodeRepository.start(bruker)
+    }
+
+    fun setTilordnetVeileder(aktorId: AktorId, veilederIdent: NavIdent) {
+        veilederTilordningerRepository.upsertVeilederTilordning(aktorId, veilederIdent.get())
     }
 
     fun setBrukerUnderKvp(aktorId: AktorId, enhetId: String, veilederId: String) {

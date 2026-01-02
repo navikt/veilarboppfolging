@@ -3,6 +3,7 @@ package no.nav.veilarboppfolging.controller
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.EnhetId
 import no.nav.common.types.identer.Fnr
+import no.nav.common.types.identer.NavIdent
 import no.nav.poao_tilgang.client.Decision
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.veilarboppfolging.IntegrationTest
@@ -399,12 +400,14 @@ class GraphqlControllerTest: IntegrationTest() {
     @Test
     fun `skal returnere manuell status og reservert på bruker`() {
         val veilederId = UUID.randomUUID()
+        val navIdent = NavIdent("A123123")
         val (fnr, aktorId) = defaultBruker()
         mockInternBrukerAuthOk(veilederId, aktorId, fnr)
         mockPoaoTilgangHarTilgangTilBruker(veilederId, fnr, Decision.Permit)
         setBrukerUnderOppfolging(aktorId, fnr)
         setLocalArenaOppfolging(aktorId)
         setManuellStatus(aktorId)
+        setTilordnetVeileder(aktorId, navIdent)
         mockDigdir(fnr, reservertMotDigitalKommunikasjon = true, kanVarsles = false)
 
         /* Query is hidden in test/resources/graphl-test :) */
@@ -431,6 +434,9 @@ class GraphqlControllerTest: IntegrationTest() {
                 "kanReaktiveres": null,
                 "inaktiveringsdato": null,
                 "kvalifiseringsgruppe": "VURDI"
+              },
+              "veilederTilordning": {
+                "veilederIdent": "${navIdent}"
               }
             }
         """.trimIndent())

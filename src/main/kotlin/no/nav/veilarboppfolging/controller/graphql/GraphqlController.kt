@@ -20,6 +20,7 @@ import no.nav.veilarboppfolging.controller.graphql.brukerStatus.BrukerStatusDto
 import no.nav.veilarboppfolging.controller.graphql.brukerStatus.BrukerStatusKrrDto
 import no.nav.veilarboppfolging.controller.graphql.brukerStatus.BrukerStatusManuellDto
 import no.nav.veilarboppfolging.controller.graphql.brukerStatus.KontorSperre
+import no.nav.veilarboppfolging.controller.graphql.brukerStatus.VeilederTilordningDto
 import no.nav.veilarboppfolging.controller.graphql.oppfolging.EnhetDto
 import no.nav.veilarboppfolging.controller.graphql.oppfolging.KildeDto
 import no.nav.veilarboppfolging.controller.graphql.oppfolging.OppfolgingDto
@@ -34,6 +35,7 @@ import no.nav.veilarboppfolging.repository.EnhetRepository
 import no.nav.veilarboppfolging.repository.KvpRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
+import no.nav.veilarboppfolging.repository.VeilederTilordningerRepository
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity
 import no.nav.veilarboppfolging.service.AuthService
 import no.nav.veilarboppfolging.service.ManuellStatusService
@@ -48,7 +50,6 @@ import org.springframework.stereotype.Controller
 import org.springframework.web.server.ResponseStatusException
 import java.time.format.DateTimeFormatter
 import kotlin.jvm.optionals.getOrNull
-import kotlin.text.isEmpty
 
 enum class TilgangResultat {
     HAR_TILGANG,
@@ -72,7 +73,8 @@ class GraphqlController(
     private val arenaService: ArenaOppfolgingService,
     private val manuellService: ManuellStatusService,
     private val oppfolgingService: OppfolgingService,
-    private val kvpRepository: KvpRepository
+    private val kvpRepository: KvpRepository,
+    private val veilederTilordningerRepository: VeilederTilordningerRepository
 ) {
     private val logger = LoggerFactory.getLogger(GraphqlController::class.java)
 
@@ -272,6 +274,14 @@ class GraphqlController(
         return kvpRepository.hentGjeldendeKvpPeriode(aktorId)
             .map { it.enhet }.getOrNull()
             ?.let { KontorSperre(it) }
+    }
+
+    @SchemaMapping(typeName = "BrukerStatusDto", field = "veilederTilordning")
+    fun veilederTilordning(brukerStatusDto: BrukerStatusDto, @LocalContextValue aktorId: AktorId): VeilederTilordningDto? {
+        return veilederTilordningerRepository.hentTilordnetVeileder(aktorId)
+            .map { it.veilederId }
+            .getOrNull()
+            ?.let { VeilederTilordningDto(it) }
     }
 
     @SchemaMapping(typeName = "BrukerStatusDto", field = "krr")
