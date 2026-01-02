@@ -5,6 +5,8 @@ import graphql.ErrorType
 import graphql.GraphQLError
 import graphql.GraphqlErrorBuilder
 import graphql.schema.DataFetchingEnvironment
+import no.nav.veilarboppfolging.ForbiddenException
+import no.nav.veilarboppfolging.UnauthorizedException
 import org.slf4j.LoggerFactory
 import org.springframework.graphql.execution.DataFetcherExceptionResolver
 import org.springframework.stereotype.Component
@@ -38,6 +40,14 @@ class GraphqlExceptionHandler: DataFetcherExceptionResolver {
     override fun resolveException(ex: Throwable, env: DataFetchingEnvironment): Mono<List<GraphQLError>> {
         logger.error("Error in graphql", ex)
         return when (ex) {
+            is ForbiddenException -> GraphqlErrorBuilder.newError(env)
+                .message(ex.message)
+                .errorType(ErrorType.ValidationError)
+                .build()
+            is UnauthorizedException -> GraphqlErrorBuilder.newError(env)
+                .message(ex.message)
+                .errorType(ErrorType.ValidationError)
+                .build()
             is GraphqlError -> GraphqlErrorBuilder.newError(env)
                 .message(ex.toString())
                 .errorType(ex.errorType)

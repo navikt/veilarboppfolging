@@ -35,12 +35,13 @@ query altQuery($fnr: String!) {
             kvalifiseringsgruppe
         }
     }
-    veilederLeseTilgangModia(fnr: $fnr) {
+    veilederTilgang(fnr: $fnr) {
         harVeilederLeseTilgangTilBruker
         harVeilederLeseTilgangTilBrukersKontorsperre
         tilgang
     }
     oppfolging(fnr: $fnr) {
+        erUnderOppfolging
         kanStarteOppfolging
     }
 }

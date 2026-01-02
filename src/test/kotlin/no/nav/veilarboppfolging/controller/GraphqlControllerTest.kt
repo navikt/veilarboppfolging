@@ -366,7 +366,7 @@ class GraphqlControllerTest: IntegrationTest() {
         /* Query is hidden in test/resources/graphl-test :) */
         val result = tester.documentName("veilederTilganger").variable("fnr", fnr.get()).execute()
         result.errors().verify()
-        result.path("veilederLeseTilgangModia").matchesJson("""
+        result.path("veilederTilgang").matchesJson("""
             { 
                 "harVeilederLeseTilgangTilBruker": true,
                 "harVeilederLeseTilgangTilBrukersKontorsperre": false,
@@ -450,15 +450,44 @@ class GraphqlControllerTest: IntegrationTest() {
     }
 
     @Test
+    fun `internbruker uten tilgang skal bare kunne se at hen ikke har tilgang`() {
+        val (fnr, aktorId) = defaultBruker()
+        val veilederId = UUID.randomUUID()
+        mockInternBrukerAuthOk(veilederId, aktorId, fnr)
+        mockPoaoTilgangHarTilgangTilBruker(veilederId, fnr, Decision.Deny("NOPE", "REASONS"))
+
+        val result = tester.documentName("altQuery").variable("fnr", fnr.get()).execute()
+        result.errors()
+            .expect { it.path == "oppfolgingsPerioder" && it.message == "NavAnsattTilgangTilEksternBrukerPolicyInput fikk deny" }
+            .expect { it.path == "oppfolgingsEnhet" && it.message == "Ikke tilgang: Veileder har ikke tilgang til bruker" }
+            .expect { it.path == "brukerStatus" && it.message == "Ikke tilgang: Veileder har ikke tilgang til bruker" }
+            .verify()
+        result.path("veilederTilgang").matchesJson("""
+            {
+                "harVeilederLeseTilgangTilBruker": false,
+                "harVeilederLeseTilgangTilBrukersKontorsperre": true,
+                "tilgang": "IKKE_TILGANG_ENHET"
+            }
+        """.trimIndent())
+        result.path("oppfolging").matchesJson("""
+            {
+                "kanStarteOppfolging": "IKKE_TILGANG_ENHET",
+                "erUnderOppfolging": null
+            }
+        """.trimIndent())
+
+    }
+
+    @Test
     fun `eksternbruker skal ikke kunne spørre om oppfolging`() {
         val (fnr, aktorId) = defaultBruker()
         mockEksternBrukerAuthOk(fnr)
 
         val result = tester.documentName("altQuery").variable("fnr", fnr.get()).execute()
         result.errors()
-            .expect { it.path == "oppfolgingsEnhet" && it.message == "403 FORBIDDEN" }
-            .expect { it.path == "brukerStatus" && it.message == "403 FORBIDDEN" }
-            .expect { it.path == "veilederLeseTilgangModia" && it.message == "Må være intern bruker" }
+            .expect { it.path == "oppfolgingsEnhet" && it.message == "Ikke tilgang: Eksternbrukere har ikke tilgang til dette API-et" }
+            .expect { it.path == "brukerStatus" && it.message == "Ikke tilgang: Eksternbrukere har bare tilgang til seg selv" }
+            .expect { it.path == "veilederTilgang" && it.message == "Må være intern bruker" }
             .expect { it.path == "oppfolging.kanStarteOppfolging" && it.message == "Må være intern bruker" }
             .verify()
     }

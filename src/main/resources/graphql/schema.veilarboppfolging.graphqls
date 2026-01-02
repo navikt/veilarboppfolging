@@ -3,7 +3,7 @@ type Query {
     oppfolging(fnr: String!): OppfolgingDto
     brukerStatus(fnr: String!): BrukerStatusDto
     oppfolgingsPerioder(fnr: String!): [Oppfolgingsperiode]
-    veilederLeseTilgangModia(fnr: String!): VeilederTilgang
+    veilederTilgang(fnr: String!): VeilederTilgang
     gjeldendeOppfolgingsperiode: Oppfolgingsperiode
 }
 

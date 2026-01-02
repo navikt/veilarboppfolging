@@ -1,7 +1,10 @@
 package no.nav.veilarboppfolging.controller.graphql
 
+import graphql.ErrorType
 import graphql.GraphQLContext
+import graphql.GraphqlErrorBuilder
 import graphql.execution.DataFetcherResult
+import graphql.execution.ResultPath
 import no.nav.common.auth.context.UserRole
 import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.client.norg2.Norg2Client
@@ -13,6 +16,7 @@ import no.nav.poao_tilgang.client.Decision
 import no.nav.poao_tilgang.client.PoaoTilgangClient
 import no.nav.poao_tilgang.client.TilgangType
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
+import no.nav.veilarboppfolging.ForbiddenException
 import no.nav.veilarboppfolging.client.pdl.PdlFolkeregisterStatusClient
 import no.nav.veilarboppfolging.controller.PoaoTilgangError
 import no.nav.veilarboppfolging.controller.graphql.brukerStatus.BrukerStatusArenaDto
@@ -84,8 +88,11 @@ class GraphqlController(
 
     @QueryMapping
     fun oppfolgingsEnhet(@Argument fnr: String?): DataFetcherResult<OppfolgingsEnhetQueryDto> {
-        val eksternBrukerId = sjekkTilgang(fnr, Tilgang.IKKE_EKSTERNBRUKERE).getFnrFromContextOrThrow()
         val dataFetchResult = DataFetcherResult.newResult<OppfolgingsEnhetQueryDto>()
+        val tilgang = sjekkTilgang(fnr, Tilgang.IKKE_EKSTERNBRUKERE)
+        if (tilgang is HarIkkeTilgang) throw ForbiddenException("Ikke tilgang: ${tilgang.message}")
+
+        val eksternBrukerId = (tilgang as HarTilgang).eksternBrukerId
         val localContext = GraphQLContext.getDefault().put("fnr", eksternBrukerId.getFnr())
         return OppfolgingsEnhetQueryDto(enhet = null)
             .let { dataFetchResult.localContext(localContext).data(it).build() }
@@ -119,7 +126,7 @@ class GraphqlController(
     }
 
     @QueryMapping
-    fun veilederLeseTilgangModia(@Argument fnr: String?): DataFetcherResult<VeilederTilgangDto> {
+    fun veilederTilgang(@Argument fnr: String?): DataFetcherResult<VeilederTilgangDto> {
         val eksternBrukerId = fnrFraContext(fnr)
         val fnr = eksternBrukerId.getFnr()
         val result = DataFetcherResult.newResult<VeilederTilgangDto>()
@@ -144,8 +151,11 @@ class GraphqlController(
 
     @QueryMapping
     fun brukerStatus(@Argument fnr: String?): DataFetcherResult<BrukerStatusDto> {
-        val eksternBrukerId = sjekkTilgang(fnr, Tilgang.ALLE).getFnrFromContextOrThrow()
         val result = DataFetcherResult.newResult<BrukerStatusDto>()
+        val tilgang = sjekkTilgang(fnr, Tilgang.ALLE)
+        if (tilgang is HarIkkeTilgang) throw ForbiddenException("Ikke tilgang: ${tilgang.message}")
+
+        val eksternBrukerId = (tilgang as HarTilgang).eksternBrukerId
         val fnr = eksternBrukerId.getFnr()
         val aktorId = eksternBrukerId.getAktorId()
         val localContext = GraphQLContext.getDefault()
@@ -166,10 +176,6 @@ class GraphqlController(
         }
     }
 
-    fun TilgangsSjekkResultat.getFnrFromContextOrThrow() = when (this) {
-        is HarIkkeTilgang -> throw ResponseStatusException(HttpStatus.FORBIDDEN)
-        is HarTilgang -> this.eksternBrukerId
-    }
     private fun sjekkTilgang(inputFnr: String?, tilgang: Tilgang): TilgangsSjekkResultat {
         val eksternBrukerId = fnrFraContext(inputFnr)
         val role = authService.role.getOrNull() ?: throw ResponseStatusException(HttpStatus.FORBIDDEN)
@@ -349,11 +355,13 @@ class GraphqlController(
     }
 
     @QueryMapping
-    fun oppfolgingsPerioder(@Argument fnr: String?): List<OppfolgingsperiodeDto> {
+    fun oppfolgingsPerioder(@Argument fnr: String?): DataFetcherResult<List<OppfolgingsperiodeDto>> {
+        val result = DataFetcherResult.newResult<List<OppfolgingsperiodeDto>>()
         val eksternBrukerId = sjekkLeseTilgang(fnr)
         val aktorId = eksternBrukerId.getAktorId()
         return oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId)
             .map { it.toOppfolgingsperiodeDto() }
+            .let { result.data(it).build() }
     }
 
     private fun EksternBrukerId.getAktorId(): AktorId {
