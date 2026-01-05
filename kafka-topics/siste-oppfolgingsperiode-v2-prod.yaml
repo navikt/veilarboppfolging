@@ -27,3 +27,6 @@ spec:
     - team: tilgangsmaskin
       application: populasjonstilgangskontroll
       access: read
+    - team: toi
+      application: toi-siste-oppfolgingsperiode
+      access: read
