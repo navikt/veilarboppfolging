@@ -26,23 +26,6 @@ public class DtoMappers {
                 .setDato(malData.getDato());
     }
 
-    /**
-     * Given a Kvp object, return its DTO representation. All fields are included.
-     */
-    public static KvpDTO kvpToDTO(KvpPeriodeEntity k) {
-        return new KvpDTO()
-                .setKvpId(k.getKvpId())
-                .setSerial(k.getSerial())
-                .setAktorId(k.getAktorId())
-                .setAvsluttetAv(k.getAvsluttetAv())
-                .setAvsluttetBegrunnelse(k.getAvsluttetBegrunnelse())
-                .setAvsluttetDato(k.getAvsluttetDato())
-                .setEnhet(k.getEnhet())
-                .setOpprettetAv(k.getOpprettetAv())
-                .setOpprettetBegrunnelse(k.getOpprettetBegrunnelse())
-                .setOpprettetDato(k.getOpprettetDato());
-    }
-
     public static AvslutningStatus tilDto(AvslutningStatusData avslutningStatusData) {
         return new AvslutningStatus(
                 avslutningStatusData.kanAvslutte,
