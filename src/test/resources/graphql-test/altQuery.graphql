@@ -1,0 +1,47 @@
+query altQuery($fnr: String!) {
+    oppfolgingsEnhet(fnr: $fnr) {
+        enhet {
+            id
+            navn
+            kilde
+        }
+    }
+    oppfolgingsPerioder(fnr: $fnr) {
+        id
+        startTidspunkt
+        sluttTidspunkt
+        startetBegrunnelse
+    }
+    brukerStatus(fnr: $fnr) {
+        erKontorsperret
+        kontorSperre {
+            kontorId
+        }
+        manuell {
+            erManuell
+            begrunnelse
+            endretAvType
+            endretAvIdent
+        }
+        krr {
+            registrertIKrr
+            kanVarsles
+            reservertIKrr
+        }
+        arena {
+            inaktivIArena
+            kanReaktiveres
+            inaktiveringsdato
+            kvalifiseringsgruppe
+        }
+    }
+    veilederTilgang(fnr: $fnr) {
+        harVeilederLeseTilgangTilBruker
+        harVeilederLeseTilgangTilBrukersKontorsperre
+        tilgang
+    }
+    oppfolging(fnr: $fnr) {
+        erUnderOppfolging
+        kanStarteOppfolging
+    }
+}

@@ -4,5 +4,6 @@ query testHentOppfolgingsperioder($fnr: String!) {
         startTidspunkt
         sluttTidspunkt
         startetBegrunnelse
+        avsluttetAv
     }
 }

@@ -1,31 +1,37 @@
 package no.nav.veilarboppfolging.controller.graphql
 
+import graphql.ErrorType
 import graphql.GraphQLContext
+import graphql.GraphqlErrorBuilder
 import graphql.execution.DataFetcherResult
+import graphql.execution.ResultPath
 import no.nav.common.auth.context.UserRole
 import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.client.norg2.Norg2Client
 import no.nav.common.types.identer.AktorId
+import no.nav.common.types.identer.EksternBrukerId
 import no.nav.common.types.identer.EnhetId
 import no.nav.common.types.identer.Fnr
 import no.nav.poao_tilgang.client.Decision
 import no.nav.poao_tilgang.client.PoaoTilgangClient
 import no.nav.poao_tilgang.client.TilgangType
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
+import no.nav.veilarboppfolging.ForbiddenException
 import no.nav.veilarboppfolging.client.pdl.PdlFolkeregisterStatusClient
-import no.nav.veilarboppfolging.controller.FantIkkeAktorIdForFnrError
 import no.nav.veilarboppfolging.controller.PoaoTilgangError
 import no.nav.veilarboppfolging.controller.graphql.brukerStatus.BrukerStatusArenaDto
 import no.nav.veilarboppfolging.controller.graphql.brukerStatus.BrukerStatusDto
 import no.nav.veilarboppfolging.controller.graphql.brukerStatus.BrukerStatusKrrDto
 import no.nav.veilarboppfolging.controller.graphql.brukerStatus.BrukerStatusManuellDto
 import no.nav.veilarboppfolging.controller.graphql.brukerStatus.KontorSperre
+import no.nav.veilarboppfolging.controller.graphql.brukerStatus.VeilederTilordningDto
 import no.nav.veilarboppfolging.controller.graphql.oppfolging.EnhetDto
 import no.nav.veilarboppfolging.controller.graphql.oppfolging.KildeDto
 import no.nav.veilarboppfolging.controller.graphql.oppfolging.OppfolgingDto
 import no.nav.veilarboppfolging.controller.graphql.oppfolging.OppfolgingsEnhetQueryDto
 import no.nav.veilarboppfolging.controller.graphql.oppfolging.OppfolgingsperiodeDto
 import no.nav.veilarboppfolging.controller.graphql.veilederTilgang.VeilederTilgangDto
+import no.nav.veilarboppfolging.ident.toCommonIdent
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.*
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ALLEREDE_UNDER_OPPFOLGING.oppfolgingSjekk
@@ -33,6 +39,7 @@ import no.nav.veilarboppfolging.repository.EnhetRepository
 import no.nav.veilarboppfolging.repository.KvpRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
+import no.nav.veilarboppfolging.repository.VeilederTilordningerRepository
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity
 import no.nav.veilarboppfolging.service.AuthService
 import no.nav.veilarboppfolging.service.ManuellStatusService
@@ -47,7 +54,6 @@ import org.springframework.stereotype.Controller
 import org.springframework.web.server.ResponseStatusException
 import java.time.format.DateTimeFormatter
 import kotlin.jvm.optionals.getOrNull
-import kotlin.text.isEmpty
 
 enum class TilgangResultat {
     HAR_TILGANG,
@@ -71,7 +77,8 @@ class GraphqlController(
     private val arenaService: ArenaOppfolgingService,
     private val manuellService: ManuellStatusService,
     private val oppfolgingService: OppfolgingService,
-    private val kvpRepository: KvpRepository
+    private val kvpRepository: KvpRepository,
+    private val veilederTilordningerRepository: VeilederTilordningerRepository
 ) {
     private val logger = LoggerFactory.getLogger(GraphqlController::class.java)
 
@@ -80,10 +87,15 @@ class GraphqlController(
     }
 
     @QueryMapping
-    fun oppfolgingsEnhet(@Argument fnr: String?): OppfolgingsEnhetQueryDto {
-        val fnr = sjekkTilgang(fnr, Tilgang.IKKE_EKSTERNBRUKERE).getFnrFromContextOrThrow()
+    fun oppfolgingsEnhet(@Argument fnr: String?): DataFetcherResult<OppfolgingsEnhetQueryDto> {
+        val dataFetchResult = DataFetcherResult.newResult<OppfolgingsEnhetQueryDto>()
+        val tilgang = sjekkTilgang(fnr, Tilgang.IKKE_EKSTERNBRUKERE)
+        if (tilgang is HarIkkeTilgang) throw ForbiddenException("Ikke tilgang: ${tilgang.message}")
 
-        return OppfolgingsEnhetQueryDto(fnr = fnr.get(), enhet = null)
+        val eksternBrukerId = (tilgang as HarTilgang).eksternBrukerId
+        val localContext = GraphQLContext.getDefault().put("fnr", eksternBrukerId.getFnr())
+        return OppfolgingsEnhetQueryDto(enhet = null)
+            .let { dataFetchResult.localContext(localContext).data(it).build() }
     }
 
     private fun erUnderOppfolging(aktorId: AktorId): Boolean {
@@ -94,10 +106,11 @@ class GraphqlController(
     @QueryMapping
     fun oppfolging(@Argument fnr: String?): DataFetcherResult<OppfolgingDto> {
         val tilgangResult = sjekkTilgang(fnr, Tilgang.IKKE_EKSTERNBRUKERE)
-        val fnr = fnrFraContext(fnr)
+        val eksternBrukerId = fnrFraContext(fnr)
 
         val dataFetchResult = DataFetcherResult.newResult<OppfolgingDto>()
-        val aktorId = aktorOppslagClient.hentAktorId(fnr) as AktorId? ?: throw FantIkkeAktorIdForFnrError()
+        val fnr = eksternBrukerId.getFnr()
+        val aktorId = eksternBrukerId.getAktorId()
         val erUnderOppfolging = erUnderOppfolging(aktorId)
         val localContext = GraphQLContext.getDefault()
             .put("fnr", fnr)
@@ -113,11 +126,12 @@ class GraphqlController(
     }
 
     @QueryMapping
-    fun veilederLeseTilgangModia(@Argument fnr: String?): DataFetcherResult<VeilederTilgangDto> {
-        if (fnr == null || fnr.isEmpty()) throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Fnr er påkrevd")
+    fun veilederTilgang(@Argument fnr: String?): DataFetcherResult<VeilederTilgangDto> {
+        val eksternBrukerId = fnrFraContext(fnr)
+        val fnr = eksternBrukerId.getFnr()
         val result = DataFetcherResult.newResult<VeilederTilgangDto>()
-        val context = GraphQLContext.getDefault().put("fnr", Fnr.of(fnr))
-        return evaluerNavAnsattTilgangTilEksternBruker(fnr)
+        val context = GraphQLContext.getDefault().put("fnr", fnr)
+        return evaluerNavAnsattTilgangTilEksternBruker(fnr.get())
             .let {
                 VeilederTilgangDto(
                     harTilgang = it == TilgangResultat.HAR_TILGANG,
@@ -137,9 +151,13 @@ class GraphqlController(
 
     @QueryMapping
     fun brukerStatus(@Argument fnr: String?): DataFetcherResult<BrukerStatusDto> {
-        val fnr = sjekkTilgang(fnr, Tilgang.ALLE).getFnrFromContextOrThrow()
         val result = DataFetcherResult.newResult<BrukerStatusDto>()
-        val aktorId = aktorOppslagClient.hentAktorId(fnr)
+        val tilgang = sjekkTilgang(fnr, Tilgang.ALLE)
+        if (tilgang is HarIkkeTilgang) throw ForbiddenException("Ikke tilgang: ${tilgang.message}")
+
+        val eksternBrukerId = (tilgang as HarTilgang).eksternBrukerId
+        val fnr = eksternBrukerId.getFnr()
+        val aktorId = eksternBrukerId.getAktorId()
         val localContext = GraphQLContext.getDefault()
             .put("fnr", fnr)
             .put("aktorId", aktorId)
@@ -149,36 +167,41 @@ class GraphqlController(
     }
 
 
-    fun fnrFraContext(fnr: String?): Fnr {
-        if (fnr == null || fnr.isEmpty()) throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Fnr er påkrevd")
-        if (authService.erEksternBruker()) return Fnr.of(authService.innloggetBrukerIdent) else return Fnr.of(fnr)
+    fun fnrFraContext(fnr: String?): EksternBrukerId {
+        if (fnr.isNullOrEmpty()) throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Fnr er påkrevd")
+        if (authService.erEksternBruker()) {
+            return Fnr.of(authService.innloggetBrukerIdent)
+        } else {
+            return fnr.toCommonIdent { throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Ugyldig ident i spørring") }
+        }
     }
 
-    fun TilgangsSjekkResultat.getFnrFromContextOrThrow() = when (this) {
-        is HarIkkeTilgang -> throw ResponseStatusException(HttpStatus.FORBIDDEN)
-        is HarTilgang -> this.fnr
-    }
     private fun sjekkTilgang(inputFnr: String?, tilgang: Tilgang): TilgangsSjekkResultat {
-        val fnr = fnrFraContext(inputFnr)
+        val eksternBrukerId = fnrFraContext(inputFnr)
         val role = authService.role.getOrNull() ?: throw ResponseStatusException(HttpStatus.FORBIDDEN)
         return when (role) {
              UserRole.EKSTERN -> {
                 when (tilgang) {
                     Tilgang.ALLE -> {
-                        return if (!authService.harEksternBrukerTilgang(fnr)) HarIkkeTilgang("Eksternbrukere har bare tilgang til seg selv")
-                        else HarTilgang(Fnr.of(authService.innloggetBrukerIdent))
+                        if (eksternBrukerId !is Fnr)
+                            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Eksternbruker kan bare spørre med fnr")
+                        if (!authService.harEksternBrukerTilgang(eksternBrukerId))
+                            HarIkkeTilgang("Eksternbrukere har bare tilgang til seg selv")
+                        else
+                            HarTilgang(Fnr.of(authService.innloggetBrukerIdent))
                     }
                     Tilgang.IKKE_EKSTERNBRUKERE -> HarIkkeTilgang("Eksternbrukere har ikke tilgang til dette API-et")
                 }
             }
             UserRole.INTERN -> {
+                val fnr = eksternBrukerId.getFnr()
                 val isAllowed = authService.evaluerNavAnsattTilagngTilBruker(fnr, TilgangType.LESE)
-                return when (isAllowed) {
+                when (isAllowed) {
                     is Decision.Deny -> HarIkkeTilgang("Veileder har ikke tilgang til bruker")
-                    Decision.Permit -> HarTilgang(fnr)
+                    Decision.Permit -> HarTilgang(eksternBrukerId)
                 }
             }
-            UserRole.SYSTEM -> HarTilgang(fnr)
+            UserRole.SYSTEM -> HarTilgang(eksternBrukerId)
         }
     }
 
@@ -195,11 +218,11 @@ class GraphqlController(
     }
 
     @SchemaMapping(typeName = "OppfolgingsEnhetsInfo", field = "enhet")
-    fun arenaOppfolgingsEnhet(oppfolgingsEnhet: OppfolgingsEnhetQueryDto): EnhetDto? {
-        val aktorId = aktorOppslagClient.hentAktorId(Fnr.of(oppfolgingsEnhet.fnr))
+    fun arenaOppfolgingsEnhet(oppfolgingsEnhet: OppfolgingsEnhetQueryDto, @LocalContextValue fnr: Fnr): EnhetDto? {
+        val aktorId = aktorOppslagClient.hentAktorId(fnr)
         val arenaEnhet = enhetRepository.hentEnhet(aktorId)
         return when {
-            arenaEnhet == null -> hentDefaultEnhetFraNorg(Fnr.of(oppfolgingsEnhet.fnr))
+            arenaEnhet == null -> hentDefaultEnhetFraNorg(fnr)
             else -> arenaEnhet to KildeDto.ARENA
         }?.let { (enhetsNr, kilde) ->
             val enhet = runCatching {
@@ -259,6 +282,14 @@ class GraphqlController(
             ?.let { KontorSperre(it) }
     }
 
+    @SchemaMapping(typeName = "BrukerStatusDto", field = "veilederTilordning")
+    fun veilederTilordning(brukerStatusDto: BrukerStatusDto, @LocalContextValue aktorId: AktorId): VeilederTilordningDto? {
+        return veilederTilordningerRepository.hentTilordnetVeileder(aktorId)
+            .map { it.veilederId }
+            .getOrNull()
+            ?.let { VeilederTilordningDto(it) }
+    }
+
     @SchemaMapping(typeName = "BrukerStatusDto", field = "krr")
     fun reservertIKrr(brukerStatusDto: BrukerStatusDto, @LocalContextValue fnr: Fnr): BrukerStatusKrrDto? {
         val result = manuellService.hentDigdirKontaktinfo(fnr)
@@ -289,7 +320,7 @@ class GraphqlController(
             .map { it.kanEnkeltReaktiveres }.orElse(null)
     }
 
-    fun hentDefaultEnhetFraNorg(fnr: Fnr): Pair<EnhetId, KildeDto>? {
+    private fun hentDefaultEnhetFraNorg(fnr: Fnr): Pair<EnhetId, KildeDto>? {
         val tilgangsattributterResponse = poaoTilgangClient.hentTilgangsAttributter(fnr.get())
         if (tilgangsattributterResponse.isFailure) throw PoaoTilgangError(tilgangsattributterResponse.exception!!)
         val tilgangsAttributter = tilgangsattributterResponse.getOrThrow()
@@ -309,27 +340,38 @@ class GraphqlController(
             .getOrNull()
     }
 
-    private fun sjekkLeseTilgang(fnr: String?): Fnr {
+    private fun sjekkLeseTilgang(fnr: String?): EksternBrukerId {
+        val eksternBrukerId = fnrFraContext(fnr)
         val userRole = authService.role.get()
         return when (userRole) {
-            UserRole.EKSTERN -> {
-                Fnr.of(authService.innloggetBrukerIdent)
-            }
+            UserRole.EKSTERN -> eksternBrukerId as Fnr
             UserRole.SYSTEM,
             UserRole.INTERN -> {
-                fnr?.let { Fnr.of(it) }
-                    ?.also { authService.sjekkLesetilgangMedFnr(it) }
-                    ?: throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Fnr er påkrevd for ${userRole.name}-bruker")
+                val aktorId = eksternBrukerId.getAktorId()
+                authService.sjekkLesetilgangMedAktorId(aktorId)
+                eksternBrukerId
             }
         }
     }
 
     @QueryMapping
-    fun oppfolgingsPerioder(@Argument fnr: String?): List<OppfolgingsperiodeDto> {
-        val fnr = sjekkLeseTilgang(fnr)
-        val aktorId = aktorOppslagClient.hentAktorId(fnr)
+    fun oppfolgingsPerioder(@Argument fnr: String?): DataFetcherResult<List<OppfolgingsperiodeDto>> {
+        val result = DataFetcherResult.newResult<List<OppfolgingsperiodeDto>>()
+        val eksternBrukerId = sjekkLeseTilgang(fnr)
+        val aktorId = eksternBrukerId.getAktorId()
         return oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId)
             .map { it.toOppfolgingsperiodeDto() }
+            .let { result.data(it).build() }
+    }
+
+    private fun EksternBrukerId.getAktorId(): AktorId {
+        if (this is Fnr) return aktorOppslagClient.hentAktorId(this)
+        else return AktorId(this.get())
+    }
+
+    private fun EksternBrukerId.getFnr(): Fnr {
+        if (this is AktorId) return aktorOppslagClient.hentFnr(this)
+        return Fnr(this.get())
     }
 }
 
@@ -366,7 +408,8 @@ fun OppfolgingsperiodeEntity.toOppfolgingsperiodeDto(): OppfolgingsperiodeDto {
             } else {
                 it.name
             }
-        }
+        },
+        avsluttetAv = this.avsluttetAv
     )
 }
 
@@ -376,5 +419,5 @@ enum class Tilgang {
 }
 
 sealed class TilgangsSjekkResultat
-class HarTilgang(val fnr: Fnr): TilgangsSjekkResultat()
+class HarTilgang(val eksternBrukerId: EksternBrukerId): TilgangsSjekkResultat()
 class HarIkkeTilgang(val message: String): TilgangsSjekkResultat()
