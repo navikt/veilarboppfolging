@@ -9,7 +9,7 @@ import java.time.ZonedDateTime
 
 class BigQueryClientKontor(projectId: String) {
     companion object{
-        val DATASET_NAME = "kontor_metrikker"
+        val DATASET_NAME = "oppfolging_metrikker"
         val ARENAKONTOR_UTEN_AO_KONTOR = "ARENAKONTOR_UTEN_AO_KONTOR"
         val OPPFOLGINGSPERIODE_UTEN_AO_KONTOR = "OPPFOLGINGSPERIODE_UTEN_AO_KONTOR"
     }
