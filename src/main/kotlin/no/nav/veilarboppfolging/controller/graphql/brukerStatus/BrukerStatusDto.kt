@@ -5,5 +5,6 @@ data class BrukerStatusDto(
     val manuell: Boolean? = null,
     val arena: BrukerStatusArenaDto? = null,
     val krr: BrukerStatusKrrDto? = null,
-    val kontorSperre: KontorSperre? = null
+    val kontorSperre: KontorSperre? = null,
+    val tilordnetVeileder: VeilederTilordningDto? = null,
 )

@@ -1,5 +1,5 @@
 query sjekkVeilederTilganger($fnr: String!) {
-    veilederLeseTilgangModia(fnr: $fnr) {
+    veilederTilgang(fnr: $fnr) {
         harVeilederLeseTilgangTilBruker
         harVeilederLeseTilgangTilBrukersKontorsperre
         tilgang

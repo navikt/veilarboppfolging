@@ -11,5 +11,6 @@ data class OppfolgingsperiodeDto(
     val startTidspunkt: String,
     val sluttTidspunkt: String?,
     val id: String,
-    val startetBegrunnelse: String?
+    val startetBegrunnelse: String?,
+    val avsluttetAv: String?,
 )

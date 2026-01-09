@@ -147,7 +147,7 @@ public class OppfolgingService {
         AktorId aktorId = avregistrering.getAktorId();
         Fnr fnr = authService.getFnrOrThrow(aktorId);
         ArenaOppfolgingTilstand arenaOppfolgingTilstand = arenaOppfolgingService.hentArenaOppfolgingTilstand(fnr)
-                .orElseThrow(() -> new RuntimeException("Feilet under henting av oppfolgingsstatus (db) med fallback til /oppfolgingsbruker"));
+                .orElseThrow(() -> new RuntimeException("Feilet under henting av areana-oppfolgingsstatus (db) med fallback til veilarbarena /oppfolgingsbruker"));
 
         if (authService.erInternBruker()) {
             authService.sjekkSkriveTilgangMedFnr(fnr);
