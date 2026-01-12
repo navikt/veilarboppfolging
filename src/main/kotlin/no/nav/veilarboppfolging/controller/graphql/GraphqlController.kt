@@ -1,7 +1,10 @@
 package no.nav.veilarboppfolging.controller.graphql
 
+import graphql.ErrorType
 import graphql.GraphQLContext
+import graphql.GraphqlErrorBuilder
 import graphql.execution.DataFetcherResult
+import graphql.execution.ResultPath
 import no.nav.common.auth.context.UserRole
 import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.client.norg2.Norg2Client
@@ -13,6 +16,7 @@ import no.nav.poao_tilgang.client.Decision
 import no.nav.poao_tilgang.client.PoaoTilgangClient
 import no.nav.poao_tilgang.client.TilgangType
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
+import no.nav.veilarboppfolging.ForbiddenException
 import no.nav.veilarboppfolging.client.pdl.PdlFolkeregisterStatusClient
 import no.nav.veilarboppfolging.controller.PoaoTilgangError
 import no.nav.veilarboppfolging.controller.graphql.brukerStatus.BrukerStatusArenaDto
@@ -20,6 +24,7 @@ import no.nav.veilarboppfolging.controller.graphql.brukerStatus.BrukerStatusDto
 import no.nav.veilarboppfolging.controller.graphql.brukerStatus.BrukerStatusKrrDto
 import no.nav.veilarboppfolging.controller.graphql.brukerStatus.BrukerStatusManuellDto
 import no.nav.veilarboppfolging.controller.graphql.brukerStatus.KontorSperre
+import no.nav.veilarboppfolging.controller.graphql.brukerStatus.VeilederTilordningDto
 import no.nav.veilarboppfolging.controller.graphql.oppfolging.EnhetDto
 import no.nav.veilarboppfolging.controller.graphql.oppfolging.KildeDto
 import no.nav.veilarboppfolging.controller.graphql.oppfolging.OppfolgingDto
@@ -34,6 +39,7 @@ import no.nav.veilarboppfolging.repository.EnhetRepository
 import no.nav.veilarboppfolging.repository.KvpRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
+import no.nav.veilarboppfolging.repository.VeilederTilordningerRepository
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity
 import no.nav.veilarboppfolging.service.AuthService
 import no.nav.veilarboppfolging.service.ManuellStatusService
@@ -48,7 +54,6 @@ import org.springframework.stereotype.Controller
 import org.springframework.web.server.ResponseStatusException
 import java.time.format.DateTimeFormatter
 import kotlin.jvm.optionals.getOrNull
-import kotlin.text.isEmpty
 
 enum class TilgangResultat {
     HAR_TILGANG,
@@ -72,7 +77,8 @@ class GraphqlController(
     private val arenaService: ArenaOppfolgingService,
     private val manuellService: ManuellStatusService,
     private val oppfolgingService: OppfolgingService,
-    private val kvpRepository: KvpRepository
+    private val kvpRepository: KvpRepository,
+    private val veilederTilordningerRepository: VeilederTilordningerRepository
 ) {
     private val logger = LoggerFactory.getLogger(GraphqlController::class.java)
 
@@ -82,8 +88,11 @@ class GraphqlController(
 
     @QueryMapping
     fun oppfolgingsEnhet(@Argument fnr: String?): DataFetcherResult<OppfolgingsEnhetQueryDto> {
-        val eksternBrukerId = sjekkTilgang(fnr, Tilgang.IKKE_EKSTERNBRUKERE).getFnrFromContextOrThrow()
         val dataFetchResult = DataFetcherResult.newResult<OppfolgingsEnhetQueryDto>()
+        val tilgang = sjekkTilgang(fnr, Tilgang.IKKE_EKSTERNBRUKERE)
+        if (tilgang is HarIkkeTilgang) throw ForbiddenException("Ikke tilgang: ${tilgang.message}")
+
+        val eksternBrukerId = (tilgang as HarTilgang).eksternBrukerId
         val localContext = GraphQLContext.getDefault().put("fnr", eksternBrukerId.getFnr())
         return OppfolgingsEnhetQueryDto(enhet = null)
             .let { dataFetchResult.localContext(localContext).data(it).build() }
@@ -117,7 +126,7 @@ class GraphqlController(
     }
 
     @QueryMapping
-    fun veilederLeseTilgangModia(@Argument fnr: String?): DataFetcherResult<VeilederTilgangDto> {
+    fun veilederTilgang(@Argument fnr: String?): DataFetcherResult<VeilederTilgangDto> {
         val eksternBrukerId = fnrFraContext(fnr)
         val fnr = eksternBrukerId.getFnr()
         val result = DataFetcherResult.newResult<VeilederTilgangDto>()
@@ -142,8 +151,11 @@ class GraphqlController(
 
     @QueryMapping
     fun brukerStatus(@Argument fnr: String?): DataFetcherResult<BrukerStatusDto> {
-        val eksternBrukerId = sjekkTilgang(fnr, Tilgang.ALLE).getFnrFromContextOrThrow()
         val result = DataFetcherResult.newResult<BrukerStatusDto>()
+        val tilgang = sjekkTilgang(fnr, Tilgang.ALLE)
+        if (tilgang is HarIkkeTilgang) throw ForbiddenException("Ikke tilgang: ${tilgang.message}")
+
+        val eksternBrukerId = (tilgang as HarTilgang).eksternBrukerId
         val fnr = eksternBrukerId.getFnr()
         val aktorId = eksternBrukerId.getAktorId()
         val localContext = GraphQLContext.getDefault()
@@ -164,10 +176,6 @@ class GraphqlController(
         }
     }
 
-    fun TilgangsSjekkResultat.getFnrFromContextOrThrow() = when (this) {
-        is HarIkkeTilgang -> throw ResponseStatusException(HttpStatus.FORBIDDEN)
-        is HarTilgang -> this.eksternBrukerId
-    }
     private fun sjekkTilgang(inputFnr: String?, tilgang: Tilgang): TilgangsSjekkResultat {
         val eksternBrukerId = fnrFraContext(inputFnr)
         val role = authService.role.getOrNull() ?: throw ResponseStatusException(HttpStatus.FORBIDDEN)
@@ -274,6 +282,14 @@ class GraphqlController(
             ?.let { KontorSperre(it) }
     }
 
+    @SchemaMapping(typeName = "BrukerStatusDto", field = "veilederTilordning")
+    fun veilederTilordning(brukerStatusDto: BrukerStatusDto, @LocalContextValue aktorId: AktorId): VeilederTilordningDto? {
+        return veilederTilordningerRepository.hentTilordnetVeileder(aktorId)
+            .map { it.veilederId }
+            .getOrNull()
+            ?.let { VeilederTilordningDto(it) }
+    }
+
     @SchemaMapping(typeName = "BrukerStatusDto", field = "krr")
     fun reservertIKrr(brukerStatusDto: BrukerStatusDto, @LocalContextValue fnr: Fnr): BrukerStatusKrrDto? {
         val result = manuellService.hentDigdirKontaktinfo(fnr)
@@ -339,11 +355,13 @@ class GraphqlController(
     }
 
     @QueryMapping
-    fun oppfolgingsPerioder(@Argument fnr: String?): List<OppfolgingsperiodeDto> {
+    fun oppfolgingsPerioder(@Argument fnr: String?): DataFetcherResult<List<OppfolgingsperiodeDto>> {
+        val result = DataFetcherResult.newResult<List<OppfolgingsperiodeDto>>()
         val eksternBrukerId = sjekkLeseTilgang(fnr)
         val aktorId = eksternBrukerId.getAktorId()
         return oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId)
             .map { it.toOppfolgingsperiodeDto() }
+            .let { result.data(it).build() }
     }
 
     private fun EksternBrukerId.getAktorId(): AktorId {
@@ -390,7 +408,8 @@ fun OppfolgingsperiodeEntity.toOppfolgingsperiodeDto(): OppfolgingsperiodeDto {
             } else {
                 it.name
             }
-        }
+        },
+        avsluttetAv = this.avsluttetAv
     )
 }
 

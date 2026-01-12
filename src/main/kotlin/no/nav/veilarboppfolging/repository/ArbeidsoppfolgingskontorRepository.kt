@@ -17,10 +17,12 @@ class ArbeidsoppfolgingskontorRepository(private val db: NamedParameterJdbcTempl
 
         return db.update(
             """
-                    INSERT INTO ao_kontor (ident, aktor_id, oppfolgingsperiode_id, kontor_id) VALUES (:ident, :aktorId, :oppfolgingsperiodeId, :kontorId)
-                    ON CONFLICT (ident) DO UPDATE SET kontor_id = EXCLUDED.kontor_id, oppfolgingsperiode_id = EXCLUDED.oppfolgingsperiode_id
-                
-                """.trimIndent(), params
+                    INSERT INTO ao_kontor (oppfolgingsperiode_id, ident, aktor_id, kontor_id)
+                    VALUES (:oppfolgingsperiodeId, :ident, :aktorId, :kontorId)
+                    ON CONFLICT (oppfolgingsperiode_id)
+                    DO UPDATE SET ident = EXCLUDED.ident, aktor_id = EXCLUDED.aktor_id, kontor_id = EXCLUDED.kontor_id, updated_at = CURRENT_TIMESTAMP
+            """.trimIndent(),
+            params
         )
     }
 

@@ -3,7 +3,9 @@ package no.nav.veilarboppfolging.controller
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.EnhetId
 import no.nav.common.types.identer.Fnr
+import no.nav.common.types.identer.NavIdent
 import no.nav.poao_tilgang.client.Decision
+import no.nav.poao_tilgang.client.TilgangType
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.veilarboppfolging.IntegrationTest
 import no.nav.veilarboppfolging.client.pdl.ForenkletFolkeregisterStatus
@@ -364,7 +366,7 @@ class GraphqlControllerTest: IntegrationTest() {
         /* Query is hidden in test/resources/graphl-test :) */
         val result = tester.documentName("veilederTilganger").variable("fnr", fnr.get()).execute()
         result.errors().verify()
-        result.path("veilederLeseTilgangModia").matchesJson("""
+        result.path("veilederTilgang").matchesJson("""
             { 
                 "harVeilederLeseTilgangTilBruker": true,
                 "harVeilederLeseTilgangTilBrukersKontorsperre": false,
@@ -383,28 +385,36 @@ class GraphqlControllerTest: IntegrationTest() {
     @Test
     fun `skal returnere oppfolgingsperiodene til bruker`() {
         val veilederId = UUID.randomUUID()
+        val veilederNavIdent = NavIdent("B143314")
+        val enhet = EnhetId("1212")
         val (fnr, aktorId) = defaultBruker()
         mockInternBrukerAuthOk(veilederId, aktorId, fnr)
-        mockPoaoTilgangHarTilgangTilBruker(veilederId, fnr, Decision.Permit)
+        mockPoaoTilgangHarTilgangTilBruker(veilederId, fnr, Decision.Permit, tilgangType = TilgangType.SKRIVE)
+        mockPoaoTilgangHarTilgangTilBruker(veilederId, fnr, Decision.Permit, tilgangType = TilgangType.LESE)
+        mockPoaoTilgangHarTilgangTilEnhet(veilederId, enhet, Decision.Permit)
         setBrukerUnderOppfolging(aktorId, fnr)
+        setLocalArenaOppfolging(aktorId, Formidlingsgruppe.ISERV, enhet = enhet)
+        avsluttOppfolgingManueltSomVeileder(aktorId, veilederNavIdent, "fordi")
 
         /* Query is hidden in test/resources/graphl-test :) */
         val result = tester.documentName("getOppfolgingsperioder").variable("fnr", fnr.get()).execute()
         result.errors().verify()
         result.path("oppfolgingsPerioder").matchesJson("""
-            [ { sluttTidspunkt: null } ]
+            [ { avsluttetAv: "${veilederNavIdent.get()}" } ]
         """.trimIndent())
     }
 
     @Test
     fun `skal returnere manuell status og reservert på bruker`() {
         val veilederId = UUID.randomUUID()
+        val navIdent = NavIdent("A123123")
         val (fnr, aktorId) = defaultBruker()
         mockInternBrukerAuthOk(veilederId, aktorId, fnr)
         mockPoaoTilgangHarTilgangTilBruker(veilederId, fnr, Decision.Permit)
         setBrukerUnderOppfolging(aktorId, fnr)
         setLocalArenaOppfolging(aktorId)
         setManuellStatus(aktorId)
+        setTilordnetVeileder(aktorId, navIdent)
         mockDigdir(fnr, reservertMotDigitalKommunikasjon = true, kanVarsles = false)
 
         /* Query is hidden in test/resources/graphl-test :) */
@@ -431,9 +441,41 @@ class GraphqlControllerTest: IntegrationTest() {
                 "kanReaktiveres": null,
                 "inaktiveringsdato": null,
                 "kvalifiseringsgruppe": "VURDI"
+              },
+              "veilederTilordning": {
+                "veilederIdent": "${navIdent}"
               }
             }
         """.trimIndent())
+    }
+
+    @Test
+    fun `internbruker uten tilgang skal bare kunne se at hen ikke har tilgang`() {
+        val (fnr, aktorId) = defaultBruker()
+        val veilederId = UUID.randomUUID()
+        mockInternBrukerAuthOk(veilederId, aktorId, fnr)
+        mockPoaoTilgangHarTilgangTilBruker(veilederId, fnr, Decision.Deny("NOPE", "REASONS"))
+
+        val result = tester.documentName("altQuery").variable("fnr", fnr.get()).execute()
+        result.errors()
+            .expect { it.path == "oppfolgingsPerioder" && it.message == "NavAnsattTilgangTilEksternBrukerPolicyInput fikk deny" }
+            .expect { it.path == "oppfolgingsEnhet" && it.message == "Ikke tilgang: Veileder har ikke tilgang til bruker" }
+            .expect { it.path == "brukerStatus" && it.message == "Ikke tilgang: Veileder har ikke tilgang til bruker" }
+            .verify()
+        result.path("veilederTilgang").matchesJson("""
+            {
+                "harVeilederLeseTilgangTilBruker": false,
+                "harVeilederLeseTilgangTilBrukersKontorsperre": true,
+                "tilgang": "IKKE_TILGANG_ENHET"
+            }
+        """.trimIndent())
+        result.path("oppfolging").matchesJson("""
+            {
+                "kanStarteOppfolging": "IKKE_TILGANG_ENHET",
+                "erUnderOppfolging": null
+            }
+        """.trimIndent())
+
     }
 
     @Test
@@ -443,9 +485,9 @@ class GraphqlControllerTest: IntegrationTest() {
 
         val result = tester.documentName("altQuery").variable("fnr", fnr.get()).execute()
         result.errors()
-            .expect { it.path == "oppfolgingsEnhet" && it.message == "403 FORBIDDEN" }
-            .expect { it.path == "brukerStatus" && it.message == "403 FORBIDDEN" }
-            .expect { it.path == "veilederLeseTilgangModia" && it.message == "Må være intern bruker" }
+            .expect { it.path == "oppfolgingsEnhet" && it.message == "Ikke tilgang: Eksternbrukere har ikke tilgang til dette API-et" }
+            .expect { it.path == "brukerStatus" && it.message == "Ikke tilgang: Eksternbrukere har bare tilgang til seg selv" }
+            .expect { it.path == "veilederTilgang" && it.message == "Må være intern bruker" }
             .expect { it.path == "oppfolging.kanStarteOppfolging" && it.message == "Må være intern bruker" }
             .verify()
     }
