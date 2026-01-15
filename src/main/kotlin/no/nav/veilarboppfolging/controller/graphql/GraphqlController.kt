@@ -83,7 +83,7 @@ class GraphqlController(
     }
 
     @QueryMapping
-    fun oppfolgingsEnhet(): DataFetcherResult<OppfolgingsEnhetQueryDto> {
+    fun oppfolgingsEnhetBruker(): DataFetcherResult<OppfolgingsEnhetQueryDto> {
         val dataFetchResult = DataFetcherResult.newResult<OppfolgingsEnhetQueryDto>()
 
         val innloggetBrukerFnr = authService.innloggetBrukerIdent
