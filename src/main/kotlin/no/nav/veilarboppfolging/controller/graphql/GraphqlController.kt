@@ -1,10 +1,7 @@
 package no.nav.veilarboppfolging.controller.graphql
 
-import graphql.ErrorType
 import graphql.GraphQLContext
-import graphql.GraphqlErrorBuilder
 import graphql.execution.DataFetcherResult
-import graphql.execution.ResultPath
 import no.nav.common.auth.context.UserRole
 import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.client.norg2.Norg2Client
@@ -19,27 +16,14 @@ import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.veilarboppfolging.ForbiddenException
 import no.nav.veilarboppfolging.client.pdl.PdlFolkeregisterStatusClient
 import no.nav.veilarboppfolging.controller.PoaoTilgangError
-import no.nav.veilarboppfolging.controller.graphql.brukerStatus.BrukerStatusArenaDto
-import no.nav.veilarboppfolging.controller.graphql.brukerStatus.BrukerStatusDto
-import no.nav.veilarboppfolging.controller.graphql.brukerStatus.BrukerStatusKrrDto
-import no.nav.veilarboppfolging.controller.graphql.brukerStatus.BrukerStatusManuellDto
-import no.nav.veilarboppfolging.controller.graphql.brukerStatus.KontorSperre
-import no.nav.veilarboppfolging.controller.graphql.brukerStatus.VeilederTilordningDto
-import no.nav.veilarboppfolging.controller.graphql.oppfolging.EnhetDto
-import no.nav.veilarboppfolging.controller.graphql.oppfolging.KildeDto
-import no.nav.veilarboppfolging.controller.graphql.oppfolging.OppfolgingDto
-import no.nav.veilarboppfolging.controller.graphql.oppfolging.OppfolgingsEnhetQueryDto
-import no.nav.veilarboppfolging.controller.graphql.oppfolging.OppfolgingsperiodeDto
+import no.nav.veilarboppfolging.controller.graphql.brukerStatus.*
+import no.nav.veilarboppfolging.controller.graphql.oppfolging.*
 import no.nav.veilarboppfolging.controller.graphql.veilederTilgang.VeilederTilgangDto
 import no.nav.veilarboppfolging.ident.toCommonIdent
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.*
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ALLEREDE_UNDER_OPPFOLGING.oppfolgingSjekk
-import no.nav.veilarboppfolging.repository.EnhetRepository
-import no.nav.veilarboppfolging.repository.KvpRepository
-import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
-import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
-import no.nav.veilarboppfolging.repository.VeilederTilordningerRepository
+import no.nav.veilarboppfolging.repository.*
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity
 import no.nav.veilarboppfolging.service.AuthService
 import no.nav.veilarboppfolging.service.ManuellStatusService
@@ -94,6 +78,17 @@ class GraphqlController(
 
         val eksternBrukerId = (tilgang as HarTilgang).eksternBrukerId
         val localContext = GraphQLContext.getDefault().put("fnr", eksternBrukerId.getFnr())
+        return OppfolgingsEnhetQueryDto(enhet = null)
+            .let { dataFetchResult.localContext(localContext).data(it).build() }
+    }
+
+    @QueryMapping
+    fun oppfolgingsEnhet(): DataFetcherResult<OppfolgingsEnhetQueryDto> {
+        val dataFetchResult = DataFetcherResult.newResult<OppfolgingsEnhetQueryDto>()
+
+        val innloggetBrukerFnr = authService.innloggetBrukerIdent
+
+        val localContext = GraphQLContext.getDefault().put("fnr", innloggetBrukerFnr)
         return OppfolgingsEnhetQueryDto(enhet = null)
             .let { dataFetchResult.localContext(localContext).data(it).build() }
     }
