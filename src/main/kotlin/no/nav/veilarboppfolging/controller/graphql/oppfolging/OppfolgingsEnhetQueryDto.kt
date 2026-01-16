@@ -2,7 +2,6 @@ package no.nav.veilarboppfolging.controller.graphql.oppfolging
 
 data class OppfolgingsEnhetQueryDto(
     val enhet: EnhetDto?, // Nullable because graphql
-    val aoEnhet: EnhetDto?
 )
 
 data class EnhetDto(

@@ -78,7 +78,7 @@ class GraphqlController(
 
         val eksternBrukerId = (tilgang as HarTilgang).eksternBrukerId
         val localContext = GraphQLContext.getDefault().put("fnr", eksternBrukerId.getFnr())
-        return OppfolgingsEnhetQueryDto(enhet = null, aoEnhet = null)
+        return OppfolgingsEnhetQueryDto(enhet = null)
             .let { dataFetchResult.localContext(localContext).data(it).build() }
     }
 
@@ -89,7 +89,7 @@ class GraphqlController(
         val innloggetBrukerFnr = authService.innloggetBrukerIdent
 
         val localContext = GraphQLContext.getDefault().put("fnr", innloggetBrukerFnr)
-        return OppfolgingsEnhetQueryDto(enhet = null, aoEnhet = null)
+        return OppfolgingsEnhetQueryDto(enhet = null)
             .let { dataFetchResult.localContext(localContext).data(it).build() }
     }
 
