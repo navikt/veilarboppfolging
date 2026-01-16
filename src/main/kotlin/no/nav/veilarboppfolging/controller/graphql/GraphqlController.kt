@@ -62,7 +62,7 @@ class GraphqlController(
     private val manuellService: ManuellStatusService,
     private val oppfolgingService: OppfolgingService,
     private val kvpRepository: KvpRepository,
-    private val veilederTilordningerRepository: VeilederTilordningerRepository
+    private val veilederTilordningerRepository: VeilederTilordningerRepository,
 ) {
     private val logger = LoggerFactory.getLogger(GraphqlController::class.java)
 
@@ -78,18 +78,18 @@ class GraphqlController(
 
         val eksternBrukerId = (tilgang as HarTilgang).eksternBrukerId
         val localContext = GraphQLContext.getDefault().put("fnr", eksternBrukerId.getFnr())
-        return OppfolgingsEnhetQueryDto(enhet = null)
+        return OppfolgingsEnhetQueryDto(enhet = null, aoEnhet = null)
             .let { dataFetchResult.localContext(localContext).data(it).build() }
     }
 
     @QueryMapping
-    fun oppfolgingsEnhetBruker(): DataFetcherResult<OppfolgingsEnhetQueryDto> {
+    fun aoEnhet(): DataFetcherResult<OppfolgingsEnhetQueryDto> {
         val dataFetchResult = DataFetcherResult.newResult<OppfolgingsEnhetQueryDto>()
 
         val innloggetBrukerFnr = authService.innloggetBrukerIdent
 
         val localContext = GraphQLContext.getDefault().put("fnr", innloggetBrukerFnr)
-        return OppfolgingsEnhetQueryDto(enhet = null)
+        return OppfolgingsEnhetQueryDto(enhet = null, aoEnhet = null)
             .let { dataFetchResult.localContext(localContext).data(it).build() }
     }
 
@@ -232,6 +232,25 @@ class GraphqlController(
                 kilde = kilde
             )
         }
+    }
+
+    @SchemaMapping(typeName = "OppfolgingsEnhetsInfo", field = "aoEnhet")
+    fun aoOppfolgingsEnhet(
+        oppfolgingsEnhet: OppfolgingsEnhetQueryDto,
+        @LocalContextValue fnr: Fnr
+    ): EnhetDto? {
+        val aktorId = aktorOppslagClient.hentAktorId(fnr)
+        val aoEnhet = enhetRepository.hentEnhet(aktorId) ?: return null
+
+        val enhet = runCatching {
+            norg2Client.hentEnhet(aoEnhet.get())
+        }.getOrNull()
+
+        return EnhetDto(
+            id = aoEnhet.get(),
+            navn = enhet?.navn ?: "Ukjent enhet",
+            kilde = KildeDto.AOKONTOR
+        )
     }
 
     @SchemaMapping(typeName = "OppfolgingDto", field = "kanStarteOppfolging")
