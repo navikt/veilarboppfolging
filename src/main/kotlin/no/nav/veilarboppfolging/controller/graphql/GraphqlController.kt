@@ -82,17 +82,6 @@ class GraphqlController(
             .let { dataFetchResult.localContext(localContext).data(it).build() }
     }
 
-    @QueryMapping
-    fun aoEnhet(): DataFetcherResult<OppfolgingsEnhetQueryDto> {
-        val dataFetchResult = DataFetcherResult.newResult<OppfolgingsEnhetQueryDto>()
-
-        val innloggetBrukerFnr = authService.innloggetBrukerIdent
-
-        val localContext = GraphQLContext.getDefault().put("fnr", innloggetBrukerFnr)
-        return OppfolgingsEnhetQueryDto(enhet = null)
-            .let { dataFetchResult.localContext(localContext).data(it).build() }
-    }
-
     private fun erUnderOppfolging(aktorId: AktorId): Boolean {
         return oppfolgingsStatusRepository.hentOppfolging(aktorId)
             .map { it.isUnderOppfolging }.orElse(false)
@@ -234,12 +223,10 @@ class GraphqlController(
         }
     }
 
-    @SchemaMapping(typeName = "Query", field = "aoEnhet")
-    fun aoOppfolgingsEnhet(
-        oppfolgingsEnhet: OppfolgingsEnhetQueryDto,
-        @LocalContextValue fnr: Fnr
-    ): EnhetDto? {
-        val aktorId = aktorOppslagClient.hentAktorId(fnr)
+    @QueryMapping
+    fun aoOppfolgingsEnhet(): EnhetDto? {
+        val innloggetBrukerFnr = authService.innloggetBrukerIdent
+        val aktorId = aktorOppslagClient.hentAktorId(Fnr(innloggetBrukerFnr))
         val aoEnhet = enhetRepository.hentEnhet(aktorId) ?: return null
 
         val enhet = runCatching {
