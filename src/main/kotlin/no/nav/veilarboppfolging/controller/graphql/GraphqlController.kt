@@ -234,7 +234,7 @@ class GraphqlController(
         }
     }
 
-    @SchemaMapping(typeName = "OppfolgingsEnhetsInfo", field = "aoEnhet")
+    @SchemaMapping(typeName = "Query", field = "aoEnhet")
     fun aoOppfolgingsEnhet(
         oppfolgingsEnhet: OppfolgingsEnhetQueryDto,
         @LocalContextValue fnr: Fnr
