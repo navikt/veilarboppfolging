@@ -82,7 +82,8 @@ class BigQueryClientImplementation(projectId: String): BigQueryClient {
                 "startedAvType" to startedAvType.name,
                 "timestamp" to ZonedDateTime.now().toOffsetDateTime().toString(),
                 "event" to BigQueryEventType.OPFOLGINGSPERIODE_START.name,
-                "kvalifiseringsgruppe" to kvalifiseringsgruppe.map { it.name }.orElse(null)
+                "kvalifiseringsgruppe" to kvalifiseringsgruppe.map { it.name }.orElse(null),
+                "asdasdasd" to "asdsaadss"
             )
         }
     }
