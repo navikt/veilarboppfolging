@@ -12,6 +12,5 @@ data class EnhetDto(
 
 enum class KildeDto {
     ARENA,
-    NORG,
-    AOKONTOR
+    NORG
 }

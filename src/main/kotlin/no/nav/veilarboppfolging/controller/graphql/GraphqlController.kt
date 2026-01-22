@@ -223,6 +223,7 @@ class GraphqlController(
         }
     }
 
+    // TODO: henter nå kontor fra oppfolgingsstatus (arena kontor i dag) - skal endres til ao kontor
     @QueryMapping
     fun aoOppfolgingsEnhet(): EnhetDto? {
         val innloggetBrukerFnr = authService.innloggetBrukerIdent
@@ -236,7 +237,7 @@ class GraphqlController(
         return EnhetDto(
             id = aoEnhet.get(),
             navn = enhet?.navn ?: "Ukjent enhet",
-            kilde = KildeDto.AOKONTOR
+            kilde = KildeDto.ARENA
         )
     }
 
