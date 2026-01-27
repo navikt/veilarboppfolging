@@ -92,6 +92,7 @@ type BrukerStatusArenaDto {
     kanReaktiveres: Boolean
     inaktiveringsdato: String
     kvalifiseringsgruppe: String
+    formidlingsgruppe: String
 }
 
 type BrukerStatusManuellDto {

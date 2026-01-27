@@ -440,7 +440,8 @@ class GraphqlControllerTest: IntegrationTest() {
                 "inaktivIArena": false,
                 "kanReaktiveres": null,
                 "inaktiveringsdato": null,
-                "kvalifiseringsgruppe": "VURDI"
+                "kvalifiseringsgruppe": "VURDI",
+                "formidlingsgruppe": "IARBS"
               },
               "veilederTilordning": {
                 "veilederIdent": "${navIdent}"
