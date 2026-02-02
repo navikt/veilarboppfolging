@@ -460,8 +460,8 @@ class GraphqlControllerTest: IntegrationTest() {
         val result = tester.documentName("altQuery").variable("fnr", fnr.get()).execute()
         result.errors()
             .expect { it.path == "oppfolgingsPerioder" && it.message == "NavAnsattTilgangTilEksternBrukerPolicyInput fikk deny" }
-            .expect { it.path == "oppfolgingsEnhet" && it.message == "Ikke tilgang: Veileder har ikke tilgang til bruker" }
-            .expect { it.path == "brukerStatus" && it.message == "Ikke tilgang: Veileder har ikke tilgang til bruker" }
+            .expect { it.path == "oppfolgingsEnhet" && it.message == "Ikke tilgang til oppfolgingsenhet: Veileder har ikke tilgang til bruker" }
+            .expect { it.path == "brukerStatus" && it.message == "Ikke tilgang til brukerStatus: Veileder har ikke tilgang til bruker" }
             .verify()
         result.path("veilederTilgang").matchesJson("""
             {
@@ -481,13 +481,17 @@ class GraphqlControllerTest: IntegrationTest() {
 
     @Test
     fun `eksternbruker skal ikke kunne spørre om oppfolging`() {
-        val (fnr, aktorId) = defaultBruker()
+        val (fnr, _) = defaultBruker()
         mockEksternBrukerAuthOk(fnr)
+        mockEksternbrukerErInnlogget(fnr)
+        mockPoaoTilgangTilgangsAttributter(
+            "2112",
+            false,
+            null
+        )
 
         val result = tester.documentName("altQuery").variable("fnr", fnr.get()).execute()
         result.errors()
-            .expect { it.path == "oppfolgingsEnhet" && it.message == "Ikke tilgang: Eksternbrukere har ikke tilgang til dette API-et" }
-            .expect { it.path == "brukerStatus" && it.message == "Ikke tilgang: Eksternbrukere har bare tilgang til seg selv" }
             .expect { it.path == "veilederTilgang" && it.message == "Må være intern bruker" }
             .expect { it.path == "oppfolging.kanStarteOppfolging" && it.message == "Må være intern bruker" }
             .verify()

@@ -1,10 +1,7 @@
 package no.nav.veilarboppfolging.controller.graphql
 
-import graphql.ErrorType
 import graphql.GraphQLContext
-import graphql.GraphqlErrorBuilder
 import graphql.execution.DataFetcherResult
-import graphql.execution.ResultPath
 import no.nav.common.auth.context.UserRole
 import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.client.norg2.Norg2Client
@@ -89,8 +86,8 @@ class GraphqlController(
     @QueryMapping
     fun oppfolgingsEnhet(@Argument fnr: String?): DataFetcherResult<OppfolgingsEnhetQueryDto> {
         val dataFetchResult = DataFetcherResult.newResult<OppfolgingsEnhetQueryDto>()
-        val tilgang = sjekkTilgang(fnr, Tilgang.IKKE_EKSTERNBRUKERE)
-        if (tilgang is HarIkkeTilgang) throw ForbiddenException("Ikke tilgang: ${tilgang.message}")
+        val tilgang = sjekkTilgang(fnr, Tilgang.ALLE)
+        if (tilgang is HarIkkeTilgang) throw ForbiddenException("Ikke tilgang til oppfolgingsenhet: ${tilgang.message}")
 
         val eksternBrukerId = (tilgang as HarTilgang).eksternBrukerId
         val localContext = GraphQLContext.getDefault().put("fnr", eksternBrukerId.getFnr())
@@ -153,7 +150,7 @@ class GraphqlController(
     fun brukerStatus(@Argument fnr: String?): DataFetcherResult<BrukerStatusDto> {
         val result = DataFetcherResult.newResult<BrukerStatusDto>()
         val tilgang = sjekkTilgang(fnr, Tilgang.ALLE)
-        if (tilgang is HarIkkeTilgang) throw ForbiddenException("Ikke tilgang: ${tilgang.message}")
+        if (tilgang is HarIkkeTilgang) throw ForbiddenException("Ikke tilgang til brukerStatus: ${tilgang.message}")
 
         val eksternBrukerId = (tilgang as HarTilgang).eksternBrukerId
         val fnr = eksternBrukerId.getFnr()
@@ -168,11 +165,10 @@ class GraphqlController(
 
 
     fun fnrFraContext(fnr: String?): EksternBrukerId {
-        if (fnr.isNullOrEmpty()) throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Fnr er påkrevd")
-        if (authService.erEksternBruker()) {
-            return Fnr.of(authService.innloggetBrukerIdent)
-        } else {
-            return fnr.toCommonIdent { throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Ugyldig ident i spørring") }
+        return when {
+            authService.erEksternBruker() -> Fnr.of(authService.innloggetBrukerIdent)
+            fnr.isNullOrEmpty() -> throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Fnr er påkrevd")
+            else -> fnr.toCommonIdent { throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Ugyldig ident i spørring") }
         }
     }
 
