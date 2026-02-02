@@ -311,7 +311,8 @@ class GraphqlController(
                     inaktivIArena = it.formidlingsgruppe == Formidlingsgruppe.ISERV,
                     kanReaktiveres = null,
                     inaktiveringsdato = it.iservFraDato?.toString(),
-                    kvalifiseringsgruppe = it.kvalifiseringsgruppe.toString()
+                    kvalifiseringsgruppe = it.kvalifiseringsgruppe.toString(),
+                    formidlingsgruppe = it.formidlingsgruppe.toString(),
                 )
             }.getOrNull()
     }
