@@ -1,5 +1,5 @@
 type Query {
-    oppfolgingsEnhet(fnr: String!): OppfolgingsEnhetsInfo
+    oppfolgingsEnhet(fnr: String): OppfolgingsEnhetsInfo
     oppfolging(fnr: String!): OppfolgingDto
     brukerStatus(fnr: String!): BrukerStatusDto
     oppfolgingsPerioder(fnr: String!): [Oppfolgingsperiode]
