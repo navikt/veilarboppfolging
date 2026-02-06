@@ -247,7 +247,7 @@ class GraphqlController(
                 it.dato.toString(),
                 it.begrunnelse,
                 it.opprettetAv.toString(),
-                it.opprettetAvBrukerId
+                it?.opprettetAvBrukerId
             ) }
             .getOrNull()
     }
