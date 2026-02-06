@@ -14,6 +14,7 @@ import no.nav.veilarboppfolging.controller.graphql.AdGruppeNavn
 import no.nav.veilarboppfolging.ident.randomAktorId
 import no.nav.veilarboppfolging.ident.randomFnr
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.KanStarteOppfolgingDto
+import no.nav.veilarboppfolging.service.AuthService
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.verifyNoInteractions
 import org.springframework.beans.factory.annotation.Autowired
@@ -88,7 +89,7 @@ class GraphqlControllerTest: IntegrationTest() {
     }
 
     @Test
-    fun `skal returnere oppfolgingsEnhet`() {
+    fun `skal returnere oppfolgingsEnhet (for veiledere)`() {
         val (fnr, aktorId) = defaultBruker()
         val kontor = "7414"
         val kontorNavn = "Nav Graphql Kontor"
@@ -480,10 +481,30 @@ class GraphqlControllerTest: IntegrationTest() {
     }
 
     @Test
-    fun `eksternbruker skal ikke kunne spørre om oppfolging`() {
+    fun `eksternbruker skal ikke kunne spørre om oppfølgingsenhet med nivå 3`() {
         val (fnr, _) = defaultBruker()
         mockEksternBrukerAuthOk(fnr)
-        mockEksternbrukerErInnlogget(fnr)
+        mockEksternbrukerErInnlogget(fnr, AuthService.SikkerthetsNivå.Nivå3)
+        val kontor = "4412"
+        val kontorNavn = "Ukjent enhet"
+        mockPoaoTilgangTilgangsAttributter(
+            kontor,
+            false,
+            null
+        )
+
+        val result = tester.documentName("getEnhetQuery").variable("fnr", fnr.get()).execute()
+
+        result.path("oppfolgingsEnhet.enhet").matchesJson("""
+            { "id": "${kontor}", "kilde": "NORG", "navn": "${kontorNavn}" }
+        """.trimIndent())
+    }
+
+    @Test
+    fun `eksternbruker skal ikke kunne spørre om veilederTilgang eller kanStarteOppfolging`() {
+        val (fnr, _) = defaultBruker()
+        mockEksternBrukerAuthOk(fnr)
+        mockEksternbrukerErInnlogget(fnr, AuthService.SikkerthetsNivå.Nivå4)
         mockPoaoTilgangTilgangsAttributter(
             "2112",
             false,

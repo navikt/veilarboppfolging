@@ -334,11 +334,12 @@ open class IntegrationTest {
         doReturn(apiResult).`when`(poaoTilgangClient).evaluatePolicy(policyInput)
     }
 
-    fun mockEksternbrukerErInnlogget(fnr: Fnr) {
+    fun mockEksternbrukerErInnlogget(fnr: Fnr, nivå: AuthService.SikkerthetsNivå) {
 
         `when`(authContextHolder.getUid()).thenReturn(Optional.of(fnr.get()))
         `when`(authContextHolder.getIdTokenClaims()).thenReturn(
-            Optional.of(JWTClaimsSet.Builder().claim("acr", "Level4").build())// (mapOf("acr" to "Level4")))
+            Optional.of(JWTClaimsSet.Builder().claim("acr",
+                if (nivå == AuthService.SikkerthetsNivå.Nivå3) "Level3" else "Level4").build())// (mapOf("acr" to "Level4")))
         )
     }
 
