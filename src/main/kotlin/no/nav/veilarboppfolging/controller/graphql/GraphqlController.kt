@@ -73,7 +73,7 @@ class GraphqlController(
     @QueryMapping
     fun oppfolgingsEnhet(@Argument fnr: String? = null): DataFetcherResult<OppfolgingsEnhetQueryDto> {
         val dataFetchResult = DataFetcherResult.newResult<OppfolgingsEnhetQueryDto>()
-        val tilgang = sjekkTilgang(fnr, Tilgang.ALLE)
+        val tilgang = sjekkTilgang(fnr, AlleHarTilgang(AuthService.SikkerthetsNivå.Nivå3))
         if (tilgang is HarIkkeTilgang) throw ForbiddenException("Ikke tilgang til oppfolgingsenhet: ${tilgang.message}")
 
         val eksternBrukerId = (tilgang as HarTilgang).eksternBrukerId
@@ -89,7 +89,7 @@ class GraphqlController(
 
     @QueryMapping
     fun oppfolging(@Argument fnr: String?): DataFetcherResult<OppfolgingDto> {
-        val tilgangResult = sjekkTilgang(fnr, Tilgang.IKKE_EKSTERNBRUKERE)
+        val tilgangResult = sjekkTilgang(fnr, EksterneHarIkkeTilgang)
         val eksternBrukerId = fnrFraContext(fnr)
 
         val dataFetchResult = DataFetcherResult.newResult<OppfolgingDto>()
@@ -136,7 +136,7 @@ class GraphqlController(
     @QueryMapping
     fun brukerStatus(@Argument fnr: String?): DataFetcherResult<BrukerStatusDto> {
         val result = DataFetcherResult.newResult<BrukerStatusDto>()
-        val tilgang = sjekkTilgang(fnr, Tilgang.ALLE)
+        val tilgang = sjekkTilgang(fnr, AlleHarTilgang(AuthService.SikkerthetsNivå.Nivå4))
         if (tilgang is HarIkkeTilgang) throw ForbiddenException("Ikke tilgang til brukerStatus: ${tilgang.message}")
 
         val eksternBrukerId = (tilgang as HarTilgang).eksternBrukerId
@@ -165,15 +165,15 @@ class GraphqlController(
         return when (role) {
              UserRole.EKSTERN -> {
                 when (tilgang) {
-                    Tilgang.ALLE -> {
+                    is AlleHarTilgang -> {
                         if (eksternBrukerId !is Fnr)
                             throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Eksternbruker kan bare spørre med fnr")
-                        if (!authService.harEksternBrukerTilgang(eksternBrukerId))
+                        if (!authService.harEksternBrukerTilgang(eksternBrukerId, tilgang.`påkrevdEksternbrukerInnloggingsNivå`))
                             HarIkkeTilgang("Eksternbrukere har bare tilgang til seg selv")
                         else
                             HarTilgang(Fnr.of(authService.innloggetBrukerIdent))
                     }
-                    Tilgang.IKKE_EKSTERNBRUKERE -> HarIkkeTilgang("Eksternbrukere har ikke tilgang til dette API-et")
+                    EksterneHarIkkeTilgang -> HarIkkeTilgang("Eksternbrukere har ikke tilgang til dette API-et")
                 }
             }
             UserRole.INTERN -> {
@@ -397,10 +397,10 @@ fun OppfolgingsperiodeEntity.toOppfolgingsperiodeDto(): OppfolgingsperiodeDto {
     )
 }
 
-enum class Tilgang {
-    ALLE,
-    IKKE_EKSTERNBRUKERE
-}
+
+sealed class Tilgang
+class AlleHarTilgang(var `påkrevdEksternbrukerInnloggingsNivå`: AuthService.SikkerthetsNivå): Tilgang()
+object EksterneHarIkkeTilgang: Tilgang()
 
 sealed class TilgangsSjekkResultat
 class HarTilgang(val eksternBrukerId: EksternBrukerId): TilgangsSjekkResultat()

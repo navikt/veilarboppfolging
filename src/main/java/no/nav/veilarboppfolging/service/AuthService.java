@@ -78,15 +78,25 @@ public class AuthService {
         }
     }
 
-    // TODO bruk poao-tilgang - der vil vi også implementere representasjon etter hvert.
     public boolean harEksternBrukerTilgang(Fnr fnr) {
+        return harEksternBrukerTilgang(fnr, SikkerthetsNivå.Nivå4);
+    }
+    // TODO bruk poao-tilgang - der vil vi også implementere representasjon etter hvert.
+    public boolean harEksternBrukerTilgang(Fnr fnr, SikkerthetsNivå påkrevdSikkehetsNivå) {
         // Når man ikke bruker Pep så må man gjøre auditlogging selv
         var subjectUser = getInnloggetBrukerIdent();
         boolean sammeFnr = subjectUser.equals(fnr.get());
-        boolean erNivaa4 = hentSikkerhetsnivaa()
-                .orElse(null) == SikkerthetsNivå.Nivå4;
+        boolean harRiktigInnloggingsNivå = hentSikkerhetsnivaa()
+                .map(nivå -> {
+                    if (påkrevdSikkehetsNivå == SikkerthetsNivå.Nivå4) {
+                        return nivå == SikkerthetsNivå.Nivå4;
+                    } else {
+                        return true;
+                    }
+                })
+                .orElse(false);
 
-        boolean isAllowed = erNivaa4 && sammeFnr;
+        boolean isAllowed = harRiktigInnloggingsNivå && sammeFnr;
 
         auditLogger.log(CefMessage.builder()
                 .timeEnded(System.currentTimeMillis())
@@ -464,7 +474,7 @@ public class AuthService {
     }
 
 
-    enum SikkerthetsNivå {
+    public enum SikkerthetsNivå {
         Nivå4,
         Nivå3
     }

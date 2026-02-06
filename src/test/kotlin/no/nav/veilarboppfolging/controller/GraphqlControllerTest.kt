@@ -480,7 +480,7 @@ class GraphqlControllerTest: IntegrationTest() {
     }
 
     @Test
-    fun `eksternbruker skal ikke kunne spørre om oppfolging`() {
+    fun `eksternbruker skal ikke kunne spørre om veilederTilgang eller kanStarteOppfolging`() {
         val (fnr, _) = defaultBruker()
         mockEksternBrukerAuthOk(fnr)
         mockEksternbrukerErInnlogget(fnr)
