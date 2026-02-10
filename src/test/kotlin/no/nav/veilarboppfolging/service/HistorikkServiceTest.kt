@@ -321,7 +321,7 @@ class HistorikkServiceTest {
         Assertions.assertThat(periodeReaktivertEvent).isEqualTo(historikkHendelse(
             type = HistorikkHendelse.Type.REAKTIVERT_OPPFOLGINGSPERIODE,
             tidspunkt = OPPFOLGING_REAKTIVERT,
-            begrunnelse = "Arbeidsrettet oppfølging ble reaktivert",
+            begrunnelse = "Bruker manuelt reaktivert i Arena av veileder",
             opprettetAvType = KodeverkBruker.NAV,
             opprettetAv = "veileder som reaktiverte",
         ))
