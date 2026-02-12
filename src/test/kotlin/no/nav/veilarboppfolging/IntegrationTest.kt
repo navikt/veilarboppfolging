@@ -58,7 +58,6 @@ import no.nav.veilarboppfolging.repository.VeilederTilordningerRepository
 import no.nav.veilarboppfolging.repository.entity.ManuellStatusEntity
 import no.nav.veilarboppfolging.repository.enums.KodeverkBruker
 import no.nav.veilarboppfolging.service.AuthService
-import no.nav.veilarboppfolging.service.KvpService
 import no.nav.veilarboppfolging.service.MetricsService
 import no.nav.veilarboppfolging.service.OppfolgingService
 import no.nav.veilarboppfolging.service.StartOppfolgingService
@@ -333,6 +332,15 @@ open class IntegrationTest {
         )
         val apiResult = ApiResult.success(decision)
         doReturn(apiResult).`when`(poaoTilgangClient).evaluatePolicy(policyInput)
+    }
+
+    fun mockEksternbrukerErInnlogget(fnr: Fnr, nivå: AuthService.SikkerthetsNivå) {
+
+        `when`(authContextHolder.getUid()).thenReturn(Optional.of(fnr.get()))
+        `when`(authContextHolder.getIdTokenClaims()).thenReturn(
+            Optional.of(JWTClaimsSet.Builder().claim("acr",
+                if (nivå == AuthService.SikkerthetsNivå.Nivå3) "Level3" else "Level4").build())// (mapOf("acr" to "Level4")))
+        )
     }
 
     fun mockPoaoTilgangHarTilgangTilEnhet(veilederUuid: UUID, enhetId: EnhetId, result: Decision = Decision.Permit) {
