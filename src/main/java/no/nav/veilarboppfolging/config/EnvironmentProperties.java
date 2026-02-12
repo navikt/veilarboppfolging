@@ -18,10 +18,6 @@ public class EnvironmentProperties {
 
     private String tokenxDiscoveryUrl;
 
-    private String loginserviceIdportenAudience;
-
-    private String loginserviceIdportenDiscoveryUrl;
-
     private String norg2Url;
 
     private String aktorregisterUrl;
