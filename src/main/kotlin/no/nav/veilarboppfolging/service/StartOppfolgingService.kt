@@ -87,7 +87,8 @@ open class StartOppfolgingService(
                 oppfolgingsbruker.oppfolgingStartBegrunnelse,
                 sistePeriode.uuid,
                 oppfolgingsbruker.registrertAv.getType(),
-                Optional.ofNullable(getKvalifiseringsGruppe(oppfolgingsbruker))
+                Optional.ofNullable(getKvalifiseringsGruppe(oppfolgingsbruker)),
+                if (oppfolgingsbruker is ManuellRegistrering) oppfolgingsbruker.manueltSjekketLovligOpphold else null,
             )
         }
     }

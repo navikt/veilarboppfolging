@@ -78,16 +78,25 @@ public class AuthService {
         }
     }
 
-    // TODO bruk poao-tilgang - der vil vi også implementere representasjon etter hvert.
     public boolean harEksternBrukerTilgang(Fnr fnr) {
+        return harEksternBrukerTilgang(fnr, SikkerthetsNivå.Nivå4);
+    }
+    // TODO bruk poao-tilgang - der vil vi også implementere representasjon etter hvert.
+    public boolean harEksternBrukerTilgang(Fnr fnr, SikkerthetsNivå påkrevdSikkehetsNivå) {
         // Når man ikke bruker Pep så må man gjøre auditlogging selv
         var subjectUser = getInnloggetBrukerIdent();
         boolean sammeFnr = subjectUser.equals(fnr.get());
-        boolean erNivaa4 = hentSikkerhetsnivaa()
-                .filter("Level4"::equals)
-                .isPresent();
+        boolean harRiktigInnloggingsNivå = hentSikkerhetsnivaa()
+                .map(nivå -> {
+                    if (påkrevdSikkehetsNivå == SikkerthetsNivå.Nivå4) {
+                        return nivå == SikkerthetsNivå.Nivå4;
+                    } else {
+                        return true;
+                    }
+                })
+                .orElse(false);
 
-        boolean isAllowed = erNivaa4 && sammeFnr;
+        boolean isAllowed = harRiktigInnloggingsNivå && sammeFnr;
 
         auditLogger.log(CefMessage.builder()
                 .timeEnded(System.currentTimeMillis())
@@ -219,12 +228,12 @@ public class AuthService {
     }
 
     public void sjekkTilgangTilPersonMedNiva3(AktorId aktorId) {
-        String sikkerhetsnivaa = hentSikkerhetsnivaa().orElseThrow(() -> new UnauthorizedException("Fant ikke sikkerhetsnivå i token"));
+        SikkerthetsNivå sikkerhetsnivaa = hentSikkerhetsnivaa().orElseThrow(() -> new UnauthorizedException("Fant ikke sikkerhetsnivå i token"));
         if (!getFnrOrThrow(aktorId).get().equals(hentInnloggetPersonIdent())) {
             log.warn("AktorId fnr mismatch  ");
             throw new ForbiddenException("AktorId fnr mismatch");
         }
-        if (!(sikkerhetsnivaa.equals("Level4") || sikkerhetsnivaa.equals("Level3"))) {
+        if (sikkerhetsnivaa == null) {
             log.warn("Bruker må ha nivå 3 eller 4");
             throw new ForbiddenException("Bruker må ha nivå 3 eller 4");
         }
@@ -385,7 +394,7 @@ public class AuthService {
     }
 
     private void sjekkTilgang(TilgangType tilgangType, AktorId aktorId) {
-        Optional<String> sikkerhetsnivaa = hentSikkerhetsnivaa();
+        Optional<SikkerthetsNivå> sikkerhetsnivaa = hentSikkerhetsnivaa();
         if (erInternBruker()) {
             Decision decision = poaoTilgangClient.evaluatePolicy(new NavAnsattTilgangTilEksternBrukerPolicyInput(
                     hentInnloggetVeilederUUID(), tilgangType, getFnrOrThrow(aktorId).get()
@@ -399,7 +408,7 @@ public class AuthService {
             if (decision.isDeny()) {
                 throw new ForbiddenException("NavAnsattTilgangTilEksternBrukerPolicyInput fikk deny");
             }
-        } else if (erEksternBruker() && sikkerhetsnivaa.isPresent() && sikkerhetsnivaa.get().equals("Level4")) {
+        } else if (erEksternBruker() && sikkerhetsnivaa.isPresent() && sikkerhetsnivaa.get() == SikkerthetsNivå.Nivå4) {
             Decision decision = poaoTilgangClient.evaluatePolicy(new EksternBrukerTilgangTilEksternBrukerPolicyInput(
                     hentInnloggetPersonIdent(), getFnrOrThrow(aktorId).get()
             )).getOrThrow();
@@ -464,9 +473,20 @@ public class AuthService {
                 .orElseThrow(() -> new ForbiddenException("Fant ikke oid for innlogget veileder"));
     }
 
-    private Optional<String> hentSikkerhetsnivaa() {
+
+    public enum SikkerthetsNivå {
+        Nivå4,
+        Nivå3
+    }
+    private Optional<SikkerthetsNivå> hentSikkerhetsnivaa() {
         return authContextHolder.getIdTokenClaims()
-                .flatMap(claims -> getStringClaimOrEmpty(claims, "acr"));
+                .flatMap(claims -> getStringClaimOrEmpty(claims, "acr"))
+                .map(claimValue -> {
+                    if (claimValue.equals("Level3") || claimValue.equals("idporten-loa-substantial")) return SikkerthetsNivå.Nivå3;
+                    if (claimValue.equals("Level4") || claimValue.equals("idporten-loa-high")) return SikkerthetsNivå.Nivå4;
+                    log.warn("Unknown arc claim value, could not determine sikkerhetsnivå: {}", claimValue);
+                    return null;
+                });
     }
 
     private void auditLogWithMessageAndDestinationUserId(String logMessage, String destinationUserId, String sourceUserID, AuthorizationDecision authorizationDecision) {

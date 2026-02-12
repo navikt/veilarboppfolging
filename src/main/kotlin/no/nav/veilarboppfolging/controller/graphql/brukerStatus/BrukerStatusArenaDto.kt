@@ -5,4 +5,5 @@ data class BrukerStatusArenaDto(
     val kanReaktiveres: Boolean?,
     val inaktiveringsdato: String?,
     val kvalifiseringsgruppe: String?,
+    val formidlingsgruppe: String?,
 )

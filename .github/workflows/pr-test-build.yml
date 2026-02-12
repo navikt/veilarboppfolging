@@ -61,7 +61,7 @@ jobs:
           cache-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
 
       - name: Cache SonarCloud packages
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.sonar
           key: sonar-${{ runner.os }}-${{ hashFiles('**/*.gradle*') }}

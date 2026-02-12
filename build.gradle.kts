@@ -11,8 +11,8 @@ val googleCloudLibrariesBomVersion = "26.71.0"
 val springDoc = "2.8.9"
 val tmsMicrofrontendBuilder = "3.0.0"
 val tmsVarselBuilder = "2.1.1"
-val avroVersion = "1.12.0"
 val logstashVersion = "9.0"
+val avroVersion = "1.12.1"
 val confluentKafkaAvroVersion = "8.1.0"
 
 plugins {

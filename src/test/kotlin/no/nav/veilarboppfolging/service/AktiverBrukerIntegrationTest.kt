@@ -8,6 +8,8 @@ import no.nav.poao_tilgang.client.Decision
 import no.nav.poao_tilgang.client.TilgangType
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.veilarboppfolging.IntegrationTest
+import no.nav.veilarboppfolging.client.pdl.ForenkletFolkeregisterStatus
+import no.nav.veilarboppfolging.client.pdl.FregStatusOgStatsborgerskap
 import no.nav.veilarboppfolging.oppfolgingsbruker.AvsluttetAvType
 import no.nav.veilarboppfolging.oppfolgingsbruker.StartetAvType
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelse
@@ -47,6 +49,7 @@ class AktiverBrukerIntegrationTest : IntegrationTest() {
 
     @Test
     fun aktiver_sykmeldt_skal_starte_oppfolging() {
+        mockPdlFolkeregisterStatus(FNR, FregStatusOgStatsborgerskap(ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven, emptyList()))
         mockInternBrukerAuthOk(UUID.randomUUID(), AKTOR_ID, FNR)
         val oppfolgingFør = oppfolgingService.hentOppfolging(AKTOR_ID)
         Assertions.assertThat(oppfolgingFør.isEmpty()).isTrue()
@@ -59,6 +62,7 @@ class AktiverBrukerIntegrationTest : IntegrationTest() {
     fun `Skal lagre OppfolgingStartetHendelse-melding i utboks når oppfølging startes manuelt`() {
         val veilederIdent = NavIdent("B654321")
         val kontorSattAvVeileder = "4321"
+        mockPdlFolkeregisterStatus( FNR,FregStatusOgStatsborgerskap(ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven, emptyList()))
         mockInternBrukerAuthOk(UUID.randomUUID(), AKTOR_ID, FNR, veilederIdent)
         val oppfolgingFør = oppfolgingService.hentOppfolging(AKTOR_ID)
         Assertions.assertThat(oppfolgingFør.isEmpty()).isTrue()
