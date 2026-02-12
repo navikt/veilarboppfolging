@@ -198,15 +198,16 @@ class OppfolgingV3Controller(
                         logger.error("Feil ved registrering av bruker i Arena", arenaResponse.arenaResultat.resultat)
                         return ResponseEntity(arenaResponse.arenaResultat, HttpStatus.CONFLICT)
                     }
-
                     else -> {
                         logger.info("Bruker registrert i Arena med resultat: ${arenaResponse.arenaResultat.kode}")
-                        aktiverBrukerManueltService.aktiverBrukerManuelt(startOppfolging.fnr, startOppfolging.kontorSattAvVeileder)
+                        aktiverBrukerManueltService.aktiverBrukerManuelt(
+                            fnr = startOppfolging.fnr,
+                            kontorSattAvVeileder = startOppfolging.kontorSattAvVeileder,
+                        )
                         return ResponseEntity(arenaResponse.arenaResultat, HttpStatus.OK)
                     }
                 }
             }
-
             is RegistrerIArenaError -> {
                 logger.error("Feil ved registrering av bruker i Arena", arenaResponse.throwable)
                 throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, arenaResponse.message)

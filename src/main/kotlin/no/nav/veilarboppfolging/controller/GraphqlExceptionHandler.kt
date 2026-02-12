@@ -38,7 +38,7 @@ class GraphqlExceptionHandler: DataFetcherExceptionResolver {
     private val logger = LoggerFactory.getLogger(GraphqlExceptionHandler::class.java)
 
     override fun resolveException(ex: Throwable, env: DataFetchingEnvironment): Mono<List<GraphQLError>> {
-        logger.error("Error in graphql", ex)
+        logger.error("Error in graphql: ${ex.message}", ex)
         return when (ex) {
             is ForbiddenException -> GraphqlErrorBuilder.newError(env)
                 .message(ex.message)
