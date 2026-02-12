@@ -30,3 +30,6 @@ spec:
     - team: toi
       application: toi-siste-oppfolgingsperiode
       access: read
+    - team: teampam
+      application: pam-dir-api
+      access: read

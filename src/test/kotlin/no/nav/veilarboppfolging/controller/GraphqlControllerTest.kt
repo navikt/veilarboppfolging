@@ -14,6 +14,7 @@ import no.nav.veilarboppfolging.controller.graphql.AdGruppeNavn
 import no.nav.veilarboppfolging.ident.randomAktorId
 import no.nav.veilarboppfolging.ident.randomFnr
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.KanStarteOppfolgingDto
+import no.nav.veilarboppfolging.service.AuthService
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.verifyNoInteractions
 import org.springframework.beans.factory.annotation.Autowired
@@ -88,7 +89,7 @@ class GraphqlControllerTest: IntegrationTest() {
     }
 
     @Test
-    fun `skal returnere oppfolgingsEnhet`() {
+    fun `skal returnere oppfolgingsEnhet (for veiledere)`() {
         val (fnr, aktorId) = defaultBruker()
         val kontor = "7414"
         val kontorNavn = "Nav Graphql Kontor"
@@ -440,7 +441,8 @@ class GraphqlControllerTest: IntegrationTest() {
                 "inaktivIArena": false,
                 "kanReaktiveres": null,
                 "inaktiveringsdato": null,
-                "kvalifiseringsgruppe": "VURDI"
+                "kvalifiseringsgruppe": "VURDI",
+                "formidlingsgruppe": "IARBS"
               },
               "veilederTilordning": {
                 "veilederIdent": "${navIdent}"
@@ -459,8 +461,8 @@ class GraphqlControllerTest: IntegrationTest() {
         val result = tester.documentName("altQuery").variable("fnr", fnr.get()).execute()
         result.errors()
             .expect { it.path == "oppfolgingsPerioder" && it.message == "NavAnsattTilgangTilEksternBrukerPolicyInput fikk deny" }
-            .expect { it.path == "oppfolgingsEnhet" && it.message == "Ikke tilgang: Veileder har ikke tilgang til bruker" }
-            .expect { it.path == "brukerStatus" && it.message == "Ikke tilgang: Veileder har ikke tilgang til bruker" }
+            .expect { it.path == "oppfolgingsEnhet" && it.message == "Ikke tilgang til oppfolgingsenhet: Veileder har ikke tilgang til bruker" }
+            .expect { it.path == "brukerStatus" && it.message == "Ikke tilgang til brukerStatus: Veileder har ikke tilgang til bruker" }
             .verify()
         result.path("veilederTilgang").matchesJson("""
             {
@@ -479,14 +481,38 @@ class GraphqlControllerTest: IntegrationTest() {
     }
 
     @Test
-    fun `eksternbruker skal ikke kunne spørre om oppfolging`() {
-        val (fnr, aktorId) = defaultBruker()
+    fun `eksternbruker skal ikke kunne spørre om oppfølgingsenhet med nivå 3`() {
+        val (fnr, _) = defaultBruker()
         mockEksternBrukerAuthOk(fnr)
+        mockEksternbrukerErInnlogget(fnr, AuthService.SikkerthetsNivå.Nivå3)
+        val kontor = "4412"
+        val kontorNavn = "Ukjent enhet"
+        mockPoaoTilgangTilgangsAttributter(
+            kontor,
+            false,
+            null
+        )
+
+        val result = tester.documentName("getEnhetQuery").variable("fnr", fnr.get()).execute()
+
+        result.path("oppfolgingsEnhet.enhet").matchesJson("""
+            { "id": "${kontor}", "kilde": "NORG", "navn": "${kontorNavn}" }
+        """.trimIndent())
+    }
+
+    @Test
+    fun `eksternbruker skal ikke kunne spørre om veilederTilgang eller kanStarteOppfolging`() {
+        val (fnr, _) = defaultBruker()
+        mockEksternBrukerAuthOk(fnr)
+        mockEksternbrukerErInnlogget(fnr, AuthService.SikkerthetsNivå.Nivå4)
+        mockPoaoTilgangTilgangsAttributter(
+            "2112",
+            false,
+            null
+        )
 
         val result = tester.documentName("altQuery").variable("fnr", fnr.get()).execute()
         result.errors()
-            .expect { it.path == "oppfolgingsEnhet" && it.message == "Ikke tilgang: Eksternbrukere har ikke tilgang til dette API-et" }
-            .expect { it.path == "brukerStatus" && it.message == "Ikke tilgang: Eksternbrukere har bare tilgang til seg selv" }
             .expect { it.path == "veilederTilgang" && it.message == "Må være intern bruker" }
             .expect { it.path == "oppfolging.kanStarteOppfolging" && it.message == "Må være intern bruker" }
             .verify()
