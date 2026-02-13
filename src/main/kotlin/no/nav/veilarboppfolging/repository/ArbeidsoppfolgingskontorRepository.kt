@@ -1,5 +1,7 @@
 package no.nav.veilarboppfolging.repository
 
+import no.nav.common.types.identer.AktorId
+import no.nav.common.types.identer.EnhetId
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Repository
@@ -37,14 +39,9 @@ class ArbeidsoppfolgingskontorRepository(private val db: NamedParameterJdbcTempl
         )
     }
 
-    fun hentNavKontor(aktorId: String): String? {
-        val params = MapSqlParameterSource()
-            .addValue("aktor_id", aktorId)
-
-        return db.query(
-            """
-                    SELECT kontor_id FROM ao_kontor WHERE aktor_id = :aktor_id
-                """.trimIndent(), params
-        ) { rs, _ -> rs.getString("kontor_id") }.firstOrNull()
+    fun hentEnhet(aktorId: AktorId): EnhetId? {
+        val params = mapOf("aktorId" to aktorId.get())
+        val sql = "SELECT kontor_id FROM ao_kontor WHERE aktor_id = :aktorId"
+        return db.query(sql, params) { rs, _ -> rs.getString("kontor_id")?.let { EnhetId.of(it) } }.firstOrNull()
     }
 }

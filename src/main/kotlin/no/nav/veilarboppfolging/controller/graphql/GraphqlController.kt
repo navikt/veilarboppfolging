@@ -206,7 +206,7 @@ class GraphqlController(
     fun arenaOppfolgingsEnhet(oppfolgingsEnhet: OppfolgingsEnhetQueryDto, @LocalContextValue fnr: Fnr): EnhetDto? {
         val aktorId = aktorOppslagClient.hentAktorId(fnr)
         val enhet = if(isDevelopment().orElse(false)) {
-            arbeidsoppfolgingskontorRepository.hentNavKontor(aktorId.toString())
+            arbeidsoppfolgingskontorRepository.hentEnhet(aktorId)
         } else {
             enhetRepository.hentEnhet(aktorId)
         }
