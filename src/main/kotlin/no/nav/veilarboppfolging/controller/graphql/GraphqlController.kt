@@ -9,6 +9,7 @@ import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.EksternBrukerId
 import no.nav.common.types.identer.EnhetId
 import no.nav.common.types.identer.Fnr
+import no.nav.common.utils.EnvironmentUtils.isDevelopment
 import no.nav.poao_tilgang.client.Decision
 import no.nav.poao_tilgang.client.PoaoTilgangClient
 import no.nav.poao_tilgang.client.TilgangType
@@ -62,7 +63,8 @@ class GraphqlController(
     private val manuellService: ManuellStatusService,
     private val oppfolgingService: OppfolgingService,
     private val kvpRepository: KvpRepository,
-    private val veilederTilordningerRepository: VeilederTilordningerRepository
+    private val veilederTilordningerRepository: VeilederTilordningerRepository,
+    private val arbeidsoppfolgingskontorRepository: ArbeidsoppfolgingskontorRepository
 ) {
     private val logger = LoggerFactory.getLogger(GraphqlController::class.java)
 
@@ -203,10 +205,15 @@ class GraphqlController(
     @SchemaMapping(typeName = "OppfolgingsEnhetsInfo", field = "enhet")
     fun arenaOppfolgingsEnhet(oppfolgingsEnhet: OppfolgingsEnhetQueryDto, @LocalContextValue fnr: Fnr): EnhetDto? {
         val aktorId = aktorOppslagClient.hentAktorId(fnr)
-        val arenaEnhet = enhetRepository.hentEnhet(aktorId)
+        val enhet = if(isDevelopment().orElse(false)) {
+            arbeidsoppfolgingskontorRepository.hentNavKontor(aktorId.toString())
+        } else {
+            enhetRepository.hentEnhet(aktorId)
+        }
+
         return when {
-            arenaEnhet == null -> hentDefaultEnhetFraNorg(fnr)
-            else -> arenaEnhet to KildeDto.ARENA
+            enhet == null -> hentDefaultEnhetFraNorg(fnr)
+            else -> enhet to KildeDto.ARENA
         }?.let { (enhetsNr, kilde) ->
             val enhet = runCatching {
                 norg2Client.hentEnhet(enhetsNr.get())

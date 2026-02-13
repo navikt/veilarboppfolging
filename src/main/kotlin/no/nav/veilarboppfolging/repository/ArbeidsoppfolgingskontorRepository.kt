@@ -3,7 +3,7 @@ package no.nav.veilarboppfolging.repository
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Repository
-import java.util.UUID
+import java.util.*
 
 @Repository
 class ArbeidsoppfolgingskontorRepository(private val db: NamedParameterJdbcTemplate) {
@@ -35,5 +35,16 @@ class ArbeidsoppfolgingskontorRepository(private val db: NamedParameterJdbcTempl
                     DELETE FROM ao_kontor WHERE oppfolgingsperiode_id = :oppfolgingsperiodeId
                 """.trimIndent(), params
         )
+    }
+
+    fun hentNavKontor(aktorId: String): String? {
+        val params = MapSqlParameterSource()
+            .addValue("aktor_id", aktorId)
+
+        return db.query(
+            """
+                    SELECT kontor_id FROM ao_kontor WHERE aktor_id = :aktor_id
+                """.trimIndent(), params
+        ) { rs, _ -> rs.getString("kontor_id") }.firstOrNull()
     }
 }
