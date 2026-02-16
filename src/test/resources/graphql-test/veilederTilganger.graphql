@@ -2,6 +2,7 @@ query sjekkVeilederTilganger($fnr: String!) {
     veilederTilgang(fnr: $fnr) {
         harVeilederLeseTilgangTilBruker
         harVeilederLeseTilgangTilBrukersKontorsperre
+        harVeilederTilgangFlytteBrukerTilEgetKontor
         tilgang
     }
     brukerStatus(fnr: $fnr) {
