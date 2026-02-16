@@ -122,7 +122,8 @@ class GraphqlController(
                     harVeilederLeseTilgangTilBruker = it == TilgangResultat.HAR_TILGANG,
                     tilgang = it,
                     harVeilederLeseTilgangTilKontorsperretBruker = null,
-                    harVeilederLeseTilgangTilBrukersEnhet = null
+                    harVeilederLeseTilgangTilBrukersEnhet = null,
+                    harVeilederTilgangFlytteBrukerTilEgetKontor = null
                 )
             }.let { result.localContext(context).data(it).build() }
     }
@@ -131,6 +132,14 @@ class GraphqlController(
     fun harVeilederLeseTilgangTilBrukersKontorsperre(tilgang: VeilederTilgangDto, @LocalContextValue fnr: Fnr): Boolean {
         val aktorId = aktorOppslagClient.hentAktorId(fnr)
         return oppfolgingService.harVeilederTilgangTilKontorsperretEnhet(aktorId)
+    }
+
+    @SchemaMapping(typeName = "VeilederTilgang", field = "harVeilederTilgangFlytteBrukerTilEgetKontor")
+    fun harVeilederTilgangFlytteBrukerKunTilEgetKontor(tilgang: VeilederTilgangDto, @LocalContextValue fnr: Fnr): Boolean {
+        val aktorId = aktorOppslagClient.hentAktorId(fnr)
+        val underOppfølging = erUnderOppfolging(aktorId)
+        val tilgangTilBruker = evaluerNavAnsattTilgangTilEksternBruker(fnr.get())
+        return underOppfølging && tilgangTilBruker === TilgangResultat.IKKE_TILGANG_ENHET
     }
 
     @QueryMapping
