@@ -371,7 +371,7 @@ class GraphqlControllerTest: IntegrationTest() {
             { 
                 "harVeilederLeseTilgangTilBruker": true,
                 "harVeilederLeseTilgangTilBrukersKontorsperre": false,
-                "harVeilederTilgangFlytteBrukerTilEgetKontor": false,
+                "harVeilederTilgangFlytteBrukerTilEgetKontor": true,
                 "tilgang": "HAR_TILGANG"
             }
         """.trimIndent())

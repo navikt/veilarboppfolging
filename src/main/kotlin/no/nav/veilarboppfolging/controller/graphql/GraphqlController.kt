@@ -135,11 +135,11 @@ class GraphqlController(
     }
 
     @SchemaMapping(typeName = "VeilederTilgang", field = "harVeilederTilgangFlytteBrukerTilEgetKontor")
-    fun harVeilederTilgangFlytteBrukerKunTilEgetKontor(tilgang: VeilederTilgangDto, @LocalContextValue fnr: Fnr): Boolean {
+    fun harVeilederTilgangFlytteBrukerTilEgetKontor(tilgang: VeilederTilgangDto, @LocalContextValue fnr: Fnr): Boolean {
         val aktorId = aktorOppslagClient.hentAktorId(fnr)
         val underOppfølging = erUnderOppfolging(aktorId)
         val tilgangTilBruker = evaluerNavAnsattTilgangTilEksternBruker(fnr.get())
-        return underOppfølging && tilgangTilBruker === TilgangResultat.IKKE_TILGANG_ENHET
+        return underOppfølging && (tilgangTilBruker == TilgangResultat.IKKE_TILGANG_ENHET || tilgangTilBruker == TilgangResultat.HAR_TILGANG)
     }
 
     @QueryMapping
