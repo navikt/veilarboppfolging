@@ -27,7 +27,7 @@ class ArbeidsoppfolgingsKontorEndretService(
     /**
      * Avsluttet status betyr at kontorId og kontorNavn er nullet ut
      * */
-    fun publiserSisteOppfolgingsperiodeV2MedAvsluttetStatus(oppfolgingsperiode: OppfolgingsperiodeEntity) {
+    fun publiserSisteOppfolgingsperiodeV2MedAvsluttetStatus(oppfolgingsperiode: OppfolgingsperiodeEntity, aoKontorInternPersonId: Long) {
         val ident = aktorOppslagClient.hentFnr(AktorId.of(oppfolgingsperiode.aktorId))
         val gjeldendeOppfolgingsperiode = AvsluttetOppfolgingsperiode(
             oppfolgingsperiodeId = oppfolgingsperiode.uuid,
@@ -36,22 +36,31 @@ class ArbeidsoppfolgingsKontorEndretService(
             aktorId = oppfolgingsperiode.aktorId,
             ident = ident.get(),
         )
-        kafkaProducerService.publiserOppfolgingsperiodeMedKontor(gjeldendeOppfolgingsperiode)
+        kafkaProducerService.publiserOppfolgingsperiodeMedKontor(gjeldendeOppfolgingsperiode, aoKontorInternPersonId)
     }
 
-    fun håndterOppfolgingskontorMelding(oppfolgingsperiodeId: String, melding: OppfolgingskontorMelding?) {
+    fun håndterOppfolgingskontorMelding(aoKontorInternPersonId: Long, melding: OppfolgingskontorMelding?) {
         // TODO I en overgangsperiode lytter vi heller på tombstone fra ao-oppfolgingskontor
         // val erMeldingSomKanIgnoreres = melding == null
         // if (erMeldingSomKanIgnoreres) return
 
-        val oppfolgingsperiode =
-            oppfolgingsPeriodeRepository.hentOppfolgingsperiode(oppfolgingsperiodeId)
-                .getOrElse { throw RuntimeException("Ugyldig oppfølgingsperiodeId, noe gikk veldig galt, dette skal aldri skje") }
-
         if (melding == null) {
-            publiserSisteOppfolgingsperiodeV2MedAvsluttetStatus(oppfolgingsperiode)
+            // Det skal finnes en inter-nperson-ident når kontoret har blitt slettet
+            val oppfolgingsperiodeId = oppfolgingsPeriodeRepository.hentSisteOppfolgingsperiodeForAoInternId(aoKontorInternPersonId)
+                .getOrElse { throw RuntimeException("Fant ingen oppfølgingsperioder på aoKontorInternPersonId og kan derfor ikke publisere oppfølging avsluttet eller kontor endret melding på siste-oppfølgingsperiode v2/v3 topic, dette skal aldri skje") }
+            val oppfolgingsperiode =
+                oppfolgingsPeriodeRepository.hentOppfolgingsperiode(oppfolgingsperiodeId.toString())
+                    .getOrElse { throw RuntimeException("Ugyldig oppfølgingsperiodeId, noe gikk veldig galt, dette skal aldri skje") }
+            publiserSisteOppfolgingsperiodeV2MedAvsluttetStatus(oppfolgingsperiode, aoKontorInternPersonId)
             arbeidsoppfolgingskontorRepository.slettNavKontor(oppfolgingsperiode.uuid)
         } else {
+            val periodeId = melding.oppfolgingsperiodeId
+
+            oppfolgingsPeriodeRepository.settIntenrPersonIdentPåOppfolgingsperiode(aoKontorInternPersonId, periodeId)
+
+            val oppfolgingsperiode = oppfolgingsPeriodeRepository.hentOppfolgingsperiode(periodeId.toString())
+                    .getOrElse { throw RuntimeException("Ugyldig oppfølgingsperiodeId, noe gikk veldig galt, dette skal aldri skje") }
+
             val gjeldendeOppfolgingsperiode = GjeldendeOppfolgingsperiode(
                 oppfolgingsperiodeId = oppfolgingsperiode.uuid,
                 startTidspunkt = oppfolgingsperiode.startDato,
@@ -70,7 +79,7 @@ class ArbeidsoppfolgingsKontorEndretService(
                 melding.oppfolgingsperiodeId,
                 melding.kontorId
             )
-            kafkaProducerService.publiserOppfolgingsperiodeMedKontor(gjeldendeOppfolgingsperiode)
+            kafkaProducerService.publiserOppfolgingsperiodeMedKontor(gjeldendeOppfolgingsperiode, aoKontorInternPersonId)
         }
     }
 }
