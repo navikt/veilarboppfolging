@@ -40,17 +40,20 @@ class OppfolgingsperiodeEndretServiceTest {
     @Test
     fun `Skal sende melding med type OPPFOLGING_STARTET når oppfolgingskontormelding mottas med tilordningstype KONTOR_VED_OPPFOLGINGSPERIODE_START`() {
         val aktorId = "1111111"
+        val internAoPersonIdent = 8L
         val oppfolgingsperiode = oppfolgingsperiode(aktorId)
         whenever(oppfolgingsPeriodeRepository.hentOppfolgingsperiode(oppfolgingsperiode.uuid.toString())).thenReturn(Optional.of(oppfolgingsperiode))
         val oppfolgingskontorMelding = oppfolgingskontorMelding(aktorId = aktorId, tilordningstype = Tilordningstype.KONTOR_VED_OPPFOLGINGSPERIODE_START, oppfolgingsperiodeId = oppfolgingsperiode.uuid)
 
-        arbeidsoppfolgingsKontorEndretService.håndterOppfolgingskontorMelding(8L, oppfolgingskontorMelding)
+        arbeidsoppfolgingsKontorEndretService.håndterOppfolgingskontorMelding(internAoPersonIdent, oppfolgingskontorMelding)
 
         val captor = argumentCaptor<SisteOppfolgingsperiodeDto>()
-        verify(kafkaProducerService).publiserOppfolgingsperiodeMedKontor(captor.capture(), 8L)
+        val personIdentCaptor = argumentCaptor<Long>()
+        verify(kafkaProducerService).publiserOppfolgingsperiodeMedKontor(captor.capture(), personIdentCaptor.capture())
         val oppfolgingsperiodeMelding = captor.firstValue as GjeldendeOppfolgingsperiode
         val meldingAsJson = JsonUtils.toJson(oppfolgingsperiodeMelding)
         val jsonNode = JsonUtils.getMapper().readTree(meldingAsJson)
+        assertThat(personIdentCaptor.lastValue).isEqualTo(internAoPersonIdent)
         assertThat(jsonNode["sisteEndringsType"].asText()).isEqualTo("OPPFOLGING_STARTET")
         assertThat(jsonNode["aktorId"].asText()).isEqualTo(oppfolgingsperiode.aktorId)
         assertThat(jsonNode["ident"].asText()).isEqualTo(oppfolgingskontorMelding.ident)
@@ -66,16 +69,19 @@ class OppfolgingsperiodeEndretServiceTest {
     fun `Skal sende melding med type ARBEIDSOPPFOLGINGSKONTOR_ENDRET når oppfolgingskontormelding mottas med tilordningstype ENDRET_KONTOR`() {
         val aktorId = "1111111"
         val oppfolgingsperiode = oppfolgingsperiode(aktorId)
+        val internAoPersonIdent = 8L
         whenever(oppfolgingsPeriodeRepository.hentOppfolgingsperiode(oppfolgingsperiode.uuid.toString())).thenReturn(Optional.of(oppfolgingsperiode))
         val oppfolgingskontorMelding = oppfolgingskontorMelding(aktorId = aktorId, tilordningstype = Tilordningstype.ENDRET_KONTOR, oppfolgingsperiodeId = oppfolgingsperiode.uuid)
 
-        arbeidsoppfolgingsKontorEndretService.håndterOppfolgingskontorMelding(8L, oppfolgingskontorMelding)
+        arbeidsoppfolgingsKontorEndretService.håndterOppfolgingskontorMelding(internAoPersonIdent, oppfolgingskontorMelding)
 
         val captor = argumentCaptor<SisteOppfolgingsperiodeDto>()
-        verify(kafkaProducerService).publiserOppfolgingsperiodeMedKontor(captor.capture(), 8L)
+        val personIdentCaptor = argumentCaptor<Long>()
+        verify(kafkaProducerService).publiserOppfolgingsperiodeMedKontor(captor.capture(), personIdentCaptor.capture())
         val oppfolgingsperiodeMelding = captor.firstValue as GjeldendeOppfolgingsperiode
         val meldingAsJson = JsonUtils.toJson(oppfolgingsperiodeMelding)
         val jsonNode = JsonUtils.getMapper().readTree(meldingAsJson)
+        assertThat(personIdentCaptor.lastValue).isEqualTo(internAoPersonIdent)
         assertThat(jsonNode["sisteEndringsType"].asText()).isEqualTo("ARBEIDSOPPFOLGINGSKONTOR_ENDRET")
         assertThat(jsonNode["aktorId"].asText()).isEqualTo(oppfolgingsperiode.aktorId)
         assertThat(jsonNode["ident"].asText()).isEqualTo(oppfolgingskontorMelding.ident)
@@ -94,15 +100,18 @@ class OppfolgingsperiodeEndretServiceTest {
         val startTidspunkt = ZonedDateTime.now().minusDays(10)
         val sluttTidspunkt = ZonedDateTime.now()
         val oppfolgingsperiode = oppfolgingsperiode(aktorId, startTidspunkt, sluttTidspunkt)
+        val internAoPersonIdent = 8L
         whenever(aktorOppslagClient.hentFnr(AktorId.of(aktorId))).thenReturn(fnr)
 
-        arbeidsoppfolgingsKontorEndretService.publiserSisteOppfolgingsperiodeV2MedAvsluttetStatus(oppfolgingsperiode, 8L)
+        arbeidsoppfolgingsKontorEndretService.publiserSisteOppfolgingsperiodeV2MedAvsluttetStatus(oppfolgingsperiode, internAoPersonIdent)
 
         val captor = argumentCaptor<SisteOppfolgingsperiodeDto>()
-        verify(kafkaProducerService).publiserOppfolgingsperiodeMedKontor(captor.capture(), 8L)
+        val personIdentCaptor = argumentCaptor<Long>()
+        verify(kafkaProducerService).publiserOppfolgingsperiodeMedKontor(captor.capture(), personIdentCaptor.capture())
         val oppfolgingsperiodeMelding = captor.firstValue as AvsluttetOppfolgingsperiode
         val meldingAsJson = JsonUtils.toJson(oppfolgingsperiodeMelding)
         val jsonNode = JsonUtils.getMapper().readTree(meldingAsJson)
+        assertThat(personIdentCaptor.lastValue).isEqualTo(internAoPersonIdent)
         assertThat(jsonNode["sisteEndringsType"].asText()).isEqualTo("OPPFOLGING_AVSLUTTET")
         assertThat(jsonNode["aktorId"].asText()).isEqualTo(oppfolgingsperiode.aktorId)
         assertThat(jsonNode["ident"].asText()).isEqualTo(fnr.get())
