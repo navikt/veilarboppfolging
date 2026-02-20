@@ -13,7 +13,7 @@ import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity
 import org.springframework.stereotype.Service
 import java.time.ZonedDateTime
-import java.util.UUID
+import java.util.*
 import kotlin.jvm.optionals.getOrElse
 
 @Service
@@ -56,7 +56,7 @@ class ArbeidsoppfolgingsKontorEndretService(
         } else {
             val periodeId = melding.oppfolgingsperiodeId
 
-            oppfolgingsPeriodeRepository.settIntenrPersonIdentPåOppfolgingsperiode(aoKontorInternPersonId, periodeId)
+            oppfolgingsPeriodeRepository.settInternPersonIdentPåOppfolgingsperiode(aoKontorInternPersonId, periodeId)
 
             val oppfolgingsperiode = oppfolgingsPeriodeRepository.hentOppfolgingsperiode(periodeId.toString())
                     .getOrElse { throw RuntimeException("Ugyldig oppfølgingsperiodeId, noe gikk veldig galt, dette skal aldri skje") }

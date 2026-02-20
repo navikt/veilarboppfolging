@@ -109,13 +109,12 @@ public class OppfolgingsPeriodeRepository {
         );
     }
 
-    public int settIntenrPersonIdentPåOppfolgingsperiode(Long aoKontorInternPersonId, UUID oppfolgingsperiodeId) {
+    public int settInternPersonIdentPåOppfolgingsperiode(Long aoKontorInternPersonId, UUID oppfolgingsperiodeId) {
         return db.update(
                 """
                     UPDATE OPPFOLGINGSPERIODE
                     SET ao_kontor_intern_person_id = ?
-                    WHERE where uuid = ?
-                    ORDER BY startdato desc;
+                    WHERE uuid = ?;
                 """,
                 aoKontorInternPersonId,
                 oppfolgingsperiodeId.toString()
