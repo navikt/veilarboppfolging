@@ -94,6 +94,34 @@ public class OppfolgingsPeriodeRepository {
         );
     }
 
+    public Optional<UUID> hentSisteOppfolgingsperiodeForAoInternId(Long aoKontorInternPersonId) {
+        return queryForNullableObject(
+                () -> db.queryForObject(
+                        """
+                            SELECT uuid
+                            FROM OPPFOLGINGSPERIODE
+                            WHERE ao_kontor_intern_person_id = ?
+                            ORDER BY startdato desc
+                            LIMIT 1;
+                        """,
+                        OppfolgingsPeriodeRepository::mapTilPeriodeUUID,
+                        aoKontorInternPersonId
+                )
+        );
+    }
+
+    public int settInternPersonIdentPåOppfolgingsperiode(Long aoKontorInternPersonId, UUID oppfolgingsperiodeId) {
+        return db.update(
+                """
+                    UPDATE OPPFOLGINGSPERIODE
+                    SET ao_kontor_intern_person_id = ?
+                    WHERE uuid = ?;
+                """,
+                aoKontorInternPersonId,
+                oppfolgingsperiodeId.toString()
+        );
+    }
+
     public List<OppfolgingsperiodeEntity> hentOppfolgingsperioder(AktorId aktorId) {
         return db.query(hentOppfolingsperioderSQL +
                         "WHERE aktor_id = ?",
@@ -168,6 +196,10 @@ public class OppfolgingsPeriodeRepository {
                         + "WHERE aktor_id = ?",
                 aktorId.get()
         );
+    }
+
+    private static UUID mapTilPeriodeUUID(ResultSet result , int id) throws SQLException {
+        return UUID.fromString(result.getString("uuid"));
     }
 
     private static OppfolgingsperiodeEntity mapTilOppfolgingsperiode(ResultSet result, int row) throws SQLException {
