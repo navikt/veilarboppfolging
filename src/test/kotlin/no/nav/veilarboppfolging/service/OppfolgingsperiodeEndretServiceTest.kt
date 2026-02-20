@@ -30,11 +30,24 @@ class OppfolgingsperiodeEndretServiceTest {
 
     private val arbeidsoppfolgingsKontorEndretService = ArbeidsoppfolgingsKontorEndretService(oppfolgingsPeriodeRepository, kafkaProducerService, aktorOppslagClient, ArbeidsoppfolgingskontorRepository)
 
-    @Ignore("Midlertidig deaktivert for å unngå at vi misser sluttmeldinger ut på nytt topic")
     @Test
-    fun `skal ignorere tom oppfolgingskontormelding`() {
+    fun `skal ignorere tom arbeidsOppfolgingsKontortilordning-melding`() {
+        val internAoPersonIdent = 8L
+        val aktorId = "1111111"
+        val fnr = Fnr.of("3131")
+        val captor = argumentCaptor<SisteOppfolgingsperiodeDto>()
+        val personIdentCaptor = argumentCaptor<Long>()
+        val oppfolgingsperiode = oppfolgingsperiode(aktorId, oppfolgingsperiodeSlutt = ZonedDateTime.now())
+        whenever(oppfolgingsPeriodeRepository.hentSisteOppfolgingsperiodeForAoInternId(internAoPersonIdent)).thenReturn(Optional.of(oppfolgingsperiode.uuid))
+        whenever(oppfolgingsPeriodeRepository.hentOppfolgingsperiode(oppfolgingsperiode.uuid.toString())).thenReturn(Optional.of(oppfolgingsperiode))
+        whenever(aktorOppslagClient.hentFnr(AktorId.of(aktorId))).thenReturn(fnr)
         arbeidsoppfolgingsKontorEndretService.håndterOppfolgingskontorMelding(8L, null)
-        verifyNoInteractions(kafkaProducerService, oppfolgingsPeriodeRepository, aktorOppslagClient)
+
+        verify(kafkaProducerService).publiserOppfolgingsperiodeMedKontor(captor.capture(), personIdentCaptor.capture())
+        assertThat(personIdentCaptor.lastValue).isEqualTo(internAoPersonIdent)
+        assertThat(captor.lastValue.sluttTidspunkt).isNotNull()
+        assertThat(captor.lastValue.sisteEndringsType).isEqualTo(SisteEndringsType.OPPFOLGING_AVSLUTTET)
+        assertThat(captor.lastValue.ident).isEqualTo(fnr.get())
     }
 
     @Test
