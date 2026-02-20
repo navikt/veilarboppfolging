@@ -98,10 +98,11 @@ public class OppfolgingsPeriodeRepository {
         return queryForNullableObject(
                 () -> db.queryForObject(
                         """
-                            SELECT distinct on (ao_kontor_intern_person_id) uuid
+                            SELECT uuid
                             FROM OPPFOLGINGSPERIODE
                             WHERE ao_kontor_intern_person_id = ?
-                            ORDER BY startdato desc;
+                            ORDER BY startdato desc
+                            LIMIT 1;
                         """,
                         OppfolgingsPeriodeRepository::mapTilPeriodeUUID,
                         aoKontorInternPersonId
