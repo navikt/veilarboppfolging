@@ -24,7 +24,7 @@ import org.springframework.graphql.test.tester.ExecutionGraphQlServiceTester
 import org.springframework.http.HttpStatusCode
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.web.client.RestClient
-import java.util.UUID
+import java.util.*
 import kotlin.test.assertEquals
 
 @ActiveProfiles("test")
@@ -371,6 +371,7 @@ class GraphqlControllerTest: IntegrationTest() {
             { 
                 "harVeilederLeseTilgangTilBruker": true,
                 "harVeilederLeseTilgangTilBrukersKontorsperre": false,
+                "harVeilederTilgangFlytteBrukerTilEgetKontor": true,
                 "tilgang": "HAR_TILGANG"
             }
         """.trimIndent())
@@ -382,6 +383,29 @@ class GraphqlControllerTest: IntegrationTest() {
             }
         """.trimIndent())
     }
+
+    @Test
+    fun `skal kunne flytte bruker til eget kontor når bruker er under oppfølging og veileder ikke har tilgang til brukers kontor`() {
+        val veilederUuid = UUID.randomUUID()
+        val fnr = randomFnr()
+        val aktorId = randomAktorId()
+        val enhetId = EnhetId("3131")
+        setBrukerUnderOppfolging(aktorId, fnr)
+        mockInternBrukerAuthOk(veilederUuid, aktorId, fnr)
+        mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Deny("NEI", "FORDI"))
+        /* Query is hidden in test/resources/graphl-test :) */
+        val result = tester.documentName("veilederTilganger").variable("fnr", fnr.get()).execute()
+        result.errors()
+            .filter { it.path == "brukerStatus" }
+            .verify()
+        result.path("veilederTilgang").matchesJson("""
+            { 
+                "harVeilederLeseTilgangTilBruker": false,
+                "harVeilederTilgangFlytteBrukerTilEgetKontor": true
+            }
+        """.trimIndent())
+    }
+
 
     @Test
     fun `skal returnere oppfolgingsperiodene til bruker`() {

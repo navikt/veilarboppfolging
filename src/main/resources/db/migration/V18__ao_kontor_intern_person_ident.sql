@@ -1,0 +1,2 @@
+create index oppfolgingsperiode_ao_kontor_intern_person_id_index
+    on oppfolgingsperiode (ao_kontor_intern_person_id);

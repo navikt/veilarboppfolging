@@ -8,6 +8,7 @@ data class VeilederTilgangDto(
     val harVeilederLeseTilgangTilBruker: Boolean?,
     val harVeilederLeseTilgangTilKontorsperretBruker: Boolean?,
     val harVeilederLeseTilgangTilBrukersEnhet: Boolean?,
+    val harVeilederTilgangFlytteBrukerTilEgetKontor: Boolean?,
     val tilgang: TilgangResultat?
 )
 

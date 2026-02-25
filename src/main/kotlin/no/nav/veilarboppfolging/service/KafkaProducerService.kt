@@ -2,6 +2,7 @@ package no.nav.veilarboppfolging.service
 
 import no.nav.common.auth.context.AuthContextHolder
 import no.nav.common.kafka.producer.feilhandtering.KafkaProducerRecordStorage
+import no.nav.common.kafka.producer.serializer.JsonSerializer
 import no.nav.common.kafka.producer.util.ProducerUtils
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
@@ -21,6 +22,8 @@ import no.nav.veilarboppfolging.kafka.dto.OppfolgingsperiodeDTO
 import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.hendelser.OppfolgingStartetHendelseDto
 import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.hendelser.OppfolgingsAvsluttetHendelseDto
 import org.apache.kafka.clients.producer.ProducerRecord
+import org.apache.kafka.common.serialization.LongSerializer
+import org.apache.kafka.common.serialization.StringSerializer
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -42,8 +45,8 @@ class KafkaProducerService @Autowired constructor(
         oppfolgingsperiode(oppfolgingsperiode)
     }
 
-    fun publiserOppfolgingsperiodeMedKontor(gjeldendeOppfolgingsperiode: SisteOppfolgingsperiodeDto) {
-        oppfolgingsperiodeMedKontor(gjeldendeOppfolgingsperiode)
+    fun publiserOppfolgingsperiodeMedKontor(gjeldendeOppfolgingsperiode: SisteOppfolgingsperiodeDto, aoKontorInternPersonIdent: Long) {
+        oppfolgingsperiodeMedKontor(gjeldendeOppfolgingsperiode, aoKontorInternPersonIdent)
     }
 
     fun publiserOppfolgingsperiode(oppfolgingsperiode: OppfolgingsperiodeDTO) {
@@ -75,10 +78,15 @@ class KafkaProducerService @Autowired constructor(
         )
     }
 
-    private fun oppfolgingsperiodeMedKontor(sisteOppfolgingsperiode: SisteOppfolgingsperiodeDto) {
+    private fun oppfolgingsperiodeMedKontor(sisteOppfolgingsperiode: SisteOppfolgingsperiodeDto, aoKontorInternPersonIdent: Long) {
         store(
             kafkaProperties.sisteOppfolgingsperiodeTopicV2,
             sisteOppfolgingsperiode.oppfolgingsperiodeUuid.toString(),
+            sisteOppfolgingsperiode
+        )
+        store(
+            kafkaProperties.sisteOppfolgingsperiodeTopicV3,
+            aoKontorInternPersonIdent,
             sisteOppfolgingsperiode
         )
     }
@@ -209,6 +217,23 @@ class KafkaProducerService @Autowired constructor(
     private fun store(topic: String, key: String, value: String) {
         if (kafkaEnabled) {
             val record = ProducerUtils.serializeStringRecord(ProducerRecord(topic, key, value))
+            producerRecordStorage.store(record)
+        } else {
+            throw RuntimeException("Kafka er disabled, men noe gjør at man forsøker å publisere meldinger")
+        }
+    }
+
+    companion object {
+        val LONG_SERIALIZER = LongSerializer()
+        val JSON_SERIALIZER = JsonSerializer<Any>()
+    }
+
+    private fun store(topic: String, key: Long, value: Any) {
+        if (kafkaEnabled) {
+            val fakeRecord = ProducerRecord(topic, key, value)
+            val key = LONG_SERIALIZER.serialize(topic, fakeRecord.key())
+            val value = JSON_SERIALIZER.serialize(topic, fakeRecord.value())
+            val record = ProducerRecord(fakeRecord.topic(), fakeRecord.partition(), key, value, fakeRecord.headers())
             producerRecordStorage.store(record)
         } else {
             throw RuntimeException("Kafka er disabled, men noe gjør at man forsøker å publisere meldinger")
