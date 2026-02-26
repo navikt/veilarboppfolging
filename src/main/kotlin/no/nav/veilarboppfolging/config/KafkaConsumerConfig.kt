@@ -118,7 +118,7 @@ open class KafkaConsumerConfig(
             consumerRecordProcessor = KafkaConsumerRecordProcessorBuilder
                 .builder()
                 .withLockProvider(lockProvider)
-                .withMetric(meterRegistry)
+                .withMetrics(meterRegistry)
                 .withKafkaConsumerRepository(consumerRepository)
                 .withConsumerConfigs(ConsumerUtils.findConsumerConfigsWithStoreOnFailure(topicConfigs))
                 .build()
