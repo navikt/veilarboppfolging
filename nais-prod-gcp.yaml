@@ -70,10 +70,10 @@ spec:
       value: http://digdir-krr-proxy.team-rocket
     - name: DIGDIR_KRR_PROXY_SCOPE
       value: api://prod-gcp.team-rocket.digdir-krr-proxy/.default
-    - name: AMTDELTAKER_URL
-      value: http://amt-deltaker.amt
-    - name: AMTDELTAKER_SCOPE
-      value: api://prod-gcp.amt.amt-deltaker/.default
+    - name: TILTAKSHISTORIKK_URL
+      value: http://tiltakshistorikk.team-mulighetsrommet
+    - name: TILTAKSHISTORIKK_SCOPE
+      value: api://prod-gcp.team-mulighetsrommet.tiltakshistorikk/.default
     - name: KAFKA_ENABLED
       value: "true"
     - name: VEILARBARENA_URL
@@ -112,12 +112,12 @@ spec:
           namespace: team-rocket
           cluster: prod-gcp
         - application: poao-tilgang
-        - application: amt-deltaker
-          namespace: amt
         - application: norg2
           namespace: org
         - application: logging
           namespace: nais-system
+        - application: tiltakshistorikk
+          namespace: team-mulighetsrommet
       external:
         - host: veilarbarena.prod-fss-pub.nais.io
         - host: pdl-api.prod-fss-pub.nais.io

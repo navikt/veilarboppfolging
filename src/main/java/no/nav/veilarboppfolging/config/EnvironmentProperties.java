@@ -34,8 +34,8 @@ public class EnvironmentProperties {
 
 	private String digdirKrrProxyScope;
 
-    private String amtDeltakerUrl;
+    private String tiltakshistorikkUrl;
 
-    private String amtDeltakerScope;
+    private String tiltakshistorikkScope;
 
 }
