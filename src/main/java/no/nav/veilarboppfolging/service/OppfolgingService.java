@@ -371,7 +371,7 @@ public class OppfolgingService {
                 .orElse(false);
     }
 
-    protected boolean harAktiveTiltaksdeltakelser(Fnr fnr) {
+    public boolean harAktiveTiltaksdeltakelser(Fnr fnr) {
         return tiltakshistorikkClient.harAktiveTiltaksdeltakelser(fnr.get());
     }
 
