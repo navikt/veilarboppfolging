@@ -86,6 +86,7 @@ type BrukerStatusDto {
     krr: KrrStatusDto
     arena: BrukerStatusArenaDto
     veilederTilordning: VeilederTilordningDto
+    harAktiveTiltaksdeltakelser: Boolean!
 }
 
 type BrukerStatusArenaDto {

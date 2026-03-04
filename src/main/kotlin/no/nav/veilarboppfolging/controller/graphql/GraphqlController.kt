@@ -248,6 +248,12 @@ class GraphqlController(
         return oppfolgingSjekk(gyldigOppfolging, gyldigTilgang, gyldigFregStatus)
     }
 
+    @SchemaMapping(typeName = "BrukerStatusDto", field = "harAktiveTiltaksdeltakelser")
+    fun harAktiveTiltaksdeltakelser(brukerStatusDto: BrukerStatusDto, @LocalContextValue aktorId: AktorId): Boolean? {
+        val fnr = aktorOppslagClient.hentFnr(aktorId)
+        return oppfolgingService.harAktiveTiltaksdeltakelser(fnr)
+    }
+
     @SchemaMapping(typeName = "BrukerStatusDto", field = "manuell")
     fun manuell(brukerStatusDto: BrukerStatusDto, @LocalContextValue aktorId: AktorId): BrukerStatusManuellDto? {
         return manuellService.hentManuellStatus(aktorId)
