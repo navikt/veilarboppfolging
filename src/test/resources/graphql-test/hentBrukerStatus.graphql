@@ -25,6 +25,5 @@ query hentBrukerStatus($fnr: String!) {
         veilederTilordning {
             veilederIdent
         }
-        harAktiveTiltaksdeltakelser
     }
 }

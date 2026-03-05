@@ -13,6 +13,7 @@ type VeilederTilgang {
     harVeilederLeseTilgangTilBrukersKontorsperre: Boolean
     harVeilederTilgangFlytteBrukerTilEgetKontor: Boolean!
     tilgang: TilgangResultat
+    harAktiveTiltaksdeltakelserVedFlyttingTilEgetKontor: Boolean
 }
 
 # Svaret på Evaluerering av Policy-en som heter NavAnsattTilgangTilEksternBruker i POAO-Tilgang
@@ -86,7 +87,6 @@ type BrukerStatusDto {
     krr: KrrStatusDto
     arena: BrukerStatusArenaDto
     veilederTilordning: VeilederTilordningDto
-    harAktiveTiltaksdeltakelser: Boolean!
 }
 
 type BrukerStatusArenaDto {
