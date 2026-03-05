@@ -123,7 +123,8 @@ class GraphqlController(
                     tilgang = it,
                     harVeilederLeseTilgangTilKontorsperretBruker = null,
                     harVeilederLeseTilgangTilBrukersEnhet = null,
-                    harVeilederTilgangFlytteBrukerTilEgetKontor = null
+                    harVeilederTilgangFlytteBrukerTilEgetKontor = null,
+                    harAktiveTiltaksdeltakelserVedFlyttingTilEgetKontor = null,
                 )
             }.let { result.localContext(context).data(it).build() }
     }
@@ -141,6 +142,17 @@ class GraphqlController(
         val tilgangTilBruker = evaluerNavAnsattTilgangTilEksternBruker(fnr.get())
         return underOppfølging && (tilgangTilBruker == TilgangResultat.IKKE_TILGANG_ENHET || tilgangTilBruker == TilgangResultat.HAR_TILGANG)
     }
+
+    @SchemaMapping(typeName = "VeilederTilgang", field = "harAktiveTiltaksdeltakelserVedFlyttingTilEgetKontor")
+    fun harAktiveTiltaksdeltakelserVedFlyttingTilEgetKontor(tilgang: VeilederTilgangDto, @LocalContextValue fnr: Fnr): Boolean? {
+        val tilgangTilBruker = evaluerNavAnsattTilgangTilEksternBruker(fnr.get())
+        return if (tilgangTilBruker == TilgangResultat.IKKE_TILGANG_ENHET || tilgangTilBruker == TilgangResultat.HAR_TILGANG) {
+            oppfolgingService.harAktiveTiltaksdeltakelser(fnr)
+        } else {
+            null
+        }
+    }
+
 
     @QueryMapping
     fun brukerStatus(@Argument fnr: String?): DataFetcherResult<BrukerStatusDto> {
@@ -246,12 +258,6 @@ class GraphqlController(
         val gyldigTilgang = lazy { evaluerNavAnsattTilgangTilEksternBruker(fnr.get()).toKanStarteOppfolging() }
         val gyldigFregStatus = lazy { kanStarteOppfolgingMtpFregStatus(fnr) }
         return oppfolgingSjekk(gyldigOppfolging, gyldigTilgang, gyldigFregStatus)
-    }
-
-    @SchemaMapping(typeName = "BrukerStatusDto", field = "harAktiveTiltaksdeltakelser")
-    fun harAktiveTiltaksdeltakelser(brukerStatusDto: BrukerStatusDto, @LocalContextValue aktorId: AktorId): Boolean? {
-        val fnr = aktorOppslagClient.hentFnr(aktorId)
-        return oppfolgingService.harAktiveTiltaksdeltakelser(fnr)
     }
 
     @SchemaMapping(typeName = "BrukerStatusDto", field = "manuell")
