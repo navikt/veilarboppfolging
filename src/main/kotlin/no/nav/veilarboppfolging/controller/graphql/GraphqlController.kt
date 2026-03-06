@@ -325,6 +325,12 @@ class GraphqlController(
             .map { it.kanEnkeltReaktiveres }.orElse(null)
     }
 
+    @SchemaMapping(typeName = "BrukerStatusDto", field = "harAktiveTiltaksdeltakelser")
+    fun harAktiveTiltaksdeltakelser(brukerStatusDto: BrukerStatusDto, @LocalContextValue aktorId: AktorId): Boolean? {
+        val fnr = aktorOppslagClient.hentFnr(aktorId)
+        return oppfolgingService.harAktiveTiltaksdeltakelser(fnr)
+    }
+
     private fun hentDefaultEnhetFraNorg(fnr: Fnr): Pair<EnhetId, KildeDto>? {
         val tilgangsattributterResponse = poaoTilgangClient.hentTilgangsAttributter(fnr.get())
         if (tilgangsattributterResponse.isFailure) throw PoaoTilgangError(tilgangsattributterResponse.exception!!)
