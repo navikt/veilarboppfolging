@@ -445,6 +445,7 @@ class GraphqlControllerTest: IntegrationTest() {
         setManuellStatus(aktorId)
         setTilordnetVeileder(aktorId, navIdent)
         mockDigdir(fnr, reservertMotDigitalKommunikasjon = true, kanVarsles = false)
+        mockTiltakshistorikk(fnr, harAktiveDeltakelser = true)
 
         /* Query is hidden in test/resources/graphl-test :) */
         val result = tester.documentName("hentBrukerStatus").variable("fnr", fnr.get()).execute()
@@ -474,7 +475,8 @@ class GraphqlControllerTest: IntegrationTest() {
               },
               "veilederTilordning": {
                 "veilederIdent": "${navIdent}"
-              }
+              },
+              "harAktiveTiltaksdeltakelser": true
             }
         """.trimIndent())
     }
