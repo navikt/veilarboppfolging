@@ -35,7 +35,7 @@ data class UtmeldingsAntall(
 )
 
 interface BigQueryClient {
-    fun loggStartOppfolgingsperiode(oppfolging: OppfolgingStartBegrunnelse, oppfolgingPeriodeId: UUID, startedAvType: StartetAvType, kvalifiseringsgruppe: Optional<Kvalifiseringsgruppe>, manuellSjekkLovligOpphold: Boolean? = null)
+    fun loggStartOppfolgingsperiode(startBegrunnelse: OppfolgingStartBegrunnelse, oppfolgingPeriodeId: UUID, startedAvType: StartetAvType, kvalifiseringsgruppe: Optional<Kvalifiseringsgruppe>, manuellSjekkLovligOpphold: Boolean? = null)
     fun loggAvsluttOppfolgingsperiode(oppfolgingPeriodeId: UUID, avregistreringsType: AvregistreringsType)
     fun loggUtmeldingsHendelse(utmelding: UtmeldingsHendelse)
     fun loggUtmeldingsCount(utmelding: UtmeldingsAntall)
