@@ -1,19 +1,19 @@
 "$schema": https://json-schema.org/draft-07/schema
-"$id": "https://navikt.github.io/veilarboppfolging/schemas/oppfolgingsperiode.v2.start.schema.yml"
+"$id": "https://navikt.github.io/veilarboppfolging/schemas/oppfolgingsperiode.v2.kontorEndret.schema.yml"
 required:
   - sisteEndringsType
   - kontor
 type: object
 allOf:
-  - $ref: "./oppfolgingsperiode.v2.base.schema.yml"
+  - $ref: "oppfolgingsperiode.v3.base.schema.yml"
 additionalProperties: false
 properties:
   kontor:
-    $ref: 'oppfolgingsperiode.v2.kontor.schema.yml'
+    $ref: 'oppfolgingsperiode.v3.kontor.schema.yml
   sisteEndringsType:
     type: string
     enum:
-      - OPPFOLGING_STARTET
+      - ARBEIDSOPPFOLGINGSKONTOR_ENDRET
   sluttTidspunkt:
     type: "null"
     format: date-time

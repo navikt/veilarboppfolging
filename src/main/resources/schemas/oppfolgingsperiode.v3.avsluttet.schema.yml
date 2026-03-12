@@ -5,7 +5,7 @@ required:
   - sluttTidspunkt
 type: object
 allOf:
-  - $ref: "./oppfolgingsperiode.v2.base.schema.yml"
+  - $ref: "oppfolgingsperiode.v3.base.schema.yml"
 additionalProperties: false
 properties:
   sisteEndringsType:
