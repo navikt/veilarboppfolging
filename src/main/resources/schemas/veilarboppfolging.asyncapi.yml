@@ -42,8 +42,8 @@ channels:
       - Meldinger blir "re-publisert" manuelt. Da blir siste tilstand publisert på nytt
 
     messages:
-      oppfolgingsperiodeV2:
-        $ref: '#/components/messages/oppfolgingsperiodeV2'
+      oppfolgingsperiodeV3:
+        $ref: '#/components/messages/oppfolgingsperiodeV3'
         bindings:
           kafka:
             key:
@@ -112,7 +112,7 @@ components:
       payload:
         $ref: oppfolgingsperiode.v1.schema.yml
 
-    oppfolgingsperiodeV2:
+    oppfolgingsperiodeV3:
       name: oppfolgingsperiodeV3
       title: Oppfølgingsperiode v3
       summary: Oppfølgingperiode-meldinger med start, endret eller avsluttet. Felter kan være nullable.
