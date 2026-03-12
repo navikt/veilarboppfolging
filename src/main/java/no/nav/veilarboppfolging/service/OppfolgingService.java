@@ -1,5 +1,9 @@
 package no.nav.veilarboppfolging.service;
 
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.SneakyThrows;
@@ -10,8 +14,8 @@ import no.nav.common.types.identer.Id;
 import no.nav.common.types.identer.NavIdent;
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe;
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe;
-import no.nav.veilarboppfolging.client.amtdeltaker.AmtDeltakerClient;
 import no.nav.veilarboppfolging.client.digdir_krr.KRRData;
+import no.nav.veilarboppfolging.client.tiltakshistorikk.TiltakshistorikkClient;
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolgingTilstand;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsStatus;
 import no.nav.veilarboppfolging.controller.response.UnderOppfolgingDTO;
@@ -41,11 +45,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
 import static java.time.ZonedDateTime.now;
 import static java.util.Optional.empty;
 import static java.util.stream.Collectors.toList;
@@ -66,7 +65,7 @@ public class OppfolgingService {
     private final ManuellStatusService manuellStatusService;
     private final ArbeidsoppfolgingsKontorEndretService arbeidsoppfolgingsKontorEndretService;
 
-    private final AmtDeltakerClient amtDeltakerClient;
+    private final TiltakshistorikkClient tiltakshistorikkClient;
 
     private final KvpRepository kvpRepository;
     private final MaalRepository maalRepository;
@@ -85,7 +84,6 @@ public class OppfolgingService {
             OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository,
             // TODO: Når vi får splittet servicenen bedre så skal det ikke være behov for å bruke @Lazy
             @Lazy ManuellStatusService manuellStatusService,
-            AmtDeltakerClient amtDeltakerClient,
             KvpRepository kvpRepository,
             MaalRepository maalRepository,
             BrukerOppslagFlereOppfolgingAktorRepository brukerOppslagFlereOppfolgingAktorRepository,
@@ -93,7 +91,8 @@ public class OppfolgingService {
             ArenaYtelserService arenaYtelserService,
             BigQueryClient bigQueryClient,
             ArbeidsoppfolgingsKontorEndretService arbeidsoppfolgingsKontorEndretService,
-            @Value("${app.env.nav-no-url}") String navNoUrl) {
+            @Value("${app.env.nav-no-url}") String navNoUrl,
+            TiltakshistorikkClient tiltakshistorikkClient) {
         this.kafkaProducerService = kafkaProducerService;
         this.kvpService = kvpService;
         this.arenaOppfolgingService = arenaOppfolgingService;
@@ -101,7 +100,6 @@ public class OppfolgingService {
         this.oppfolgingsStatusRepository = oppfolgingsStatusRepository;
         this.oppfolgingsPeriodeRepository = oppfolgingsPeriodeRepository;
         this.manuellStatusService = manuellStatusService;
-        this.amtDeltakerClient = amtDeltakerClient;
         this.kvpRepository = kvpRepository;
         this.maalRepository = maalRepository;
         this.brukerOppslagFlereOppfolgingAktorRepository = brukerOppslagFlereOppfolgingAktorRepository;
@@ -109,6 +107,7 @@ public class OppfolgingService {
         this.arenaYtelserService = arenaYtelserService;
         this.bigQueryClient = bigQueryClient;
         this.arbeidsoppfolgingsKontorEndretService = arbeidsoppfolgingsKontorEndretService;
+        this.tiltakshistorikkClient = tiltakshistorikkClient;
     }
 
     @Transactional // TODO: kan denne være read only?
@@ -372,8 +371,8 @@ public class OppfolgingService {
                 .orElse(false);
     }
 
-    protected boolean harAktiveTiltaksdeltakelser(Fnr fnr) {
-        return amtDeltakerClient.harAktiveTiltaksdeltakelser(fnr.get());
+    public boolean harAktiveTiltaksdeltakelser(Fnr fnr) {
+        return tiltakshistorikkClient.harAktiveTiltaksdeltakelser(fnr.get());
     }
 
     private Optional<OppfolgingEntity> getOppfolgingStatus(Fnr fnr) {

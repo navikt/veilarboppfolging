@@ -81,6 +81,7 @@ import org.springframework.web.context.WebApplicationContext
 import java.time.LocalDate
 import java.time.ZonedDateTime
 import java.util.*
+import no.nav.veilarboppfolging.client.tiltakshistorikk.TiltakshistorikkClient
 
 @EmbeddedKafka(partitions = 1)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -198,6 +199,9 @@ open class IntegrationTest {
     @Autowired
     lateinit var template: NamedParameterJdbcTemplate
 
+    @MockitoBean
+    lateinit var tiltakshistorikkClient: TiltakshistorikkClient
+
     @BeforeEach
     fun beforeEach() {
         DbTestUtils.cleanupTestDb(jdbcTemplate)
@@ -304,6 +308,11 @@ open class IntegrationTest {
                 GeografiskTilknytningNr(gtType, enhetsNr),
                 false)
             )
+    }
+
+    fun mockTiltakshistorikk(fnr: Fnr, harAktiveDeltakelser: Boolean = false) {
+        `when`(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(fnr.get())).thenReturn(harAktiveDeltakelser)
+
     }
 
     fun mockPdlFolkeregisterStatus(fnr: Fnr, status: FregStatusOgStatsborgerskap) {

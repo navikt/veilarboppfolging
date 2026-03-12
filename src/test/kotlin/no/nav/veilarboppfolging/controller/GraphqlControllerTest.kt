@@ -364,6 +364,7 @@ class GraphqlControllerTest: IntegrationTest() {
         mockInternBrukerAuthOk(veilederUuid, aktorId, fnr)
         mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Permit)
         mockPoaoTilgangHarTilgangTilEnhet(veilederUuid, enhetId, Decision.Deny("NEI", "FORDI"))
+        mockTiltakshistorikk(fnr, harAktiveDeltakelser = false)
         /* Query is hidden in test/resources/graphl-test :) */
         val result = tester.documentName("veilederTilganger").variable("fnr", fnr.get()).execute()
         result.errors().verify()
@@ -372,7 +373,8 @@ class GraphqlControllerTest: IntegrationTest() {
                 "harVeilederLeseTilgangTilBruker": true,
                 "harVeilederLeseTilgangTilBrukersKontorsperre": false,
                 "harVeilederTilgangFlytteBrukerTilEgetKontor": true,
-                "tilgang": "HAR_TILGANG"
+                "tilgang": "HAR_TILGANG",
+                "harAktiveTiltaksdeltakelserVedFlyttingTilEgetKontor": false
             }
         """.trimIndent())
         result.path("brukerStatus").matchesJson("""
@@ -393,6 +395,7 @@ class GraphqlControllerTest: IntegrationTest() {
         setBrukerUnderOppfolging(aktorId, fnr)
         mockInternBrukerAuthOk(veilederUuid, aktorId, fnr)
         mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Deny("NEI", "FORDI"))
+        mockTiltakshistorikk(fnr, true)
         /* Query is hidden in test/resources/graphl-test :) */
         val result = tester.documentName("veilederTilganger").variable("fnr", fnr.get()).execute()
         result.errors()
@@ -401,7 +404,8 @@ class GraphqlControllerTest: IntegrationTest() {
         result.path("veilederTilgang").matchesJson("""
             { 
                 "harVeilederLeseTilgangTilBruker": false,
-                "harVeilederTilgangFlytteBrukerTilEgetKontor": true
+                "harVeilederTilgangFlytteBrukerTilEgetKontor": true,
+                "harAktiveTiltaksdeltakelserVedFlyttingTilEgetKontor": true,
             }
         """.trimIndent())
     }
@@ -441,6 +445,7 @@ class GraphqlControllerTest: IntegrationTest() {
         setManuellStatus(aktorId)
         setTilordnetVeileder(aktorId, navIdent)
         mockDigdir(fnr, reservertMotDigitalKommunikasjon = true, kanVarsles = false)
+        mockTiltakshistorikk(fnr, harAktiveDeltakelser = true)
 
         /* Query is hidden in test/resources/graphl-test :) */
         val result = tester.documentName("hentBrukerStatus").variable("fnr", fnr.get()).execute()
@@ -470,17 +475,19 @@ class GraphqlControllerTest: IntegrationTest() {
               },
               "veilederTilordning": {
                 "veilederIdent": "${navIdent}"
-              }
+              },
+              "harAktiveTiltaksdeltakelser": true
             }
         """.trimIndent())
     }
 
     @Test
-    fun `internbruker uten tilgang skal bare kunne se at hen ikke har tilgang`() {
+    fun `internbruker uten tilgang til enhet skal bare kunne se at hen ikke har tilgang`() {
         val (fnr, aktorId) = defaultBruker()
         val veilederId = UUID.randomUUID()
         mockInternBrukerAuthOk(veilederId, aktorId, fnr)
         mockPoaoTilgangHarTilgangTilBruker(veilederId, fnr, Decision.Deny("NOPE", "REASONS"))
+        mockTiltakshistorikk(fnr, harAktiveDeltakelser = true)
 
         val result = tester.documentName("altQuery").variable("fnr", fnr.get()).execute()
         result.errors()
@@ -492,7 +499,8 @@ class GraphqlControllerTest: IntegrationTest() {
             {
                 "harVeilederLeseTilgangTilBruker": false,
                 "harVeilederLeseTilgangTilBrukersKontorsperre": true,
-                "tilgang": "IKKE_TILGANG_ENHET"
+                "tilgang": "IKKE_TILGANG_ENHET",
+                "harAktiveTiltaksdeltakelserVedFlyttingTilEgetKontor": true
             }
         """.trimIndent())
         result.path("oppfolging").matchesJson("""
@@ -502,6 +510,36 @@ class GraphqlControllerTest: IntegrationTest() {
             }
         """.trimIndent())
 
+    }
+
+    @Test
+    fun `internbruker uten tilgang til kode 7-bruker skal bare kunne se at hen ikke har tilgang`() {
+        val (fnr, aktorId) = defaultBruker()
+        val veilederId = UUID.randomUUID()
+        mockInternBrukerAuthOk(veilederId, aktorId, fnr)
+        mockPoaoTilgangHarTilgangTilBruker(veilederId, fnr, Decision.Deny(AdGruppeNavn.FORTROLIG_ADRESSE, "MANGLER_TILGANG_TIL_AD_GRUPPE"))
+        mockTiltakshistorikk(fnr, harAktiveDeltakelser = true)
+
+        val result = tester.documentName("altQuery").variable("fnr", fnr.get()).execute()
+        result.errors()
+            .expect { it.path == "oppfolgingsPerioder" && it.message == "NavAnsattTilgangTilEksternBrukerPolicyInput fikk deny" }
+            .expect { it.path == "oppfolgingsEnhet" && it.message == "Ikke tilgang til oppfolgingsenhet: Veileder har ikke tilgang til bruker" }
+            .expect { it.path == "brukerStatus" && it.message == "Ikke tilgang til brukerStatus: Veileder har ikke tilgang til bruker" }
+            .verify()
+        result.path("veilederTilgang").matchesJson("""
+            {
+                "harVeilederLeseTilgangTilBruker": false,
+                "harVeilederLeseTilgangTilBrukersKontorsperre": true,
+                "tilgang": "IKKE_TILGANG_FORTROLIG_ADRESSE",
+                "harAktiveTiltaksdeltakelserVedFlyttingTilEgetKontor": null
+            }
+        """.trimIndent())
+        result.path("oppfolging").matchesJson("""
+            {
+                "kanStarteOppfolging": "IKKE_TILGANG_FORTROLIG_ADRESSE",
+                "erUnderOppfolging": null
+            }
+        """.trimIndent())
     }
 
     @Test

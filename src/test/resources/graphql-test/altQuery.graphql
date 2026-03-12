@@ -39,6 +39,7 @@ query altQuery($fnr: String!) {
         harVeilederLeseTilgangTilBruker
         harVeilederLeseTilgangTilBrukersKontorsperre
         tilgang
+        harAktiveTiltaksdeltakelserVedFlyttingTilEgetKontor
     }
     oppfolging(fnr: $fnr) {
         erUnderOppfolging

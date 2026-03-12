@@ -7,4 +7,5 @@ data class BrukerStatusDto(
     val krr: BrukerStatusKrrDto? = null,
     val kontorSperre: KontorSperre? = null,
     val tilordnetVeileder: VeilederTilordningDto? = null,
+    val harAktiveTiltaksdeltakelser: Boolean? = null,
 )
