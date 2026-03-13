@@ -62,7 +62,8 @@ class GraphqlController(
     private val manuellService: ManuellStatusService,
     private val oppfolgingService: OppfolgingService,
     private val kvpRepository: KvpRepository,
-    private val veilederTilordningerRepository: VeilederTilordningerRepository
+    private val veilederTilordningerRepository: VeilederTilordningerRepository,
+    private val arbeidsoppfolgingskontorRepository: ArbeidsoppfolgingskontorRepository
 ) {
     private val logger = LoggerFactory.getLogger(GraphqlController::class.java)
 
@@ -224,10 +225,11 @@ class GraphqlController(
     @SchemaMapping(typeName = "OppfolgingsEnhetsInfo", field = "enhet")
     fun arenaOppfolgingsEnhet(oppfolgingsEnhet: OppfolgingsEnhetQueryDto, @LocalContextValue fnr: Fnr): EnhetDto? {
         val aktorId = aktorOppslagClient.hentAktorId(fnr)
-        val arenaEnhet = enhetRepository.hentEnhet(aktorId)
+        val enhet = arbeidsoppfolgingskontorRepository.hentEnhet(aktorId)
+
         return when {
-            arenaEnhet == null -> hentDefaultEnhetFraNorg(fnr)
-            else -> arenaEnhet to KildeDto.ARENA
+            enhet == null -> hentDefaultEnhetFraNorg(fnr)
+            else -> enhet to KildeDto.ARENA
         }?.let { (enhetsNr, kilde) ->
             val enhet = runCatching {
                 norg2Client.hentEnhet(enhetsNr.get())
