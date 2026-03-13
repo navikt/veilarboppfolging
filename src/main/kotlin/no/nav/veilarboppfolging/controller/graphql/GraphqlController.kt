@@ -9,7 +9,6 @@ import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.EksternBrukerId
 import no.nav.common.types.identer.EnhetId
 import no.nav.common.types.identer.Fnr
-import no.nav.common.utils.EnvironmentUtils.isDevelopment
 import no.nav.poao_tilgang.client.Decision
 import no.nav.poao_tilgang.client.PoaoTilgangClient
 import no.nav.poao_tilgang.client.TilgangType
@@ -226,11 +225,7 @@ class GraphqlController(
     @SchemaMapping(typeName = "OppfolgingsEnhetsInfo", field = "enhet")
     fun arenaOppfolgingsEnhet(oppfolgingsEnhet: OppfolgingsEnhetQueryDto, @LocalContextValue fnr: Fnr): EnhetDto? {
         val aktorId = aktorOppslagClient.hentAktorId(fnr)
-        val enhet = if(isDevelopment().orElse(false)) {
-            arbeidsoppfolgingskontorRepository.hentEnhet(aktorId)
-        } else {
-            enhetRepository.hentEnhet(aktorId)
-        }
+        val enhet = arbeidsoppfolgingskontorRepository.hentEnhet(aktorId)
 
         return when {
             enhet == null -> hentDefaultEnhetFraNorg(fnr)
