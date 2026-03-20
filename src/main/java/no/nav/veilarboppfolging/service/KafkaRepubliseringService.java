@@ -60,7 +60,7 @@ public class KafkaRepubliseringService {
     public void republiserTilordnetVeileder(List<String> aktorIder) {
         log.info("Republiserer tilordnet veileder for {} aktør-ID-er", aktorIder.size());
         aktorIder.forEach(aktorId -> {
-            republiserSisteTilordnetVeilederForBruker(AktorId.of(aktorId));
+            republiserVeilederTilordnetrForBruker(AktorId.of(aktorId));
         });
         log.info("Ferdig med å republisere tilordnet veileder for {} aktør-ID-er", aktorIder.size());
     }
@@ -143,6 +143,18 @@ public class KafkaRepubliseringService {
 
             var dto = DtoMappers.tilSisteTilordnetVeilederKafkaDTO(tilordning);
             kafkaProducerService.publiserSisteTilordnetVeileder(dto);
+        });
+    }
+
+    private void republiserVeilederTilordnetrForBruker(AktorId aktorId) {
+        Optional<VeilederTilordningEntity> maybeTilordning = veilederTilordningerRepository.hentTilordnetVeileder(aktorId);
+
+        maybeTilordning.ifPresent(tilordning -> {
+            // Skal ikke publisere for brukere som ikke har fått veileder
+            if (tilordning.getVeilederId() == null) {
+                return;
+            }
+            kafkaProducerService.publiserVeilederTilordnet(aktorId, tilordning.getVeilederId(), tilordning.getSistTilordnet());
         });
     }
 
