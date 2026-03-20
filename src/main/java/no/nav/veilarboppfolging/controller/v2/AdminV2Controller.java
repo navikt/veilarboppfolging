@@ -6,9 +6,11 @@ import no.nav.common.auth.context.UserRole;
 import no.nav.common.job.JobRunner;
 import no.nav.veilarboppfolging.ForbiddenException;
 import no.nav.veilarboppfolging.UnauthorizedException;
+import no.nav.veilarboppfolging.controller.v2.request.RepubliserVeilederRequest;
 import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.service.KafkaRepubliseringService;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -33,6 +35,15 @@ public class AdminV2Controller {
     public String republiserTilordnetVeileder() {
         sjekkTilgangTilAdmin();
         return JobRunner.runAsync("republiser-tilordnet-veileder", kafkaRepubliseringService::republiserTilordnetVeileder);
+    }
+
+    @PostMapping("/republiser/tilordnet-veileder/utvalg")
+    public String republiserTilordnetVeileder(@RequestBody RepubliserVeilederRequest republiserVeilederRequest) {
+        sjekkTilgangTilAdmin();
+        return JobRunner.runAsync(
+                "republiser-tilordnet-veileder-gitte-aktorider",
+                () -> kafkaRepubliseringService.republiserTilordnetVeileder(republiserVeilederRequest.aktorIder())
+        );
     }
 
     private void sjekkTilgangTilAdmin() {
