@@ -217,6 +217,8 @@ spec:
           cluster: dev-fss
         - application: inngar
           namespace: dab
+        - application: inngar-ekstern
+          namespace: dab
         - application: statuspoll
           namespace: navdig
         - application: tiltakspenger-saksbehandling-api
