@@ -22,8 +22,8 @@ import no.nav.veilarboppfolging.controller.graphql.veilederTilgang.VeilederTilga
 import no.nav.veilarboppfolging.ident.toCommonIdent
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.*
-import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.KanStarteOppfolgingEksterneDto.Companion.sjekkForEksterne
-import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.KanStarteOppfolgingSjekk.Companion.sjekkForVeileder
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.KanStarteOppfolgingEksterneDto.Companion.sjekkKanStarteOppfolgingPaBrukerForEksterne
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.KanStarteOppfolgingSjekk.Companion.sjekkKanStarteOppfolgingPaBrukerForVeileder
 import no.nav.veilarboppfolging.repository.*
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity
 import no.nav.veilarboppfolging.service.AuthService
@@ -253,7 +253,7 @@ class GraphqlController(
         }
         val gyldigTilgang = lazy { evaluerNavAnsattTilgangTilEksternBruker(fnr.get()).toKanStarteOppfolging() }
         val gyldigFregStatus = lazy { kanStarteOppfolgingMtpFregStatus(fnr) }
-        return sjekkForVeileder(gyldigOppfolging, gyldigTilgang, gyldigFregStatus)
+        return sjekkKanStarteOppfolgingPaBrukerForVeileder(gyldigOppfolging, gyldigTilgang, gyldigFregStatus)
     }
 
     @SchemaMapping(typeName = "OppfolgingDto", field = "kanStarteOppfolgingEkstern")
@@ -262,7 +262,7 @@ class GraphqlController(
             ErBrukerUnderOppfolging.evaluate(erUnderOppfolging, arenaService.brukerErIservIArena(fnr))
         }
         val gyldigFregStatus = lazy { kanStarteOppfolgingMtpFregStatus(fnr) }
-        return sjekkForEksterne(gyldigOppfolging, gyldigFregStatus)
+        return sjekkKanStarteOppfolgingPaBrukerForEksterne(gyldigOppfolging, gyldigFregStatus)
     }
 
     @SchemaMapping(typeName = "BrukerStatusDto", field = "manuell")

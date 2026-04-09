@@ -10,7 +10,7 @@ enum class KanStarteOppfolgingEksterneDto {
     INGEN_STATUS_FOLKEREGISTERET;
 
     companion object {
-        fun sjekkForEksterne(
+        fun sjekkKanStarteOppfolgingPaBrukerForEksterne(
             erBrukerUnderOppfolging: Lazy<ErBrukerUnderOppfolging>,
             fregStatusSjekkResultat: Lazy<FregStatusSjekkResultat>
         ): KanStarteOppfolgingEksterneDto {

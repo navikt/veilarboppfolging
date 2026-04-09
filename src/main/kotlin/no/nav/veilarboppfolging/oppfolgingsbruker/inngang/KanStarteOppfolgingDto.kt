@@ -7,7 +7,7 @@ import no.nav.veilarboppfolging.controller.graphql.TilgangResultat
 
 sealed class KanStarteOppfolgingSjekk {
     companion object {
-        fun sjekkForVeileder(
+        fun sjekkKanStarteOppfolgingPaBrukerForVeileder(
             erBrukerUnderOppfolging: Lazy<ErBrukerUnderOppfolging>,
             veilederHarTilgang: Lazy<VeilederHarTilgang>,
             fregStatusSjekkResultat: Lazy<FregStatusSjekkResultat>): KanStarteOppfolgingDto {
