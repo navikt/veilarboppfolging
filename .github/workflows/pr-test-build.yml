@@ -19,7 +19,7 @@ jobs:
           java-version: 21
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v50e97c2cd7a37755bbfafc9c5b7cafaece252f6e
+        uses: gradle/actions/setup-gradle@50e97c2cd7a37755bbfafc9c5b7cafaece252f6e
         with:
           gradle-version: "9.1.0"
           cache-read-only: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/gradle' }}
