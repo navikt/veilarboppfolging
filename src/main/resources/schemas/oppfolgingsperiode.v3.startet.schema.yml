@@ -9,7 +9,7 @@ allOf:
 additionalProperties: false
 properties:
   kontor:
-    $ref: 'oppfolgingsperiode.v3.kontor.schema.yml
+    $ref: 'oppfolgingsperiode.v3.kontor.schema.yml'
   sisteEndringsType:
     type: string
     enum:
