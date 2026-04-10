@@ -4,6 +4,8 @@ on:
     secrets:
       SLACK_WEBHOOK:
         required: true
+      GRADLE_ENCRYPTION_KEY:
+        required: true
     outputs:
       image:
         description: "Image name pushed to GAR"
@@ -37,7 +39,7 @@ jobs:
         run: ./gradlew build
 
       - name: Generate and output SBOM
-        uses: anchore/sbom-action@v0
+        uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610
         with:
           path: 'build/libs'
           format: 'cyclonedx-json'
@@ -46,7 +48,7 @@ jobs:
           upload-artifact: 'true'
 
       - name: Build and push Docker image
-        uses: nais/docker-build-push@v0
+        uses: nais/docker-build-push@45d352fb62fb52ccb5ff6cba22c047fa02b35321
         id: docker-build-push
         with:
           team: poao # This is not app namespace but team which is admin in github

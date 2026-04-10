@@ -10,6 +10,9 @@ on:
       env:
         required: true
         type: string
+    secrets:
+      SLACK_WEBHOOK:
+        required: true
 
 env:
   PRINT_PAYLOAD: true
@@ -21,14 +24,14 @@ jobs:
     environment: ${{ inputs.env }}
     steps:
       - uses: actions/checkout@v6
-      - uses: nais/deploy/actions/deploy@v2
+      - uses: nais/deploy/actions/deploy@fa754451577294aae42872a69b888b3470478ec1
         env:
           CLUSTER: ${{ inputs.env }}-gcp
           RESOURCE: nais-${{ inputs.env }}-gcp.yaml
           VAR: image=${{ inputs.image }}
       - name: Slack Notification (deploy failure)
         if: failure()
-        uses: rtCamp/action-slack-notify@v2
+        uses: rtCamp/action-slack-notify@e31e87e03dd19038e411e38ae27cbad084a90661
         env:
           SLACK_COLOR: danger
           SLACK_USERNAME: Github Actions
