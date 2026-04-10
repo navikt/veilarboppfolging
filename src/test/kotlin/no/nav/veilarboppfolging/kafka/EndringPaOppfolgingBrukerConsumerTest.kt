@@ -44,6 +44,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import no.nav.veilarboppfolging.repository.ArbeidsoppfolgingskontorRepository
 
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -57,6 +58,9 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
     @Autowired
     lateinit var veilarbarenaClient: VeilarbarenaClient
 
+    @Autowired
+    lateinit var arbeidsoppfolgingskontorRepository: ArbeidsoppfolgingskontorRepository
+
     val fnr = Fnr.of("12345678901")
     val aktorId = AktorId.of("098765432109876")
     val veilederOid = UUID.randomUUID()
@@ -67,7 +71,7 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
     }
 
     @Test
-    fun `getArenaOppfolgingsEnhet skal svare med svar siste enhet man har fått på oppfølginsbruker topic`() {
+    fun `getArenaOppfolgingsEnhet skal svare med siste enhet man har fått på oppfølginsbruker topic`() {
         val enhetIdVest = "0123"
         val enhetNavnVest = "Nav VEST"
         mockEnhetINorg(enhetIdVest, enhetNavnVest)
@@ -86,6 +90,33 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
         assertEquals(enhetIdVest, skalVæreEnhetVest?.enhetId)
 
         meldingFraVeilarbArenaPåBrukerMedEnhet(fnr, enhetIdØst)
+
+        val skalVæreEnhetØst = arenaOppfolgingService.hentArenaOppfolgingsEnhet(fnr)
+        assertEquals(enhetNavnØst, skalVæreEnhetØst?.navn)
+        assertEquals(enhetIdØst, skalVæreEnhetØst?.enhetId)
+    }
+
+    @Test
+    fun `getArenaOppfolgingsEnhet skal svare med enhet fra ao_kontor hvis den finnes`() {
+        val enhetIdVest = "0123"
+        val enhetNavnVest = "Nav VEST"
+        mockEnhetINorg(enhetIdVest, enhetNavnVest)
+
+        val enhetIdØst = "0122"
+        val enhetNavnØst = "Nav ØST"
+        mockEnhetINorg(enhetIdØst, enhetNavnØst)
+
+        val ingenEnhet = arenaOppfolgingService.hentArenaOppfolgingsEnhet(fnr)
+        assert(ingenEnhet == null)
+
+        meldingFraVeilarbArenaPåBrukerMedEnhet(fnr, enhetIdVest)
+
+        val skalVæreEnhetVest = arenaOppfolgingService.hentArenaOppfolgingsEnhet(fnr)
+        assertEquals(enhetNavnVest, skalVæreEnhetVest?.navn)
+        assertEquals(enhetIdVest, skalVæreEnhetVest?.enhetId)
+        val oppfolgingsperiodeId = oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId).get().uuid
+
+        arbeidsoppfolgingskontorRepository.settNavKontor(fnr.get(), aktorId.get(), oppfolgingsperiodeId, enhetIdØst)
 
         val skalVæreEnhetØst = arenaOppfolgingService.hentArenaOppfolgingsEnhet(fnr)
         assertEquals(enhetNavnØst, skalVæreEnhetØst?.navn)

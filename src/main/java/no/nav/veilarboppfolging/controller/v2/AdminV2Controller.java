@@ -1,18 +1,14 @@
 package no.nav.veilarboppfolging.controller.v2;
 
+import java.util.List;
 import lombok.RequiredArgsConstructor;
-import no.nav.common.auth.context.AuthContextHolder;
-import no.nav.common.auth.context.UserRole;
 import no.nav.common.job.JobRunner;
 import no.nav.veilarboppfolging.ForbiddenException;
-import no.nav.veilarboppfolging.UnauthorizedException;
 import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.service.KafkaRepubliseringService;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/v2/admin")

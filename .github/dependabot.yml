@@ -9,8 +9,12 @@ updates:
     directory: "/.github/workflows"
     schedule:
       interval: "monthly"
+    cooldown:
+      default-days: 3
 
   - package-ecosystem: "gradle" # See documentation for possible values
     directory: "/" # Location of package manifests
     schedule:
       interval: "weekly"
+    cooldown:
+      default-days: 3
