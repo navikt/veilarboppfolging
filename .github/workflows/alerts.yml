@@ -6,7 +6,7 @@ on:
       - main
     paths:
       - 'alerts/kafka_failed_records_alert.yaml'
-      - '.github/workflows/alerts.yaml'
+      - '.github/workflows/alerts.yml'
 
 concurrency:
   group: deploy_alerts
@@ -22,7 +22,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
       - name: deploy alerts to dev
-        uses: nais/deploy/actions/deploy@v2
+        uses: nais/deploy/actions/deploy@fa754451577294aae42872a69b888b3470478ec1
         env:
           CLUSTER: dev-gcp
           RESOURCE: alerts/kafka_failed_records_alert.yaml
@@ -36,7 +36,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
       - name: deploy alerts to prod
-        uses: nais/deploy/actions/deploy@v2
+        uses: nais/deploy/actions/deploy@fa754451577294aae42872a69b888b3470478ec1
         env:
           CLUSTER: prod-gcp
           RESOURCE: alerts/kafka_failed_records_alert.yaml
