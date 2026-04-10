@@ -25,7 +25,8 @@ public class DbTestUtils {
             "KVP",
             "UTMELDING",
             "OPPFOLGINGSENHET_ENDRET",
-            "KAFKA_PRODUCER_RECORD"
+            "KAFKA_PRODUCER_RECORD",
+            "ao_kontor"
     );
 
     public static void cleanupTestDb() {

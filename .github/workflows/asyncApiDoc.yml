@@ -23,17 +23,17 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Install bun
-        uses: oven-sh/setup-bun@v2
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6
 
       - name: Install AsyncApi/cli
-        run: bun install -g @asyncapi/cli
+        run: bun install -g @asyncapi/cli@v4.1.1
 
       - name: Generating HTML from my AsyncAPI document
         working-directory: src/main/resources/schemas
         run: asyncapi generate fromTemplate veilarboppfolging.asyncapi.yml @asyncapi/html-template@3.0.0 --use-new-generator -o ./veilarboppfolging-doc
 
       - name: Deploy 🚀
-        uses: JamesIves/github-pages-deploy-action@v4
+        uses: JamesIves/github-pages-deploy-action@d92aa235d04922e8f08b40ce78cc5442fcfbfa2f
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           folder: src/main/resources/schemas/veilarboppfolging-doc

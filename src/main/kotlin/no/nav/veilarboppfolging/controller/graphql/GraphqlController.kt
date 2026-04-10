@@ -22,7 +22,8 @@ import no.nav.veilarboppfolging.controller.graphql.veilederTilgang.VeilederTilga
 import no.nav.veilarboppfolging.ident.toCommonIdent
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.*
-import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ALLEREDE_UNDER_OPPFOLGING.oppfolgingSjekk
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.KanStarteOppfolgingEksterneDto.Companion.sjekkKanStarteOppfolgingPaBrukerForEksterne
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.KanStarteOppfolgingSjekk.Companion.sjekkKanStarteOppfolgingPaBrukerForVeileder
 import no.nav.veilarboppfolging.repository.*
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity
 import no.nav.veilarboppfolging.service.AuthService
@@ -62,7 +63,8 @@ class GraphqlController(
     private val manuellService: ManuellStatusService,
     private val oppfolgingService: OppfolgingService,
     private val kvpRepository: KvpRepository,
-    private val veilederTilordningerRepository: VeilederTilordningerRepository
+    private val veilederTilordningerRepository: VeilederTilordningerRepository,
+    private val arbeidsoppfolgingskontorRepository: ArbeidsoppfolgingskontorRepository
 ) {
     private val logger = LoggerFactory.getLogger(GraphqlController::class.java)
 
@@ -89,7 +91,7 @@ class GraphqlController(
 
     @QueryMapping
     fun oppfolging(@Argument fnr: String?): DataFetcherResult<OppfolgingDto> {
-        val tilgangResult = sjekkTilgang(fnr, EksterneHarIkkeTilgang)
+        val tilgangResult = sjekkTilgang(fnr, AlleHarTilgang(AuthService.SikkerthetsNivå.Nivå4))
         val eksternBrukerId = fnrFraContext(fnr)
 
         val dataFetchResult = DataFetcherResult.newResult<OppfolgingDto>()
@@ -224,10 +226,11 @@ class GraphqlController(
     @SchemaMapping(typeName = "OppfolgingsEnhetsInfo", field = "enhet")
     fun arenaOppfolgingsEnhet(oppfolgingsEnhet: OppfolgingsEnhetQueryDto, @LocalContextValue fnr: Fnr): EnhetDto? {
         val aktorId = aktorOppslagClient.hentAktorId(fnr)
-        val arenaEnhet = enhetRepository.hentEnhet(aktorId)
+        val enhet = arbeidsoppfolgingskontorRepository.hentEnhet(aktorId)
+
         return when {
-            arenaEnhet == null -> hentDefaultEnhetFraNorg(fnr)
-            else -> arenaEnhet to KildeDto.ARENA
+            enhet == null -> hentDefaultEnhetFraNorg(fnr)
+            else -> enhet to KildeDto.ARENA
         }?.let { (enhetsNr, kilde) ->
             val enhet = runCatching {
                 norg2Client.hentEnhet(enhetsNr.get())
@@ -246,18 +249,20 @@ class GraphqlController(
     @SchemaMapping(typeName = "OppfolgingDto", field = "kanStarteOppfolging")
     fun kanStarteOppfolging(oppfolgingDto: OppfolgingDto, @LocalContextValue erUnderOppfolging: Boolean, @LocalContextValue fnr: Fnr): KanStarteOppfolgingDto? {
         val gyldigOppfolging = lazy {
-            if (erUnderOppfolging) {
-                val erIservIArena = arenaService.brukerErIservIArena(fnr)
-                if (erIservIArena) {
-                    ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT
-                } else ALLEREDE_UNDER_OPPFOLGING
-            } else {
-                OPPFOLGING_OK
-            }
+            ErBrukerUnderOppfolging.evaluate(erUnderOppfolging, arenaService.brukerErIservIArena(fnr))
         }
         val gyldigTilgang = lazy { evaluerNavAnsattTilgangTilEksternBruker(fnr.get()).toKanStarteOppfolging() }
         val gyldigFregStatus = lazy { kanStarteOppfolgingMtpFregStatus(fnr) }
-        return oppfolgingSjekk(gyldigOppfolging, gyldigTilgang, gyldigFregStatus)
+        return sjekkKanStarteOppfolgingPaBrukerForVeileder(gyldigOppfolging, gyldigTilgang, gyldigFregStatus)
+    }
+
+    @SchemaMapping(typeName = "OppfolgingDto", field = "kanStarteOppfolgingEkstern")
+    fun kanStarteOppfolgingEkstern(oppfolgingDto: OppfolgingDto, @LocalContextValue erUnderOppfolging: Boolean, @LocalContextValue fnr: Fnr): KanStarteOppfolgingEksterneDto? {
+        val gyldigOppfolging = lazy {
+            ErBrukerUnderOppfolging.evaluate(erUnderOppfolging, arenaService.brukerErIservIArena(fnr))
+        }
+        val gyldigFregStatus = lazy { kanStarteOppfolgingMtpFregStatus(fnr) }
+        return sjekkKanStarteOppfolgingPaBrukerForEksterne(gyldigOppfolging, gyldigFregStatus)
     }
 
     @SchemaMapping(typeName = "BrukerStatusDto", field = "manuell")

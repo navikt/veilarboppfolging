@@ -579,4 +579,22 @@ class GraphqlControllerTest: IntegrationTest() {
             .expect { it.path == "oppfolging.kanStarteOppfolging" && it.message == "Må være intern bruker" }
             .verify()
     }
+
+    @Test
+    fun `eksternbruker skal kunne spørre om kanStarteOppfolgingEkstern`() {
+        val (fnr, _) = defaultBruker()
+        mockEksternBrukerAuthOk(fnr)
+        mockEksternbrukerErInnlogget(fnr, AuthService.SikkerthetsNivå.Nivå4)
+        mockPoaoTilgangTilgangsAttributter(
+            "2112",
+            false,
+            null
+        )
+
+        val result = tester.documentName("kanStarteOppfolgingEkstern").variable("fnr", fnr.get()).execute()
+        result.errors().verify()
+        result.path("oppfolging").matchesJson("""
+            { "kanStarteOppfolgingEkstern": JA }
+        """.trimIndent())
+    }
 }
