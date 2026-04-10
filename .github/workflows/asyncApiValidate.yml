@@ -12,13 +12,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+        uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         with:
-          node-version: 19
+          node-version: 22
 
       - name: install generator
-        run: npm install -g @asyncapi/cli
+        run: npm install -g @asyncapi/cli --ignore-scripts
 
       - name: generate documentaion (denne tar litt tid)
         working-directory: src/main/resources/schemas

@@ -12,7 +12,7 @@ import no.nav.veilarboppfolging.controller.v3.request.OppfolgingRequest
 import no.nav.veilarboppfolging.controller.v3.request.VeilederBegrunnelseRequest
 import no.nav.veilarboppfolging.controller.v3.request.VeilederRequest
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
-import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.AktiverBrukerService
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.AktiverBrukerManueltService
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity
 import no.nav.veilarboppfolging.repository.enums.KodeverkBruker
 import no.nav.veilarboppfolging.service.*
@@ -32,7 +32,7 @@ class OppfolgingV3Controller(
     val authService: AuthService,
     val manuellStatusService: ManuellStatusService,
     val kvpService: KvpService,
-    val aktiverBrukerService: AktiverBrukerService,
+    val aktiverBrukerManueltService: AktiverBrukerManueltService,
     val arenaOppfolgingService: ArenaOppfolgingService,
     val reaktiveringService: ReaktiveringService,
 ) {
@@ -198,15 +198,16 @@ class OppfolgingV3Controller(
                         logger.error("Feil ved registrering av bruker i Arena", arenaResponse.arenaResultat.resultat)
                         return ResponseEntity(arenaResponse.arenaResultat, HttpStatus.CONFLICT)
                     }
-
                     else -> {
                         logger.info("Bruker registrert i Arena med resultat: ${arenaResponse.arenaResultat.kode}")
-                        aktiverBrukerService.aktiverBrukerManuelt(startOppfolging.fnr)
+                        aktiverBrukerManueltService.aktiverBrukerManuelt(
+                            fnr = startOppfolging.fnr,
+                            kontorSattAvVeileder = startOppfolging.kontorSattAvVeileder,
+                        )
                         return ResponseEntity(arenaResponse.arenaResultat, HttpStatus.OK)
                     }
                 }
             }
-
             is RegistrerIArenaError -> {
                 logger.error("Feil ved registrering av bruker i Arena", arenaResponse.throwable)
                 throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, arenaResponse.message)
@@ -244,6 +245,7 @@ class OppfolgingV3Controller(
 class StartOppfolgingDto(
     val fnr: Fnr,
     val henviserSystem: HenviserSystem,
+    val kontorSattAvVeileder: String?
 )
 
 data class ReaktiverRequestDto(val fnr: Fnr)

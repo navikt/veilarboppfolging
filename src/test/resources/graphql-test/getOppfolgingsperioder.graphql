@@ -1,0 +1,9 @@
+query testHentOppfolgingsperioder($fnr: String!) {
+    oppfolgingsPerioder(fnr: $fnr) {
+        id
+        startTidspunkt
+        sluttTidspunkt
+        startetBegrunnelse
+        avsluttetAv
+    }
+}

@@ -20,20 +20,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 19
+        uses: actions/checkout@v6
 
-      - name: install generator
-        run: npm install -g @asyncapi/generator
+      - name: Install bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6
 
-      - name: generate documentaion (denne tar litt tid)
+      - name: Install AsyncApi/cli
+        run: bun install -g @asyncapi/cli@v4.1.1
+
+      - name: Generating HTML from my AsyncAPI document
         working-directory: src/main/resources/schemas
-        run: ag veilarboppfolging.asyncapi.yml @asyncapi/html-template -o ./veilarboppfolging-doc
+        run: asyncapi generate fromTemplate veilarboppfolging.asyncapi.yml @asyncapi/html-template@3.0.0 --use-new-generator -o ./veilarboppfolging-doc
 
       - name: Deploy 🚀
-        uses: JamesIves/github-pages-deploy-action@v4
+        uses: JamesIves/github-pages-deploy-action@d92aa235d04922e8f08b40ce78cc5442fcfbfa2f
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           folder: src/main/resources/schemas/veilarboppfolging-doc

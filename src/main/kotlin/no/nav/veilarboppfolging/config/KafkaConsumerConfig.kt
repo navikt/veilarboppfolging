@@ -15,7 +15,9 @@ import no.nav.common.kafka.util.KafkaPropertiesBuilder
 import no.nav.common.utils.EnvironmentUtils
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2
+import no.nav.veilarboppfolging.kafka.ArbeidsoppfolgingskontortilordningConsumerService
 import no.nav.veilarboppfolging.kafka.ArbeidssøkerperiodeConsumerService
+import no.nav.veilarboppfolging.kafka.OppfolgingskontorMelding
 import no.nav.veilarboppfolging.service.KafkaConsumerService
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.common.serialization.ByteArrayDeserializer
@@ -37,6 +39,7 @@ open class KafkaConsumerConfig(
     kafkaProperties: KafkaProperties,
     private val kafkaConsumerService: KafkaConsumerService,
     private val arbeidssøkerperiodeConsumerService: ArbeidssøkerperiodeConsumerService,
+    private val arbeidsoppfolgingskontortilordningConsumerService: ArbeidsoppfolgingskontortilordningConsumerService,
     lockProvider: LockProvider,
     @Value("\${app.kafka.enabled}") val kafkaEnabled: Boolean
 ) {
@@ -79,6 +82,20 @@ open class KafkaConsumerConfig(
                                 kafkaMelding
                             )
                         }
+                    ),
+                KafkaConsumerClientBuilder.TopicConfig<Long, OppfolgingskontorMelding?>()
+                    .withLogging()
+                    .withMetrics(meterRegistry)
+                    .withStoreOnFailure(consumerRepository)
+                    .withConsumerConfig(
+                        kafkaProperties.arbeidsoppfolgingskontortilordningTopic,
+                        Deserializers.longDeserializer(),
+                        Deserializers.jsonDeserializer(
+                            OppfolgingskontorMelding::class.java
+                        ),
+                        Consumer { kafkaMelding: ConsumerRecord<Long, OppfolgingskontorMelding?> ->
+                            arbeidsoppfolgingskontortilordningConsumerService.consumeKontortilordning(kafkaMelding)
+                        }
                     )
             )
 
@@ -101,6 +118,7 @@ open class KafkaConsumerConfig(
             consumerRecordProcessor = KafkaConsumerRecordProcessorBuilder
                 .builder()
                 .withLockProvider(lockProvider)
+                .withMetrics(meterRegistry)
                 .withKafkaConsumerRepository(consumerRepository)
                 .withConsumerConfigs(ConsumerUtils.findConsumerConfigsWithStoreOnFailure(topicConfigs))
                 .build()

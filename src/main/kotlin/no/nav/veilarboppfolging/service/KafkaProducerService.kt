@@ -2,6 +2,7 @@ package no.nav.veilarboppfolging.service
 
 import no.nav.common.auth.context.AuthContextHolder
 import no.nav.common.kafka.producer.feilhandtering.KafkaProducerRecordStorage
+import no.nav.common.kafka.producer.serializer.JsonSerializer
 import no.nav.common.kafka.producer.util.ProducerUtils
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
@@ -18,7 +19,11 @@ import no.nav.tms.microfrontend.Sensitivitet
 import no.nav.veilarboppfolging.config.KafkaProperties
 import no.nav.veilarboppfolging.kafka.KvpPeriode
 import no.nav.veilarboppfolging.kafka.dto.OppfolgingsperiodeDTO
+import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.hendelser.OppfolgingStartetHendelseDto
+import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.hendelser.OppfolgingsAvsluttetHendelseDto
 import org.apache.kafka.clients.producer.ProducerRecord
+import org.apache.kafka.common.serialization.LongSerializer
+import org.apache.kafka.common.serialization.StringSerializer
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -33,7 +38,6 @@ class KafkaProducerService @Autowired constructor(
     private val producerRecordStorage: KafkaProducerRecordStorage,
     private val kafkaProperties: KafkaProperties,
     @param:Value("\${app.kafka.enabled}") private val kafkaEnabled: Boolean,
-    private val authService: AuthService,
 ) {
     private val logger = LoggerFactory.getLogger(this::class.java)
 
@@ -41,9 +45,21 @@ class KafkaProducerService @Autowired constructor(
         oppfolgingsperiode(oppfolgingsperiode)
     }
 
+    fun publiserOppfolgingsperiodeMedKontor(gjeldendeOppfolgingsperiode: SisteOppfolgingsperiodeDto, aoKontorInternPersonIdent: Long) {
+        oppfolgingsperiodeMedKontor(gjeldendeOppfolgingsperiode, aoKontorInternPersonIdent)
+    }
+
     fun publiserOppfolgingsperiode(oppfolgingsperiode: OppfolgingsperiodeDTO) {
         sisteOppfolgingsPeriode(oppfolgingsperiode.toSisteOppfolgingsperiodeDTO())
         oppfolgingsperiode(oppfolgingsperiode)
+    }
+
+    fun publiserOppfolgingsAvsluttet(avsluttetHendelse: OppfolgingsAvsluttetHendelseDto) {
+        store(kafkaProperties.oppfolgingshendelseV1, avsluttetHendelse.fnr, avsluttetHendelse)
+    }
+
+    fun publiserOppfolgingsStartet(oppfolgingsperiodeStartet: OppfolgingStartetHendelseDto) {
+        store(kafkaProperties.oppfolgingshendelseV1, oppfolgingsperiodeStartet.fnr, oppfolgingsperiodeStartet)
     }
 
     private fun sisteOppfolgingsPeriode(sisteOppfolgingsperiodeV1: SisteOppfolgingsperiodeV1) {
@@ -62,6 +78,19 @@ class KafkaProducerService @Autowired constructor(
         )
     }
 
+    private fun oppfolgingsperiodeMedKontor(sisteOppfolgingsperiode: SisteOppfolgingsperiodeDto, aoKontorInternPersonIdent: Long) {
+        store(
+            kafkaProperties.sisteOppfolgingsperiodeTopicV2,
+            sisteOppfolgingsperiode.oppfolgingsperiodeUuid.toString(),
+            sisteOppfolgingsperiode
+        )
+        store(
+            kafkaProperties.sisteOppfolgingsperiodeTopicV3,
+            aoKontorInternPersonIdent,
+            sisteOppfolgingsperiode
+        )
+    }
+
     fun publiserSisteTilordnetVeileder(recordValue: SisteTilordnetVeilederV1) {
         store(kafkaProperties.sisteTilordnetVeilederTopic, recordValue.aktorId, recordValue)
     }
@@ -76,8 +105,8 @@ class KafkaProducerService @Autowired constructor(
         store(kafkaProperties.endringPaNyForVeilederTopic, aktorId.get(), recordValue)
     }
 
-    fun publiserVeilederTilordnet(aktorId: AktorId, tildeltVeilederId: String?) {
-        val recordValue = VeilederTilordnetV1(aktorId.get(), tildeltVeilederId)
+    fun publiserVeilederTilordnet(aktorId: AktorId, tildeltVeilederId: String?, tilordnetTidspunkt: ZonedDateTime? ) {
+        val recordValue = VeilederTilordnetV2(aktorId.get(), tildeltVeilederId, tilordnetTidspunkt)
         store(kafkaProperties.veilederTilordnetTopic, aktorId.get(), recordValue)
     }
 
@@ -150,6 +179,7 @@ class KafkaProducerService @Autowired constructor(
 
         store(kafkaProperties.minSideAapenMicrofrontendV1, aktorId.get(), stoppMelding)
     }
+
     fun publiserMinSideBeskjed(fnr: Fnr, beskjed: String, lenke: String) {
         val generertVarselId = UUID.randomUUID().toString()
         val kafkaValueJson = VarselActionBuilder.opprett {
@@ -187,6 +217,23 @@ class KafkaProducerService @Autowired constructor(
     private fun store(topic: String, key: String, value: String) {
         if (kafkaEnabled) {
             val record = ProducerUtils.serializeStringRecord(ProducerRecord(topic, key, value))
+            producerRecordStorage.store(record)
+        } else {
+            throw RuntimeException("Kafka er disabled, men noe gjør at man forsøker å publisere meldinger")
+        }
+    }
+
+    companion object {
+        val LONG_SERIALIZER = LongSerializer()
+        val JSON_SERIALIZER = JsonSerializer<Any>()
+    }
+
+    private fun store(topic: String, key: Long, value: Any) {
+        if (kafkaEnabled) {
+            val fakeRecord = ProducerRecord(topic, key, value)
+            val key = LONG_SERIALIZER.serialize(topic, fakeRecord.key())
+            val value = JSON_SERIALIZER.serialize(topic, fakeRecord.value())
+            val record = ProducerRecord(fakeRecord.topic(), fakeRecord.partition(), key, value, fakeRecord.headers())
             producerRecordStorage.store(record)
         } else {
             throw RuntimeException("Kafka er disabled, men noe gjør at man forsøker å publisere meldinger")

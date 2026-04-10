@@ -1,0 +1,14 @@
+query sjekkVeilederTilganger($fnr: String!) {
+    veilederTilgang(fnr: $fnr) {
+        harVeilederLeseTilgangTilBruker
+        harVeilederLeseTilgangTilBrukersKontorsperre
+        harVeilederTilgangFlytteBrukerTilEgetKontor
+        tilgang
+        harAktiveTiltaksdeltakelserVedFlyttingTilEgetKontor
+    }
+    brukerStatus(fnr: $fnr) {
+        kontorSperre {
+            kontorId
+        }
+    }
+}

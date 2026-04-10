@@ -1,8 +1,8 @@
 package no.nav.veilarboppfolging.repository;
 
 import no.nav.common.types.identer.AktorId;
-import no.nav.veilarboppfolging.domain.Oppfolging;
-import no.nav.veilarboppfolging.domain.StartetAvType;
+import no.nav.veilarboppfolging.oppfolgingsbruker.StartetAvType;
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ManuellRegistrering;
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelse;
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
@@ -45,16 +45,19 @@ public class OppfolgingsPeriodeRepository {
 
     public void start(OppfolgingsRegistrering oppfolgingsbruker) {
         transactor.executeWithoutResult((ignored) -> {
+            var kontorSattAvVeileder = oppfolgingsbruker instanceof ManuellRegistrering ? ((ManuellRegistrering) oppfolgingsbruker).getKontorSattAvVeileder() : null;
             insert(
                     oppfolgingsbruker.getAktorId(),
                     oppfolgingsbruker.getOppfolgingStartBegrunnelse(),
                     oppfolgingsbruker.getRegistrertAv().getIdent(),
-                    oppfolgingsbruker.getRegistrertAv().getType());
+                    oppfolgingsbruker.getRegistrertAv().getType(),
+                    kontorSattAvVeileder
+            );
             setActive(oppfolgingsbruker.getAktorId());
         });
     }
 
-    public void avslutt(AktorId aktorId, String veileder, String begrunnelse) {
+    public void avsluttSistePeriodeOgAvsluttOppfolging(AktorId aktorId, String veileder, String begrunnelse) {
         transactor.executeWithoutResult((ignored) -> {
             endPeriode(aktorId, veileder, begrunnelse);
             avsluttOppfolging(aktorId);
@@ -91,6 +94,34 @@ public class OppfolgingsPeriodeRepository {
         );
     }
 
+    public Optional<UUID> hentSisteOppfolgingsperiodeForAoInternId(Long aoKontorInternPersonId) {
+        return queryForNullableObject(
+                () -> db.queryForObject(
+                        """
+                            SELECT uuid
+                            FROM OPPFOLGINGSPERIODE
+                            WHERE ao_kontor_intern_person_id = ?
+                            ORDER BY startdato desc
+                            LIMIT 1;
+                        """,
+                        OppfolgingsPeriodeRepository::mapTilPeriodeUUID,
+                        aoKontorInternPersonId
+                )
+        );
+    }
+
+    public int settInternPersonIdentPåOppfolgingsperiode(Long aoKontorInternPersonId, UUID oppfolgingsperiodeId) {
+        return db.update(
+                """
+                    UPDATE OPPFOLGINGSPERIODE
+                    SET ao_kontor_intern_person_id = ?
+                    WHERE uuid = ?;
+                """,
+                aoKontorInternPersonId,
+                oppfolgingsperiodeId.toString()
+        );
+    }
+
     public List<OppfolgingsperiodeEntity> hentOppfolgingsperioder(AktorId aktorId) {
         return db.query(hentOppfolingsperioderSQL +
                         "WHERE aktor_id = ?",
@@ -117,15 +148,17 @@ public class OppfolgingsPeriodeRepository {
         );
     }
 
-    private void insert(AktorId aktorId, OppfolgingStartBegrunnelse getOppfolgingStartBegrunnelse, @Nullable String veileder, StartetAvType startetAvType) {
+    private void insert(AktorId aktorId, OppfolgingStartBegrunnelse getOppfolgingStartBegrunnelse, @Nullable String startetAvIdent, StartetAvType startetAvType, @Nullable String kontorSattAvVeileder) {
         db.update("" +
-                        "INSERT INTO OPPFOLGINGSPERIODE(uuid, aktor_id, startDato, oppdatert, start_begrunnelse, startet_av, startet_av_type) " +
-                        "VALUES (?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?, ?, ?)",
+                        "INSERT INTO OPPFOLGINGSPERIODE(uuid, aktor_id, startDato, oppdatert, start_begrunnelse, startet_av, startet_av_type, kontor_satt_av_veileder) " +
+                        "VALUES (?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?, ?, ?, ?)",
                 UUID.randomUUID().toString(),
                 aktorId.get(),
                 getOppfolgingStartBegrunnelse.name(),
-                veileder,
-                startetAvType.name());
+                startetAvIdent,
+                startetAvType.name(),
+                kontorSattAvVeileder
+        );
     }
 
     private void setActive(AktorId aktorId) {
@@ -165,6 +198,10 @@ public class OppfolgingsPeriodeRepository {
         );
     }
 
+    private static UUID mapTilPeriodeUUID(ResultSet result , int id) throws SQLException {
+        return UUID.fromString(result.getString("uuid"));
+    }
+
     private static OppfolgingsperiodeEntity mapTilOppfolgingsperiode(ResultSet result, int row) throws SQLException {
         var startetAvTypeString = result.getString("startet_av_type");
         var startetAvType = startetAvTypeString != null ? EnumUtils.valueOf(StartetAvType.class, startetAvTypeString) : null;
@@ -176,7 +213,7 @@ public class OppfolgingsPeriodeRepository {
                 .sluttDato(hentZonedDateTime(result, "sluttdato"))
                 .begrunnelse(result.getString("avslutt_begrunnelse"))
                 .startetAvType(startetAvType)
-                .startetAv(startetAvType == StartetAvType.VEILEDER ? result.getString("startet_av") : null)
+                .startetAv(result.getString("startet_av"))
                 .startetBegrunnelse(EnumUtils.valueOf(OppfolgingStartBegrunnelse.class, result.getString("start_begrunnelse")))
                 .build();
     }

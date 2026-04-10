@@ -4,7 +4,7 @@ import com.google.cloud.bigquery.BigQueryOptions
 import com.google.cloud.bigquery.InsertAllRequest
 import com.google.cloud.bigquery.TableId
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
-import no.nav.veilarboppfolging.domain.StartetAvType
+import no.nav.veilarboppfolging.oppfolgingsbruker.StartetAvType
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelse
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ArbeidsøkerRegSync_AlleredeUteAvOppfolging
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ArbeidsøkerRegSync_BleIserv
@@ -35,7 +35,7 @@ data class UtmeldingsAntall(
 )
 
 interface BigQueryClient {
-    fun loggStartOppfolgingsperiode(oppfolging: OppfolgingStartBegrunnelse, oppfolgingPeriodeId: UUID, startedAvType: StartetAvType, kvalifiseringsgruppe: Optional<Kvalifiseringsgruppe>)
+    fun loggStartOppfolgingsperiode(startBegrunnelse: OppfolgingStartBegrunnelse, oppfolgingPeriodeId: UUID, startedAvType: StartetAvType, kvalifiseringsgruppe: Optional<Kvalifiseringsgruppe>, manuellSjekkLovligOpphold: Boolean? = null)
     fun loggAvsluttOppfolgingsperiode(oppfolgingPeriodeId: UUID, avregistreringsType: AvregistreringsType)
     fun loggUtmeldingsHendelse(utmelding: UtmeldingsHendelse)
     fun loggUtmeldingsCount(utmelding: UtmeldingsAntall)
@@ -74,7 +74,9 @@ class BigQueryClientImplementation(projectId: String): BigQueryClient {
             startBegrunnelse: OppfolgingStartBegrunnelse,
             oppfolgingPeriodeId: UUID,
             startedAvType: StartetAvType,
-            kvalifiseringsgruppe: Optional<Kvalifiseringsgruppe>) {
+            kvalifiseringsgruppe: Optional<Kvalifiseringsgruppe>,
+            manuellSjekkLovligOpphold: Boolean?
+        ) {
         insertIntoOppfolgingEvents(oppfolgingsperiodeEventsTable) {
             mapOf(
                 "id" to oppfolgingPeriodeId.toString(),
@@ -82,8 +84,8 @@ class BigQueryClientImplementation(projectId: String): BigQueryClient {
                 "startedAvType" to startedAvType.name,
                 "timestamp" to ZonedDateTime.now().toOffsetDateTime().toString(),
                 "event" to BigQueryEventType.OPFOLGINGSPERIODE_START.name,
-                "kvalifiseringsgruppe" to kvalifiseringsgruppe.map { it.name }.orElse(null)
-            )
+                "kvalifiseringsgruppe" to kvalifiseringsgruppe.map { it.name }.orElse(null),
+            ) + (if (manuellSjekkLovligOpphold != null) mapOf("manuellSjekkLovligOpphold" to manuellSjekkLovligOpphold) else emptyMap())
         }
     }
 

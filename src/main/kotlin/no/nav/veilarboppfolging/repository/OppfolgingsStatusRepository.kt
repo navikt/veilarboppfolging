@@ -11,7 +11,6 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.arena.LocalArenaOppfolging
 import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity
 import no.nav.veilarboppfolging.utils.DbUtils
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Repository
 import java.sql.ResultSet
@@ -26,7 +25,12 @@ class OppfolgingsStatusRepository(private val db: NamedParameterJdbcTemplate) {
     fun hentOppfolging(aktorId: AktorId): Optional<OppfolgingEntity> {
         return DbUtils.queryForNullableObject<OppfolgingEntity?>(Supplier {
             db.queryForObject<OppfolgingEntity>(
-                "SELECT * FROM OPPFOLGINGSTATUS WHERE aktor_id = :aktorId",
+                """
+                    SELECT os.*, aok.kontor_id 
+                    FROM OPPFOLGINGSTATUS os
+                     left join ao_kontor aok on os.aktor_id = aok.aktor_id
+                    WHERE os.aktor_id = :aktorId
+                    """.trimIndent(),
                 mapOf("aktorId" to aktorId.get()),
                 { rs, row -> map(rs) },
             )
@@ -51,7 +55,8 @@ class OppfolgingsStatusRepository(private val db: NamedParameterJdbcTemplate) {
             kvalifiseringsgruppe = :kvalifiseringsgruppe, 
             hovedmaal = :hovedmaal, 
             oppfolgingsenhet = :oppfolgingsenhet,
-            iserv_fra_dato = :iserv_fra_dato
+            iserv_fra_dato = :iserv_fra_dato,
+            oppdatert = CURRENT_TIMESTAMP
             WHERE aktor_id = :aktorId
         """.trimIndent()
         val rows = db.update(sql, params)
@@ -103,7 +108,8 @@ class OppfolgingsStatusRepository(private val db: NamedParameterJdbcTemplate) {
                 kvalifiseringsgruppe = kvalifiseringsgruppe,
                 formidlingsgruppe = formidlingsgruppe,
                 hovedmaal = rs.getStringOrNull("hovedmaal")?.let(Hovedmaal::valueOf),
-                oppfolgingsenhet =  rs.getStringOrNull("oppfolgingsenhet")?.let { EnhetId(it) },
+                oppfolgingsenhet = rs.getStringOrNull("kontor_id")?.let { EnhetId(it) }
+                    ?: rs.getStringOrNull("oppfolgingsenhet")?.let { EnhetId(it) },
                 // Dårlig konvertering av ZonedDataTime til LocalDateTime men trenger bare datoen
                 iservFraDato = DbUtils.hentZonedDateTime(rs, "iserv_fra_dato")?.toLocalDate()
             ) else null

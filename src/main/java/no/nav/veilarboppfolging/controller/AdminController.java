@@ -8,6 +8,7 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.NavIdent;
 import no.nav.veilarboppfolging.ForbiddenException;
 import no.nav.veilarboppfolging.controller.response.Veilarbportefoljeinfo;
+import no.nav.veilarboppfolging.controller.v2.request.RepubliserVeilederRequest;
 import no.nav.veilarboppfolging.domain.AvsluttOppfolgingsperiodePayload;
 import no.nav.veilarboppfolging.domain.AvsluttResultat;
 import no.nav.veilarboppfolging.domain.RepubliserOppfolgingsperioderRequest;
@@ -59,6 +60,15 @@ public class AdminController {
         return JobRunner.runAsync("republiser-tilordnet-veileder", kafkaRepubliseringService::republiserTilordnetVeileder);
     }
 
+    @PostMapping("/republiser/tilordnet-veileder/utvalg")
+    public String republiserTilordnetVeileder(@RequestBody RepubliserVeilederRequest republiserVeilederRequest) {
+        sjekkTilgangTilAdmin();
+        return JobRunner.runAsync(
+                "republiser-tilordnet-veileder-gitte-aktorider",
+                () -> kafkaRepubliseringService.republiserTilordnetVeileder(republiserVeilederRequest.aktorIder())
+        );
+    }
+
     @PostMapping("/republiser/kvp-perioder")
     public String republiserKvpPerioder() {
         sjekkTilgangTilAdmin();
@@ -75,6 +85,7 @@ public class AdminController {
         return new Veilarbportefoljeinfo().setVeilederId(tilordningEntity.map(VeilederTilordningEntity::getVeilederId).map(NavIdent::of).orElse(null))
                 .setErUnderOppfolging(tilordningEntity.map(VeilederTilordningEntity::isOppfolging).orElse(false))
                 .setNyForVeileder(tilordningEntity.map(VeilederTilordningEntity::isNyForVeileder).orElse(false))
+                .setTilordnetTidspunkt(tilordningEntity.map(VeilederTilordningEntity::getSistTilordnet).orElse(null))
                 .setErManuell(erManuell)
                 .setStartDato(startDato);
     }

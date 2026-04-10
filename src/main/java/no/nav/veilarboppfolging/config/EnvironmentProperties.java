@@ -18,10 +18,6 @@ public class EnvironmentProperties {
 
     private String tokenxDiscoveryUrl;
 
-    private String loginserviceIdportenAudience;
-
-    private String loginserviceIdportenDiscoveryUrl;
-
     private String norg2Url;
 
     private String aktorregisterUrl;
@@ -38,8 +34,8 @@ public class EnvironmentProperties {
 
 	private String digdirKrrProxyScope;
 
-    private String amtTiltakUrl;
+    private String tiltakshistorikkUrl;
 
-    private String amtTiltakScope;
+    private String tiltakshistorikkScope;
 
 }

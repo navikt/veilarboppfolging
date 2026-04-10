@@ -209,7 +209,7 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
         assertTrue(manuellStatusService.erManuell(AKTOR_ID));
 
 
-        oppfolgingsPeriodeRepository.avslutt(AKTOR_ID, "", "");
+        oppfolgingsPeriodeRepository.avsluttSistePeriodeOgAvsluttOppfolging(AKTOR_ID, "", "");
         assertFalse(manuellStatusService.erManuell(AKTOR_ID));
     }
 

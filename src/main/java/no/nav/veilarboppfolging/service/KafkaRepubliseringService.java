@@ -57,20 +57,25 @@ public class KafkaRepubliseringService {
         }
     }
 
+    public void republiserTilordnetVeileder(List<String> aktorIder) {
+        log.info("Republiserer tilordnet veileder for {} aktør-ID-er", aktorIder.size());
+        aktorIder.forEach(aktorId -> {
+            republiserVeilederTilordnetrForBruker(AktorId.of(aktorId));
+        });
+        log.info("Ferdig med å republisere tilordnet veileder for {} aktør-ID-er", aktorIder.size());
+    }
+
     public void republiserTilordnetVeileder() {
         int currentOffset = 0;
 
         while (true) {
             List<AktorId> unikeAktorIder = oppfolgingsStatusRepository.hentUnikeBrukerePage(currentOffset, OPPFOLGINGSPERIODE_PAGE_SIZE);
-
             if (unikeAktorIder.isEmpty()) {
                 break;
             }
 
             currentOffset += unikeAktorIder.size();
-
             log.info("Republiserer tilordnet veileder. CurrentOffset={} BatchSize={}", currentOffset, unikeAktorIder.size());
-
             unikeAktorIder.forEach(this::republiserSisteTilordnetVeilederForBruker);
         }
     }
@@ -138,6 +143,18 @@ public class KafkaRepubliseringService {
 
             var dto = DtoMappers.tilSisteTilordnetVeilederKafkaDTO(tilordning);
             kafkaProducerService.publiserSisteTilordnetVeileder(dto);
+        });
+    }
+
+    private void republiserVeilederTilordnetrForBruker(AktorId aktorId) {
+        Optional<VeilederTilordningEntity> maybeTilordning = veilederTilordningerRepository.hentTilordnetVeileder(aktorId);
+
+        maybeTilordning.ifPresent(tilordning -> {
+            // Skal ikke publisere for brukere som ikke har fått veileder
+            if (tilordning.getVeilederId() == null) {
+                return;
+            }
+            kafkaProducerService.publiserVeilederTilordnet(aktorId, tilordning.getVeilederId(), tilordning.getSistTilordnet());
         });
     }
 

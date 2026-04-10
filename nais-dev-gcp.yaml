@@ -53,6 +53,10 @@ spec:
     autoInstrumentation:
       enabled: true
       runtime: java
+    logging:
+      destinations:
+        - id: elastic
+        - id: loki
   env:
     - name: POAO_TILGANG_URL
       value: http://poao-tilgang.poao
@@ -62,10 +66,10 @@ spec:
       value: http://digdir-krr-proxy.team-rocket
     - name: DIGDIR_KRR_PROXY_SCOPE
       value: api://dev-gcp.team-rocket.digdir-krr-proxy/.default
-    - name: AMTTILTAK_URL
-      value: http://amt-tiltak.amt
-    - name: AMTTILTAK_SCOPE
-      value: api://dev-gcp.amt.amt-tiltak/.default
+    - name: TILTAKSHISTORIKK_URL
+      value: http://tiltakshistorikk.team-mulighetsrommet
+    - name: TILTAKSHISTORIKK_SCOPE
+      value: api://dev-gcp.team-mulighetsrommet.tiltakshistorikk/.default
     - name: KAFKA_ENABLED
       value: "true"
     - name: VEILARBARENA_URL
@@ -82,8 +86,8 @@ spec:
       value: "B884"
     - name: NAV_NO_URL
       value: "https://www.ansatt.dev.nav.no"
-  secureLogs:
-    enabled: true
+    - name: EXPOSE_GRAPHIQL
+      value: "true"
   kafka:
     pool: nav-dev
   azure:
@@ -105,10 +109,12 @@ spec:
         - application: digdir-krr-proxy
           namespace: team-rocket
         - application: poao-tilgang
-        - application: amt-tiltak
-          namespace: amt
         - application: norg2
           namespace: org
+        - application: logging
+          namespace: nais-system
+        - application: tiltakshistorikk
+          namespace: team-mulighetsrommet
       external:
         - host: veilarbarena.dev-fss-pub.nais.io
         - host: norg2.dev-fss-pub.nais.io
@@ -211,6 +217,8 @@ spec:
           cluster: dev-fss
         - application: inngar
           namespace: dab
+        - application: inngar-ekstern
+          namespace: dab
         - application: statuspoll
           namespace: navdig
         - application: tiltakspenger-saksbehandling-api
@@ -224,6 +232,9 @@ spec:
         - application: oppgave
           namespace: aap
           cluster: dev-gcp
-        - application: ao-min-side-microfrontend
+        - application: ao-min-side-microfrontend-ssr
           namespace: dab
           cluster: dev-gcp
+        - application: ida
+          namespace: traktor
+          cluster: prod-fss # Dette er med vilje

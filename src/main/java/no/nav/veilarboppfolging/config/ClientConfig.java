@@ -11,9 +11,9 @@ import no.nav.common.token_client.builder.AzureAdTokenClientBuilder;
 import no.nav.common.token_client.builder.TokenXTokenClientBuilder;
 import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
 import no.nav.common.token_client.client.TokenXOnBehalfOfTokenClient;
-import no.nav.veilarboppfolging.client.amttiltak.AmtTiltakClient;
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirClient;
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirClientImpl;
+import no.nav.veilarboppfolging.client.tiltakshistorikk.TiltakshistorikkClient;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClientImpl;
 import no.nav.veilarboppfolging.service.AuthService;
@@ -60,9 +60,9 @@ public class ClientConfig {
     }
 
     @Bean
-    public AmtTiltakClient amtTiltakClient(EnvironmentProperties properties, ErrorMappedAzureAdMachineToMachineTokenClient tokenClient) {
-        return new AmtTiltakClient(properties.getAmtTiltakUrl(),
-                () -> tokenClient.createMachineToMachineToken(properties.getAmtTiltakScope()),
+    public TiltakshistorikkClient tiltakshistorikkClient(EnvironmentProperties properties, ErrorMappedAzureAdMachineToMachineTokenClient tokenClient) {
+        return new TiltakshistorikkClient(properties.getTiltakshistorikkUrl(),
+                () -> tokenClient.createMachineToMachineToken(properties.getTiltakshistorikkScope()),
                 RestClient.baseClient()
         );
     }

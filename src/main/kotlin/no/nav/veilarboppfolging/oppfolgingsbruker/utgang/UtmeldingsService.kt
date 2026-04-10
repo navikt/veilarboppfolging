@@ -83,7 +83,7 @@ class UtmeldingsService(
                 }
             }
         } catch (e: Exception) {
-            secureLog.error("Automatisk avsluttOppfolging feilet for aktoerid {} ", aktorId, e)
+            secureLog.error("Automatisk avsluttOppfolging feilet for aktoerid $aktorId ", e)
             return AvslutteOppfolgingResultat.AVSLUTTET_FEILET
         }
     }
