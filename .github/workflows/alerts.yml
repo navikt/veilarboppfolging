@@ -6,7 +6,7 @@ on:
       - main
     paths:
       - 'alerts/kafka_failed_records_alert.yaml'
-      - '.github/workflows/alerts.yaml'
+      - '.github/workflows/alerts.yml'
 
 concurrency:
   group: deploy_alerts
