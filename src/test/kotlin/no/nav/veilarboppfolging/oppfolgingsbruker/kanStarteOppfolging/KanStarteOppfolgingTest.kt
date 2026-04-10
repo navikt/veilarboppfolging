@@ -3,18 +3,16 @@ package no.nav.veilarboppfolging.oppfolgingsbruker.kanStarteOppfolging
 import no.nav.veilarboppfolging.client.pdl.ForenkletFolkeregisterStatus
 import no.nav.veilarboppfolging.client.pdl.FregStatusOgStatsborgerskap
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ALLEREDE_UNDER_OPPFOLGING
-import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ALLEREDE_UNDER_OPPFOLGING.oppfolgingSjekk
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.DOD
-import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.FREG_STATUS_KREVER_MANUELL_GODKJENNING
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.FREG_STATUS_KREVER_MANUELL_GODKJENNING_PGA_DNUMMER_IKKE_EOS_GBR
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.FREG_STATUS_KREVER_MANUELL_GODKJENNING_PGA_IKKE_BOSATT
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.FREG_STATUS_OK
-import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.FregStatusSjekkResultat
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.IKKE_LOVLIG_OPPHOLD
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.IKKE_TILGANG_ENHET
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.IKKE_TILGANG_FORTROLIG_ADRESSE
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.KanStarteOppfolgingDto
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.KanStarteOppfolgingSjekk.Companion.sjekkKanStarteOppfolgingPaBrukerForVeileder
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OPPFOLGING_OK
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.TILGANG_OK
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.toKanStarteOppfolging
@@ -28,7 +26,7 @@ class KanStarteOppfolgingTest {
         val harTilgang = lazy { IKKE_TILGANG_FORTROLIG_ADRESSE }
         val oppfolgingStatus = lazy { ALLEREDE_UNDER_OPPFOLGING }
         val folkeregisterStatus = lazy { IKKE_LOVLIG_OPPHOLD }
-        val result = oppfolgingSjekk(oppfolgingStatus, harTilgang, folkeregisterStatus)
+        val result = sjekkKanStarteOppfolgingPaBrukerForVeileder(oppfolgingStatus, harTilgang, folkeregisterStatus)
         assertEquals(result, KanStarteOppfolgingDto.IKKE_TILGANG_FORTROLIG_ADRESSE)
     }
 
@@ -37,7 +35,7 @@ class KanStarteOppfolgingTest {
         val harTilgang = lazy { IKKE_TILGANG_FORTROLIG_ADRESSE }
         val oppfolgingStatus = lazy { OPPFOLGING_OK }
         val folkeregisterStatus = lazy { IKKE_LOVLIG_OPPHOLD }
-        val result = oppfolgingSjekk(oppfolgingStatus, harTilgang, folkeregisterStatus)
+        val result = sjekkKanStarteOppfolgingPaBrukerForVeileder(oppfolgingStatus, harTilgang, folkeregisterStatus)
         assertEquals(result, KanStarteOppfolgingDto.IKKE_TILGANG_FORTROLIG_ADRESSE)
     }
 
@@ -46,7 +44,7 @@ class KanStarteOppfolgingTest {
         val harTilgang = lazy { TILGANG_OK }
         val oppfolgingStatus = lazy { OPPFOLGING_OK }
         val folkeregisterStatus = lazy { DOD }
-        val result = oppfolgingSjekk(oppfolgingStatus, harTilgang, folkeregisterStatus)
+        val result = sjekkKanStarteOppfolgingPaBrukerForVeileder(oppfolgingStatus, harTilgang, folkeregisterStatus)
         assertEquals(result, KanStarteOppfolgingDto.DOD)
     }
 
@@ -55,7 +53,7 @@ class KanStarteOppfolgingTest {
         val harTilgang = lazy { TILGANG_OK }
         val oppfolgingStatus = lazy { ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT }
         val folkeregisterStatus = lazy { FREG_STATUS_OK }
-        val result = oppfolgingSjekk(oppfolgingStatus, harTilgang, folkeregisterStatus)
+        val result = sjekkKanStarteOppfolgingPaBrukerForVeileder(oppfolgingStatus, harTilgang, folkeregisterStatus)
         assertEquals(result, KanStarteOppfolgingDto.ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT)
     }
 
@@ -64,7 +62,7 @@ class KanStarteOppfolgingTest {
         val harTilgang = lazy { IKKE_TILGANG_ENHET }
         val oppfolgingStatus = lazy { ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT }
         val folkeregisterStatus = lazy { FREG_STATUS_OK }
-        val result = oppfolgingSjekk(oppfolgingStatus, harTilgang, folkeregisterStatus)
+        val result = sjekkKanStarteOppfolgingPaBrukerForVeileder(oppfolgingStatus, harTilgang, folkeregisterStatus)
         assertEquals(result, KanStarteOppfolgingDto.IKKE_TILGANG_ENHET)
     }
 
@@ -73,7 +71,7 @@ class KanStarteOppfolgingTest {
         val harTilgang = lazy { TILGANG_OK }
         val oppfolgingStatus = lazy { ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT }
         val folkeregisterStatus = lazy { FREG_STATUS_KREVER_MANUELL_GODKJENNING_PGA_IKKE_BOSATT }
-        val result = oppfolgingSjekk(oppfolgingStatus, harTilgang, folkeregisterStatus)
+        val result = sjekkKanStarteOppfolgingPaBrukerForVeileder(oppfolgingStatus, harTilgang, folkeregisterStatus)
         assertEquals(
             result,
             KanStarteOppfolgingDto.ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT_MEN_KREVER_MANUELL_GODKJENNING_PGA_IKKE_BOSATT
@@ -85,7 +83,7 @@ class KanStarteOppfolgingTest {
         val harTilgang = lazy { TILGANG_OK }
         val oppfolgingStatus = lazy { ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT }
         val folkeregisterStatus = lazy { FREG_STATUS_KREVER_MANUELL_GODKJENNING_PGA_DNUMMER_IKKE_EOS_GBR }
-        val result = oppfolgingSjekk(oppfolgingStatus, harTilgang, folkeregisterStatus)
+        val result = sjekkKanStarteOppfolgingPaBrukerForVeileder(oppfolgingStatus, harTilgang, folkeregisterStatus)
         assertEquals(
             result,
             KanStarteOppfolgingDto.ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT_MEN_KREVER_MANUELL_GODKJENNING_PGA_DNUMMER_IKKE_EOS_GBR
