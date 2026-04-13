@@ -20,5 +20,6 @@ public class AvslutningStatus {
     public LocalDate inaktiveringsDato;
     public boolean erIserv;
     public boolean harAktiveTiltaksdeltakelser;
+    public boolean erDeltakerIUngdomsprogrammet;
 
 }

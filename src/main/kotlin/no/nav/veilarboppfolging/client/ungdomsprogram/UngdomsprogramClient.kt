@@ -11,7 +11,6 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.slf4j.LoggerFactory
-import java.util.function.Supplier
 
 /**
  * Klient for å sjekke deltakelse i ungdomsprogrammet.
