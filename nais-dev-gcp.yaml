@@ -70,6 +70,10 @@ spec:
       value: http://tiltakshistorikk.team-mulighetsrommet
     - name: TILTAKSHISTORIKK_SCOPE
       value: api://dev-gcp.team-mulighetsrommet.tiltakshistorikk/.default
+    - name: UNGDOMSPROGRAM_URL
+      value: http://ung-deltakelse-opplyser.k9saksbehandling
+    - name: UNGDOMSPROGRAM_SCOPE
+      value: api://dev-gcp.k9saksbehandling.ung-deltakelse-opplyser/.default
     - name: KAFKA_ENABLED
       value: "true"
     - name: VEILARBARENA_URL
@@ -115,6 +119,8 @@ spec:
           namespace: nais-system
         - application: tiltakshistorikk
           namespace: team-mulighetsrommet
+        - application: ung-deltakelse-opplyser
+          namespace: k9saksbehandling
       external:
         - host: veilarbarena.dev-fss-pub.nais.io
         - host: norg2.dev-fss-pub.nais.io

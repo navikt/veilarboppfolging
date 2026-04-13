@@ -14,6 +14,7 @@ import no.nav.common.token_client.client.TokenXOnBehalfOfTokenClient;
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirClient;
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirClientImpl;
 import no.nav.veilarboppfolging.client.tiltakshistorikk.TiltakshistorikkClient;
+import no.nav.veilarboppfolging.client.ungdomsprogram.UngdomsprogramClient;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClientImpl;
 import no.nav.veilarboppfolging.service.AuthService;
@@ -63,6 +64,14 @@ public class ClientConfig {
     public TiltakshistorikkClient tiltakshistorikkClient(EnvironmentProperties properties, ErrorMappedAzureAdMachineToMachineTokenClient tokenClient) {
         return new TiltakshistorikkClient(properties.getTiltakshistorikkUrl(),
                 () -> tokenClient.createMachineToMachineToken(properties.getTiltakshistorikkScope()),
+                RestClient.baseClient()
+        );
+    }
+
+    @Bean
+    public UngdomsprogramClient ungdomsprogramClient(EnvironmentProperties properties, ErrorMappedAzureAdMachineToMachineTokenClient tokenClient) {
+        return new UngdomsprogramClient(properties.getUngdomsprogramUrl(),
+                () -> tokenClient.createMachineToMachineToken(properties.getUngdomsprogramScope()),
                 RestClient.baseClient()
         );
     }
