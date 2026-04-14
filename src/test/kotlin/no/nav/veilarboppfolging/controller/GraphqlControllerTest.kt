@@ -263,27 +263,6 @@ class GraphqlControllerTest: IntegrationTest() {
         """.trimIndent())
     }
 
-    @Test
-    fun `skal returnere kanStarteOppfolging - ALLEREDE_UNDER_OPPFOLGING når bruker allerede under oppfølging og under 18`() {
-        val veilederUuid = UUID.randomUUID()
-        val fnr = randomFnr()
-        val aktorId = randomAktorId()
-        setBrukerUnderOppfolging(aktorId, fnr)
-        mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Permit)
-        mockPdlFolkeregisterStatus(fnr, FregStatusOgStatsborgerskap(
-            fregStatus = ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven,
-            statsborgerskap = norskStatsborgerskap,
-            under18 = true,
-        ))
-        mockInternBrukerAuthOk(veilederUuid, aktorId, fnr)
-        /* Query is hidden in test/resources/graphl-test :) */
-        val result = tester.documentName("kanStarteOppfolging").variable("fnr", fnr.get()).execute()
-        result.errors().verify()
-        result.path("oppfolging").matchesJson("""
-            { "kanStarteOppfolging": "ALLEREDE_UNDER_OPPFOLGING" }
-        """.trimIndent())
-    }
-
     // skal endres til egen respons for under 18 når inngar-intern skal få dette fra backend
     @Test
     fun `skal returnere kanStarteOppfolging - JA når veileder har tilgang og under 18`() {
@@ -683,6 +662,30 @@ class GraphqlControllerTest: IntegrationTest() {
         result.errors().verify()
         result.path("oppfolging").matchesJson("""
             { "kanStarteOppfolgingEkstern": JA_MED_MANUELL_GODKJENNING_PGA_UNDER_18 }
+        """.trimIndent())
+    }
+
+    @Test
+    fun `skal returnere kanStarteOppfolgingEkstern - ALLEREDE_UNDER_OPPFOLGING når bruker allerede under oppfølging og under 18`() {
+        val (fnr, aktorId) = defaultBruker()
+        mockEksternBrukerAuthOk(fnr)
+        mockEksternbrukerErInnlogget(fnr, AuthService.SikkerthetsNivå.Nivå4)
+        mockPoaoTilgangTilgangsAttributter(
+            "2112",
+            false,
+            null
+        )
+        setBrukerUnderOppfolging(aktorId, fnr)
+        mockPdlFolkeregisterStatus(fnr, FregStatusOgStatsborgerskap(
+            fregStatus = ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven,
+            statsborgerskap = norskStatsborgerskap,
+            under18 = true,
+        ))
+        /* Query is hidden in test/resources/graphl-test :) */
+        val result = tester.documentName("kanStarteOppfolgingEkstern").variable("fnr", fnr.get()).execute()
+        result.errors().verify()
+        result.path("oppfolging").matchesJson("""
+            { "kanStarteOppfolgingEkstern": "ALLEREDE_UNDER_OPPFOLGING" }
         """.trimIndent())
     }
 }
