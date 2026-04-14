@@ -26,7 +26,9 @@ class PdlClientConfig(
                     tokenXOnBehalfOfTokenClient.exchangeOnBehalfOfToken(
                         pdlScope
                             .replace("api://", "")
-                            .replace("/.default", ""),
+                            .replace("/.default", "")
+                            .replace(".", ":")
+                            .replace(".", ":"),
                         authService.innloggetBrukerToken)
                 } else {
                     tokenClient.exchangeOnBehalfOfToken(pdlScope, authService.innloggetBrukerToken)
