@@ -72,8 +72,8 @@ public class ClientConfig {
 
     @Bean
     public UngdomsprogramClient ungdomsprogramClient(EnvironmentProperties properties, ErrorMappedAzureAdMachineToMachineTokenClient tokenClient, AuthService authService) {
-        Supplier<String> tokenSupplier = () -> authService.erSystemBruker() ? tokenClient.createMachineToMachineToken(properties.getUngdomsprogramScope())
-                : authService.getAadOboTokenForTjeneste(properties.getUngdomsprogramScope());
+        Supplier<String> tokenSupplier = () -> authService.erInternBruker() ? authService.getAadOboTokenForTjeneste(properties.getUngdomsprogramScope())
+                : tokenClient.createMachineToMachineToken(properties.getUngdomsprogramScope());
 
         return new UngdomsprogramClient(properties.getUngdomsprogramUrl(),
                 tokenSupplier,
