@@ -45,7 +45,6 @@ class AktiverBrukerManueltService(
             UKJENT_STATUS_FOLKEREGISTERET -> throw IllegalStateException("Kan ikke starte oppfølging på bruker med folkeregisterstatus $fregStatus -> $fregStatusSjekkResultat")
             FREG_STATUS_KREVER_MANUELL_GODKJENNING_PGA_DNUMMER_IKKE_EOS_GBR -> true
             FREG_STATUS_KREVER_MANUELL_GODKJENNING_PGA_IKKE_BOSATT -> true
-            FREG_STATUS_KREVER_MANUELL_GODKJENNING_PGA_UNDER_18 -> false // må endres når inngar-intern skal få dette fra backend
             FREG_STATUS_OK -> false
         }
     }

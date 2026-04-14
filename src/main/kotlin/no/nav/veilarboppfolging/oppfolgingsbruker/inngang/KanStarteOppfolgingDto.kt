@@ -39,8 +39,6 @@ sealed class KanStarteOppfolgingSjekk {
                                 KanStarteOppfolgingDto.ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT_MEN_KREVER_MANUELL_GODKJENNING_PGA_IKKE_BOSATT
                             is FREG_STATUS_KREVER_MANUELL_GODKJENNING_PGA_DNUMMER_IKKE_EOS_GBR ->
                                 KanStarteOppfolgingDto.ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT_MEN_KREVER_MANUELL_GODKJENNING_PGA_DNUMMER_IKKE_EOS_GBR
-                            is FREG_STATUS_KREVER_MANUELL_GODKJENNING_PGA_UNDER_18 ->
-                                KanStarteOppfolgingDto.ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT // endres når inngar-intern skal få dette fra backend
                         }
                     } else
                         KanStarteOppfolgingDto.ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT
@@ -52,8 +50,6 @@ sealed class KanStarteOppfolgingSjekk {
                                 KanStarteOppfolgingDto.JA_MED_MANUELL_GODKJENNING_PGA_IKKE_BOSATT
                             is FREG_STATUS_KREVER_MANUELL_GODKJENNING_PGA_DNUMMER_IKKE_EOS_GBR ->
                                 KanStarteOppfolgingDto.JA_MED_MANUELL_GODKJENNING_PGA_DNUMMER_IKKE_EOS_GBR
-                            is FREG_STATUS_KREVER_MANUELL_GODKJENNING_PGA_UNDER_18 ->
-                                KanStarteOppfolgingDto.JA // endres når inngar-intern skal få dette fra backend
                         }
                     }
                     else {
@@ -93,7 +89,6 @@ object IKKE_TILGANG_MODIA: VeilederHarTilgang()
 sealed class FregStatusSjekkResultat: KanStarteOppfolgingSjekk()
 object FREG_STATUS_OK: FregStatusSjekkResultat()
 sealed class FREG_STATUS_KREVER_MANUELL_GODKJENNING: FregStatusSjekkResultat()
-object FREG_STATUS_KREVER_MANUELL_GODKJENNING_PGA_UNDER_18: FREG_STATUS_KREVER_MANUELL_GODKJENNING()
 object FREG_STATUS_KREVER_MANUELL_GODKJENNING_PGA_IKKE_BOSATT: FREG_STATUS_KREVER_MANUELL_GODKJENNING()
 object FREG_STATUS_KREVER_MANUELL_GODKJENNING_PGA_DNUMMER_IKKE_EOS_GBR: FREG_STATUS_KREVER_MANUELL_GODKJENNING()
 object DOD: FregStatusSjekkResultat()
@@ -124,7 +119,6 @@ enum class KanStarteOppfolgingDto {
             return when (kanStarteOppfolgingSjekk) {
                 is DOD -> DOD
                 is FREG_STATUS_OK -> JA
-                is FREG_STATUS_KREVER_MANUELL_GODKJENNING_PGA_UNDER_18 -> JA // endres når inngar-intern skal få dette fra backend
                 is FREG_STATUS_KREVER_MANUELL_GODKJENNING_PGA_IKKE_BOSATT -> JA_MED_MANUELL_GODKJENNING_PGA_IKKE_BOSATT
                 is FREG_STATUS_KREVER_MANUELL_GODKJENNING_PGA_DNUMMER_IKKE_EOS_GBR -> JA_MED_MANUELL_GODKJENNING_PGA_DNUMMER_IKKE_EOS_GBR
                 is OPPFOLGING_OK -> JA
@@ -156,7 +150,6 @@ fun TilgangResultat.toKanStarteOppfolging(): VeilederHarTilgang {
 }
 
 fun FregStatusOgStatsborgerskap.toKanStarteOppfolging(): FregStatusSjekkResultat {
-    if (this.under18) return FREG_STATUS_KREVER_MANUELL_GODKJENNING_PGA_UNDER_18
     val euEllerEøsBorger = this.statsborgerskap.any { eeaLand.contains(it) }
 
     return when (this.fregStatus) {

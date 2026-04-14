@@ -7,7 +7,6 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ALLEREDE_UNDER_OPPFOLG
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.DOD
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.FREG_STATUS_KREVER_MANUELL_GODKJENNING_PGA_DNUMMER_IKKE_EOS_GBR
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.FREG_STATUS_KREVER_MANUELL_GODKJENNING_PGA_IKKE_BOSATT
-import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.FREG_STATUS_KREVER_MANUELL_GODKJENNING_PGA_UNDER_18
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.FREG_STATUS_OK
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.IKKE_LOVLIG_OPPHOLD
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.IKKE_TILGANG_ENHET
@@ -54,15 +53,6 @@ class KanStarteOppfolgingTest {
         val harTilgang = lazy { TILGANG_OK }
         val oppfolgingStatus = lazy { ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT }
         val folkeregisterStatus = lazy { FREG_STATUS_OK }
-        val result = sjekkKanStarteOppfolgingPaBrukerForVeileder(oppfolgingStatus, harTilgang, folkeregisterStatus)
-        assertEquals(result, KanStarteOppfolgingDto.ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT)
-    }
-
-    @Test
-    fun `ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT og under 18 skal være en ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT for veileder`() {
-        val harTilgang = lazy { TILGANG_OK }
-        val oppfolgingStatus = lazy { ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT }
-        val folkeregisterStatus = lazy { FREG_STATUS_KREVER_MANUELL_GODKJENNING_PGA_UNDER_18 }
         val result = sjekkKanStarteOppfolgingPaBrukerForVeileder(oppfolgingStatus, harTilgang, folkeregisterStatus)
         assertEquals(result, KanStarteOppfolgingDto.ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT)
     }
@@ -178,25 +168,5 @@ class KanStarteOppfolgingTest {
             under18 = false,
         )
         assertEquals(eueos.toKanStarteOppfolging(), FREG_STATUS_KREVER_MANUELL_GODKJENNING_PGA_DNUMMER_IKKE_EOS_GBR)
-    }
-
-    @Test
-    fun `FregStatusOgStatsborgerskap - FREG status bosatt + NOR + under 18 er FREG_STATUS_KREVER_MANUELL_GODKJENNING_PGA_UNDER_18`() {
-        val norsk = FregStatusOgStatsborgerskap(
-            fregStatus = ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven,
-            statsborgerskap = listOf("NOR"),
-            under18 = true,
-        )
-        assertEquals(norsk.toKanStarteOppfolging(), FREG_STATUS_KREVER_MANUELL_GODKJENNING_PGA_UNDER_18)
-    }
-
-    @Test
-    fun `FregStatusOgStatsborgerskap - FREG status ikkeBosatt (utflyttet, foedselsregistrert eller ikkeBosatt) + AFG er FREG_STATUS_KREVER_MANUELL_GODKJENNING_PGA_UNDER_18`() {
-        val ikkeEueos = FregStatusOgStatsborgerskap(
-            fregStatus = ForenkletFolkeregisterStatus.ikkeBosatt,
-            statsborgerskap = listOf("AFG"),
-            under18 = true,
-        )
-        assertEquals(ikkeEueos.toKanStarteOppfolging(), FREG_STATUS_KREVER_MANUELL_GODKJENNING_PGA_UNDER_18)
     }
 }
