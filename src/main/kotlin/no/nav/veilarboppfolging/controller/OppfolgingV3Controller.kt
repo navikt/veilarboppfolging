@@ -187,10 +187,15 @@ class OppfolgingV3Controller(
 
     @PostMapping("/oppfolging/startOppfolgingsperiode")
     fun aktiverBruker(@RequestBody startOppfolging: StartOppfolgingDto): ResponseEntity<RegistrerIkkeArbeidssokerDto> {
-        authService.skalVereInternBruker()
+        val fnrTilNyBruker = if (authService.erEksternBruker()) {
+            authService.hentInnloggetPersonIdent()?.let {  Fnr.of(it) }
+                ?: throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Kan ikke hente innlogget personident")
+        } else {
+            authService.skalVereInternBruker()
+            startOppfolging.fnr ?: throw ResponseStatusException(HttpStatus.BAD_REQUEST, "fnr er påkrevd for interne brukere")
+        }
         authService.sjekkAtApplikasjonErIAllowList(ALLOWLIST)
-
-        val arenaResponse = arenaOppfolgingService.registrerIkkeArbeidssoker(startOppfolging.fnr)
+        val arenaResponse = arenaOppfolgingService.registrerIkkeArbeidssoker(fnrTilNyBruker)
         when (arenaResponse) {
             is RegistrerIArenaSuccess -> {
                 when (arenaResponse.arenaResultat.kode) {
@@ -201,7 +206,7 @@ class OppfolgingV3Controller(
                     else -> {
                         logger.info("Bruker registrert i Arena med resultat: ${arenaResponse.arenaResultat.kode}")
                         aktiverBrukerManueltService.aktiverBrukerManuelt(
-                            fnr = startOppfolging.fnr,
+                            fnr = fnrTilNyBruker,
                             kontorSattAvVeileder = startOppfolging.kontorSattAvVeileder,
                         )
                         return ResponseEntity(arenaResponse.arenaResultat, HttpStatus.OK)
@@ -243,7 +248,7 @@ class OppfolgingV3Controller(
 }
 
 class StartOppfolgingDto(
-    val fnr: Fnr,
+    val fnr: Fnr?,
     val henviserSystem: HenviserSystem,
     val kontorSattAvVeileder: String?
 )

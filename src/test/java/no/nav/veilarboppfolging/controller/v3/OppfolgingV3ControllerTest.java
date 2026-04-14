@@ -302,7 +302,7 @@ class OppfolgingV3ControllerTest {
     }
 
     @Test
-    void startOppfolgingsperiode_skal_returnere_400_ved_manglende_fnr() throws Exception {
+    void startOppfolgingsperiode_skal_returnere_400_ved_manglende_fnr_hvis_intern_bruker() throws Exception {
         when(arenaOppfolgingService.registrerIkkeArbeidssoker(TEST_FNR))
                 .thenReturn(new RegistrerIArenaSuccess(new RegistrerIkkeArbeidssokerDto("Ny bruker ble registrert ok som IARBS", ArenaRegistreringResultat.BRUKER_ALLEREDE_ARBS)));
         mockMvc.perform(post("/api/v3/oppfolging/startOppfolgingsperiode")
@@ -310,6 +310,20 @@ class OppfolgingV3ControllerTest {
                         .content("{\"henviserSystem\":\"AAP\"}")
                 )
                 .andExpect(status().is(400));
+    }
+
+    @Test
+    void startOppfolgingsperiode_skal_fungere_for_eksterne_brukere() throws Exception {
+        when(arenaOppfolgingService.registrerIkkeArbeidssoker(TEST_FNR))
+                .thenReturn(new RegistrerIArenaSuccess(new RegistrerIkkeArbeidssokerDto("Ny bruker ble registrert ok som IARBS", ArenaRegistreringResultat.BRUKER_ALLEREDE_ARBS)));
+        when(authService.erEksternBruker()).thenReturn(true);
+        when(authService.hentInnloggetPersonIdent()).thenReturn("12345678900");
+        mockMvc.perform(post("/api/v3/oppfolging/startOppfolgingsperiode")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"henviserSystem\":\"AAP\"}")
+                )
+                .andExpect(content().string("{\"resultat\":\"Ny bruker ble registrert ok som IARBS\",\"kode\":\"BRUKER_ALLEREDE_ARBS\"}"))
+                .andExpect(status().is(200));
     }
 
     @Test
