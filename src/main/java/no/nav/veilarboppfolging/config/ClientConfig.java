@@ -69,9 +69,9 @@ public class ClientConfig {
     }
 
     @Bean
-    public UngdomsprogramClient ungdomsprogramClient(EnvironmentProperties properties, AuthService authService) {
+    public UngdomsprogramClient ungdomsprogramClient(EnvironmentProperties properties, ErrorMappedAzureAdMachineToMachineTokenClient tokenClient) {
         return new UngdomsprogramClient(properties.getUngdomsprogramUrl(),
-                () -> authService.getAadOboTokenForTjeneste(properties.getUngdomsprogramScope()),
+                () -> tokenClient.createMachineToMachineToken(properties.getUngdomsprogramScope()),
                 RestClient.baseClient()
         );
     }
