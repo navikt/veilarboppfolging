@@ -2,7 +2,7 @@ name: Test, build, Sonar
 on:
   push:
     branches:
-      - main
+      - main # Ikke fjern, må kjøres ved push til main for at analyse av nye PR-er skal forstå hva som er ny kode
   pull_request:
     types: [opened, synchronize, reopened]
 concurrency:
