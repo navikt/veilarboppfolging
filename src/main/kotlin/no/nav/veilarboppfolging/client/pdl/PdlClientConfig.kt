@@ -3,6 +3,7 @@ package no.nav.veilarboppfolging.client.pdl
 import no.nav.common.client.pdl.PdlClient
 import no.nav.common.client.pdl.PdlClientImpl
 import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient
+import no.nav.common.token_client.client.TokenXOnBehalfOfTokenClient
 import no.nav.veilarboppfolging.service.AuthService
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
@@ -17,12 +18,17 @@ class PdlClientConfig(
 ) {
 
     @Bean
-    fun pdlClient(tokenClient: AzureAdOnBehalfOfTokenClient): PdlClient {
+    fun pdlClient(tokenClient: AzureAdOnBehalfOfTokenClient, tokenXOnBehalfOfTokenClient: TokenXOnBehalfOfTokenClient): PdlClient {
         return PdlClientImpl(
             pdlUrl,
-            { tokenClient.exchangeOnBehalfOfToken(pdlScope, authService.innloggetBrukerToken) },
+            {
+                if (authService.erEksternBruker()) {
+                    tokenXOnBehalfOfTokenClient.exchangeOnBehalfOfToken(pdlScope, authService.innloggetBrukerToken)
+                } else {
+                    tokenClient.exchangeOnBehalfOfToken(pdlScope, authService.innloggetBrukerToken)
+                }
+            },
             behandlingsnummer
         )
     }
-
 }
