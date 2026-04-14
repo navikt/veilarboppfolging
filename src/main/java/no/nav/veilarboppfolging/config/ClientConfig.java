@@ -25,6 +25,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
+import java.util.function.Supplier;
+
 @Profile("!test")
 @Configuration
 public class ClientConfig {
@@ -69,9 +71,12 @@ public class ClientConfig {
     }
 
     @Bean
-    public UngdomsprogramClient ungdomsprogramClient(EnvironmentProperties properties, ErrorMappedAzureAdMachineToMachineTokenClient tokenClient) {
+    public UngdomsprogramClient ungdomsprogramClient(EnvironmentProperties properties, ErrorMappedAzureAdMachineToMachineTokenClient tokenClient, AuthService authService) {
+        Supplier<String> tokenSupplier = () -> authService.erSystemBruker() ? tokenClient.createMachineToMachineToken(properties.getUngdomsprogramScope())
+                : authService.getAadOboTokenForTjeneste(properties.getUngdomsprogramScope());
+
         return new UngdomsprogramClient(properties.getUngdomsprogramUrl(),
-                () -> tokenClient.createMachineToMachineToken(properties.getUngdomsprogramScope()),
+                tokenSupplier,
                 RestClient.baseClient()
         );
     }

@@ -11,6 +11,7 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.slf4j.LoggerFactory
+import java.util.function.Supplier
 
 /**
  * Klient for å sjekke deltakelse i ungdomsprogrammet.
@@ -18,7 +19,7 @@ import org.slf4j.LoggerFactory
  */
 class UngdomsprogramClient(
     private val baseUrl: String,
-    private val tokenProvider: () -> String,
+    private val tokenProvider: Supplier<String>,
     private val httpClient: OkHttpClient,
 ) {
     private val logger = LoggerFactory.getLogger(this::class.java)
@@ -34,7 +35,7 @@ class UngdomsprogramClient(
     fun erDeltakerIUngdomsprogrammet(personident: String): Boolean {
         val request = Request.Builder()
             .url("$baseUrl/ekstern/deltakelse/sjekk")
-            .addHeader("Authorization", "Bearer ${tokenProvider()}")
+            .addHeader("Authorization", "Bearer ${tokenProvider.get()}")
             .post(
                 objectMapper.writeValueAsString(SjekkDeltakelseRequest(personident))
                     .toRequestBody(mediaTypeJson)
