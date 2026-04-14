@@ -8,6 +8,7 @@ import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.client.norg2.Enhet
 import no.nav.common.client.norg2.Norg2Client
 import no.nav.common.json.JsonUtils
+import no.nav.common.token_client.client.TokenXOnBehalfOfTokenClient
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.EnhetId
 import no.nav.common.types.identer.Fnr
@@ -115,6 +116,9 @@ open class IntegrationTest {
 
     @MockitoBean
     lateinit var azureAdOnBehalfOfTokenClient: ErrorMappedAzureAdOnBehalfOfTokenClient
+
+    @MockitoBean
+    lateinit var tokenXOnBehalfOfTokenClient: TokenXOnBehalfOfTokenClient
 
     @MockitoBean
     lateinit var norg2Client: Norg2Client
