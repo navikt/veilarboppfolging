@@ -7,6 +7,7 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ALLEREDE_UNDER_OPPFOLG
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.DOD
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.FREG_STATUS_KREVER_MANUELL_GODKJENNING_PGA_DNUMMER_IKKE_EOS_GBR
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.FREG_STATUS_KREVER_MANUELL_GODKJENNING_PGA_IKKE_BOSATT
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.FREG_STATUS_KREVER_MANUELL_GODKJENNING_PGA_UNDER_18
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.FREG_STATUS_OK
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.IKKE_LOVLIG_OPPHOLD
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.IKKE_TILGANG_ENHET
@@ -49,10 +50,19 @@ class KanStarteOppfolgingTest {
     }
 
     @Test
-    fun `ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT skal være en OK status`() {
+    fun `ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT skal være en ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT`() {
         val harTilgang = lazy { TILGANG_OK }
         val oppfolgingStatus = lazy { ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT }
         val folkeregisterStatus = lazy { FREG_STATUS_OK }
+        val result = sjekkKanStarteOppfolgingPaBrukerForVeileder(oppfolgingStatus, harTilgang, folkeregisterStatus)
+        assertEquals(result, KanStarteOppfolgingDto.ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT)
+    }
+
+    @Test
+    fun `ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT og under 18 skal være en ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT for veileder`() {
+        val harTilgang = lazy { TILGANG_OK }
+        val oppfolgingStatus = lazy { ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT }
+        val folkeregisterStatus = lazy { FREG_STATUS_KREVER_MANUELL_GODKJENNING_PGA_UNDER_18 }
         val result = sjekkKanStarteOppfolgingPaBrukerForVeileder(oppfolgingStatus, harTilgang, folkeregisterStatus)
         assertEquals(result, KanStarteOppfolgingDto.ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT)
     }
@@ -93,8 +103,9 @@ class KanStarteOppfolgingTest {
     @Test
     fun `FregStatusOgStatsborgerskap - FREG status bosatt + NOR er OK`() {
         val norsk = FregStatusOgStatsborgerskap(
-            ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven,
-            listOf("NOR"),
+            fregStatus = ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven,
+            statsborgerskap = listOf("NOR"),
+            under18 = false,
         )
         assertEquals(norsk.toKanStarteOppfolging(), FREG_STATUS_OK)
     }
@@ -102,8 +113,9 @@ class KanStarteOppfolgingTest {
     @Test
     fun `FregStatusOgStatsborgerskap - FREG dNummer + GBR er OK`() {
         val gbr = FregStatusOgStatsborgerskap(
-            ForenkletFolkeregisterStatus.dNummer,
-            listOf("GBR"),
+            fregStatus = ForenkletFolkeregisterStatus.dNummer,
+            statsborgerskap = listOf("GBR"),
+            under18 = false,
         )
         assertEquals(gbr.toKanStarteOppfolging(), FREG_STATUS_KREVER_MANUELL_GODKJENNING_PGA_DNUMMER_IKKE_EOS_GBR)
     }
@@ -111,8 +123,9 @@ class KanStarteOppfolgingTest {
     @Test
     fun `FregStatusOgStatsborgerskap - FREG ikkeBosatt + GBR skal kreve manuell godkjenning`() {
         val gbr = FregStatusOgStatsborgerskap(
-            ForenkletFolkeregisterStatus.ikkeBosatt,
-            listOf("GBR"),
+            fregStatus = ForenkletFolkeregisterStatus.ikkeBosatt,
+            statsborgerskap = listOf("GBR"),
+            under18 = false,
         )
         assertEquals(gbr.toKanStarteOppfolging(), FREG_STATUS_KREVER_MANUELL_GODKJENNING_PGA_IKKE_BOSATT)
     }
@@ -120,8 +133,9 @@ class KanStarteOppfolgingTest {
     @Test
     fun `FregStatusOgStatsborgerskap - FREG dNummer + POL er OK`() {
         val eueos = FregStatusOgStatsborgerskap(
-            ForenkletFolkeregisterStatus.dNummer,
-            listOf("POL"),
+            fregStatus = ForenkletFolkeregisterStatus.dNummer,
+            statsborgerskap = listOf("POL"),
+            under18 = false,
         )
         assertEquals(eueos.toKanStarteOppfolging(), FREG_STATUS_OK)
     }
@@ -129,8 +143,9 @@ class KanStarteOppfolgingTest {
     @Test
     fun `FregStatusOgStatsborgerskap - FREG utflyttet (forenklet status ikkeBosatt) + POL er OK`() {
         val eueos = FregStatusOgStatsborgerskap(
-            ForenkletFolkeregisterStatus.ikkeBosatt,
-            listOf("POL"),
+            fregStatus = ForenkletFolkeregisterStatus.ikkeBosatt,
+            statsborgerskap = listOf("POL"),
+            under18 = false,
         )
         assertEquals(eueos.toKanStarteOppfolging(), FREG_STATUS_KREVER_MANUELL_GODKJENNING_PGA_IKKE_BOSATT)
     }
@@ -138,8 +153,9 @@ class KanStarteOppfolgingTest {
     @Test
     fun `FregStatusOgStatsborgerskap - FREG status dNummer (midlertidig eller inaktiv) + AFG krever manuell godkjenning`() {
         val ikkeEueos = FregStatusOgStatsborgerskap(
-            ForenkletFolkeregisterStatus.dNummer,
-            listOf("AFG"),
+            fregStatus = ForenkletFolkeregisterStatus.dNummer,
+            statsborgerskap = listOf("AFG"),
+            under18 = false,
         )
         assertEquals(ikkeEueos.toKanStarteOppfolging(), FREG_STATUS_KREVER_MANUELL_GODKJENNING_PGA_DNUMMER_IKKE_EOS_GBR)
     }
@@ -147,8 +163,9 @@ class KanStarteOppfolgingTest {
     @Test
     fun `FregStatusOgStatsborgerskap - FREG status ikkeBosatt (utflyttet, foedselsregistrert eller ikkeBosatt) + AFG krever manuell godkjenning`() {
         val ikkeEueos = FregStatusOgStatsborgerskap(
-            ForenkletFolkeregisterStatus.ikkeBosatt,
-            listOf("AFG"),
+            fregStatus = ForenkletFolkeregisterStatus.ikkeBosatt,
+            statsborgerskap = listOf("AFG"),
+            under18 = false,
         )
         assertEquals(ikkeEueos.toKanStarteOppfolging(), FREG_STATUS_KREVER_MANUELL_GODKJENNING_PGA_IKKE_BOSATT)
     }
@@ -156,10 +173,30 @@ class KanStarteOppfolgingTest {
     @Test
     fun `FregStatusOgStatsborgerskap - FREG dNummer + GHA (ikke EU eller EOS) skal kreve manuell godkjenning`() {
         val eueos = FregStatusOgStatsborgerskap(
-            ForenkletFolkeregisterStatus.dNummer,
-            listOf("GHA"),
+            fregStatus = ForenkletFolkeregisterStatus.dNummer,
+            statsborgerskap = listOf("GHA"),
+            under18 = false,
         )
         assertEquals(eueos.toKanStarteOppfolging(), FREG_STATUS_KREVER_MANUELL_GODKJENNING_PGA_DNUMMER_IKKE_EOS_GBR)
     }
 
+    @Test
+    fun `FregStatusOgStatsborgerskap - FREG status bosatt + NOR + under 18 er FREG_STATUS_KREVER_MANUELL_GODKJENNING_PGA_UNDER_18`() {
+        val norsk = FregStatusOgStatsborgerskap(
+            fregStatus = ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven,
+            statsborgerskap = listOf("NOR"),
+            under18 = true,
+        )
+        assertEquals(norsk.toKanStarteOppfolging(), FREG_STATUS_KREVER_MANUELL_GODKJENNING_PGA_UNDER_18)
+    }
+
+    @Test
+    fun `FregStatusOgStatsborgerskap - FREG status ikkeBosatt (utflyttet, foedselsregistrert eller ikkeBosatt) + AFG er FREG_STATUS_KREVER_MANUELL_GODKJENNING_PGA_UNDER_18`() {
+        val ikkeEueos = FregStatusOgStatsborgerskap(
+            fregStatus = ForenkletFolkeregisterStatus.ikkeBosatt,
+            statsborgerskap = listOf("AFG"),
+            under18 = true,
+        )
+        assertEquals(ikkeEueos.toKanStarteOppfolging(), FREG_STATUS_KREVER_MANUELL_GODKJENNING_PGA_UNDER_18)
+    }
 }

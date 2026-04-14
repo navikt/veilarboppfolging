@@ -46,7 +46,11 @@ class GraphqlControllerTest: IntegrationTest() {
         val fnr = randomFnr()
         val aktorId = randomAktorId()
         mockSytemBrukerAuthOk(aktorId, fnr)
-        mockPdlFolkeregisterStatus(fnr, FregStatusOgStatsborgerskap(ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven, norskStatsborgerskap))
+        mockPdlFolkeregisterStatus(fnr, FregStatusOgStatsborgerskap(
+            fregStatus = ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven,
+            statsborgerskap = norskStatsborgerskap,
+            under18 = false,
+        ))
         return fnr to aktorId
     }
 
@@ -202,7 +206,11 @@ class GraphqlControllerTest: IntegrationTest() {
         val aktorId = randomAktorId()
         mockInternBrukerAuthOk(veilederUuid, aktorId, fnr)
         mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Permit)
-        mockPdlFolkeregisterStatus(fnr, FregStatusOgStatsborgerskap(ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven, norskStatsborgerskap))
+        mockPdlFolkeregisterStatus(fnr, FregStatusOgStatsborgerskap(
+            fregStatus = ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven,
+            statsborgerskap = norskStatsborgerskap,
+            under18 = false,
+        ))
         /* Query is hidden in test/resources/graphl-test :) */
         val result = tester.documentName("kanStarteOppfolging").variable("fnr", fnr.get()).execute()
         result.errors().verify()
@@ -218,7 +226,11 @@ class GraphqlControllerTest: IntegrationTest() {
         val aktorId = randomAktorId()
         setBrukerUnderOppfolging(aktorId, fnr)
         mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Permit)
-        mockPdlFolkeregisterStatus(fnr, FregStatusOgStatsborgerskap(ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven, norskStatsborgerskap))
+        mockPdlFolkeregisterStatus(fnr, FregStatusOgStatsborgerskap(
+            fregStatus = ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven,
+            statsborgerskap = norskStatsborgerskap,
+            under18 = false,
+        ))
         mockInternBrukerAuthOk(veilederUuid, aktorId, fnr)
         mockVeilarbArenaOppfolgingsStatus(fnr= fnr, formidlingsgruppe = Formidlingsgruppe.ISERV, kanEnkeltReaktiveres = true)
         /* Query is hidden in test/resources/graphl-test :) */
@@ -237,7 +249,11 @@ class GraphqlControllerTest: IntegrationTest() {
         val aktorId = randomAktorId()
         setBrukerUnderOppfolging(aktorId, fnr)
         mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Permit)
-        mockPdlFolkeregisterStatus(fnr, FregStatusOgStatsborgerskap(ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven, norskStatsborgerskap))
+        mockPdlFolkeregisterStatus(fnr, FregStatusOgStatsborgerskap(
+            fregStatus = ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven,
+            statsborgerskap = norskStatsborgerskap,
+            under18 = false,
+        ))
         mockInternBrukerAuthOk(veilederUuid, aktorId, fnr)
         /* Query is hidden in test/resources/graphl-test :) */
         val result = tester.documentName("kanStarteOppfolging").variable("fnr", fnr.get()).execute()
@@ -245,7 +261,48 @@ class GraphqlControllerTest: IntegrationTest() {
         result.path("oppfolging").matchesJson("""
             { "kanStarteOppfolging": "ALLEREDE_UNDER_OPPFOLGING" }
         """.trimIndent())
+    }
 
+    @Test
+    fun `skal returnere kanStarteOppfolging - ALLEREDE_UNDER_OPPFOLGING når bruker allerede under oppfølging og under 18`() {
+        val veilederUuid = UUID.randomUUID()
+        val fnr = randomFnr()
+        val aktorId = randomAktorId()
+        setBrukerUnderOppfolging(aktorId, fnr)
+        mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Permit)
+        mockPdlFolkeregisterStatus(fnr, FregStatusOgStatsborgerskap(
+            fregStatus = ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven,
+            statsborgerskap = norskStatsborgerskap,
+            under18 = true,
+        ))
+        mockInternBrukerAuthOk(veilederUuid, aktorId, fnr)
+        /* Query is hidden in test/resources/graphl-test :) */
+        val result = tester.documentName("kanStarteOppfolging").variable("fnr", fnr.get()).execute()
+        result.errors().verify()
+        result.path("oppfolging").matchesJson("""
+            { "kanStarteOppfolging": "ALLEREDE_UNDER_OPPFOLGING" }
+        """.trimIndent())
+    }
+
+    // skal endres til egen respons for under 18 når inngar-intern skal få dette fra backend
+    @Test
+    fun `skal returnere kanStarteOppfolging - JA når veileder har tilgang og under 18`() {
+        val veilederUuid = UUID.randomUUID()
+        val fnr = randomFnr()
+        val aktorId = randomAktorId()
+        mockInternBrukerAuthOk(veilederUuid, aktorId, fnr)
+        mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Permit)
+        mockPdlFolkeregisterStatus(fnr, FregStatusOgStatsborgerskap(
+            fregStatus = ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven,
+            statsborgerskap = norskStatsborgerskap,
+            under18 = true,
+        ))
+        /* Query is hidden in test/resources/graphl-test :) */
+        val result = tester.documentName("kanStarteOppfolging").variable("fnr", fnr.get()).execute()
+        result.errors().verify()
+        result.path("oppfolging").matchesJson("""
+            { "kanStarteOppfolging": "JA" }
+        """.trimIndent())
     }
 
     @Test
@@ -314,7 +371,11 @@ class GraphqlControllerTest: IntegrationTest() {
             ForenkletFolkeregisterStatus.ukjent to KanStarteOppfolgingDto.UKJENT_STATUS_FOLKEREGISTERET,
             ForenkletFolkeregisterStatus.ingen_status to KanStarteOppfolgingDto.INGEN_STATUS_FOLKEREGISTERET,
         ).forEach { (status, kanStarteOppfolgingResult) ->
-            mockPdlFolkeregisterStatus(fnr, FregStatusOgStatsborgerskap(status, norskStatsborgerskap))
+            mockPdlFolkeregisterStatus(fnr, FregStatusOgStatsborgerskap(
+                fregStatus = status,
+                statsborgerskap = norskStatsborgerskap,
+                under18 = false,
+            ))
             /* Query is hidden in test/resources/graphl-test :) */
             val result = tester.documentName("kanStarteOppfolging").variable("fnr", fnr.get()).execute()
             result.errors().verify()
@@ -343,7 +404,11 @@ class GraphqlControllerTest: IntegrationTest() {
             ForenkletFolkeregisterStatus.ukjent to KanStarteOppfolgingDto.UKJENT_STATUS_FOLKEREGISTERET,
             ForenkletFolkeregisterStatus.ingen_status to KanStarteOppfolgingDto.INGEN_STATUS_FOLKEREGISTERET,
         ).forEach { (status, kanStarteOppfolgingResult) ->
-            mockPdlFolkeregisterStatus(fnr, FregStatusOgStatsborgerskap(status, tredjelandsStatsborgerskap))
+            mockPdlFolkeregisterStatus(fnr, FregStatusOgStatsborgerskap(
+                fregStatus = status,
+                statsborgerskap = tredjelandsStatsborgerskap,
+                under18 = false,
+            ))
             /* Query is hidden in test/resources/graphl-test :) */
             val result = tester.documentName("kanStarteOppfolging").variable("fnr", fnr.get()).execute()
             result.errors().verify()
@@ -595,6 +660,29 @@ class GraphqlControllerTest: IntegrationTest() {
         result.errors().verify()
         result.path("oppfolging").matchesJson("""
             { "kanStarteOppfolgingEkstern": JA }
+        """.trimIndent())
+    }
+
+    @Test
+    fun `skal returnere kanStarteOppfolgingEkstern - JA_MED_MANUELL_GODKJENNING_PGA_UNDER_18 hvis bruker er under 18`() {
+        val (fnr, _) = defaultBruker()
+        mockEksternBrukerAuthOk(fnr)
+        mockEksternbrukerErInnlogget(fnr, AuthService.SikkerthetsNivå.Nivå4)
+        mockPoaoTilgangTilgangsAttributter(
+            "2112",
+            false,
+            null
+        )
+        mockPdlFolkeregisterStatus(fnr, FregStatusOgStatsborgerskap(
+            fregStatus = ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven,
+            statsborgerskap = norskStatsborgerskap,
+            under18 = true,
+        ))
+
+        val result = tester.documentName("kanStarteOppfolgingEkstern").variable("fnr", fnr.get()).execute()
+        result.errors().verify()
+        result.path("oppfolging").matchesJson("""
+            { "kanStarteOppfolgingEkstern": JA_MED_MANUELL_GODKJENNING_PGA_UNDER_18 }
         """.trimIndent())
     }
 }
