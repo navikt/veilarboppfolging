@@ -19,7 +19,9 @@ class UngdomsprogramClientTest {
         @Language("JSON")
         val response = """
             {
-              "harAktivDeltakelse": true
+              "erDeltaker": true,
+              "fraOgMed": "2026-01-01",
+              "tilOgMed": null
             }
         """.trimIndent()
         givenThat(
@@ -42,7 +44,9 @@ class UngdomsprogramClientTest {
         @Language("JSON")
         val response = """
             {
-              "harAktivDeltakelse": false
+              "erDeltaker": false,
+              "fraOgMed": null,
+              "tilOgMed": null
             }
         """.trimIndent()
         givenThat(
@@ -76,4 +80,3 @@ class UngdomsprogramClientTest {
         }
     }
 }
-

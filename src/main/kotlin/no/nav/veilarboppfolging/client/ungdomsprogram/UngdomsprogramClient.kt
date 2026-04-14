@@ -50,12 +50,16 @@ class UngdomsprogramClient(
                 ?: throw RuntimeException("Body mangler i respons fra ung-deltakelse-opplyser")
 
             val sjekkDeltakelseResponse = objectMapper.readValue<SjekkDeltakelseResponse>(body)
-            logger.info("Sjekket deltakelse i ungdomsprogrammet, harAktivDeltakelse=${sjekkDeltakelseResponse.harAktivDeltakelse}")
-            return sjekkDeltakelseResponse.harAktivDeltakelse
+            logger.info("Sjekket deltakelse i ungdomsprogrammet, erDeltaker=${sjekkDeltakelseResponse.erDeltaker}")
+            return sjekkDeltakelseResponse.erDeltaker
         }
     }
 }
 
 data class SjekkDeltakelseRequest(val deltakerIdent: String)
 
-data class SjekkDeltakelseResponse(val harAktivDeltakelse: Boolean)
+data class SjekkDeltakelseResponse(
+    val erDeltaker: Boolean,
+    val fraOgMed: java.time.LocalDate?,
+    val tilOgMed: java.time.LocalDate?,
+)
