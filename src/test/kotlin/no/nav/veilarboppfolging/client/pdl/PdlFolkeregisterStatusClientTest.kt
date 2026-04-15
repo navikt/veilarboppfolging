@@ -28,6 +28,11 @@ class PdlFolkeregisterStatusClientTest {
                     {
                       "forenkletStatus": "doedIFolkeregisteret"
                     }
+                  ],
+                  "foedselsdato": [
+                    {
+                      "foedselsdato": "2000-01-01"
+                    }
                   ]
                 }
               }
@@ -45,8 +50,9 @@ class PdlFolkeregisterStatusClientTest {
         val pdlClient = PdlClientImpl(apiUrl, { "token" }, "B1234")
         val result = PdlFolkeregisterStatusClient(pdlClient).hentFolkeregisterStatus(Fnr("12345678910"))
         assertEquals(result, FregStatusOgStatsborgerskap(
-            ForenkletFolkeregisterStatus.doedIFolkeregisteret,
-            listOf("NOR")
+            fregStatus = ForenkletFolkeregisterStatus.doedIFolkeregisteret,
+            statsborgerskap = listOf("NOR"),
+            under18 = false,
         ))
     }
 

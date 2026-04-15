@@ -49,7 +49,11 @@ class AktiverBrukerIntegrationTest : IntegrationTest() {
 
     @Test
     fun aktiver_sykmeldt_skal_starte_oppfolging() {
-        mockPdlFolkeregisterStatus(FNR, FregStatusOgStatsborgerskap(ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven, emptyList()))
+        mockPdlFolkeregisterStatus(FNR, FregStatusOgStatsborgerskap(
+            fregStatus = ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven,
+            statsborgerskap = emptyList(),
+            under18 = false,
+        ))
         mockInternBrukerAuthOk(UUID.randomUUID(), AKTOR_ID, FNR)
         val oppfolgingFør = oppfolgingService.hentOppfolging(AKTOR_ID)
         Assertions.assertThat(oppfolgingFør.isEmpty()).isTrue()
@@ -62,7 +66,11 @@ class AktiverBrukerIntegrationTest : IntegrationTest() {
     fun `Skal lagre OppfolgingStartetHendelse-melding i utboks når oppfølging startes manuelt`() {
         val veilederIdent = NavIdent("B654321")
         val kontorSattAvVeileder = "4321"
-        mockPdlFolkeregisterStatus( FNR,FregStatusOgStatsborgerskap(ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven, emptyList()))
+        mockPdlFolkeregisterStatus(FNR, FregStatusOgStatsborgerskap(
+            fregStatus = ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven,
+            statsborgerskap = emptyList(),
+            under18 = false,
+        ))
         mockInternBrukerAuthOk(UUID.randomUUID(), AKTOR_ID, FNR, veilederIdent)
         val oppfolgingFør = oppfolgingService.hentOppfolging(AKTOR_ID)
         Assertions.assertThat(oppfolgingFør.isEmpty()).isTrue()
