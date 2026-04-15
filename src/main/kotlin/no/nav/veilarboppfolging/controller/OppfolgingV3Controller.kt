@@ -258,7 +258,8 @@ data class ReaktiverRequestDto(val fnr: Fnr)
 enum class HenviserSystem {
     DEMO,
     SYFO,
-    AAP
+    AAP,
+    INNGAR_EKSTERN
 }
 
 data class ReaktiverDto(
