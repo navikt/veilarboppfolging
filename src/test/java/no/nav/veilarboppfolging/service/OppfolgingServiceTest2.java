@@ -115,7 +115,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
 
     @Test
     public void hentHarFlereAktorIderMedOppfolging_harEnAktorIdMedOppfolging_returnererFalse(){
-        var oppfolgingsbruker = OppfolgingsRegistrering.Companion.manuellRegistrering(
+        var oppfolgingsbruker = OppfolgingsRegistrering.Companion.manuellRegistreringVeileder(
                 FNR,
                 AKTOR_ID,
                 new VeilederRegistrant(NavIdent.of("G123123")),
@@ -131,7 +131,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
 
     @Test
     public void hentHarFlereAktorIderMedOppfolging_harFlereAktorIdUtenOppfolging_returnererFalse(){
-        var oppfolgingsbruker = OppfolgingsRegistrering.Companion.manuellRegistrering(
+        var oppfolgingsbruker = OppfolgingsRegistrering.Companion.manuellRegistreringVeileder(
                 FNR,
                 AKTOR_ID,
                 new VeilederRegistrant(NAV_IDENT),
@@ -148,11 +148,11 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
 
     @Test
     public void hentHarFlereAktorIderMedOppfolging_harFlereAktorIdMedOppf_returnererTrue(){
-        var oppfolgingsbruker = OppfolgingsRegistrering.Companion.manuellRegistrering(FNR, AKTOR_ID, new VeilederRegistrant(NAV_IDENT), null, false);
+        var oppfolgingsbruker = OppfolgingsRegistrering.Companion.manuellRegistreringVeileder(FNR, AKTOR_ID, new VeilederRegistrant(NAV_IDENT), null, false);
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
         oppfolgingsPeriodeRepository.start(oppfolgingsbruker);
 
-        var oppfolgingsbruker2 = OppfolgingsRegistrering.Companion.manuellRegistrering(FNR, AKTOR_ID2, new VeilederRegistrant(NAV_IDENT), null, false);
+        var oppfolgingsbruker2 = OppfolgingsRegistrering.Companion.manuellRegistreringVeileder(FNR, AKTOR_ID2, new VeilederRegistrant(NAV_IDENT), null, false);
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID2);
         oppfolgingsPeriodeRepository.start(oppfolgingsbruker2);
 
@@ -163,11 +163,11 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
 
     @Test
     public void skalIkkeKasteExceptionVedFlereKall(){
-        var oppfolgingsbruker = OppfolgingsRegistrering.Companion.manuellRegistrering(FNR, AKTOR_ID, new VeilederRegistrant(NAV_IDENT), null, false);
+        var oppfolgingsbruker = OppfolgingsRegistrering.Companion.manuellRegistreringVeileder(FNR, AKTOR_ID, new VeilederRegistrant(NAV_IDENT), null, false);
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
         oppfolgingsPeriodeRepository.start(oppfolgingsbruker);
 
-        var oppfolgingsbruker2 = OppfolgingsRegistrering.Companion.manuellRegistrering(FNR, AKTOR_ID2, new VeilederRegistrant(NAV_IDENT), null, false);
+        var oppfolgingsbruker2 = OppfolgingsRegistrering.Companion.manuellRegistreringVeileder(FNR, AKTOR_ID2, new VeilederRegistrant(NAV_IDENT), null, false);
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID2);
         oppfolgingsPeriodeRepository.start(oppfolgingsbruker2);
 
@@ -258,7 +258,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
     @Test
     public void avsluttOppfolgingResetterVeileder_Manuellstatus_Mal_Og_Vilkar() {
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
-        startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.Companion.manuellRegistrering(FNR, AKTOR_ID, new VeilederRegistrant(NAV_IDENT), null, false));
+        startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.Companion.manuellRegistreringVeileder(FNR, AKTOR_ID, new VeilederRegistrant(NAV_IDENT), null, false));
         String veilederId = "veilederId";
         String maal = "Mål";
         settVeileder(veilederId, AKTOR_ID);
