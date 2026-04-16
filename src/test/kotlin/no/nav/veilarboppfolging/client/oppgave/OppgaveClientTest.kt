@@ -6,12 +6,17 @@ import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo
 import com.github.tomakehurst.wiremock.junit5.WireMockTest
 import java.time.LocalDate
 import kotlin.test.assertEquals
+import no.nav.common.types.identer.AktorId
+import no.nav.common.types.identer.Fnr
 import okhttp3.OkHttpClient
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Test
 
 @WireMockTest
 class OppgaveClientTest {
+    private val fnr = Fnr.of("12345678910")
+    private val aktorId = AktorId.of("987654321")
+
     @Test
     fun `opprettOppgave - ingen åpne oppgaver - oppretter oppgave og returnerer frist`(wmRuntimeInfo: WireMockRuntimeInfo ) {
         val apiUrl = "http://localhost:" + wmRuntimeInfo.httpPort
@@ -23,7 +28,7 @@ class OppgaveClientTest {
             }
         """.trimIndent()
         givenThat(
-            WireMock.get("/api/v1/oppgaver?tema=OPP&oppgavetype=KONT_BRUK&statuskategori=AAPEN&aktoerId=987654321")
+            WireMock.get("/api/v1/oppgaver?tema=OPP&oppgavetype=KONT_BRUK&statuskategori=AAPEN&aktoerId=${aktorId.get()}")
                 .willReturn(
                     WireMock.aResponse()
                         .withStatus(200)
@@ -46,7 +51,7 @@ class OppgaveClientTest {
         )
         val oppgaveClient = OppgaveClient(apiUrl, { "token" }, OkHttpClient.Builder().build())
 
-        assertEquals(LocalDate.of(2026, 4, 30), oppgaveClient.opprettOppgave("12345678910", "987654321"))
+        assertEquals(LocalDate.of(2026, 4, 30), oppgaveClient.opprettOppgave(fnr, aktorId))
     }
 
     @Test
@@ -65,7 +70,7 @@ class OppgaveClientTest {
             }
         """.trimIndent()
         givenThat(
-            WireMock.get("/api/v1/oppgaver?tema=OPP&oppgavetype=KONT_BRUK&statuskategori=AAPEN&aktoerId=987654321")
+            WireMock.get("/api/v1/oppgaver?tema=OPP&oppgavetype=KONT_BRUK&statuskategori=AAPEN&aktoerId=${aktorId.get()}")
                 .willReturn(
                     WireMock.aResponse()
                         .withStatus(200)
@@ -74,6 +79,6 @@ class OppgaveClientTest {
         )
         val oppgaveClient = OppgaveClient(apiUrl, { "token" }, OkHttpClient.Builder().build())
 
-        assertEquals(LocalDate.of(2026, 4, 30), oppgaveClient.opprettOppgave("12345678910", "987654321"))
+        assertEquals(LocalDate.of(2026, 4, 30), oppgaveClient.opprettOppgave(fnr, aktorId))
     }
 }

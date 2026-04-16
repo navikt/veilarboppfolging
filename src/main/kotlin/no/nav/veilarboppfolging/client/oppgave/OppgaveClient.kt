@@ -9,6 +9,8 @@ import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import java.time.LocalDate
 import java.util.UUID
 import java.util.function.Supplier
+import no.nav.common.types.identer.AktorId
+import no.nav.common.types.identer.Fnr
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -35,11 +37,11 @@ class OppgaveClient(
     private val mediaTypeJson = "application/json".toMediaType()
 
     fun opprettOppgave(
-        fnr: String,
-        aktorId: String,
+        fnr: Fnr,
+        aktorId: AktorId,
     ): LocalDate {
         val request = OpprettOppgaveRequest(
-            personident = fnr,
+            personident = fnr.get(),
         )
         val correlationId = UUID.randomUUID().toString()
         val oppgaveResponse = finnOppgave(
@@ -85,14 +87,14 @@ class OppgaveClient(
     }
 
     private fun finnOppgave(
-        aktorId: String,
+        aktorId: AktorId,
         correlationId: String,
     ): FinnOppgaveResponse {
         val httpUrl = apiPath.toHttpUrl().newBuilder()
             .addQueryParameter("tema", TEMA_OPPFOLGING)
             .addQueryParameter("oppgavetype", OPPGAVETYPE_KONTAKT_BRUKER)
             .addQueryParameter("statuskategori", "AAPEN")
-            .addQueryParameter("aktoerId", aktorId)
+            .addQueryParameter("aktoerId", aktorId.get())
             .build()
         logger.info(httpUrl.toString())
         val request = Request.Builder()
