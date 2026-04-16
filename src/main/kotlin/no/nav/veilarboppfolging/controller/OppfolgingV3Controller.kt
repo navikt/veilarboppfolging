@@ -243,7 +243,7 @@ class OppfolgingV3Controller(
     }
 
     companion object {
-        private val ALLOWLIST = listOf(AllowListApplicationName.INNGAR)
+        private val ALLOWLIST = listOf(AllowListApplicationName.INNGAR, AllowListApplicationName.INNGAR_EKSTERN)
     }
 }
 
