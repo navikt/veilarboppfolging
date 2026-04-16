@@ -13,6 +13,7 @@ import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
 import no.nav.common.token_client.client.TokenXOnBehalfOfTokenClient;
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirClient;
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirClientImpl;
+import no.nav.veilarboppfolging.client.oppgave.OppgaveClient;
 import no.nav.veilarboppfolging.client.tiltakshistorikk.TiltakshistorikkClient;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClientImpl;
@@ -63,6 +64,14 @@ public class ClientConfig {
     public TiltakshistorikkClient tiltakshistorikkClient(EnvironmentProperties properties, ErrorMappedAzureAdMachineToMachineTokenClient tokenClient) {
         return new TiltakshistorikkClient(properties.getTiltakshistorikkUrl(),
                 () -> tokenClient.createMachineToMachineToken(properties.getTiltakshistorikkScope()),
+                RestClient.baseClient()
+        );
+    }
+
+    @Bean
+    public OppgaveClient oppgaveClient(EnvironmentProperties properties, ErrorMappedAzureAdMachineToMachineTokenClient tokenClient) {
+        return new OppgaveClient(properties.getOppgaveUrl(),
+                () -> tokenClient.createMachineToMachineToken(properties.getOppgaveScope()),
                 RestClient.baseClient()
         );
     }
