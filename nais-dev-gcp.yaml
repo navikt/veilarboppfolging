@@ -92,6 +92,10 @@ spec:
       value: "https://www.ansatt.dev.nav.no"
     - name: EXPOSE_GRAPHIQL
       value: "true"
+    - name: OPPGAVE_URL
+      value: https://oppgave.dev-fss-pub.nais.io
+    - name: OPPGAVE_SCOPE
+      value: api://dev-fss.oppgavehandtering.oppgave/.default
   kafka:
     pool: nav-dev
   azure:
@@ -125,6 +129,7 @@ spec:
         - host: veilarbarena.dev-fss-pub.nais.io
         - host: norg2.dev-fss-pub.nais.io
         - host: pdl-api.dev-fss-pub.nais.io
+        - host: oppgave.dev-fss-pub.nais.io
     inbound:
       rules:
         - application: veilarbregistrering

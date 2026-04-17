@@ -11,6 +11,7 @@ import no.nav.common.job.leader_election.LeaderElectionClient;
 import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
 import no.nav.poao_tilgang.client.PoaoTilgangClient;
 import no.nav.veilarboppfolging.client.norg.INorgTilhorighetClient;
+import no.nav.veilarboppfolging.client.oppgave.OppgaveClient;
 import no.nav.veilarboppfolging.client.tiltakshistorikk.TiltakshistorikkClient;
 import no.nav.veilarboppfolging.client.ungdomsprogram.UngdomsprogramClient;
 import no.nav.veilarboppfolging.eventsLogger.BigQueryClient;
@@ -111,4 +112,7 @@ public class ApplicationTestConfig {
     public INorgTilhorighetClient inorgTilhorighetClient() {
         return mock(INorgTilhorighetClient.class);
     }
+
+    @Bean
+    public OppgaveClient oppgaveClient() { return mock(OppgaveClient.class); }
 }
