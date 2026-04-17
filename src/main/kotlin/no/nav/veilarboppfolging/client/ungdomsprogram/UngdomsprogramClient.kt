@@ -6,12 +6,14 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import no.nav.common.utils.EnvironmentUtils
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.slf4j.LoggerFactory
 import java.util.function.Supplier
+import kotlin.jvm.optionals.getOrElse
 
 /**
  * Klient for å sjekke deltakelse i ungdomsprogrammet.
@@ -33,6 +35,12 @@ class UngdomsprogramClient(
     private val mediaTypeJson = "application/json".toMediaType()
 
     fun erDeltakerIUngdomsprogrammet(personident: String): Boolean {
+        // Inntil sykdom-i-familien er klare på sin side til å tilby endepunktet, hardkoder vi svaret til å være false
+        val erProd = EnvironmentUtils.isProduction().getOrElse { false }
+        if (erProd) {
+            return false
+        }
+
         val request = Request.Builder()
             .url("$baseUrl/ekstern/deltakelse/sjekk")
             .addHeader("Authorization", "Bearer ${tokenProvider.get()}")
