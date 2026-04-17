@@ -13,6 +13,7 @@ public class AllowListApplicationName {
     public static final String AMT_AKTIVITETSKORT_PUBLISHER = "amt-aktivitetskort-publisher";
     public static final String VEILARBPERSONFLATE = "veilarbpersonflate";
     public static final String INNGAR = "inngar";
+    public static final String INNGAR_EKSTERN = "inngar-ekstern";
     public static final String VEILARBDIRIGENT = "veilarbdirigent";
 
     public static final String MULIGHETSROMMET = "mulighetsrommet-api";

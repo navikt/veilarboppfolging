@@ -261,8 +261,10 @@ class GraphqlController(
         val gyldigOppfolging = lazy {
             ErBrukerUnderOppfolging.evaluate(erUnderOppfolging, arenaService.brukerErIservIArena(fnr))
         }
-        val gyldigFregStatus = lazy { kanStarteOppfolgingMtpFregStatus(fnr) }
-        return sjekkKanStarteOppfolgingPaBrukerForEksterne(gyldigOppfolging, gyldigFregStatus)
+        val folkeregisterstatus = lazy { pdlFolkeregisterStatusClient.hentFolkeregisterStatus(fnr) }
+        val brukerErUnder18 = lazy { folkeregisterstatus.value.under18 }
+        val gyldigFregStatus = lazy { folkeregisterstatus.value.toKanStarteOppfolging() }
+        return sjekkKanStarteOppfolgingPaBrukerForEksterne(gyldigOppfolging, gyldigFregStatus, brukerErUnder18)
     }
 
     @SchemaMapping(typeName = "BrukerStatusDto", field = "manuell")

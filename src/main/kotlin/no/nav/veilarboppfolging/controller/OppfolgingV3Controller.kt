@@ -243,7 +243,7 @@ class OppfolgingV3Controller(
     }
 
     companion object {
-        private val ALLOWLIST = listOf(AllowListApplicationName.INNGAR)
+        private val ALLOWLIST = listOf(AllowListApplicationName.INNGAR, AllowListApplicationName.INNGAR_EKSTERN)
     }
 }
 
@@ -258,7 +258,8 @@ data class ReaktiverRequestDto(val fnr: Fnr)
 enum class HenviserSystem {
     DEMO,
     SYFO,
-    AAP
+    AAP,
+    INNGAR_EKSTERN
 }
 
 data class ReaktiverDto(

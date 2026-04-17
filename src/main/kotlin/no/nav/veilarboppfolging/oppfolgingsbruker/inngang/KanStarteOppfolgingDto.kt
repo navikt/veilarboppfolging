@@ -12,7 +12,7 @@ sealed class KanStarteOppfolgingSjekk {
             veilederHarTilgang: Lazy<VeilederHarTilgang>,
             fregStatusSjekkResultat: Lazy<FregStatusSjekkResultat>): KanStarteOppfolgingDto {
 
-            when(veilederHarTilgang.value){
+            when (veilederHarTilgang.value) {
                 IKKE_TILGANG_EGNE_ANSATTE,
                 IKKE_TILGANG_ENHET,
                 IKKE_TILGANG_FORTROLIG_ADRESSE,
@@ -21,7 +21,7 @@ sealed class KanStarteOppfolgingSjekk {
                 TILGANG_OK -> {}
             }
 
-            when(fregStatusSjekkResultat.value){
+            when (fregStatusSjekkResultat.value) {
                 DOD,
                 INGEN_STATUS_FOLKEREGISTERET,
                 UKJENT_STATUS_FOLKEREGISTERET,
@@ -30,10 +30,10 @@ sealed class KanStarteOppfolgingSjekk {
                 is FREG_STATUS_KREVER_MANUELL_GODKJENNING -> {}
             }
 
-            return when(erBrukerUnderOppfolging.value){
+            return when (erBrukerUnderOppfolging.value) {
                 ALLEREDE_UNDER_OPPFOLGING -> KanStarteOppfolgingDto.kanStarteOppfolging(erBrukerUnderOppfolging.value)
                 ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT -> {
-                    if(fregStatusSjekkResultat.value is FREG_STATUS_KREVER_MANUELL_GODKJENNING){
+                    if (fregStatusSjekkResultat.value is FREG_STATUS_KREVER_MANUELL_GODKJENNING) {
                         return when (fregStatusSjekkResultat.value as FREG_STATUS_KREVER_MANUELL_GODKJENNING) {
                             is FREG_STATUS_KREVER_MANUELL_GODKJENNING_PGA_IKKE_BOSATT ->
                                 KanStarteOppfolgingDto.ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT_MEN_KREVER_MANUELL_GODKJENNING_PGA_IKKE_BOSATT
@@ -44,7 +44,7 @@ sealed class KanStarteOppfolgingSjekk {
                         KanStarteOppfolgingDto.ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT
                 }
                 OPPFOLGING_OK -> {
-                    if(fregStatusSjekkResultat.value is FREG_STATUS_KREVER_MANUELL_GODKJENNING) {
+                    if (fregStatusSjekkResultat.value is FREG_STATUS_KREVER_MANUELL_GODKJENNING) {
                         when (fregStatusSjekkResultat.value as FREG_STATUS_KREVER_MANUELL_GODKJENNING) {
                             is FREG_STATUS_KREVER_MANUELL_GODKJENNING_PGA_IKKE_BOSATT ->
                                 KanStarteOppfolgingDto.JA_MED_MANUELL_GODKJENNING_PGA_IKKE_BOSATT
