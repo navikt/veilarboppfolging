@@ -1,11 +1,24 @@
 package no.nav.veilarboppfolging.controller
 
+import java.time.LocalDate
 import lombok.RequiredArgsConstructor
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.veilarboppfolging.BadRequestException
-import no.nav.veilarboppfolging.client.veilarbarena.*
-import no.nav.veilarboppfolging.controller.response.*
+import no.nav.veilarboppfolging.client.veilarbarena.AlleredeUnderoppfolgingError
+import no.nav.veilarboppfolging.client.veilarbarena.ArenaRegistreringResultat
+import no.nav.veilarboppfolging.client.veilarbarena.FeilFraArenaError
+import no.nav.veilarboppfolging.client.veilarbarena.ReaktiveringSuccess
+import no.nav.veilarboppfolging.client.veilarbarena.RegistrerIArenaError
+import no.nav.veilarboppfolging.client.veilarbarena.RegistrerIArenaSuccess
+import no.nav.veilarboppfolging.client.veilarbarena.RegistrerIkkeArbeidssokerDto
+import no.nav.veilarboppfolging.client.veilarbarena.UkjentFeilUnderReaktiveringError
+import no.nav.veilarboppfolging.controller.response.AvslutningStatus
+import no.nav.veilarboppfolging.controller.response.Bruker
+import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeDTO
+import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeMinimalDTO
+import no.nav.veilarboppfolging.controller.response.OppfolgingStatus
+import no.nav.veilarboppfolging.controller.response.VeilederTilgang
 import no.nav.veilarboppfolging.controller.v2.response.UnderOppfolgingV2Response
 import no.nav.veilarboppfolging.controller.v3.request.KvpRequest
 import no.nav.veilarboppfolging.controller.v3.request.OppfolgingRequest
@@ -15,13 +28,22 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.AktiverBrukerManueltService
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity
 import no.nav.veilarboppfolging.repository.enums.KodeverkBruker
-import no.nav.veilarboppfolging.service.*
+import no.nav.veilarboppfolging.service.AuthService
+import no.nav.veilarboppfolging.service.KontaktBrukerService
+import no.nav.veilarboppfolging.service.KvpService
+import no.nav.veilarboppfolging.service.ManuellStatusService
+import no.nav.veilarboppfolging.service.OppfolgingService
+import no.nav.veilarboppfolging.service.ReaktiveringService
 import no.nav.veilarboppfolging.utils.DtoMappers
 import no.nav.veilarboppfolging.utils.auth.AllowListApplicationName
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.server.ResponseStatusException
 
 @RestController
@@ -35,6 +57,7 @@ class OppfolgingV3Controller(
     val aktiverBrukerManueltService: AktiverBrukerManueltService,
     val arenaOppfolgingService: ArenaOppfolgingService,
     val reaktiveringService: ReaktiveringService,
+    val kontaktBrukerService: KontaktBrukerService,
 ) {
     private val logger = LoggerFactory.getLogger(this::class.java)
 
@@ -220,6 +243,17 @@ class OppfolgingV3Controller(
         }
     }
 
+    @PostMapping("/oppfolging/bliKontaktet")
+    fun bliKontaktet(): ResponseEntity<KontaktBrukerDto> {
+        authService.skalVereEksternBruker()
+        val fnr = authService.hentInnloggetPersonIdent()?.let {  Fnr.of(it) }
+                ?: throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Kan ikke hente innlogget personident")
+        authService.harEksternBrukerTilgang(fnr)
+        authService.sjekkAtApplikasjonErIAllowList(ALLOWLIST)
+
+        return ResponseEntity(kontaktBrukerService.opprettOppgave(fnr), HttpStatus.OK)
+    }
+
     private fun hentOppfolgingsperioder(aktorId: AktorId): List<OppfolgingPeriodeDTO> {
         return oppfolgingService.hentOppfolgingsperioder(aktorId)
             .map { periode -> this.filtrerKvpPerioder(periode) }
@@ -243,7 +277,7 @@ class OppfolgingV3Controller(
     }
 
     companion object {
-        private val ALLOWLIST = listOf(AllowListApplicationName.INNGAR)
+        private val ALLOWLIST = listOf(AllowListApplicationName.INNGAR, AllowListApplicationName.INNGAR_EKSTERN)
     }
 }
 
@@ -258,10 +292,15 @@ data class ReaktiverRequestDto(val fnr: Fnr)
 enum class HenviserSystem {
     DEMO,
     SYFO,
-    AAP
+    AAP,
+    INNGAR_EKSTERN
 }
 
 data class ReaktiverDto(
     val ok: Boolean,
     val kode: ArenaRegistreringResultat,
+)
+
+data class KontaktBrukerDto(
+    val frist: LocalDate,
 )

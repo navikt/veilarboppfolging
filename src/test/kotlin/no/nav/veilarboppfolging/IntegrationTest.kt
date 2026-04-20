@@ -8,6 +8,7 @@ import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.client.norg2.Enhet
 import no.nav.common.client.norg2.Norg2Client
 import no.nav.common.json.JsonUtils
+import no.nav.common.token_client.client.TokenXOnBehalfOfTokenClient
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.EnhetId
 import no.nav.common.types.identer.Fnr
@@ -81,7 +82,9 @@ import org.springframework.web.context.WebApplicationContext
 import java.time.LocalDate
 import java.time.ZonedDateTime
 import java.util.*
+import no.nav.veilarboppfolging.client.oppgave.OppgaveClient
 import no.nav.veilarboppfolging.client.tiltakshistorikk.TiltakshistorikkClient
+import no.nav.veilarboppfolging.client.ungdomsprogram.UngdomsprogramClient
 
 @EmbeddedKafka(partitions = 1)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -114,6 +117,9 @@ open class IntegrationTest {
 
     @MockitoBean
     lateinit var azureAdOnBehalfOfTokenClient: ErrorMappedAzureAdOnBehalfOfTokenClient
+
+    @MockitoBean
+    lateinit var tokenXOnBehalfOfTokenClient: TokenXOnBehalfOfTokenClient
 
     @MockitoBean
     lateinit var norg2Client: Norg2Client
@@ -201,6 +207,12 @@ open class IntegrationTest {
 
     @MockitoBean
     lateinit var tiltakshistorikkClient: TiltakshistorikkClient
+
+    @MockitoBean
+    lateinit var oppgaveClient: OppgaveClient
+
+    @MockitoBean
+    lateinit var ungdomsprogramClient: UngdomsprogramClient
 
     @BeforeEach
     fun beforeEach() {
@@ -313,6 +325,10 @@ open class IntegrationTest {
     fun mockTiltakshistorikk(fnr: Fnr, harAktiveDeltakelser: Boolean = false) {
         `when`(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(fnr.get())).thenReturn(harAktiveDeltakelser)
 
+    }
+
+    fun mockUngdomsprogram(fnr: Fnr, erDeltaker: Boolean = false) {
+        `when`(ungdomsprogramClient.erDeltakerIUngdomsprogrammet(fnr.get())).thenReturn(erDeltaker)
     }
 
     fun mockPdlFolkeregisterStatus(fnr: Fnr, status: FregStatusOgStatsborgerskap) {

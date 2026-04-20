@@ -183,7 +183,11 @@ class ArbeidssøkerperiodeConsumerServiceTest(
         val oppfølgingsdataFørSykmeldtRegistrering = oppfølgingService.hentOppfolgingsperioder(aktørId).first()
 
         val fnr = Fnr.of(fnr)
-        mockPdlFolkeregisterStatus(fnr, FregStatusOgStatsborgerskap(ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven, emptyList()))
+        mockPdlFolkeregisterStatus(fnr, FregStatusOgStatsborgerskap(
+            fregStatus = ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven,
+            statsborgerskap = emptyList(),
+            under18 = false,
+        ))
         `when`(authContextHolder.erInternBruker()).thenReturn(true)
         `when`(authContextHolder.getUid()).thenReturn(Optional.of("G123123"))
         aktiverBrukerManueltService.aktiverBrukerManuelt(fnr, "1234")

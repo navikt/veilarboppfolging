@@ -6,5 +6,8 @@ query hentFolkeregisterStatus($ident: ID! $historikk: Boolean!) {
         statsborgerskap {
             land
         }
+        foedselsdato {
+            foedselsdato
+        }
     }
 }
