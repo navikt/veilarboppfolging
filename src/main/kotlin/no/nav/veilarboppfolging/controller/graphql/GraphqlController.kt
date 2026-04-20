@@ -448,13 +448,7 @@ fun OppfolgingsperiodeEntity.toOppfolgingsperiodeDto(): OppfolgingsperiodeDto {
         startTidspunkt = startDato.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME),
         sluttTidspunkt = sluttDato?.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME),
         id = uuid.toString(),
-        startetBegrunnelse?.let {
-            if (it == OppfolgingStartBegrunnelse.REAKTIVERT_OPPFØLGING) {
-                it.name.replace("ø", "o")
-            } else {
-                it.name
-            }
-        },
+        startetBegrunnelse?.name,
         avsluttetAv = this.avsluttetAv
     )
 }
