@@ -6,6 +6,7 @@ import com.google.cloud.bigquery.InsertAllResponse
 import com.google.cloud.bigquery.JobId
 import com.google.cloud.bigquery.QueryJobConfiguration
 import com.google.cloud.bigquery.TableResult
+import no.nav.poao.dab.bigquery.migrator.BigQueryMigrator
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach

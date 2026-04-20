@@ -2,7 +2,7 @@ package no.nav.veilarboppfolging.config
 
 import com.google.cloud.bigquery.BigQuery
 import com.google.cloud.bigquery.BigQueryOptions
-import no.nav.veilarboppfolging.bigquery.BigQueryMigrator
+import no.nav.poao.dab.bigquery.migrator.BigQueryMigrator
 import no.nav.veilarboppfolging.eventsLogger.BigQueryClient
 import no.nav.veilarboppfolging.eventsLogger.BigQueryClientImplementation
 import org.springframework.beans.factory.annotation.Value

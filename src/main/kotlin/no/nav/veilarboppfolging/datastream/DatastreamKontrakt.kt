@@ -1,5 +1,8 @@
 package no.nav.veilarboppfolging.datastream
 
+import no.nav.poao.dab.bigquery.datastream.Kolonne
+import no.nav.poao.dab.bigquery.datastream.Tabell
+
 /**
  * Eksplisitt kontrakt over hvilke Postgres-tabeller og -kolonner som er konfigurert
  * som Datastream-streams til BigQuery.
@@ -10,24 +13,11 @@ package no.nav.veilarboppfolging.datastream
  * Ved endringer i tabeller, kolonner eller aksepterte verdier:
  *   1. Oppdater denne kontrakten
  *   2. Varsle datavarehus-teamet slik at dbt-tester og rapporter kan oppdateres
+ *
+ * @see no.nav.poao.dab.bigquery.datastream.Tabell
+ * @see no.nav.poao.dab.bigquery.datastream.DatastreamKontraktTestBase
  */
 object DatastreamKontrakt {
-
-    data class Kolonne(val navn: String, val aksepterteVerdier: Set<String>? = null)
-
-    /**
-     * @param kolonner Kolonner som repliseres til BigQuery.
-     * @param ikkeReplikerteKolonner Kolonner som finnes i Postgres-tabellen men bevisst ikke repliseres.
-     *
-     * Alle kolonner på tabellen må være dekket av én av de to listene. En test verifiserer
-     * dette, slik at nye kolonner ikke stille begynner å replikeres uten at noen tar stilling til det.
-     */
-    data class Tabell(
-        val navn: String,
-        val kolonner: List<Kolonne>,
-        val ikkeReplikerteKolonner: Set<String> = emptySet(),
-    )
-
     val tabeller = listOf(
         Tabell(
             navn = "manuell_status",
