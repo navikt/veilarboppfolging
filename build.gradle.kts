@@ -65,7 +65,7 @@ repositories {
     }
 }
 
-val dabBigQuerySchemaVersion = "659200b78912a0dac09018f5e223dba04d7c6e61" // TODO: oppdater til merge-SHA etter at navikt/dab PR #34 er merget
+val dabBigQuerySchemaVersion = "a48a19b1af34dbd933c0bb888fb45506adf0e144"
 
 dependencies {
     annotationProcessor("org.projectlombok:lombok:1.18.42")
@@ -130,7 +130,7 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test")
     implementation("com.github.navikt.dab:bigquery-schema:$dabBigQuerySchemaVersion")
 
-    testImplementation(testFixtures("com.github.navikt.dab:bigquery-schema:$dabBigQuerySchemaVersion"))
+    testImplementation("com.github.navikt.dab:bigquery-schema:$dabBigQuerySchemaVersion:test-fixtures")
     testImplementation("org.mockito.kotlin:mockito-kotlin:6.1.0")
 }
 
