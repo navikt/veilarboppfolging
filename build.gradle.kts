@@ -65,7 +65,7 @@ repositories {
     }
 }
 
-val dabBigQuerySchemaVersion = "a48a19b1af34dbd933c0bb888fb45506adf0e144"
+val dabBigQuerySchemaVersion = "4a120cb625c20494afac24f0ecf116f73eeefd00"
 
 dependencies {
     annotationProcessor("org.projectlombok:lombok:1.18.42")
