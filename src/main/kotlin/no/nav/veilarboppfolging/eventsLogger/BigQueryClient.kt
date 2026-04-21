@@ -1,6 +1,6 @@
 package no.nav.veilarboppfolging.eventsLogger
 
-import com.google.cloud.bigquery.BigQueryOptions
+import com.google.cloud.bigquery.BigQuery
 import com.google.cloud.bigquery.InsertAllRequest
 import com.google.cloud.bigquery.TableId
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
@@ -41,7 +41,7 @@ interface BigQueryClient {
     fun loggUtmeldingsCount(utmelding: UtmeldingsAntall)
 }
 
-class BigQueryClientImplementation(projectId: String): BigQueryClient {
+class BigQueryClientImplementation(private val bigQuery: BigQuery): BigQueryClient {
     val OPPFOLGING_EVENTS = "OPPFOLGINGSPERIODE_EVENTS"
     val UTMELDING_EVENTS = "UTMELDING_EVENTS"
     val UTMELDING_COUNTS = "UTMELDING_COUNTS"
@@ -54,7 +54,6 @@ class BigQueryClientImplementation(projectId: String): BigQueryClient {
         return InsertAllRequest.newBuilder(this).addRow(row).build()
     }
 
-    val bigQuery = BigQueryOptions.newBuilder().setProjectId(projectId).build().service
     val log = LoggerFactory.getLogger(this.javaClass)
 
     override fun loggAvsluttOppfolgingsperiode(oppfolgingPeriodeId: UUID, avregistreringsType: AvregistreringsType) {
