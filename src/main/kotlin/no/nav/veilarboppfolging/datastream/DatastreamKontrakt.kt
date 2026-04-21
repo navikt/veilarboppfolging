@@ -42,7 +42,7 @@ object DatastreamKontrakt {
                         "ARBEIDSSOKER_REGISTRERING",
                         "ARENA_SYNC_ARBS",
                         "ARENA_SYNC_IARBS",
-                        "REAKTIVERT_OPPFØLGING",
+                        "MANUELL_REGISTRERING_BRUKER",
                         "MANUELL_REGISTRERING_VEILEDER",
                     )
                 ),
