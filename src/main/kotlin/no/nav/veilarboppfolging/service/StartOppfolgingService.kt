@@ -9,7 +9,8 @@ import no.nav.veilarboppfolging.eventsLogger.BigQueryClient
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ArbeidsokerRegistrering
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ArenaSyncRegistrering
-import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ManuellRegistrering
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ManuellRegistreringBruker
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ManuellRegistreringVeileder
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering
 import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.hendelser.OppfolgingStartetHendelseDto
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
@@ -70,14 +71,16 @@ open class StartOppfolgingService(
 
             val perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId)
             val sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder)
-            val kontorSattAvVeileder = if (oppfolgingsbruker is ManuellRegistrering) (oppfolgingsbruker.kontorSattAvVeileder) else null
+            val kontorSattAvVeileder = if (oppfolgingsbruker is ManuellRegistreringVeileder) (oppfolgingsbruker.kontorSattAvVeileder) else null
 
             log.info("Oppfølgingsperiode startet for bruker - publiserer endringer på oppfølgingsperiode-topics.")
             kafkaProducerService.publiserOppfolgingsperiode(DtoMappers.tilOppfolgingsperiodeDTO(sistePeriode))
             kafkaProducerService.publiserVisAoMinSideMicrofrontend(aktorId, fnr)
 
             val arenaKontor = when (oppfolgingsbruker) {
-                is ArbeidsokerRegistrering, is ManuellRegistrering -> arenaOppfolgingService.hentArenaOppfolgingsEnhetId(fnr)
+                is ArbeidsokerRegistrering,
+                is ManuellRegistreringBruker,
+                is ManuellRegistreringVeileder -> arenaOppfolgingService.hentArenaOppfolgingsEnhetId(fnr)
                 is ArenaSyncRegistrering -> oppfolgingsbruker.enhet
             }
             kafkaProducerService.publiserOppfolgingsStartet(lagOppfolgingStartetHendelseDto(fnr, sistePeriode, arenaKontor, kontorSattAvVeileder))
@@ -88,7 +91,7 @@ open class StartOppfolgingService(
                 sistePeriode.uuid,
                 oppfolgingsbruker.registrertAv.getType(),
                 Optional.ofNullable(getKvalifiseringsGruppe(oppfolgingsbruker)),
-                if (oppfolgingsbruker is ManuellRegistrering) oppfolgingsbruker.manueltSjekketLovligOpphold else null,
+                if (oppfolgingsbruker is ManuellRegistreringVeileder) oppfolgingsbruker.manueltSjekketLovligOpphold else null,
             )
         }
     }

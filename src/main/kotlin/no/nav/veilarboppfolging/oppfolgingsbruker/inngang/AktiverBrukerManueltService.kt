@@ -24,13 +24,16 @@ class AktiverBrukerManueltService(
 
         transactor.executeWithoutResult {
             val aktorId = authService.getAktorIdOrThrow(fnr)
-            val navIdent = NavIdent.of(authService.innloggetVeilederIdent)
-            val oppfolgingsbruker = OppfolgingsRegistrering.manuellRegistrering(
-                fnr, aktorId,
-                VeilederRegistrant(navIdent),
-                kontorSattAvVeileder,
-                manueltSjekketLovligOpphold
-            )
+            val oppfolgingsbruker = when (authService.erEksternBruker()) {
+                true -> OppfolgingsRegistrering.manuellRegistreringBruker(fnr, aktorId)
+                false -> OppfolgingsRegistrering.manuellRegistreringVeileder(
+                    fnr, aktorId,
+                    VeilederRegistrant(NavIdent.of(authService.innloggetVeilederIdent)),
+                    kontorSattAvVeileder,
+                    manueltSjekketLovligOpphold
+                )
+            }
+
             startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(oppfolgingsbruker)
         }
     }

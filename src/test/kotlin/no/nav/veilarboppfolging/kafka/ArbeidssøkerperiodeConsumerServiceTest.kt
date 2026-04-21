@@ -159,7 +159,7 @@ class ArbeidssøkerperiodeConsumerServiceTest(
 
     @Test
     fun `Dersom arbeidsrettet oppfølgingsperiode allerede eksisterer for sykmeldt bruker skal melding om arbeidssøkerperiode ikke endre noe`() {
-        val oppfølgingsbruker = OppfolgingsRegistrering.manuellRegistrering(
+        val oppfølgingsbruker = OppfolgingsRegistrering.manuellRegistreringVeileder(
             Fnr.of(fnr),
             aktørId,
             VeilederRegistrant(NavIdent.of("G123123")),
