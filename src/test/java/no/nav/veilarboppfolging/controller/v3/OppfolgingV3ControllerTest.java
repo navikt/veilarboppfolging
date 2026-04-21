@@ -3,6 +3,7 @@ package no.nav.veilarboppfolging.controller.v3;
 import no.nav.common.json.JsonUtils;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.client.veilarbarena.*;
+import no.nav.veilarboppfolging.controller.KontaktBrukerDto;
 import no.nav.veilarboppfolging.controller.OppfolgingV3Controller;
 import no.nav.veilarboppfolging.controller.response.VeilederTilgang;
 import no.nav.veilarboppfolging.controller.v3.request.OppfolgingRequest;
@@ -59,6 +60,8 @@ class OppfolgingV3ControllerTest {
     private ArenaOppfolgingService arenaOppfolgingService;
     @MockitoBean
     private ReaktiveringService reaktiveringService;
+    @MockitoBean
+    private KontaktBrukerService kontaktBrukerService;
 
     @BeforeEach
     void setup() throws Exception {
@@ -137,10 +140,11 @@ class OppfolgingV3ControllerTest {
                         .inaktiveringsDato(LocalDate.parse("2023-01-01"))
                         .erIserv(false)
                         .harAktiveTiltaksdeltakelser(false)
+                        .erDeltakerIUngdomsprogrammet(false)
                         .build()
         );
 
-        String expectedJson = "{\"kanAvslutte\":true,\"underOppfolging\":true,\"harYtelser\":false,\"underKvp\":false,\"inaktiveringsDato\":\"2023-01-01\",\"erIserv\":false,\"harAktiveTiltaksdeltakelser\":false}";
+        String expectedJson = "{\"kanAvslutte\":true,\"underOppfolging\":true,\"harYtelser\":false,\"underKvp\":false,\"inaktiveringsDato\":\"2023-01-01\",\"erIserv\":false,\"harAktiveTiltaksdeltakelser\":false,\"erDeltakerIUngdomsprogrammet\":false}";
         mockMvc.perform(post("/api/v3/oppfolging/hent-avslutning-status")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"fnr\":\"12345678900\"}")
@@ -338,4 +342,16 @@ class OppfolgingV3ControllerTest {
                 .andExpect(status().is(200));
     }
 
+    @Test
+    void bliKontaktet_skal_fungere_for_eksterne_brukere() throws Exception {
+        when(kontaktBrukerService.opprettOppgave(TEST_FNR))
+                .thenReturn(new KontaktBrukerDto(LocalDate.of(2026, 4, 16)));
+        when(authService.erEksternBruker()).thenReturn(true);
+        when(authService.hentInnloggetPersonIdent()).thenReturn("12345678900");
+        mockMvc.perform(post("/api/v3/oppfolging/bliKontaktet")
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(content().string("{\"frist\":\"2026-04-16\"}"))
+                .andExpect(status().is(200));
+    }
 }

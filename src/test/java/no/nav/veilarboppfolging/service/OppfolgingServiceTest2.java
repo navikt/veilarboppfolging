@@ -8,6 +8,7 @@ import no.nav.pto_schema.enums.arena.Formidlingsgruppe;
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe;
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirClient;
 import no.nav.veilarboppfolging.client.tiltakshistorikk.TiltakshistorikkClient;
+import no.nav.veilarboppfolging.client.ungdomsprogram.UngdomsprogramClient;
 import no.nav.veilarboppfolging.domain.Oppfolging;
 import no.nav.veilarboppfolging.eventsLogger.BigQueryClient;
 import no.nav.veilarboppfolging.oppfolgingsbruker.BrukerRegistrant;
@@ -97,7 +98,9 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
                 new KvpRepository(db, namedParameterJdbcTemplate, transactor), maalRepository,
                 new BrukerOppslagFlereOppfolgingAktorRepository(db), transactor, arenaYtelserService,
                 mock(BigQueryClient.class), arbeidsoppfolgingsKontorEndretService,"https://test.nav.no",
-                mock(TiltakshistorikkClient.class));
+                mock(TiltakshistorikkClient.class),
+                mock(UngdomsprogramClient.class)
+            );
 
         startOppfolgingService = new StartOppfolgingService(
                 manuellStatusService,

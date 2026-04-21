@@ -82,7 +82,9 @@ import org.springframework.web.context.WebApplicationContext
 import java.time.LocalDate
 import java.time.ZonedDateTime
 import java.util.*
+import no.nav.veilarboppfolging.client.oppgave.OppgaveClient
 import no.nav.veilarboppfolging.client.tiltakshistorikk.TiltakshistorikkClient
+import no.nav.veilarboppfolging.client.ungdomsprogram.UngdomsprogramClient
 
 @EmbeddedKafka(partitions = 1)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -206,6 +208,12 @@ open class IntegrationTest {
     @MockitoBean
     lateinit var tiltakshistorikkClient: TiltakshistorikkClient
 
+    @MockitoBean
+    lateinit var oppgaveClient: OppgaveClient
+
+    @MockitoBean
+    lateinit var ungdomsprogramClient: UngdomsprogramClient
+
     @BeforeEach
     fun beforeEach() {
         DbTestUtils.cleanupTestDb(jdbcTemplate)
@@ -317,6 +325,10 @@ open class IntegrationTest {
     fun mockTiltakshistorikk(fnr: Fnr, harAktiveDeltakelser: Boolean = false) {
         `when`(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(fnr.get())).thenReturn(harAktiveDeltakelser)
 
+    }
+
+    fun mockUngdomsprogram(fnr: Fnr, erDeltaker: Boolean = false) {
+        `when`(ungdomsprogramClient.erDeltakerIUngdomsprogrammet(fnr.get())).thenReturn(erDeltaker)
     }
 
     fun mockPdlFolkeregisterStatus(fnr: Fnr, status: FregStatusOgStatsborgerskap) {

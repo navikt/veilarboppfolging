@@ -65,6 +65,8 @@ repositories {
     }
 }
 
+val dabBigQuerySchemaVersion = "4a120cb625c20494afac24f0ecf116f73eeefd00"
+
 dependencies {
     annotationProcessor("org.projectlombok:lombok:1.18.42")
     testAnnotationProcessor("org.projectlombok:lombok:1.18.42")
@@ -126,6 +128,9 @@ dependencies {
         exclude(group = "com.vaadin.external.google", module = "android-json")
     }
     testImplementation("org.jetbrains.kotlin:kotlin-test")
+    implementation("com.github.navikt.dab:bigquery-schema:$dabBigQuerySchemaVersion")
+
+    testImplementation("com.github.navikt.dab:bigquery-schema:$dabBigQuerySchemaVersion:test-fixtures")
     testImplementation("org.mockito.kotlin:mockito-kotlin:6.1.0")
 }
 
