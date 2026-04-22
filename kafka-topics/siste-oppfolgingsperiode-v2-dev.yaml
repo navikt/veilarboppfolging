@@ -21,9 +21,6 @@ spec:
     - team: poao
       application: veilarboppfolging
       access: write
-    - team: tilgangsmaskin
-      application: populasjonstilgangskontroll
-      access: read
     - team: teampam
       application: pam-dir-api
       access: read
