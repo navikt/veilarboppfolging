@@ -23,14 +23,14 @@ channels:
     description: Start eller slutt på oppfølgingsperioder
   siste-oppfolgingsperiode-v1:
     address: siste-oppfolgingsperiode-v1
-    description: Deprecated. Se siste-oppfolgingsperiode-v2
+    description: Deprecated. Se siste-oppfolgingsperiode-v3
     messages:
       oppfolgingsperideStartEllerSlutt:
         $ref: '#/components/messages/oppfolgingsperiode'
-  siste-oppfolgingsperiode-v2:
-    address: siste-oppfolgingsperiode-v2
+  siste-oppfolgingsperiode-v3:
+    address: siste-oppfolgingsperiode-v3
     description: | 
-      ## Siste oppfolgingsperiode v2
+      ## Siste oppfolgingsperiode v3
       Dette topicet overtar for siste-oppfolgingsperiode-v1 og inneholder i tillegg kontorId, kontorNavn og feltet sisteEndringsType som beskriver hva den siste endringstypen var.
       
       > OBS! Når brukers periode blir avsluttet blir kontoret alltid satt til null
@@ -42,8 +42,8 @@ channels:
       - Meldinger blir "re-publisert" manuelt. Da blir siste tilstand publisert på nytt
 
     messages:
-      oppfolgingsperiodeV2:
-        $ref: '#/components/messages/oppfolgingsperiodeV2'
+      oppfolgingsperiodeV3:
+        $ref: '#/components/messages/oppfolgingsperiodeV3'
         bindings:
           kafka:
             key:
@@ -51,7 +51,7 @@ channels:
               description: oppfolgingsperiodeUuid
     bindings:
       kafka:
-        topic: siste-oppfolgingsperiode-v2
+        topic: siste-oppfolgingsperiode-v3
   kvp-perioder-v1:
     address: pto.kvp-perioder-v1
     messages:
@@ -85,14 +85,14 @@ operations:
     messages:
       - $ref: '#/channels/siste-oppfolgingsperiode-v1/messages/oppfolgingsperideStartEllerSlutt'
 
-  siste-oppfolgingsperiode-v2:
+  siste-oppfolgingsperiode-v3:
     description: Oppfølgingperiode er compacted på oppfolgingsperiodeUuid (alle tilfeller; STARTET, KONTOR_ENDRET, AVSLUTTET)
     tags:
       - name: Oppfolgingsperiode
         description: Oppfolgingsperioden til bruker
     action: send
     channel:
-      $ref: "#/channels/siste-oppfolgingsperiode-v2"
+      $ref: "#/channels/siste-oppfolgingsperiode-v3"
 
   endring-pa-oppfolgingsbruker:
     description: Endring på oppfølgingsbrukere fra Arena
@@ -112,19 +112,19 @@ components:
       payload:
         $ref: oppfolgingsperiode.v1.schema.yml
 
-    oppfolgingsperiodeV2:
-      name: oppfolgingsperiodeV2
-      title: Oppfølgingsperiode v2
+    oppfolgingsperiodeV3:
+      name: oppfolgingsperiodeV3
+      title: Oppfølgingsperiode v3
       summary: Oppfølgingperiode-meldinger med start, endret eller avsluttet. Felter kan være nullable.
       tags:
-        - name: siste-oppfolgingsperiode-v2
-          description: Siste oppfolgingsperiode v2
+        - name: siste-oppfolgingsperiode-v3
+          description: Siste oppfolgingsperiode v3
       payload:
         discriminator: sisteEndringsType
         oneOf:
-          - $ref: oppfolgingsperiode.v2.startet.schema.yml
-          - $ref: oppfolgingsperiode.v2.kontorEndret.schema.yml
-          - $ref: oppfolgingsperiode.v2.avsluttet.schema.yml
+          - $ref: oppfolgingsperiode.v3.startet.schema.yml
+          - $ref: oppfolgingsperiode.v3.kontorEndret.schema.yml
+          - $ref: oppfolgingsperiode.v3.avsluttet.schema.yml
 
     kvpperiode:
       name: kvpperiode
