@@ -35,12 +35,6 @@ class UngdomsprogramClient(
     private val mediaTypeJson = "application/json".toMediaType()
 
     fun erDeltakerIUngdomsprogrammet(personident: String): Boolean {
-        // Inntil sykdom-i-familien er klare på sin side til å tilby endepunktet, hardkoder vi svaret til å være false
-        val erProd = EnvironmentUtils.isProduction().getOrElse { false }
-        if (erProd) {
-            return false
-        }
-
         val request = Request.Builder()
             .url("$baseUrl/ekstern/deltakelse/sjekk")
             .addHeader("Authorization", "Bearer ${tokenProvider.get()}")
