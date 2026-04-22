@@ -21,14 +21,8 @@ spec:
     - team: poao
       application: veilarboppfolging
       access: write
-    - team: obo
-      application: veilarbportefolje
-      access: read
     - team: tilgangsmaskin
       application: populasjonstilgangskontroll
-      access: read
-    - team: toi
-      application: toi-siste-oppfolgingsperiode
       access: read
     - team: teampam
       application: pam-dir-api

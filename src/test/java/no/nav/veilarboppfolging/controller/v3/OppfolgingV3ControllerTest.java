@@ -3,6 +3,7 @@ package no.nav.veilarboppfolging.controller.v3;
 import no.nav.common.json.JsonUtils;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.client.veilarbarena.*;
+import no.nav.veilarboppfolging.controller.KontaktBrukerDto;
 import no.nav.veilarboppfolging.controller.OppfolgingV3Controller;
 import no.nav.veilarboppfolging.controller.response.VeilederTilgang;
 import no.nav.veilarboppfolging.controller.v3.request.OppfolgingRequest;
@@ -59,6 +60,8 @@ class OppfolgingV3ControllerTest {
     private ArenaOppfolgingService arenaOppfolgingService;
     @MockitoBean
     private ReaktiveringService reaktiveringService;
+    @MockitoBean
+    private KontaktBrukerService kontaktBrukerService;
 
     @BeforeEach
     void setup() throws Exception {
@@ -137,10 +140,11 @@ class OppfolgingV3ControllerTest {
                         .inaktiveringsDato(LocalDate.parse("2023-01-01"))
                         .erIserv(false)
                         .harAktiveTiltaksdeltakelser(false)
+                        .erDeltakerIUngdomsprogrammet(false)
                         .build()
         );
 
-        String expectedJson = "{\"kanAvslutte\":true,\"underOppfolging\":true,\"harYtelser\":false,\"underKvp\":false,\"inaktiveringsDato\":\"2023-01-01\",\"erIserv\":false,\"harAktiveTiltaksdeltakelser\":false}";
+        String expectedJson = "{\"kanAvslutte\":true,\"underOppfolging\":true,\"harYtelser\":false,\"underKvp\":false,\"inaktiveringsDato\":\"2023-01-01\",\"erIserv\":false,\"harAktiveTiltaksdeltakelser\":false,\"erDeltakerIUngdomsprogrammet\":false}";
         mockMvc.perform(post("/api/v3/oppfolging/hent-avslutning-status")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"fnr\":\"12345678900\"}")
@@ -302,7 +306,7 @@ class OppfolgingV3ControllerTest {
     }
 
     @Test
-    void startOppfolgingsperiode_skal_returnere_400_ved_manglende_fnr() throws Exception {
+    void startOppfolgingsperiode_skal_returnere_400_ved_manglende_fnr_hvis_intern_bruker() throws Exception {
         when(arenaOppfolgingService.registrerIkkeArbeidssoker(TEST_FNR))
                 .thenReturn(new RegistrerIArenaSuccess(new RegistrerIkkeArbeidssokerDto("Ny bruker ble registrert ok som IARBS", ArenaRegistreringResultat.BRUKER_ALLEREDE_ARBS)));
         mockMvc.perform(post("/api/v3/oppfolging/startOppfolgingsperiode")
@@ -310,6 +314,20 @@ class OppfolgingV3ControllerTest {
                         .content("{\"henviserSystem\":\"AAP\"}")
                 )
                 .andExpect(status().is(400));
+    }
+
+    @Test
+    void startOppfolgingsperiode_skal_fungere_for_eksterne_brukere() throws Exception {
+        when(arenaOppfolgingService.registrerIkkeArbeidssoker(TEST_FNR))
+                .thenReturn(new RegistrerIArenaSuccess(new RegistrerIkkeArbeidssokerDto("Ny bruker ble registrert ok som IARBS", ArenaRegistreringResultat.BRUKER_ALLEREDE_ARBS)));
+        when(authService.erEksternBruker()).thenReturn(true);
+        when(authService.hentInnloggetPersonIdent()).thenReturn("12345678900");
+        mockMvc.perform(post("/api/v3/oppfolging/startOppfolgingsperiode")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"henviserSystem\":\"AAP\"}")
+                )
+                .andExpect(content().string("{\"resultat\":\"Ny bruker ble registrert ok som IARBS\",\"kode\":\"BRUKER_ALLEREDE_ARBS\"}"))
+                .andExpect(status().is(200));
     }
 
     @Test
@@ -324,4 +342,16 @@ class OppfolgingV3ControllerTest {
                 .andExpect(status().is(200));
     }
 
+    @Test
+    void bliKontaktet_skal_fungere_for_eksterne_brukere() throws Exception {
+        when(kontaktBrukerService.opprettOppgave(TEST_FNR))
+                .thenReturn(new KontaktBrukerDto(LocalDate.of(2026, 4, 16)));
+        when(authService.erEksternBruker()).thenReturn(true);
+        when(authService.hentInnloggetPersonIdent()).thenReturn("12345678900");
+        mockMvc.perform(post("/api/v3/oppfolging/bliKontaktet")
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(content().string("{\"frist\":\"2026-04-16\"}"))
+                .andExpect(status().is(200));
+    }
 }

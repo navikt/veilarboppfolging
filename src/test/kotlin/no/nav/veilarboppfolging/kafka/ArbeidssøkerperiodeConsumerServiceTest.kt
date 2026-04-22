@@ -159,7 +159,7 @@ class ArbeidssøkerperiodeConsumerServiceTest(
 
     @Test
     fun `Dersom arbeidsrettet oppfølgingsperiode allerede eksisterer for sykmeldt bruker skal melding om arbeidssøkerperiode ikke endre noe`() {
-        val oppfølgingsbruker = OppfolgingsRegistrering.manuellRegistrering(
+        val oppfølgingsbruker = OppfolgingsRegistrering.manuellRegistreringVeileder(
             Fnr.of(fnr),
             aktørId,
             VeilederRegistrant(NavIdent.of("G123123")),
@@ -183,7 +183,11 @@ class ArbeidssøkerperiodeConsumerServiceTest(
         val oppfølgingsdataFørSykmeldtRegistrering = oppfølgingService.hentOppfolgingsperioder(aktørId).first()
 
         val fnr = Fnr.of(fnr)
-        mockPdlFolkeregisterStatus(fnr, FregStatusOgStatsborgerskap(ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven, emptyList()))
+        mockPdlFolkeregisterStatus(fnr, FregStatusOgStatsborgerskap(
+            fregStatus = ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven,
+            statsborgerskap = emptyList(),
+            under18 = false,
+        ))
         `when`(authContextHolder.erInternBruker()).thenReturn(true)
         `when`(authContextHolder.getUid()).thenReturn(Optional.of("G123123"))
         aktiverBrukerManueltService.aktiverBrukerManuelt(fnr, "1234")

@@ -38,4 +38,12 @@ public class EnvironmentProperties {
 
     private String tiltakshistorikkScope;
 
+    private String oppgaveUrl;
+
+    private String oppgaveScope;
+
+    private String ungdomsprogramUrl;
+
+    private String ungdomsprogramScope;
+
 }
