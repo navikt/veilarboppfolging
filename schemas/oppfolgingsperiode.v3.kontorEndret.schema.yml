@@ -1,5 +1,5 @@
 "$schema": https://json-schema.org/draft-07/schema
-"$id": "https://navikt.github.io/veilarboppfolging/schemas/oppfolgingsperiode.v2.kontorEndret.schema.yml"
+"$id": "https://navikt.github.io/veilarboppfolging/schemas/oppfolgingsperiode.v3.kontorEndret.schema.yml"
 required:
   - sisteEndringsType
   - kontor
