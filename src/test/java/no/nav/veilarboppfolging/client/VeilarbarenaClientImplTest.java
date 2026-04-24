@@ -134,7 +134,7 @@ public class VeilarbarenaClientImplTest {
         assertThat(arenaOppfolgingsbruker.getFodselsnr()).isEqualTo("1234");
         assertThat(arenaOppfolgingsbruker.getFormidlingsgruppekode()).isEqualTo(MOCK_FORMIDLINGSGRUPPE);
         assertThat(arenaOppfolgingsbruker.getRettighetsgruppekode()).isEqualTo(MOCK_RETTIGHETSGRUPPE);
-        assertThat(arenaOppfolgingsbruker.getNav_kontor()).isEqualTo(MOCK_ENHET_ID);
+        assertThat(arenaOppfolgingsbruker.getNavKontor()).isEqualTo(MOCK_ENHET_ID);
         assertThat(arenaOppfolgingsbruker.getHovedmaalkode()).isEqualTo(MOCK_HOVEDMAAL);
     }
 
@@ -225,7 +225,7 @@ public class VeilarbarenaClientImplTest {
                 .setFormidlingsgruppekode(MOCK_FORMIDLINGSGRUPPE)
                 .setKvalifiseringsgruppekode(MOCK_KVALIFISERINGSGRUPPE)
                 .setRettighetsgruppekode(MOCK_RETTIGHETSGRUPPE)
-                .setNav_kontor(MOCK_ENHET_ID)
+                .setNavKontor(MOCK_ENHET_ID)
                 .setHovedmaalkode(MOCK_HOVEDMAAL);
     }
 }

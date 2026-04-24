@@ -209,7 +209,7 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
     fun `skal bruke veilarbarena som fallback til oppfølgingsenhet`() {
         val arenaEnhet = "6112"
         val arenaOppfolging = VeilarbArenaOppfolgingsBruker()
-            .setNav_kontor(arenaEnhet)
+            .setNavKontor(arenaEnhet)
         `when`(veilarbarenaClient.hentOppfolgingsbruker(fnr)).thenReturn(Optional.of(arenaOppfolging))
         val enhet = arenaOppfolgingService.hentArenaOppfolgingsEnhetId(fnr)
         assertEquals(arenaEnhet, enhet?.get())

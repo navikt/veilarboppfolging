@@ -413,9 +413,9 @@ open class IntegrationTest {
                     .setFodselsnr(fnr.get())
                     .setFormidlingsgruppekode(formidlingsgruppe?.name)
                     .setHovedmaalkode("BEHOLDEA")
-                    .setIserv_fra_dato(iservFraDato)
+                    .setIservFraDato(iservFraDato)
                     .setKvalifiseringsgruppekode(kvalifiseringsgruppe.name)
-                    .setNav_kontor(oppfolgingsEnhet)
+                    .setNavKontor(oppfolgingsEnhet)
             )
         )
     }

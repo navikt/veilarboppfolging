@@ -67,7 +67,7 @@ class KvpServiceTest{
         )
 
         val veilarbArenaOppfolgingsBruker = VeilarbArenaOppfolgingsBruker()
-        veilarbArenaOppfolgingsBruker.setNav_kontor(ENHET)
+        veilarbArenaOppfolgingsBruker.setNavKontor(ENHET)
         `when`<EnhetId?>(arenaOppfolgingService.hentArenaOppfolgingsEnhetId(FNR))
             .thenReturn(EnhetId.of(ENHET))
 
