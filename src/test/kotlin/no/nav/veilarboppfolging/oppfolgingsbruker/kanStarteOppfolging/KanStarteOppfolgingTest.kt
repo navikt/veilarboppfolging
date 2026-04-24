@@ -5,7 +5,7 @@ import no.nav.veilarboppfolging.client.pdl.FregStatusOgStatsborgerskap
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ALLEREDE_UNDER_OPPFOLGING
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.DOD
-import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.FREG_STATUS_KREVER_MANUELL_GODKJENNING_PGA_DNUMMER_IKKE_EOS_GBR
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.FREG_STATUS_KREVER_MANUELL_GODKJENNING_PGA_DNUMMER_IKKE_EOS
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.FREG_STATUS_KREVER_MANUELL_GODKJENNING_PGA_IKKE_BOSATT
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.FREG_STATUS_OK
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.IKKE_LOVLIG_OPPHOLD
@@ -82,11 +82,11 @@ class KanStarteOppfolgingTest {
     fun `ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT + dnummer og ikke eu eller eos skal være en OK men fortsatt kreve manuell godkjenning av lovlig opphold`() {
         val harTilgang = lazy { TILGANG_OK }
         val oppfolgingStatus = lazy { ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT }
-        val folkeregisterStatus = lazy { FREG_STATUS_KREVER_MANUELL_GODKJENNING_PGA_DNUMMER_IKKE_EOS_GBR }
+        val folkeregisterStatus = lazy { FREG_STATUS_KREVER_MANUELL_GODKJENNING_PGA_DNUMMER_IKKE_EOS }
         val result = sjekkKanStarteOppfolgingPaBrukerForVeileder(oppfolgingStatus, harTilgang, folkeregisterStatus)
         assertEquals(
             result,
-            KanStarteOppfolgingDto.ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT_MEN_KREVER_MANUELL_GODKJENNING_PGA_DNUMMER_IKKE_EOS_GBR
+            KanStarteOppfolgingDto.ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT_MEN_KREVER_MANUELL_GODKJENNING_PGA_DNUMMER_IKKE_EOS
         )
     }
 
@@ -107,7 +107,7 @@ class KanStarteOppfolgingTest {
             statsborgerskap = listOf("GBR"),
             under18 = false,
         )
-        assertEquals(gbr.toKanStarteOppfolging(), FREG_STATUS_KREVER_MANUELL_GODKJENNING_PGA_DNUMMER_IKKE_EOS_GBR)
+        assertEquals(gbr.toKanStarteOppfolging(), FREG_STATUS_KREVER_MANUELL_GODKJENNING_PGA_DNUMMER_IKKE_EOS)
     }
 
     @Test
@@ -147,7 +147,7 @@ class KanStarteOppfolgingTest {
             statsborgerskap = listOf("AFG"),
             under18 = false,
         )
-        assertEquals(ikkeEueos.toKanStarteOppfolging(), FREG_STATUS_KREVER_MANUELL_GODKJENNING_PGA_DNUMMER_IKKE_EOS_GBR)
+        assertEquals(ikkeEueos.toKanStarteOppfolging(), FREG_STATUS_KREVER_MANUELL_GODKJENNING_PGA_DNUMMER_IKKE_EOS)
     }
 
     @Test
@@ -167,6 +167,6 @@ class KanStarteOppfolgingTest {
             statsborgerskap = listOf("GHA"),
             under18 = false,
         )
-        assertEquals(eueos.toKanStarteOppfolging(), FREG_STATUS_KREVER_MANUELL_GODKJENNING_PGA_DNUMMER_IKKE_EOS_GBR)
+        assertEquals(eueos.toKanStarteOppfolging(), FREG_STATUS_KREVER_MANUELL_GODKJENNING_PGA_DNUMMER_IKKE_EOS)
     }
 }
