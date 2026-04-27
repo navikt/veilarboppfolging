@@ -219,6 +219,8 @@ spec:
           namespace: dab
         - application: tilleggsstonader-sak
           namespace: tilleggsstonader
+        - application: azure-token-generator
+          namespace: nais
         - application: ida
           namespace: traktor
           cluster: prod-fss # Dette er med vilje

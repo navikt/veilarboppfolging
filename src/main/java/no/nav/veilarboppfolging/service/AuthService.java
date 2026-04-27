@@ -203,13 +203,12 @@ public class AuthService {
                 throw new ForbiddenException("Ekstern bruker har ikke tilgang på andre brukere enn seg selv");
             }
         } else {
-            sjekkLesetilgangMedAktorId(getAktorIdOrThrow(fnr));
+            sjekkTilgang(TilgangType.LESE, fnr);
         }
     }
 
     public void sjekkLesetilgangMedAktorId(AktorId aktorId) {
         sjekkTilgang(TilgangType.LESE, aktorId);
-
     }
 
     public void sjekkSkriveTilgangMedFnr(Fnr fnr) {
@@ -218,7 +217,7 @@ public class AuthService {
                 throw new ForbiddenException("Ekstern bruker har ikke tilgang på andre brukere enn seg selv");
             }
         } else {
-            sjekkSkrivetilgangMedAktorId(getAktorIdOrThrow(fnr));
+            sjekkTilgang(TilgangType.SKRIVE, fnr);
         }
     }
 
@@ -400,14 +399,17 @@ public class AuthService {
     }
 
     private void sjekkTilgang(TilgangType tilgangType, AktorId aktorId) {
+        sjekkTilgang(tilgangType, getFnrOrThrow(aktorId));
+    }
+    private void sjekkTilgang(TilgangType tilgangType, Fnr fnr) {
         Optional<SikkerthetsNivå> sikkerhetsnivaa = hentSikkerhetsnivaa();
         if (erInternBruker()) {
             Decision decision = poaoTilgangClient.evaluatePolicy(new NavAnsattTilgangTilEksternBrukerPolicyInput(
-                    hentInnloggetVeilederUUID(), tilgangType, getFnrOrThrow(aktorId).get()
+                    hentInnloggetVeilederUUID(), tilgangType, fnr.get()
             )).getOrThrow();
             auditLogWithMessageAndDestinationUserId(
                     "Veileder har gjort oppslag på aktorid",
-                    aktorId.get(),
+                    fnr.get(),
                     authContextHolder.getNavIdent().orElse(NavIdent.of(UKJENT_NAV_IDENT)).get(),
                     decision.isPermit() ? AuthorizationDecision.PERMIT : AuthorizationDecision.DENY
             );
@@ -416,11 +418,11 @@ public class AuthService {
             }
         } else if (erEksternBruker() && sikkerhetsnivaa.isPresent() && sikkerhetsnivaa.get() == SikkerthetsNivå.Nivå4) {
             Decision decision = poaoTilgangClient.evaluatePolicy(new EksternBrukerTilgangTilEksternBrukerPolicyInput(
-                    hentInnloggetPersonIdent(), getFnrOrThrow(aktorId).get()
+                    hentInnloggetPersonIdent(), fnr.get()
             )).getOrThrow();
             auditLogWithMessageAndDestinationUserId(
-                    "Ekstern bruker har gjort oppslag på aktorid",
-                    aktorId.get(),
+                    "Ekstern bruker har gjort oppslag på fnr",
+                    fnr.get(),
                     hentInnloggetPersonIdent(),
                     decision.isPermit() ? AuthorizationDecision.PERMIT : AuthorizationDecision.DENY
             );

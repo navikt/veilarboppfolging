@@ -94,7 +94,7 @@ public class KvpService {
     public void stopKvp(Fnr fnr, String begrunnelse) {
         AktorId aktorId = authService.getAktorIdOrThrow(fnr);
 
-        authService.sjekkLesetilgangMedAktorId(aktorId);
+        authService.sjekkLesetilgangMedFnr(fnr);
         String enhet = Optional.ofNullable(arenaOppfolgingService.hentArenaOppfolgingsEnhetId(fnr))
                 .map(Id::get).orElse(null);
 
