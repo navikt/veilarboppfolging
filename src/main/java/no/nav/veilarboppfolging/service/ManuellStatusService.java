@@ -129,7 +129,7 @@ public class ManuellStatusService {
 
     public void oppdaterManuellStatus(Fnr fnr, boolean manuell, String begrunnelse, KodeverkBruker opprettetAv, String opprettetAvBrukerId) {
         AktorId aktorId = authService.getAktorIdOrThrow(fnr);
-        authService.sjekkLesetilgangMedAktorId(aktorId);
+        authService.sjekkLesetilgangMedFnr(fnr);
 
         if (!authService.erEksternBruker()) {
             var enhet = Optional.ofNullable(arenaOppfolgingService.hentArenaOppfolgingsEnhetId(fnr)).orElseThrow();

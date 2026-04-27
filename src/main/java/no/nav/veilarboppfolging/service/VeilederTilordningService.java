@@ -101,7 +101,7 @@ public class VeilederTilordningService {
         AktorId aktorId = authService.getAktorIdOrThrow(fnr);
 
         authService.skalVereInternBruker();
-        authService.sjekkLesetilgangMedAktorId(aktorId);
+        authService.sjekkLesetilgangMedFnr(fnr);
 
         // TODO: Skriveoperasjonene burde gjøres i en transaksjon
         veilederTilordningerRepository.hentTilordnetVeileder(aktorId)
