@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.server.ResponseStatusException
 import java.lang.RuntimeException
+import java.net.SocketTimeoutException
+import java.lang.Exception
 
 private val logger = LoggerFactory.getLogger(VeilarboppfolgingException::class.java)
 sealed class VeilarboppfolgingException(message: String) : RuntimeException(message) {
@@ -48,6 +50,18 @@ class DefaultExceptionHandler {
     fun mapException(ex: VeilarboppfolgingException, response: HttpServletResponse) {
         ex.log()
         mapVeilarbOppfolginExceptionToResponse(ex, response)
+    }
+
+    @ExceptionHandler(value = [SocketTimeoutException::class])
+    fun mapException(ex: SocketTimeoutException, response: HttpServletResponse) {
+        logger.error("Fanget en uhåndtert feil i kall mot annet system", ex)
+        response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Feil i kall mot annet system")
+    }
+
+    @ExceptionHandler(value = [Exception::class])
+    fun mapException(ex: Exception, response: HttpServletResponse) {
+        logger.error("Fanget en uhåndtert feil", ex)
+        response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value())
     }
 
     companion object {
