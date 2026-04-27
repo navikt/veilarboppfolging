@@ -134,95 +134,69 @@ spec:
       rules:
         - application: veilarbregistrering
           namespace: paw
-          cluster: dev-gcp
         - application: arbeidssokerregistrering-for-veileder
           namespace: paw
-          cluster: dev-gcp
         - application: veilarbapi
           namespace: pto
-          cluster: dev-gcp
         - application: paw-proxy
           namespace: paw
         - application: veilarbperson
           namespace: obo
-          cluster: dev-gcp
         - application: veilarbvedtaksstotte
           namespace: obo
-          cluster: dev-gcp
         - application: veilarbpersonflate
           namespace: poao
-          cluster: dev-gcp
         - application: veilarbportefoljeflatefs
           namespace: obo
-          cluster: dev-gcp
         - application: veilarbportefolje
           namespace: pto
           cluster: dev-fss
         - application: veilarbportefolje
           namespace: obo
-          cluster: dev-gcp
         - application: mulighetsrommet-api
           namespace: team-mulighetsrommet
-          cluster: dev-gcp
         - application: modia-robot-api
           namespace: personoversikt
-          cluster: dev-gcp
         - application: modiapersonoversikt-api-q1
           namespace: personoversikt
           cluster: dev-fss
         - application: ditt-sykefravaer
           namespace: flex
-          cluster: dev-gcp
         - application: veilarbdirigent
           namespace: dab
         - application: veilarbdialog
           namespace: dab
-          cluster: dev-gcp
         - application: veilarbaktivitet
           namespace: dab
-          cluster: dev-gcp
         - application: aktivitetsplan
           namespace: pto
-          cluster: dev-gcp
         - application: arbeidsrettet-dialog
           namespace: pto
-          cluster: dev-gcp
         - application: aktivitet-arena-acl
           namespace: dab
-          cluster: dev-gcp
         - application: start-samtale
           namespace: pto
-          cluster: dev-gcp
         - application: amt-person-service
           namespace: amt
-          cluster: dev-gcp
         - application: amt-aktivitetskort-publisher
           namespace: amt
-          cluster: dev-gcp
         - application: tms-min-side-proxy
           namespace: min-side
-          cluster: dev-gcp
         - application: tms-mikrofrontend-selector
           namespace: min-side
-          cluster: dev-gcp
         - application: aia-backend
           namespace: paw
-          cluster: dev-gcp
         - application: azure-token-generator
           namespace: nais
-          cluster: dev-gcp
         - application: amt-distribusjon
           namespace: amt
-          cluster: dev-gcp
         - application: dokumentfordeling
           namespace: arbeidsgiver
           cluster: dev-fss
         - application: modiapersonoversikt-api
           namespace: personoversikt
-          cluster: dev-gcp
         - application: syfomodiaperson
           namespace: teamsykefravr
-          cluster: dev-gcp
         - application: tiltaksgjennomforing-api
           namespace: arbeidsgiver
           cluster: dev-fss
@@ -239,16 +213,14 @@ spec:
           cluster: dev-fss
         - application: poao-admin
           namespace: poao
-          cluster: dev-gcp
         - application: oppgave
           namespace: aap
-          cluster: dev-gcp
         - application: ao-min-side-microfrontend-ssr
           namespace: dab
-          cluster: dev-gcp
+        - application: tilleggsstonader-sak
+          namespace: tilleggsstonader
         - application: azure-token-generator
           namespace: nais
-          cluster: dev-gcp
         - application: ida
           namespace: traktor
           cluster: prod-fss # Dette er med vilje
