@@ -13,6 +13,7 @@ import static no.nav.common.json.JsonUtils.toJson;
 import static no.nav.common.rest.client.RestUtils.MEDIA_TYPE_JSON;
 import static no.nav.common.utils.AssertUtils.assertTrue;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -209,14 +210,14 @@ public class VeilarbarenaClientImplTest {
     public void registrer_ikke_arbeidssoker_skal_feile_dersom_vi_kaller_feil_url() {
         String apiUrl = "http://localhost:" + wireMockRule.port();
         VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl(apiUrl, apiScope, authServiceMock);
-
         givenThat(post(urlEqualTo("/veilarbarena/api/v2/arena/registrer-i-arena"))
                 .withRequestBody(equalToJson("{\"fnr\":\""+MOCK_FNR+"\"}"))
                 .willReturn(aResponse().withStatus(404))
         );
 
-        assertThrows(RuntimeException.class, () ->veilarbarenaClient.registrerIkkeArbeidsoker(MOCK_FNR));
+        var resultat = veilarbarenaClient.registrerIkkeArbeidsoker(MOCK_FNR);
 
+        assertInstanceOf(RegistrerIArenaError.class, resultat);
     }
 
     private VeilarbArenaOppfolgingsBruker arenaOppfolgingsBrukerResponse() {
