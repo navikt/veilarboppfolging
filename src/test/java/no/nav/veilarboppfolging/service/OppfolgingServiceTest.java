@@ -7,6 +7,7 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.NavIdent;
+import no.nav.poao_tilgang.client.TilgangType;
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe;
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe;
 import no.nav.veilarboppfolging.ForbiddenException;
@@ -340,8 +341,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
     @Test
     public void skal_krasje_nar_aktorId_er_ukjent() {
-        doCallRealMethod().when(authService).sjekkLesetilgangMedFnr(any());
-        when(authService.erEksternBruker()).thenReturn(false);
+        doNothing().when(authService).sjekkLesetilgangMedFnr(fnr);
         doThrow(new IngenGjeldendeIdentException()).when(authService).getAktorIdOrThrow(fnr);
         assertThrows(IngenGjeldendeIdentException.class, this::hentOppfolgingStatus);
     }
