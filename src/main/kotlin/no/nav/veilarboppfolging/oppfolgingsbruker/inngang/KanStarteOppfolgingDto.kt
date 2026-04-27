@@ -8,6 +8,7 @@ import no.nav.veilarboppfolging.controller.graphql.TilgangResultat
 sealed class KanStarteOppfolgingSjekk {
     companion object {
         fun sjekkKanStarteOppfolgingPaBrukerForVeileder(
+            brukerErUnder18: Lazy<Boolean>,
             erBrukerUnderOppfolging: Lazy<ErBrukerUnderOppfolging>,
             veilederHarTilgang: Lazy<VeilederHarTilgang>,
             fregStatusSjekkResultat: Lazy<FregStatusSjekkResultat>): KanStarteOppfolgingDto {
@@ -46,14 +47,28 @@ sealed class KanStarteOppfolgingSjekk {
                 OPPFOLGING_OK -> {
                     if (fregStatusSjekkResultat.value is FREG_STATUS_KREVER_MANUELL_GODKJENNING) {
                         when (fregStatusSjekkResultat.value as FREG_STATUS_KREVER_MANUELL_GODKJENNING) {
-                            is FREG_STATUS_KREVER_MANUELL_GODKJENNING_PGA_IKKE_BOSATT ->
-                                KanStarteOppfolgingDto.JA_MED_MANUELL_GODKJENNING_PGA_IKKE_BOSATT
-                            is FREG_STATUS_KREVER_MANUELL_GODKJENNING_PGA_DNUMMER_IKKE_EOS ->
-                                KanStarteOppfolgingDto.JA_MED_MANUELL_GODKJENNING_PGA_DNUMMER_IKKE_EOS
+                            is FREG_STATUS_KREVER_MANUELL_GODKJENNING_PGA_IKKE_BOSATT -> {
+                                if (brukerErUnder18.value) {
+                                    KanStarteOppfolgingDto.JA_MED_MANUELL_GODKJENNING_PGA_IKKE_BOSATT_UNDER_18
+                                } else {
+                                    KanStarteOppfolgingDto.JA_MED_MANUELL_GODKJENNING_PGA_IKKE_BOSATT
+                                }
+                            }
+                            is FREG_STATUS_KREVER_MANUELL_GODKJENNING_PGA_DNUMMER_IKKE_EOS -> {
+                                if (brukerErUnder18.value) {
+                                    KanStarteOppfolgingDto.JA_MED_MANUELL_GODKJENNING_PGA_DNUMMER_IKKE_EOS_UNDER_18
+                                } else {
+                                    KanStarteOppfolgingDto.JA_MED_MANUELL_GODKJENNING_PGA_DNUMMER_IKKE_EOS
+                                }
+                            }
                         }
                     }
                     else {
-                        KanStarteOppfolgingDto.JA
+                        if (brukerErUnder18.value) {
+                            KanStarteOppfolgingDto.JA_MED_MANUELL_GODKJENNING_PGA_UNDER_18
+                        } else {
+                            KanStarteOppfolgingDto.JA
+                        }
                     }
                 }
             }
@@ -98,8 +113,11 @@ object INGEN_STATUS_FOLKEREGISTERET: FregStatusSjekkResultat()
 
 enum class KanStarteOppfolgingDto {
     JA,
+    JA_MED_MANUELL_GODKJENNING_PGA_UNDER_18,
     JA_MED_MANUELL_GODKJENNING_PGA_IKKE_BOSATT,
+    JA_MED_MANUELL_GODKJENNING_PGA_IKKE_BOSATT_UNDER_18,
     JA_MED_MANUELL_GODKJENNING_PGA_DNUMMER_IKKE_EOS,
+    JA_MED_MANUELL_GODKJENNING_PGA_DNUMMER_IKKE_EOS_UNDER_18,
     ALLEREDE_UNDER_OPPFOLGING,
     ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT,
     ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT_MEN_KREVER_MANUELL_GODKJENNING_PGA_IKKE_BOSATT,

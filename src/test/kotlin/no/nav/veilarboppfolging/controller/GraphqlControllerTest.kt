@@ -280,7 +280,7 @@ class GraphqlControllerTest: IntegrationTest() {
         val result = tester.documentName("kanStarteOppfolging").variable("fnr", fnr.get()).execute()
         result.errors().verify()
         result.path("oppfolging").matchesJson("""
-            { "kanStarteOppfolging": "JA" }
+            { "kanStarteOppfolging": "JA_MED_MANUELL_GODKJENNING_PGA_UNDER_18" }
         """.trimIndent())
     }
 

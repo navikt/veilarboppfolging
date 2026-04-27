@@ -26,7 +26,8 @@ class KanStarteOppfolgingTest {
         val harTilgang = lazy { IKKE_TILGANG_FORTROLIG_ADRESSE }
         val oppfolgingStatus = lazy { ALLEREDE_UNDER_OPPFOLGING }
         val folkeregisterStatus = lazy { IKKE_LOVLIG_OPPHOLD }
-        val result = sjekkKanStarteOppfolgingPaBrukerForVeileder(oppfolgingStatus, harTilgang, folkeregisterStatus)
+        val brukerUnder18 = lazy { true }
+        val result = sjekkKanStarteOppfolgingPaBrukerForVeileder(brukerUnder18, oppfolgingStatus,harTilgang, folkeregisterStatus)
         assertEquals(result, KanStarteOppfolgingDto.IKKE_TILGANG_FORTROLIG_ADRESSE)
     }
 
@@ -35,7 +36,8 @@ class KanStarteOppfolgingTest {
         val harTilgang = lazy { IKKE_TILGANG_FORTROLIG_ADRESSE }
         val oppfolgingStatus = lazy { OPPFOLGING_OK }
         val folkeregisterStatus = lazy { IKKE_LOVLIG_OPPHOLD }
-        val result = sjekkKanStarteOppfolgingPaBrukerForVeileder(oppfolgingStatus, harTilgang, folkeregisterStatus)
+        val brukerUnder18 = lazy { true }
+        val result = sjekkKanStarteOppfolgingPaBrukerForVeileder(brukerUnder18, oppfolgingStatus, harTilgang, folkeregisterStatus)
         assertEquals(result, KanStarteOppfolgingDto.IKKE_TILGANG_FORTROLIG_ADRESSE)
     }
 
@@ -44,7 +46,8 @@ class KanStarteOppfolgingTest {
         val harTilgang = lazy { TILGANG_OK }
         val oppfolgingStatus = lazy { OPPFOLGING_OK }
         val folkeregisterStatus = lazy { DOD }
-        val result = sjekkKanStarteOppfolgingPaBrukerForVeileder(oppfolgingStatus, harTilgang, folkeregisterStatus)
+        val brukerUnder18 = lazy { true }
+        val result = sjekkKanStarteOppfolgingPaBrukerForVeileder(brukerUnder18,oppfolgingStatus, harTilgang, folkeregisterStatus)
         assertEquals(result, KanStarteOppfolgingDto.DOD)
     }
 
@@ -53,7 +56,8 @@ class KanStarteOppfolgingTest {
         val harTilgang = lazy { TILGANG_OK }
         val oppfolgingStatus = lazy { ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT }
         val folkeregisterStatus = lazy { FREG_STATUS_OK }
-        val result = sjekkKanStarteOppfolgingPaBrukerForVeileder(oppfolgingStatus, harTilgang, folkeregisterStatus)
+        val brukerUnder18 = lazy { true }
+        val result = sjekkKanStarteOppfolgingPaBrukerForVeileder(brukerUnder18, oppfolgingStatus, harTilgang, folkeregisterStatus)
         assertEquals(result, KanStarteOppfolgingDto.ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT)
     }
 
@@ -62,7 +66,8 @@ class KanStarteOppfolgingTest {
         val harTilgang = lazy { IKKE_TILGANG_ENHET }
         val oppfolgingStatus = lazy { ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT }
         val folkeregisterStatus = lazy { FREG_STATUS_OK }
-        val result = sjekkKanStarteOppfolgingPaBrukerForVeileder(oppfolgingStatus, harTilgang, folkeregisterStatus)
+        val brukerUnder18 = lazy { true }
+        val result = sjekkKanStarteOppfolgingPaBrukerForVeileder(brukerUnder18, oppfolgingStatus, harTilgang, folkeregisterStatus)
         assertEquals(result, KanStarteOppfolgingDto.IKKE_TILGANG_ENHET)
     }
 
@@ -71,7 +76,8 @@ class KanStarteOppfolgingTest {
         val harTilgang = lazy { TILGANG_OK }
         val oppfolgingStatus = lazy { ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT }
         val folkeregisterStatus = lazy { FREG_STATUS_KREVER_MANUELL_GODKJENNING_PGA_IKKE_BOSATT }
-        val result = sjekkKanStarteOppfolgingPaBrukerForVeileder(oppfolgingStatus, harTilgang, folkeregisterStatus)
+        val brukerUnder18 = lazy { true }
+        val result = sjekkKanStarteOppfolgingPaBrukerForVeileder(brukerUnder18, oppfolgingStatus, harTilgang, folkeregisterStatus)
         assertEquals(
             result,
             KanStarteOppfolgingDto.ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT_MEN_KREVER_MANUELL_GODKJENNING_PGA_IKKE_BOSATT
@@ -83,7 +89,8 @@ class KanStarteOppfolgingTest {
         val harTilgang = lazy { TILGANG_OK }
         val oppfolgingStatus = lazy { ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT }
         val folkeregisterStatus = lazy { FREG_STATUS_KREVER_MANUELL_GODKJENNING_PGA_DNUMMER_IKKE_EOS }
-        val result = sjekkKanStarteOppfolgingPaBrukerForVeileder(oppfolgingStatus, harTilgang, folkeregisterStatus)
+        val brukerUnder18 = lazy { true }
+        val result = sjekkKanStarteOppfolgingPaBrukerForVeileder(brukerUnder18, oppfolgingStatus, harTilgang, folkeregisterStatus)
         assertEquals(
             result,
             KanStarteOppfolgingDto.ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT_MEN_KREVER_MANUELL_GODKJENNING_PGA_DNUMMER_IKKE_EOS

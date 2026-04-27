@@ -252,8 +252,10 @@ class GraphqlController(
             ErBrukerUnderOppfolging.evaluate(erUnderOppfolging, arenaService.brukerErIservIArena(fnr))
         }
         val gyldigTilgang = lazy { evaluerNavAnsattTilgangTilEksternBruker(fnr.get()).toKanStarteOppfolging() }
-        val gyldigFregStatus = lazy { kanStarteOppfolgingMtpFregStatus(fnr) }
-        return sjekkKanStarteOppfolgingPaBrukerForVeileder(gyldigOppfolging, gyldigTilgang, gyldigFregStatus)
+        val folkeregisterstatus = lazy { pdlFolkeregisterStatusClient.hentFolkeregisterStatus(fnr) }
+        val brukerErUnder18 = lazy { folkeregisterstatus.value.under18 }
+        val gyldigFregStatus = lazy { folkeregisterstatus.value.toKanStarteOppfolging() }
+        return sjekkKanStarteOppfolgingPaBrukerForVeileder(brukerErUnder18, gyldigOppfolging, gyldigTilgang, gyldigFregStatus)
     }
 
     @SchemaMapping(typeName = "OppfolgingDto", field = "kanStarteOppfolgingEkstern")
