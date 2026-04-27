@@ -49,7 +49,7 @@ public class VeilarbarenaClientImplTest {
         String apiScope = "api://local.pto.veilarbarena/.default";
         VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl(apiUrl, apiScope, authServiceMock);
 
-        givenThat(post(urlEqualTo("/veilarbarena/api/v2/hent-oppfolgingsstatus")).withRequestBody(equalToJson("{\"fnr\":\""+MOCK_FNR+"\"}"))
+        givenThat(post(urlEqualTo("/veilarbarena/api/v3/hent-oppfolgingsstatus")).withRequestBody(equalToJson("{\"fnr\":\""+MOCK_FNR+"\"}"))
                 .willReturn(aResponse()
                         .withStatus(200)
                         .withHeader(CONTENT_TYPE, MEDIA_TYPE_JSON.toString())
@@ -70,7 +70,7 @@ public class VeilarbarenaClientImplTest {
         String apiUrl = "http://localhost:" + wireMockRule.port();
         VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl(apiUrl, apiScope,authServiceMock);
 
-        givenThat(post(urlEqualTo("/veilarbarena/api/v2/hent-oppfolgingsstatus")).withRequestBody(equalToJson("{\"fnr\":\""+MOCK_FNR+"\"}"))
+        givenThat(post(urlEqualTo("/veilarbarena/api/v3/hent-oppfolgingsstatus")).withRequestBody(equalToJson("{\"fnr\":\""+MOCK_FNR+"\"}"))
                 .willReturn(aResponse().withStatus(404)));
 
         assertTrue(veilarbarenaClient.getArenaOppfolgingsstatus(MOCK_FNR).isEmpty());
@@ -81,7 +81,7 @@ public class VeilarbarenaClientImplTest {
         String apiUrl = "http://localhost:" + wireMockRule.port();
         VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl(apiUrl, apiScope, authServiceMock);
 
-        givenThat(post(urlEqualTo("/veilarbarena/api/v2/hent-oppfolgingsstatus")).withRequestBody(equalToJson("{\"fnr\":\""+MOCK_FNR+"\"}"))
+        givenThat(post(urlEqualTo("/veilarbarena/api/v3/hent-oppfolgingsstatus")).withRequestBody(equalToJson("{\"fnr\":\""+MOCK_FNR+"\"}"))
                 .willReturn(aResponse().withStatus(403)));
 
         assertTrue(veilarbarenaClient.getArenaOppfolgingsstatus(MOCK_FNR).isEmpty());
@@ -103,7 +103,7 @@ public class VeilarbarenaClientImplTest {
         String apiUrl = "http://localhost:" + wireMockRule.port();
         VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl(apiUrl, apiScope, authServiceMock);
 
-        givenThat(post(urlEqualTo("/veilarbarena/api/v2/hent-oppfolgingsstatus")).withRequestBody(equalToJson("{\"fnr\":\""+MOCK_FNR+"\"}"))
+        givenThat(post(urlEqualTo("/veilarbarena/api/v3/hent-oppfolgingsstatus")).withRequestBody(equalToJson("{\"fnr\":\""+MOCK_FNR+"\"}"))
                 .willReturn(aResponse().withStatus(400)));
 
         assertTrue(veilarbarenaClient.getArenaOppfolgingsstatus(MOCK_FNR).isEmpty());
@@ -122,7 +122,7 @@ public class VeilarbarenaClientImplTest {
         String apiUrl = "http://localhost:" + wireMockRule.port();
         VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl(apiUrl, apiScope, authServiceMock);
 
-        givenThat(post(urlEqualTo("/veilarbarena/api/v2/hent-oppfolgingsbruker")).withRequestBody(equalToJson("{\"fnr\":\""+MOCK_FNR+"\"}"))
+        givenThat(post(urlEqualTo("/veilarbarena/api/v4/hent-oppfolgingsbruker")).withRequestBody(equalToJson("{\"fnr\":\""+MOCK_FNR+"\"}"))
                 .willReturn(aResponse()
                         .withStatus(200)
                         .withHeader(CONTENT_TYPE, MEDIA_TYPE_JSON.toString())
@@ -134,7 +134,7 @@ public class VeilarbarenaClientImplTest {
         assertThat(arenaOppfolgingsbruker.getFodselsnr()).isEqualTo("1234");
         assertThat(arenaOppfolgingsbruker.getFormidlingsgruppekode()).isEqualTo(MOCK_FORMIDLINGSGRUPPE);
         assertThat(arenaOppfolgingsbruker.getRettighetsgruppekode()).isEqualTo(MOCK_RETTIGHETSGRUPPE);
-        assertThat(arenaOppfolgingsbruker.getNav_kontor()).isEqualTo(MOCK_ENHET_ID);
+        assertThat(arenaOppfolgingsbruker.getNavKontor()).isEqualTo(MOCK_ENHET_ID);
         assertThat(arenaOppfolgingsbruker.getHovedmaalkode()).isEqualTo(MOCK_HOVEDMAAL);
     }
 
@@ -143,8 +143,8 @@ public class VeilarbarenaClientImplTest {
         String apiUrl = "http://localhost:" + wireMockRule.port();
         VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl(apiUrl, apiScope,authServiceMock);
 
-        givenThat(post(urlEqualTo("/veilarbarena/api/v2/hent-oppfolgingsbruker")).withRequestBody(equalToJson("{\"fnr\":\""+MOCK_FNR+"\"}"))
-                .willReturn(aResponse().withStatus(404)));
+        givenThat(post(urlEqualTo("/veilarbarena/api/v4/hent-oppfolgingsbruker")).withRequestBody(equalToJson("{\"fnr\":\""+MOCK_FNR+"\"}"))
+                .willReturn(aResponse().withStatus(204)));
 
         assertTrue(veilarbarenaClient.hentOppfolgingsbruker(MOCK_FNR).isEmpty());
     }
@@ -154,7 +154,7 @@ public class VeilarbarenaClientImplTest {
         String apiUrl = "http://localhost:" + wireMockRule.port();
         VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl(apiUrl, apiScope, authServiceMock);
 
-        givenThat(post(urlEqualTo("/veilarbarena/api/v2/hent-oppfolgingsbruker")).withRequestBody(equalToJson("{\"fnr\":\""+MOCK_FNR+"\"}"))
+        givenThat(post(urlEqualTo("/veilarbarena/api/v4/hent-oppfolgingsbruker")).withRequestBody(equalToJson("{\"fnr\":\""+MOCK_FNR+"\"}"))
                 .willReturn(aResponse().withStatus(403)));
 
         assertTrue(veilarbarenaClient.hentOppfolgingsbruker(MOCK_FNR).isEmpty());
@@ -165,7 +165,7 @@ public class VeilarbarenaClientImplTest {
         String apiUrl = "http://localhost:" + wireMockRule.port();
         VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl(apiUrl, apiScope, authServiceMock);
 
-        givenThat(post(urlEqualTo("/veilarbarena/api/v2/hent-oppfolgingsbruker")).withRequestBody(equalToJson("{\"fnr\":\""+MOCK_FNR+"\"}"))
+        givenThat(post(urlEqualTo("/veilarbarena/api/v4/hent-oppfolgingsbruker")).withRequestBody(equalToJson("{\"fnr\":\""+MOCK_FNR+"\"}"))
                 .willReturn(aResponse().withStatus(400)));
 
         assertTrue(veilarbarenaClient.hentOppfolgingsbruker(MOCK_FNR).isEmpty());
@@ -225,7 +225,7 @@ public class VeilarbarenaClientImplTest {
                 .setFormidlingsgruppekode(MOCK_FORMIDLINGSGRUPPE)
                 .setKvalifiseringsgruppekode(MOCK_KVALIFISERINGSGRUPPE)
                 .setRettighetsgruppekode(MOCK_RETTIGHETSGRUPPE)
-                .setNav_kontor(MOCK_ENHET_ID)
+                .setNavKontor(MOCK_ENHET_ID)
                 .setHovedmaalkode(MOCK_HOVEDMAAL);
     }
 }

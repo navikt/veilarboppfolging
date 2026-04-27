@@ -31,7 +31,7 @@ class VeilarbArenaOppfolgingsStatusServiceIntegrationTest: IntegrationTest() {
         `when`(veilarbarenaClient.hentOppfolgingsbruker(fnr)).thenReturn(Optional.of(
             VeilarbArenaOppfolgingsBruker()
             .setFodselsnr(fnr.get())
-            .setNav_kontor("1010")
+            .setNavKontor("1010")
             .setFormidlingsgruppekode("ARBS")
             .setKvalifiseringsgruppekode("VURDU")
             .setHovedmaalkode("SKAFFEA")
