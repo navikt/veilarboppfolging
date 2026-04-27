@@ -365,8 +365,8 @@ class GraphqlController(
             UserRole.EKSTERN -> eksternBrukerId as Fnr
             UserRole.SYSTEM,
             UserRole.INTERN -> {
-                val aktorId = eksternBrukerId.getAktorId()
-                authService.sjekkLesetilgangMedAktorId(aktorId)
+                val fnr = eksternBrukerId.getFnr()
+                authService.sjekkLesetilgangMedFnr(fnr)
                 eksternBrukerId
             }
         }
