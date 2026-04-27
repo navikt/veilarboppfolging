@@ -99,7 +99,6 @@ class AuthorizationAnnotationHandlerTest {
     @Test
     void should_allow_internal_user_if_access_ok() {
         setupInternalUserAuthOk();
-        when(aktorOppslagClient.hentAktorId(TEST_FNR_2)).thenReturn(TEST_AKTOR_ID_3);
 
         Method method = OppfolgingV2Controller.class.getMethod("hentGjeldendePeriode", Fnr.class);
         MockHttpServletRequest request = new MockHttpServletRequest();
@@ -121,6 +120,7 @@ class AuthorizationAnnotationHandlerTest {
     @Test
     void internal_user_can_query_using_aktorid() {
         setupInternalUserAuthOk();
+        when(aktorOppslagClient.hentFnr(TEST_AKTOR_ID_3)).thenReturn(TEST_FNR_2);
 
         Method method = OppfolgingV2Controller.class.getMethod("hentOppfolgingsperioder", AktorId.class);
         MockHttpServletRequest request = new MockHttpServletRequest();
@@ -211,9 +211,9 @@ class AuthorizationAnnotationHandlerTest {
 
         setupServices();
 
-        when(aktorOppslagClient.hentFnr(TEST_AKTOR_ID_3)).thenReturn(TEST_FNR_2);
-
         Decision decision = Decision.Permit.INSTANCE;
-        doReturn(new ApiResult<Decision>(null, decision)).when(poaoTilgangClient).evaluatePolicy(argThat(new PolicyInputMatcher(uuid, TEST_FNR_2.get())));
+        doReturn(new ApiResult<Decision>(null, decision))
+                .when(poaoTilgangClient)
+                .evaluatePolicy(argThat(new PolicyInputMatcher(uuid, TEST_FNR_2.get())));
     }
 }
