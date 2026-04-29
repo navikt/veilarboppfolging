@@ -69,7 +69,7 @@ class VeilarbarenaClientImpl(
             is TokenResult.Success -> {
                 val request = buildRequest(url, payload, tokenResult.token)
                 client.newCall(request).execute().use { response ->
-                    if (response.code == 404) {
+                    if (response.code == 404 || response.code == 204) {
                         return RequestResult.Success(Optional.empty())
                     }
                     /* Kun forventet å få 422 på registrer endepunkt, da ser body lik ut som i 200 respons */
@@ -97,7 +97,7 @@ class VeilarbarenaClientImpl(
     override fun hentOppfolgingsbruker(fnr: Fnr): Optional<VeilarbArenaOppfolgingsBruker> {
         val personRequest = PersonRequest(fnr)
         try {
-            val response = httpPost(UrlUtils.joinPaths(veilarbarenaUrl, "/veilarbarena/api/v2/hent-oppfolgingsbruker"), personRequest, VeilarbArenaOppfolgingsBruker::class.java)
+            val response = httpPost(UrlUtils.joinPaths(veilarbarenaUrl, "/veilarbarena/api/v4/hent-oppfolgingsbruker"), personRequest, VeilarbArenaOppfolgingsBruker::class.java)
             return when (response) {
                 is RequestResult.Success -> response.body
                 is RequestResult.Fail -> Optional.empty()
@@ -112,7 +112,7 @@ class VeilarbarenaClientImpl(
     override fun getArenaOppfolgingsstatus(fnr: Fnr): Optional<VeilarbArenaOppfolgingsStatus> {
         val personRequest = PersonRequest(fnr)
         try {
-            val response = httpPost(UrlUtils.joinPaths(veilarbarenaUrl, "/veilarbarena/api/v2/hent-oppfolgingsstatus"), personRequest, VeilarbArenaOppfolgingsStatus::class.java)
+            val response = httpPost(UrlUtils.joinPaths(veilarbarenaUrl, "/veilarbarena/api/v3/hent-oppfolgingsstatus"), personRequest, VeilarbArenaOppfolgingsStatus::class.java)
             return when (response) {
                 is RequestResult.Success -> response.body
                 is RequestResult.Fail -> Optional.empty()
@@ -151,8 +151,7 @@ class VeilarbarenaClientImpl(
                 is RequestResult.Fail ->  RegistrerIArenaError("Noe gikk galt ved registrering av bruker i Arena", response.reason)
             }
         } catch (e: Exception) {
-            logger.error("Uventet feil ved registrer bruker via veilarbarena", e)
-            throw e
+            return RegistrerIArenaError("Uventet feil ved registrer bruker via veilarbarena", e)
         }
     }
 

@@ -3,10 +3,13 @@ package no.nav.veilarboppfolging.service
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.EnhetId
 import no.nav.common.types.identer.Fnr
+import no.nav.common.types.identer.NavIdent
 import no.nav.poao_tilgang.client.Decision
 import no.nav.poao_tilgang.client.TilgangType
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.veilarboppfolging.IntegrationTest
+import no.nav.veilarboppfolging.client.pdl.ForenkletFolkeregisterStatus
+import no.nav.veilarboppfolging.client.pdl.FregStatusOgStatsborgerskap
 import no.nav.veilarboppfolging.oppfolgingsbruker.AvsluttetAvType
 import no.nav.veilarboppfolging.oppfolgingsbruker.StartetAvType
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelse
@@ -46,6 +49,11 @@ class AktiverBrukerIntegrationTest : IntegrationTest() {
 
     @Test
     fun aktiver_sykmeldt_skal_starte_oppfolging() {
+        mockPdlFolkeregisterStatus(FNR, FregStatusOgStatsborgerskap(
+            fregStatus = ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven,
+            statsborgerskap = emptyList(),
+            under18 = false,
+        ))
         mockInternBrukerAuthOk(UUID.randomUUID(), AKTOR_ID, FNR)
         val oppfolgingFør = oppfolgingService.hentOppfolging(AKTOR_ID)
         Assertions.assertThat(oppfolgingFør.isEmpty()).isTrue()
@@ -56,8 +64,13 @@ class AktiverBrukerIntegrationTest : IntegrationTest() {
 
     @Test
     fun `Skal lagre OppfolgingStartetHendelse-melding i utboks når oppfølging startes manuelt`() {
-        val veilederIdent = "B654321"
+        val veilederIdent = NavIdent("B654321")
         val kontorSattAvVeileder = "4321"
+        mockPdlFolkeregisterStatus(FNR, FregStatusOgStatsborgerskap(
+            fregStatus = ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven,
+            statsborgerskap = emptyList(),
+            under18 = false,
+        ))
         mockInternBrukerAuthOk(UUID.randomUUID(), AKTOR_ID, FNR, veilederIdent)
         val oppfolgingFør = oppfolgingService.hentOppfolging(AKTOR_ID)
         Assertions.assertThat(oppfolgingFør.isEmpty()).isTrue()
@@ -73,7 +86,7 @@ class AktiverBrukerIntegrationTest : IntegrationTest() {
         assertThat(hendelse.startetBegrunnelse).isEqualTo(OppfolgingStartBegrunnelse.MANUELL_REGISTRERING_VEILEDER)
         assertThat(hendelse.arenaKontor).isNull()
         assertThat(hendelse.startetAvType).isEqualTo(StartetAvType.VEILEDER)
-        assertThat(hendelse.startetAv).isEqualTo(veilederIdent)
+        assertThat(hendelse.startetAv).isEqualTo(veilederIdent.get())
         assertThat(hendelse.startetTidspunkt).isCloseTo(ZonedDateTime.now(), within(1, ChronoUnit.SECONDS))
         assertThat(hendelse.foretrukketArbeidsoppfolgingskontor).isEqualTo(kontorSattAvVeileder)
         assertThat(hendelse.oppfolgingsPeriodeId).isEqualTo(nyPeriode.uuid)
@@ -81,7 +94,7 @@ class AktiverBrukerIntegrationTest : IntegrationTest() {
 
     @Test
     fun `Skal lagre OppfolgingStartetHendelse-melding i utboks når oppfølging av arbeidssøkerregistrering startes`() {
-        val veilederIdent = "B654321"
+        val veilederIdent = NavIdent("B654321")
         mockInternBrukerAuthOk(UUID.randomUUID(), AKTOR_ID, FNR, veilederIdent)
         val oppfolgingFør = oppfolgingService.hentOppfolging(AKTOR_ID)
         assertThat(oppfolgingFør.isEmpty).isTrue()
@@ -98,7 +111,7 @@ class AktiverBrukerIntegrationTest : IntegrationTest() {
 
     @Test
     fun `Skal lagre OppfolgingAvsluttetHendelse-melding i utboks når oppfølging avsluttes`() {
-        val veilederIdent = "B654321"
+        val veilederIdent = NavIdent("B654321")
         val veilederUUID = UUID.randomUUID()
         val enhetId = EnhetId.of("3333")
         val avsluttBegrunnelse = "avslutt begrunnelse"
@@ -117,7 +130,7 @@ class AktiverBrukerIntegrationTest : IntegrationTest() {
         assertInstanceOf<OppfolgingStartetHendelseDto>(startHendelse)
         assertInstanceOf<OppfolgingsAvsluttetHendelseDto>(avsluttetHendelse)
         assertThat(avsluttetHendelse.fnr).isEqualTo(FNR.toString())
-        assertThat(avsluttetHendelse.avsluttetAv).isEqualTo(veilederIdent)
+        assertThat(avsluttetHendelse.avsluttetAv).isEqualTo(veilederIdent.get())
         assertThat(avsluttetHendelse.avsluttetAvType).isEqualTo(AvsluttetAvType.VEILEDER)
         assertThat(avsluttetHendelse.startetTidspunkt).isEqualTo(startHendelse.startetTidspunkt)
         assertThat(avsluttetHendelse.avsluttetTidspunkt).isCloseTo(ZonedDateTime.now(), within(1, ChronoUnit.SECONDS))

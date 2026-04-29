@@ -70,10 +70,14 @@ spec:
       value: http://digdir-krr-proxy.team-rocket
     - name: DIGDIR_KRR_PROXY_SCOPE
       value: api://prod-gcp.team-rocket.digdir-krr-proxy/.default
-    - name: AMTDELTAKER_URL
-      value: http://amt-deltaker.amt
-    - name: AMTDELTAKER_SCOPE
-      value: api://prod-gcp.amt.amt-deltaker/.default
+    - name: TILTAKSHISTORIKK_URL
+      value: http://tiltakshistorikk.team-mulighetsrommet
+    - name: TILTAKSHISTORIKK_SCOPE
+      value: api://prod-gcp.team-mulighetsrommet.tiltakshistorikk/.default
+    - name: UNGDOMSPROGRAM_URL
+      value: http://ung-deltakelse-opplyser.k9saksbehandling
+    - name: UNGDOMSPROGRAM_SCOPE
+      value: api://prod-gcp.k9saksbehandling.ung-deltakelse-opplyser/.default
     - name: KAFKA_ENABLED
       value: "true"
     - name: VEILARBARENA_URL
@@ -90,6 +94,10 @@ spec:
       value: "B884"
     - name: NAV_NO_URL
       value: "https://www.nav.no"
+    - name: OPPGAVE_URL
+      value: https://oppgave.prod-fss-pub.nais.io
+    - name: OPPGAVE_SCOPE
+      value: api://prod-fss.oppgavehandtering.oppgave/.default
   kafka:
     pool: nav-prod
   azure:
@@ -112,112 +120,92 @@ spec:
           namespace: team-rocket
           cluster: prod-gcp
         - application: poao-tilgang
-        - application: amt-deltaker
-          namespace: amt
         - application: norg2
           namespace: org
         - application: logging
           namespace: nais-system
+        - application: tiltakshistorikk
+          namespace: team-mulighetsrommet
+        - application: ung-deltakelse-opplyser
+          namespace: k9saksbehandling
       external:
         - host: veilarbarena.prod-fss-pub.nais.io
         - host: pdl-api.prod-fss-pub.nais.io
+        - host: oppgave.prod-fss-pub.nais.io
     inbound:
       rules:
         - application: veilarbregistrering
           namespace: paw
-          cluster: prod-gcp
         - application: arbeidssokerregistrering-for-veileder
           namespace: paw
-          cluster: prod-gcp
         - application: veilarbapi
           namespace: pto
-          cluster: prod-gcp
         - application: paw-proxy
           namespace: paw
         - application: veilarbperson
           namespace: obo
-          cluster: prod-gcp
         - application: veilarbvedtaksstotte
           namespace: pto
           cluster: prod-fss
         - application: veilarbvedtaksstotte
           namespace: obo
-          cluster: prod-gcp
         - application: veilarbpersonflate
           namespace: poao
-          cluster: prod-gcp
         - application: veilarbportefoljeflatefs
           namespace: obo
-          cluster: prod-gcp
         - application: veilarbportefolje
           namespace: pto
           cluster: prod-fss
         - application: veilarbportefolje
           namespace: obo
-          cluster: prod-gcp
         - application: modia-robot-api
           namespace: personoversikt
-          cluster: prod-gcp
         - application: modiapersonoversikt-api
           namespace: personoversikt
           cluster: prod-fss
         - application: mulighetsrommet-api
           namespace: team-mulighetsrommet
-          cluster: prod-gcp
         - application: ditt-sykefravaer
           namespace: flex
-          cluster: prod-gcp
         - application: veilarbdirigent
           namespace: dab
         - application: veilarbdialog
           namespace: dab
-          cluster: prod-gcp
         - application: veilarbaktivitet
           namespace: dab
-          cluster: prod-gcp
         - application: aktivitetsplan
           namespace: pto
-          cluster: prod-gcp
         - application: arbeidsrettet-dialog
           namespace: pto
-          cluster: prod-gcp
         - application: aktivitet-arena-acl
           namespace: dab
-          cluster: prod-gcp
         - application: start-samtale
           namespace: pto
-          cluster: prod-gcp
         - application: amt-person-service
           namespace: amt
-          cluster: prod-gcp
         - application: amt-aktivitetskort-publisher
           namespace: amt
-          cluster: prod-gcp
         - application: tms-min-side-proxy
           namespace: min-side
-          cluster: prod-gcp
         - application: tms-mikrofrontend-selector
           namespace: min-side
-          cluster: prod-gcp
         - application: aia-backend
           namespace: paw
-          cluster: prod-gcp
         - application: amt-distribusjon
           namespace: amt
-          cluster: prod-gcp
         - application: dokumentfordeling
           namespace: arbeidsgiver
           cluster: prod-fss
         - application: modiapersonoversikt-api
           namespace: personoversikt
-          cluster: prod-gcp
         - application: syfomodiaperson
           namespace: teamsykefravr
-          cluster: prod-gcp
         - application: tiltaksgjennomforing-api
           namespace: arbeidsgiver
           cluster: prod-fss
         - application: inngar
+          namespace: dab
+        - application: inngar-ekstern
           namespace: dab
         - application: statuspoll
           namespace: navdig
@@ -228,13 +216,10 @@ spec:
           cluster: prod-fss
         - application: poao-admin
           namespace: poao
-          cluster: prod-gcp
         - application: oppgave
           namespace: aap
-          cluster: prod-gcp
-        - application: ao-min-side-microfrontend
-          namespace: dab
-          cluster: prod-gcp
         - application: ao-min-side-microfrontend-ssr
           namespace: dab
-          cluster: prod-gcp
+        - application: tilleggsstonader-sak
+          namespace: tilleggsstonader
+

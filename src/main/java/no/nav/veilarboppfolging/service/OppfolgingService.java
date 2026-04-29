@@ -1,5 +1,9 @@
 package no.nav.veilarboppfolging.service;
 
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.SneakyThrows;
@@ -10,8 +14,9 @@ import no.nav.common.types.identer.Id;
 import no.nav.common.types.identer.NavIdent;
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe;
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe;
-import no.nav.veilarboppfolging.client.amtdeltaker.AmtDeltakerClient;
 import no.nav.veilarboppfolging.client.digdir_krr.KRRData;
+import no.nav.veilarboppfolging.client.tiltakshistorikk.TiltakshistorikkClient;
+import no.nav.veilarboppfolging.client.ungdomsprogram.UngdomsprogramClient;
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolgingTilstand;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsStatus;
 import no.nav.veilarboppfolging.controller.response.UnderOppfolgingDTO;
@@ -41,11 +46,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
 import static java.time.ZonedDateTime.now;
 import static java.util.Optional.empty;
 import static java.util.stream.Collectors.toList;
@@ -66,7 +66,8 @@ public class OppfolgingService {
     private final ManuellStatusService manuellStatusService;
     private final ArbeidsoppfolgingsKontorEndretService arbeidsoppfolgingsKontorEndretService;
 
-    private final AmtDeltakerClient amtDeltakerClient;
+    private final TiltakshistorikkClient tiltakshistorikkClient;
+    private final UngdomsprogramClient ungdomsprogramClient;
 
     private final KvpRepository kvpRepository;
     private final MaalRepository maalRepository;
@@ -85,7 +86,6 @@ public class OppfolgingService {
             OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository,
             // TODO: Når vi får splittet servicenen bedre så skal det ikke være behov for å bruke @Lazy
             @Lazy ManuellStatusService manuellStatusService,
-            AmtDeltakerClient amtDeltakerClient,
             KvpRepository kvpRepository,
             MaalRepository maalRepository,
             BrukerOppslagFlereOppfolgingAktorRepository brukerOppslagFlereOppfolgingAktorRepository,
@@ -93,7 +93,9 @@ public class OppfolgingService {
             ArenaYtelserService arenaYtelserService,
             BigQueryClient bigQueryClient,
             ArbeidsoppfolgingsKontorEndretService arbeidsoppfolgingsKontorEndretService,
-            @Value("${app.env.nav-no-url}") String navNoUrl) {
+            @Value("${app.env.nav-no-url}") String navNoUrl,
+            TiltakshistorikkClient tiltakshistorikkClient,
+            UngdomsprogramClient ungdomsprogramClient) {
         this.kafkaProducerService = kafkaProducerService;
         this.kvpService = kvpService;
         this.arenaOppfolgingService = arenaOppfolgingService;
@@ -101,7 +103,6 @@ public class OppfolgingService {
         this.oppfolgingsStatusRepository = oppfolgingsStatusRepository;
         this.oppfolgingsPeriodeRepository = oppfolgingsPeriodeRepository;
         this.manuellStatusService = manuellStatusService;
-        this.amtDeltakerClient = amtDeltakerClient;
         this.kvpRepository = kvpRepository;
         this.maalRepository = maalRepository;
         this.brukerOppslagFlereOppfolgingAktorRepository = brukerOppslagFlereOppfolgingAktorRepository;
@@ -109,6 +110,8 @@ public class OppfolgingService {
         this.arenaYtelserService = arenaYtelserService;
         this.bigQueryClient = bigQueryClient;
         this.arbeidsoppfolgingsKontorEndretService = arbeidsoppfolgingsKontorEndretService;
+        this.tiltakshistorikkClient = tiltakshistorikkClient;
+        this.ungdomsprogramClient = ungdomsprogramClient;
     }
 
     @Transactional // TODO: kan denne være read only?
@@ -147,7 +150,7 @@ public class OppfolgingService {
         AktorId aktorId = avregistrering.getAktorId();
         Fnr fnr = authService.getFnrOrThrow(aktorId);
         ArenaOppfolgingTilstand arenaOppfolgingTilstand = arenaOppfolgingService.hentArenaOppfolgingTilstand(fnr)
-                .orElseThrow(() -> new RuntimeException("Feilet under henting av oppfolgingsstatus (db) med fallback til /oppfolgingsbruker"));
+                .orElseThrow(() -> new RuntimeException("Feilet under henting av areana-oppfolgingsstatus (db) med fallback til veilarbarena /oppfolgingsbruker"));
 
         if (authService.erInternBruker()) {
             authService.sjekkSkriveTilgangMedFnr(fnr);
@@ -160,8 +163,9 @@ public class OppfolgingService {
         boolean erIserv = erIserv(EnumUtils.valueOf(Formidlingsgruppe.class, arenaOppfolgingTilstand.getFormidlingsgruppe()));
 
         boolean harAktiveTiltaksdeltakelser = harAktiveTiltaksdeltakelser(fnr);
+        boolean erDeltakerIUngdomsprogrammet = erDeltakerIUngdomsprogrammet(fnr);
         boolean underKvp = kvpService.erUnderKvp(aktorId);
-        KanAvslutteMedBegrunnelse kanAvslutte = kanAvslutteOppfolging(aktorId, erUnderOppfolging(aktorId), erIserv, harAktiveTiltaksdeltakelser, underKvp);
+        KanAvslutteMedBegrunnelse kanAvslutte = kanAvslutteOppfolging(aktorId, erUnderOppfolging(aktorId), erIserv, harAktiveTiltaksdeltakelser, erDeltakerIUngdomsprogrammet, underKvp);
         if (kanAvslutte.kanAvslutte) {
             var veilederId = avregistrering.getAvsluttetAv().getIdent();
             var begrunnelse = avregistrering.getBegrunnelse();
@@ -286,7 +290,7 @@ public class OppfolgingService {
         boolean kanAvslutte;
         String begrunnelse;
     }
-    private KanAvslutteMedBegrunnelse kanAvslutteOppfolging(AktorId aktorId, boolean erUnderOppfolging, boolean erIservIArena, boolean harAktiveTiltaksdeltakelser, boolean underKvp) {
+    private KanAvslutteMedBegrunnelse kanAvslutteOppfolging(AktorId aktorId, boolean erUnderOppfolging, boolean erIservIArena, boolean harAktiveTiltaksdeltakelser, boolean erDeltakerIUngdomsprogrammet, boolean underKvp) {
         secureLog.info("Kan oppfolging avsluttes for aktorid {}?, oppfolging.isUnderOppfolging(): {}, erIservIArena(): {}, underKvp(): {}, harAktiveTiltaksdeltakelser(): {}",
                 aktorId, erUnderOppfolging, erIservIArena, underKvp, harAktiveTiltaksdeltakelser);
 
@@ -294,6 +298,7 @@ public class OppfolgingService {
         if (!erIservIArena) return new KanAvslutteMedBegrunnelse(false, "bruker var ikke inaktivert i Arena");
         if (underKvp) return new KanAvslutteMedBegrunnelse(false, "bruker var under kvp");
         if (harAktiveTiltaksdeltakelser) return new KanAvslutteMedBegrunnelse(false, "bruker hadde aktive tiltaksdeltakelser");
+        if (erDeltakerIUngdomsprogrammet) return new KanAvslutteMedBegrunnelse(false, "bruker er deltaker i ungdomsprogrammet");
 
         return new KanAvslutteMedBegrunnelse(true, null);
     }
@@ -372,8 +377,12 @@ public class OppfolgingService {
                 .orElse(false);
     }
 
-    protected boolean harAktiveTiltaksdeltakelser(Fnr fnr) {
-        return amtDeltakerClient.harAktiveTiltaksdeltakelser(fnr.get());
+    public boolean harAktiveTiltaksdeltakelser(Fnr fnr) {
+        return tiltakshistorikkClient.harAktiveTiltaksdeltakelser(fnr.get());
+    }
+
+    public boolean erDeltakerIUngdomsprogrammet(Fnr fnr) {
+        return ungdomsprogramClient.erDeltakerIUngdomsprogrammet(fnr.get());
     }
 
     private Optional<OppfolgingEntity> getOppfolgingStatus(Fnr fnr) {
@@ -459,8 +468,9 @@ public class OppfolgingService {
         boolean erIserv = maybeArenaOppfolging.map(ao -> erIserv(EnumUtils.valueOf(Formidlingsgruppe.class, ao.getFormidlingsgruppe()))).orElse(false);
 
         boolean harAktiveTiltaksdeltakelser = harAktiveTiltaksdeltakelser(fnr);
+        boolean erDeltakerIUngdomsprogrammet = erDeltakerIUngdomsprogrammet(fnr);
         boolean underKvp = kvpService.erUnderKvp(aktorId);
-        boolean kanAvslutte = kanAvslutteOppfolging(aktorId, erUnderOppfolging(aktorId), erIserv, harAktiveTiltaksdeltakelser, underKvp).kanAvslutte;
+        boolean kanAvslutte = kanAvslutteOppfolging(aktorId, erUnderOppfolging(aktorId), erIserv, harAktiveTiltaksdeltakelser, erDeltakerIUngdomsprogrammet, underKvp).kanAvslutte;
 
         boolean erUnderOppfolgingIArena = maybeArenaOppfolging
                 .map(status -> ArenaUtils.erUnderOppfolging(EnumUtils.valueOf(Formidlingsgruppe.class, status.getFormidlingsgruppe()), EnumUtils.valueOf(Kvalifiseringsgruppe.class, status.getServicegruppe())))
@@ -478,6 +488,7 @@ public class OppfolgingService {
                 .inaktiveringsDato(inaktiveringsDato)
                 .erIserv(erIserv)
                 .harAktiveTiltaksdeltakelser(harAktiveTiltaksdeltakelser)
+                .erDeltakerIUngdomsprogrammet(erDeltakerIUngdomsprogrammet)
                 .build();
     }
 

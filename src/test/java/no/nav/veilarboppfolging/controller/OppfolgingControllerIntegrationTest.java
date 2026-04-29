@@ -12,7 +12,8 @@ import no.nav.poao_tilgang.client.TilgangType;
 import no.nav.poao_tilgang.client.api.ApiResult;
 import no.nav.veilarboppfolging.ForbiddenException;
 import no.nav.veilarboppfolging.IntegrationTest;
-import no.nav.veilarboppfolging.client.amtdeltaker.AmtDeltakerClient;
+import no.nav.veilarboppfolging.client.tiltakshistorikk.TiltakshistorikkClient;
+import no.nav.veilarboppfolging.client.ungdomsprogram.UngdomsprogramClient;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsStatus;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsBruker;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
@@ -73,7 +74,10 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
     PoaoTilgangClient poaoTilgangClient;
 
     @Autowired
-    AmtDeltakerClient amtDeltakerClient;
+    TiltakshistorikkClient tiltakshistorikkClient;
+
+    @Autowired
+    UngdomsprogramClient ungdomsprogramClient;
 
     @Test
     void hentOppfolgingsPeriode_brukerHarEnAktivOppfolgingsPeriode() throws EmptyResultDataAccessException {
@@ -124,7 +128,8 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
         when(veilarbarenaClient.getArenaOppfolgingsstatus(FNR)).thenReturn(Optional.of(new VeilarbArenaOppfolgingsStatus().setFormidlingsgruppe("ISERV")));
         when(veilarbarenaClient.hentOppfolgingsbruker(FNR)).thenReturn(Optional.of(new VeilarbArenaOppfolgingsBruker().setFormidlingsgruppekode("ISERV")));
         when(arenaYtelserService.harPagaendeYtelse(FNR)).thenReturn(false);
-        when(amtDeltakerClient.harAktiveTiltaksdeltakelser(FNR.get())).thenReturn(false);
+        when(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(FNR.get())).thenReturn(false);
+        when(ungdomsprogramClient.erDeltakerIUngdomsprogrammet(FNR.get())).thenReturn(false);
 
         AvslutningStatus avslutningStatus = oppfolgingController.hentAvslutningStatus(FNR);
         assertTrue(avslutningStatus.kanAvslutte);
@@ -151,7 +156,30 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
         // ISERV i arena, ingen ytelser i arena, men aktive tiltak hos komet.
         when(veilarbarenaClient.hentOppfolgingsbruker(FNR)).thenReturn(Optional.of(new VeilarbArenaOppfolgingsBruker().setFormidlingsgruppekode("ISERV")));
         when(arenaYtelserService.harPagaendeYtelse(FNR)).thenReturn(false);
-        when(amtDeltakerClient.harAktiveTiltaksdeltakelser(FNR.get())).thenReturn(true);
+        when(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(FNR.get())).thenReturn(true);
+
+        var dto = new AvsluttOppfolgingV2Request();
+        dto.setBegrunnelse("Begrunnelse");
+        dto.setVeilederId(new NavIdent("Z151515"));
+        dto.setFnr(FNR);
+        var avslutningStatus = oppfolgingV2Controller.avsluttOppfolging(dto);
+        assertEquals(avslutningStatus.getStatusCode(), HttpStatusCode.valueOf(204));
+        OppfolgingPeriodeMinimalDTO periode = oppfolgingController.hentOppfolgingsPeriode(startPeriode.get(0).uuid.toString());
+        assertNull(periode.getSluttDato());
+    }
+
+    @Test
+    void ikkeAvsluttOppfolgingHvisIservOgDeltakerIUngdomsprogrammet() {
+        mockAuthOk();
+        var startPeriode = startOppfolging();
+        ApiResult<Decision> permit = ApiResult.Companion.success(Decision.Permit.INSTANCE);
+        // Tester ikke tilgang
+        doReturn(permit).when(poaoTilgangClient).evaluatePolicy(any());
+        // ISERV i arena, ingen ytelser i arena, ingen aktive tiltak, men deltaker i ungdomsprogrammet.
+        when(veilarbarenaClient.hentOppfolgingsbruker(FNR)).thenReturn(Optional.of(new VeilarbArenaOppfolgingsBruker().setFormidlingsgruppekode("ISERV")));
+        when(arenaYtelserService.harPagaendeYtelse(FNR)).thenReturn(false);
+        when(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(FNR.get())).thenReturn(false);
+        when(ungdomsprogramClient.erDeltakerIUngdomsprogrammet(FNR.get())).thenReturn(true);
 
         var dto = new AvsluttOppfolgingV2Request();
         dto.setBegrunnelse("Begrunnelse");

@@ -83,17 +83,17 @@ open class KafkaConsumerConfig(
                             )
                         }
                     ),
-                KafkaConsumerClientBuilder.TopicConfig<String, OppfolgingskontorMelding?>()
+                KafkaConsumerClientBuilder.TopicConfig<Long, OppfolgingskontorMelding?>()
                     .withLogging()
                     .withMetrics(meterRegistry)
                     .withStoreOnFailure(consumerRepository)
                     .withConsumerConfig(
                         kafkaProperties.arbeidsoppfolgingskontortilordningTopic,
-                        Deserializers.stringDeserializer(),
+                        Deserializers.longDeserializer(),
                         Deserializers.jsonDeserializer(
                             OppfolgingskontorMelding::class.java
                         ),
-                        Consumer { kafkaMelding: ConsumerRecord<String, OppfolgingskontorMelding?> ->
+                        Consumer { kafkaMelding: ConsumerRecord<Long, OppfolgingskontorMelding?> ->
                             arbeidsoppfolgingskontortilordningConsumerService.consumeKontortilordning(kafkaMelding)
                         }
                     )
@@ -118,6 +118,7 @@ open class KafkaConsumerConfig(
             consumerRecordProcessor = KafkaConsumerRecordProcessorBuilder
                 .builder()
                 .withLockProvider(lockProvider)
+                .withMetrics(meterRegistry)
                 .withKafkaConsumerRepository(consumerRepository)
                 .withConsumerConfigs(ConsumerUtils.findConsumerConfigsWithStoreOnFailure(topicConfigs))
                 .build()

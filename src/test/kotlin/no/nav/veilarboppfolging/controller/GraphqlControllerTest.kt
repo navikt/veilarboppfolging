@@ -3,13 +3,18 @@ package no.nav.veilarboppfolging.controller
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.EnhetId
 import no.nav.common.types.identer.Fnr
+import no.nav.common.types.identer.NavIdent
 import no.nav.poao_tilgang.client.Decision
+import no.nav.poao_tilgang.client.TilgangType
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.veilarboppfolging.IntegrationTest
 import no.nav.veilarboppfolging.client.pdl.ForenkletFolkeregisterStatus
 import no.nav.veilarboppfolging.client.pdl.FregStatusOgStatsborgerskap
 import no.nav.veilarboppfolging.controller.graphql.AdGruppeNavn
+import no.nav.veilarboppfolging.ident.randomAktorId
+import no.nav.veilarboppfolging.ident.randomFnr
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.KanStarteOppfolgingDto
+import no.nav.veilarboppfolging.service.AuthService
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.verifyNoInteractions
 import org.springframework.beans.factory.annotation.Autowired
@@ -19,7 +24,7 @@ import org.springframework.graphql.test.tester.ExecutionGraphQlServiceTester
 import org.springframework.http.HttpStatusCode
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.web.client.RestClient
-import java.util.UUID
+import java.util.*
 import kotlin.test.assertEquals
 
 @ActiveProfiles("test")
@@ -38,10 +43,14 @@ class GraphqlControllerTest: IntegrationTest() {
     val norskStatsborgerskap = listOf("NOR")
 
     fun defaultBruker(): Pair<Fnr, AktorId> {
-        val fnr = Fnr("12345678910")
-        val aktorId = AktorId("22345678910")
+        val fnr = randomFnr()
+        val aktorId = randomAktorId()
         mockSytemBrukerAuthOk(aktorId, fnr)
-        mockPdlFolkeregisterStatus(fnr, FregStatusOgStatsborgerskap(ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven, norskStatsborgerskap))
+        mockPdlFolkeregisterStatus(fnr, FregStatusOgStatsborgerskap(
+            fregStatus = ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven,
+            statsborgerskap = norskStatsborgerskap,
+            under18 = false,
+        ))
         return fnr to aktorId
     }
 
@@ -84,7 +93,7 @@ class GraphqlControllerTest: IntegrationTest() {
     }
 
     @Test
-    fun `skal returnere oppfolgingsEnhet`() {
+    fun `skal returnere oppfolgingsEnhet (for veiledere)`() {
         val (fnr, aktorId) = defaultBruker()
         val kontor = "7414"
         val kontorNavn = "Nav Graphql Kontor"
@@ -102,6 +111,24 @@ class GraphqlControllerTest: IntegrationTest() {
         result.path("oppfolgingsEnhet.enhet").matchesJson("""
             { "id": "${kontor}", "kilde": "NORG", "navn": "${kontorNavn}" }
         """.trimIndent())
+    }
+
+    @Test
+    fun `skal returnere svar på alle spørringer med aktorId som param istedetfor fnr`() {
+        val (fnr, aktorId) = defaultBruker()
+        val kontor = "7414"
+        val kontorNavn = "Nav Graphql Kontor"
+        val skjermet = false
+        val veilederUuid = UUID.randomUUID()
+        mockPdlGeografiskTilknytning(fnr, kontor)
+        mockInternBrukerAuthOk(veilederUuid, aktorId, fnr)
+        mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Permit)
+        mockPoaoTilgangTilgangsAttributter(kontor, skjermet)
+        mockNorgEnhetsNavn(kontor, kontorNavn)
+
+        /* Query is hidden in test/resources/graphl-test :) */
+        val result = tester.documentName("altQuery").variable("fnr", aktorId.get()).execute()
+        result.errors().verify()
     }
 
     @Test
@@ -175,11 +202,15 @@ class GraphqlControllerTest: IntegrationTest() {
     @Test
     fun `skal returnere kanStarteOppfolging - JA når veileder har tilgang`() {
         val veilederUuid = UUID.randomUUID()
-        val fnr = Fnr.of("12444678910")
-        val aktorId = AktorId.of("12444678919")
+        val fnr = randomFnr()
+        val aktorId = randomAktorId()
         mockInternBrukerAuthOk(veilederUuid, aktorId, fnr)
         mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Permit)
-        mockPdlFolkeregisterStatus(fnr, FregStatusOgStatsborgerskap(ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven, norskStatsborgerskap))
+        mockPdlFolkeregisterStatus(fnr, FregStatusOgStatsborgerskap(
+            fregStatus = ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven,
+            statsborgerskap = norskStatsborgerskap,
+            under18 = false,
+        ))
         /* Query is hidden in test/resources/graphl-test :) */
         val result = tester.documentName("kanStarteOppfolging").variable("fnr", fnr.get()).execute()
         result.errors().verify()
@@ -191,11 +222,15 @@ class GraphqlControllerTest: IntegrationTest() {
     @Test
     fun `skal returnere kanStarteOppfolging - ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT når bruker allerede under oppfølging men ISERV+kanReaktiveres i Arena`() {
         val veilederUuid = UUID.randomUUID()
-        val fnr = Fnr.of("12444678910")
-        val aktorId = AktorId.of("12444678919")
+        val fnr = randomFnr()
+        val aktorId = randomAktorId()
         setBrukerUnderOppfolging(aktorId, fnr)
         mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Permit)
-        mockPdlFolkeregisterStatus(fnr, FregStatusOgStatsborgerskap(ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven, norskStatsborgerskap))
+        mockPdlFolkeregisterStatus(fnr, FregStatusOgStatsborgerskap(
+            fregStatus = ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven,
+            statsborgerskap = norskStatsborgerskap,
+            under18 = false,
+        ))
         mockInternBrukerAuthOk(veilederUuid, aktorId, fnr)
         mockVeilarbArenaOppfolgingsStatus(fnr= fnr, formidlingsgruppe = Formidlingsgruppe.ISERV, kanEnkeltReaktiveres = true)
         /* Query is hidden in test/resources/graphl-test :) */
@@ -210,11 +245,15 @@ class GraphqlControllerTest: IntegrationTest() {
     @Test
     fun `skal returnere kanStarteOppfolging - ALLEREDE_UNDER_OPPFOLGING når bruker allerede under oppfølging`() {
         val veilederUuid = UUID.randomUUID()
-        val fnr = Fnr.of("12444678910")
-        val aktorId = AktorId.of("12444678919")
+        val fnr = randomFnr()
+        val aktorId = randomAktorId()
         setBrukerUnderOppfolging(aktorId, fnr)
         mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Permit)
-        mockPdlFolkeregisterStatus(fnr, FregStatusOgStatsborgerskap(ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven, norskStatsborgerskap))
+        mockPdlFolkeregisterStatus(fnr, FregStatusOgStatsborgerskap(
+            fregStatus = ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven,
+            statsborgerskap = norskStatsborgerskap,
+            under18 = false,
+        ))
         mockInternBrukerAuthOk(veilederUuid, aktorId, fnr)
         /* Query is hidden in test/resources/graphl-test :) */
         val result = tester.documentName("kanStarteOppfolging").variable("fnr", fnr.get()).execute()
@@ -222,15 +261,35 @@ class GraphqlControllerTest: IntegrationTest() {
         result.path("oppfolging").matchesJson("""
             { "kanStarteOppfolging": "ALLEREDE_UNDER_OPPFOLGING" }
         """.trimIndent())
+    }
 
+    // skal endres til egen respons for under 18 når inngar-intern skal få dette fra backend
+    @Test
+    fun `skal returnere kanStarteOppfolging - JA når veileder har tilgang og under 18`() {
+        val veilederUuid = UUID.randomUUID()
+        val fnr = randomFnr()
+        val aktorId = randomAktorId()
+        mockInternBrukerAuthOk(veilederUuid, aktorId, fnr)
+        mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Permit)
+        mockPdlFolkeregisterStatus(fnr, FregStatusOgStatsborgerskap(
+            fregStatus = ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven,
+            statsborgerskap = norskStatsborgerskap,
+            under18 = true,
+        ))
+        /* Query is hidden in test/resources/graphl-test :) */
+        val result = tester.documentName("kanStarteOppfolging").variable("fnr", fnr.get()).execute()
+        result.errors().verify()
+        result.path("oppfolging").matchesJson("""
+            { "kanStarteOppfolging": "JA_MED_MANUELL_GODKJENNING_PGA_UNDER_18" }
+        """.trimIndent())
     }
 
     @Test
     fun `skal ikke kalle pdl for bosattstatus dersom veileder ikke tilgang til bruker`() {
         // Kallet mot pdl vil feile dersom det blir kalt for en bruker med diskresjonskode hvis veileder ikke har spesielle rettigheter
         val veilederUuid = UUID.randomUUID()
-        val fnr = Fnr.of("12444678910")
-        val aktorId = AktorId.of("12444678919")
+        val fnr = randomFnr()
+        val aktorId = randomAktorId()
        // setBrukerUnderOppfolging(aktorId)
         mockInternBrukerAuthOk(veilederUuid, aktorId, fnr)
         mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Deny(
@@ -249,8 +308,8 @@ class GraphqlControllerTest: IntegrationTest() {
     @Test
     fun `skal returnere kanStarteOppfolging - skal returnere hvorfor veileder ikke har tilgang`() {
         val veilederUuid = UUID.randomUUID()
-        val fnr = Fnr.of("12444678910")
-        val aktorId = AktorId.of("12444678919")
+        val fnr = randomFnr()
+        val aktorId = randomAktorId()
         mockInternBrukerAuthOk(veilederUuid, aktorId, fnr)
 
         listOf(
@@ -276,8 +335,8 @@ class GraphqlControllerTest: IntegrationTest() {
     @Test
     fun `skal returnere kanStarteOppfolging - norsk statsborger - skal returnere hvorfor veileder starte oppfølging på brukere som har feil status i freg`() {
         val veilederUuid = UUID.randomUUID()
-        val fnr = Fnr.of("12444678910")
-        val aktorId = AktorId.of("12444678919")
+        val fnr = randomFnr()
+        val aktorId = randomAktorId()
         mockInternBrukerAuthOk(veilederUuid, aktorId, fnr)
         mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Permit)
 
@@ -291,7 +350,11 @@ class GraphqlControllerTest: IntegrationTest() {
             ForenkletFolkeregisterStatus.ukjent to KanStarteOppfolgingDto.UKJENT_STATUS_FOLKEREGISTERET,
             ForenkletFolkeregisterStatus.ingen_status to KanStarteOppfolgingDto.INGEN_STATUS_FOLKEREGISTERET,
         ).forEach { (status, kanStarteOppfolgingResult) ->
-            mockPdlFolkeregisterStatus(fnr, FregStatusOgStatsborgerskap(status, norskStatsborgerskap))
+            mockPdlFolkeregisterStatus(fnr, FregStatusOgStatsborgerskap(
+                fregStatus = status,
+                statsborgerskap = norskStatsborgerskap,
+                under18 = false,
+            ))
             /* Query is hidden in test/resources/graphl-test :) */
             val result = tester.documentName("kanStarteOppfolging").variable("fnr", fnr.get()).execute()
             result.errors().verify()
@@ -304,15 +367,15 @@ class GraphqlControllerTest: IntegrationTest() {
     @Test
     fun `skal returnere kanStarteOppfolging - tredjelandsborger - skal returnere hvorfor veileder starte oppfølging på brukere som har feil status i freg`() {
         val veilederUuid = UUID.randomUUID()
-        val fnr = Fnr.of("12444678910")
-        val aktorId = AktorId.of("12444678919")
+        val fnr = randomFnr()
+        val aktorId = randomAktorId()
         val tredjelandsStatsborgerskap = listOf("RUS")
         mockInternBrukerAuthOk(veilederUuid, aktorId, fnr)
         mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Permit)
 
         listOf(
             ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven to KanStarteOppfolgingDto.JA,
-            ForenkletFolkeregisterStatus.dNummer to KanStarteOppfolgingDto.JA_MED_MANUELL_GODKJENNING_PGA_DNUMMER_IKKE_EOS_GBR,
+            ForenkletFolkeregisterStatus.dNummer to KanStarteOppfolgingDto.JA_MED_MANUELL_GODKJENNING_PGA_DNUMMER_IKKE_EOS,
             ForenkletFolkeregisterStatus.doedIFolkeregisteret to KanStarteOppfolgingDto.DOD,
             ForenkletFolkeregisterStatus.forsvunnet to KanStarteOppfolgingDto.IKKE_LOVLIG_OPPHOLD,
             ForenkletFolkeregisterStatus.ikkeBosatt to KanStarteOppfolgingDto.JA_MED_MANUELL_GODKJENNING_PGA_IKKE_BOSATT,
@@ -320,7 +383,11 @@ class GraphqlControllerTest: IntegrationTest() {
             ForenkletFolkeregisterStatus.ukjent to KanStarteOppfolgingDto.UKJENT_STATUS_FOLKEREGISTERET,
             ForenkletFolkeregisterStatus.ingen_status to KanStarteOppfolgingDto.INGEN_STATUS_FOLKEREGISTERET,
         ).forEach { (status, kanStarteOppfolgingResult) ->
-            mockPdlFolkeregisterStatus(fnr, FregStatusOgStatsborgerskap(status, tredjelandsStatsborgerskap))
+            mockPdlFolkeregisterStatus(fnr, FregStatusOgStatsborgerskap(
+                fregStatus = status,
+                statsborgerskap = tredjelandsStatsborgerskap,
+                under18 = false,
+            ))
             /* Query is hidden in test/resources/graphl-test :) */
             val result = tester.documentName("kanStarteOppfolging").variable("fnr", fnr.get()).execute()
             result.errors().verify()
@@ -333,22 +400,25 @@ class GraphqlControllerTest: IntegrationTest() {
     @Test
     fun `skal ha tilgang til brukers sjekke veileders tilganger til bruker`() {
         val veilederUuid = UUID.randomUUID()
-        val fnr = Fnr.of("12444678910")
-        val aktorId = AktorId.of("12444678919")
+        val fnr = randomFnr()
+        val aktorId = randomAktorId()
         val enhetId = EnhetId("3131")
         setBrukerUnderOppfolging(aktorId, fnr)
         setBrukerUnderKvp(aktorId, enhetId.get(), veilederUuid.toString())
         mockInternBrukerAuthOk(veilederUuid, aktorId, fnr)
         mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Permit)
         mockPoaoTilgangHarTilgangTilEnhet(veilederUuid, enhetId, Decision.Deny("NEI", "FORDI"))
+        mockTiltakshistorikk(fnr, harAktiveDeltakelser = false)
         /* Query is hidden in test/resources/graphl-test :) */
         val result = tester.documentName("veilederTilganger").variable("fnr", fnr.get()).execute()
         result.errors().verify()
-        result.path("veilederLeseTilgangModia").matchesJson("""
+        result.path("veilederTilgang").matchesJson("""
             { 
                 "harVeilederLeseTilgangTilBruker": true,
                 "harVeilederLeseTilgangTilBrukersKontorsperre": false,
-                "tilgang": "HAR_TILGANG"
+                "harVeilederTilgangFlytteBrukerTilEgetKontor": true,
+                "tilgang": "HAR_TILGANG",
+                "harAktiveTiltaksdeltakelserVedFlyttingTilEgetKontor": false
             }
         """.trimIndent())
         result.path("brukerStatus").matchesJson("""
@@ -361,31 +431,65 @@ class GraphqlControllerTest: IntegrationTest() {
     }
 
     @Test
+    fun `skal kunne flytte bruker til eget kontor når bruker er under oppfølging og veileder ikke har tilgang til brukers kontor`() {
+        val veilederUuid = UUID.randomUUID()
+        val fnr = randomFnr()
+        val aktorId = randomAktorId()
+        val enhetId = EnhetId("3131")
+        setBrukerUnderOppfolging(aktorId, fnr)
+        mockInternBrukerAuthOk(veilederUuid, aktorId, fnr)
+        mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Deny("NEI", "FORDI"))
+        mockTiltakshistorikk(fnr, true)
+        /* Query is hidden in test/resources/graphl-test :) */
+        val result = tester.documentName("veilederTilganger").variable("fnr", fnr.get()).execute()
+        result.errors()
+            .filter { it.path == "brukerStatus" }
+            .verify()
+        result.path("veilederTilgang").matchesJson("""
+            { 
+                "harVeilederLeseTilgangTilBruker": false,
+                "harVeilederTilgangFlytteBrukerTilEgetKontor": true,
+                "harAktiveTiltaksdeltakelserVedFlyttingTilEgetKontor": true,
+            }
+        """.trimIndent())
+    }
+
+
+    @Test
     fun `skal returnere oppfolgingsperiodene til bruker`() {
         val veilederId = UUID.randomUUID()
+        val veilederNavIdent = NavIdent("B143314")
+        val enhet = EnhetId("1212")
         val (fnr, aktorId) = defaultBruker()
         mockInternBrukerAuthOk(veilederId, aktorId, fnr)
-        mockPoaoTilgangHarTilgangTilBruker(veilederId, fnr, Decision.Permit)
+        mockPoaoTilgangHarTilgangTilBruker(veilederId, fnr, Decision.Permit, tilgangType = TilgangType.SKRIVE)
+        mockPoaoTilgangHarTilgangTilBruker(veilederId, fnr, Decision.Permit, tilgangType = TilgangType.LESE)
+        mockPoaoTilgangHarTilgangTilEnhet(veilederId, enhet, Decision.Permit)
         setBrukerUnderOppfolging(aktorId, fnr)
+        setLocalArenaOppfolging(aktorId, Formidlingsgruppe.ISERV, enhet = enhet)
+        avsluttOppfolgingManueltSomVeileder(aktorId, veilederNavIdent, "fordi")
 
         /* Query is hidden in test/resources/graphl-test :) */
         val result = tester.documentName("getOppfolgingsperioder").variable("fnr", fnr.get()).execute()
         result.errors().verify()
         result.path("oppfolgingsPerioder").matchesJson("""
-            [ { sluttTidspunkt: null } ]
+            [ { avsluttetAv: "${veilederNavIdent.get()}" } ]
         """.trimIndent())
     }
 
     @Test
     fun `skal returnere manuell status og reservert på bruker`() {
         val veilederId = UUID.randomUUID()
+        val navIdent = NavIdent("A123123")
         val (fnr, aktorId) = defaultBruker()
         mockInternBrukerAuthOk(veilederId, aktorId, fnr)
         mockPoaoTilgangHarTilgangTilBruker(veilederId, fnr, Decision.Permit)
         setBrukerUnderOppfolging(aktorId, fnr)
         setLocalArenaOppfolging(aktorId)
         setManuellStatus(aktorId)
+        setTilordnetVeileder(aktorId, navIdent)
         mockDigdir(fnr, reservertMotDigitalKommunikasjon = true, kanVarsles = false)
+        mockTiltakshistorikk(fnr, harAktiveDeltakelser = true)
 
         /* Query is hidden in test/resources/graphl-test :) */
         val result = tester.documentName("hentBrukerStatus").variable("fnr", fnr.get()).execute()
@@ -410,9 +514,178 @@ class GraphqlControllerTest: IntegrationTest() {
                 "inaktivIArena": false,
                 "kanReaktiveres": null,
                 "inaktiveringsdato": null,
-                "kvalifiseringsgruppe": "VURDI"
-              }
+                "kvalifiseringsgruppe": "VURDI",
+                "formidlingsgruppe": "IARBS"
+              },
+              "veilederTilordning": {
+                "veilederIdent": "${navIdent}"
+              },
+              "harAktiveTiltaksdeltakelser": true
             }
+        """.trimIndent())
+    }
+
+    @Test
+    fun `internbruker uten tilgang til enhet skal bare kunne se at hen ikke har tilgang`() {
+        val (fnr, aktorId) = defaultBruker()
+        val veilederId = UUID.randomUUID()
+        mockInternBrukerAuthOk(veilederId, aktorId, fnr)
+        mockPoaoTilgangHarTilgangTilBruker(veilederId, fnr, Decision.Deny("NOPE", "REASONS"))
+        mockTiltakshistorikk(fnr, harAktiveDeltakelser = true)
+
+        val result = tester.documentName("altQuery").variable("fnr", fnr.get()).execute()
+        result.errors()
+            .expect { it.path == "oppfolgingsPerioder" && it.message == "NavAnsattTilgangTilEksternBrukerPolicyInput fikk deny" }
+            .expect { it.path == "oppfolgingsEnhet" && it.message == "Ikke tilgang til oppfolgingsenhet: Veileder har ikke tilgang til bruker" }
+            .expect { it.path == "brukerStatus" && it.message == "Ikke tilgang til brukerStatus: Veileder har ikke tilgang til bruker" }
+            .verify()
+        result.path("veilederTilgang").matchesJson("""
+            {
+                "harVeilederLeseTilgangTilBruker": false,
+                "harVeilederLeseTilgangTilBrukersKontorsperre": true,
+                "tilgang": "IKKE_TILGANG_ENHET",
+                "harAktiveTiltaksdeltakelserVedFlyttingTilEgetKontor": true
+            }
+        """.trimIndent())
+        result.path("oppfolging").matchesJson("""
+            {
+                "kanStarteOppfolging": "IKKE_TILGANG_ENHET",
+                "erUnderOppfolging": null
+            }
+        """.trimIndent())
+
+    }
+
+    @Test
+    fun `internbruker uten tilgang til kode 7-bruker skal bare kunne se at hen ikke har tilgang`() {
+        val (fnr, aktorId) = defaultBruker()
+        val veilederId = UUID.randomUUID()
+        mockInternBrukerAuthOk(veilederId, aktorId, fnr)
+        mockPoaoTilgangHarTilgangTilBruker(veilederId, fnr, Decision.Deny(AdGruppeNavn.FORTROLIG_ADRESSE, "MANGLER_TILGANG_TIL_AD_GRUPPE"))
+        mockTiltakshistorikk(fnr, harAktiveDeltakelser = true)
+
+        val result = tester.documentName("altQuery").variable("fnr", fnr.get()).execute()
+        result.errors()
+            .expect { it.path == "oppfolgingsPerioder" && it.message == "NavAnsattTilgangTilEksternBrukerPolicyInput fikk deny" }
+            .expect { it.path == "oppfolgingsEnhet" && it.message == "Ikke tilgang til oppfolgingsenhet: Veileder har ikke tilgang til bruker" }
+            .expect { it.path == "brukerStatus" && it.message == "Ikke tilgang til brukerStatus: Veileder har ikke tilgang til bruker" }
+            .verify()
+        result.path("veilederTilgang").matchesJson("""
+            {
+                "harVeilederLeseTilgangTilBruker": false,
+                "harVeilederLeseTilgangTilBrukersKontorsperre": true,
+                "tilgang": "IKKE_TILGANG_FORTROLIG_ADRESSE",
+                "harAktiveTiltaksdeltakelserVedFlyttingTilEgetKontor": null
+            }
+        """.trimIndent())
+        result.path("oppfolging").matchesJson("""
+            {
+                "kanStarteOppfolging": "IKKE_TILGANG_FORTROLIG_ADRESSE",
+                "erUnderOppfolging": null
+            }
+        """.trimIndent())
+    }
+
+    @Test
+    fun `eksternbruker skal ikke kunne spørre om oppfølgingsenhet med nivå 3`() {
+        val (fnr, _) = defaultBruker()
+        mockEksternBrukerAuthOk(fnr)
+        mockEksternbrukerErInnlogget(fnr, AuthService.SikkerthetsNivå.Nivå3)
+        val kontor = "4412"
+        val kontorNavn = "Ukjent enhet"
+        mockPoaoTilgangTilgangsAttributter(
+            kontor,
+            false,
+            null
+        )
+
+        val result = tester.documentName("getEnhetQuery").variable("fnr", fnr.get()).execute()
+
+        result.path("oppfolgingsEnhet.enhet").matchesJson("""
+            { "id": "${kontor}", "kilde": "NORG", "navn": "${kontorNavn}" }
+        """.trimIndent())
+    }
+
+    @Test
+    fun `eksternbruker skal ikke kunne spørre om veilederTilgang eller kanStarteOppfolging`() {
+        val (fnr, _) = defaultBruker()
+        mockEksternBrukerAuthOk(fnr)
+        mockEksternbrukerErInnlogget(fnr, AuthService.SikkerthetsNivå.Nivå4)
+        mockPoaoTilgangTilgangsAttributter(
+            "2112",
+            false,
+            null
+        )
+
+        val result = tester.documentName("altQuery").variable("fnr", fnr.get()).execute()
+        result.errors()
+            .expect { it.path == "veilederTilgang" && it.message == "Må være intern bruker" }
+            .expect { it.path == "oppfolging.kanStarteOppfolging" && it.message == "Må være intern bruker" }
+            .verify()
+    }
+
+    @Test
+    fun `eksternbruker skal kunne spørre om kanStarteOppfolgingEkstern`() {
+        val (fnr, _) = defaultBruker()
+        mockEksternBrukerAuthOk(fnr)
+        mockEksternbrukerErInnlogget(fnr, AuthService.SikkerthetsNivå.Nivå4)
+        mockPoaoTilgangTilgangsAttributter(
+            "2112",
+            false,
+            null
+        )
+
+        val result = tester.documentName("kanStarteOppfolgingEkstern").variable("fnr", fnr.get()).execute()
+        result.errors().verify()
+        result.path("oppfolging").matchesJson("""
+            { "kanStarteOppfolgingEkstern": JA }
+        """.trimIndent())
+    }
+
+    @Test
+    fun `skal returnere kanStarteOppfolgingEkstern - JA_MED_MANUELL_GODKJENNING_PGA_UNDER_18 hvis bruker er under 18`() {
+        val (fnr, _) = defaultBruker()
+        mockEksternBrukerAuthOk(fnr)
+        mockEksternbrukerErInnlogget(fnr, AuthService.SikkerthetsNivå.Nivå4)
+        mockPoaoTilgangTilgangsAttributter(
+            "2112",
+            false,
+            null
+        )
+        mockPdlFolkeregisterStatus(fnr, FregStatusOgStatsborgerskap(
+            fregStatus = ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven,
+            statsborgerskap = norskStatsborgerskap,
+            under18 = true,
+        ))
+
+        val result = tester.documentName("kanStarteOppfolgingEkstern").variable("fnr", fnr.get()).execute()
+        result.errors().verify()
+        result.path("oppfolging").matchesJson("""
+            { "kanStarteOppfolgingEkstern": JA_MED_MANUELL_GODKJENNING_PGA_UNDER_18 }
+        """.trimIndent())
+    }
+
+    @Test
+    fun `skal returnere kanStarteOppfolgingEkstern - ALLEREDE_UNDER_OPPFOLGING når bruker allerede under oppfølging og under 18`() {
+        val (fnr, aktorId) = defaultBruker()
+        mockEksternBrukerAuthOk(fnr)
+        mockEksternbrukerErInnlogget(fnr, AuthService.SikkerthetsNivå.Nivå4)
+        mockPoaoTilgangTilgangsAttributter(
+            "2112",
+            false,
+            null
+        )
+        setBrukerUnderOppfolging(aktorId, fnr)
+        mockPdlFolkeregisterStatus(fnr, FregStatusOgStatsborgerskap(
+            fregStatus = ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven,
+            statsborgerskap = norskStatsborgerskap,
+            under18 = true,
+        ))
+        /* Query is hidden in test/resources/graphl-test :) */
+        val result = tester.documentName("kanStarteOppfolgingEkstern").variable("fnr", fnr.get()).execute()
+        result.errors().verify()
+        result.path("oppfolging").matchesJson("""
+            { "kanStarteOppfolgingEkstern": "ALLEREDE_UNDER_OPPFOLGING" }
         """.trimIndent())
     }
 }

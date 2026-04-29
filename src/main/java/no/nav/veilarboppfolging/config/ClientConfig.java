@@ -11,9 +11,11 @@ import no.nav.common.token_client.builder.AzureAdTokenClientBuilder;
 import no.nav.common.token_client.builder.TokenXTokenClientBuilder;
 import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
 import no.nav.common.token_client.client.TokenXOnBehalfOfTokenClient;
-import no.nav.veilarboppfolging.client.amtdeltaker.AmtDeltakerClient;
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirClient;
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirClientImpl;
+import no.nav.veilarboppfolging.client.oppgave.OppgaveClient;
+import no.nav.veilarboppfolging.client.tiltakshistorikk.TiltakshistorikkClient;
+import no.nav.veilarboppfolging.client.ungdomsprogram.UngdomsprogramClient;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClientImpl;
 import no.nav.veilarboppfolging.service.AuthService;
@@ -23,6 +25,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+
+import java.util.function.Supplier;
 
 @Profile("!test")
 @Configuration
@@ -60,9 +64,28 @@ public class ClientConfig {
     }
 
     @Bean
-    public AmtDeltakerClient amtDeltakerClient(EnvironmentProperties properties, ErrorMappedAzureAdMachineToMachineTokenClient tokenClient) {
-        return new AmtDeltakerClient(properties.getAmtDeltakerUrl(),
-                () -> tokenClient.createMachineToMachineToken(properties.getAmtDeltakerScope()),
+    public TiltakshistorikkClient tiltakshistorikkClient(EnvironmentProperties properties, ErrorMappedAzureAdMachineToMachineTokenClient tokenClient) {
+        return new TiltakshistorikkClient(properties.getTiltakshistorikkUrl(),
+                () -> tokenClient.createMachineToMachineToken(properties.getTiltakshistorikkScope()),
+                RestClient.baseClient()
+        );
+    }
+
+    @Bean
+    public OppgaveClient oppgaveClient(EnvironmentProperties properties, ErrorMappedAzureAdMachineToMachineTokenClient tokenClient) {
+        return new OppgaveClient(properties.getOppgaveUrl(),
+                () -> tokenClient.createMachineToMachineToken(properties.getOppgaveScope()),
+                RestClient.baseClient()
+        );
+    }
+
+    @Bean
+    public UngdomsprogramClient ungdomsprogramClient(EnvironmentProperties properties, ErrorMappedAzureAdMachineToMachineTokenClient tokenClient, AuthService authService) {
+        Supplier<String> tokenSupplier = () -> authService.erInternBruker() ? authService.getAadOboTokenForTjeneste(properties.getUngdomsprogramScope())
+                : tokenClient.createMachineToMachineToken(properties.getUngdomsprogramScope());
+
+        return new UngdomsprogramClient(properties.getUngdomsprogramUrl(),
+                tokenSupplier,
                 RestClient.baseClient()
         );
     }

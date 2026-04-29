@@ -67,7 +67,7 @@ class KvpServiceTest{
         )
 
         val veilarbArenaOppfolgingsBruker = VeilarbArenaOppfolgingsBruker()
-        veilarbArenaOppfolgingsBruker.setNav_kontor(ENHET)
+        veilarbArenaOppfolgingsBruker.setNavKontor(ENHET)
         `when`<EnhetId?>(arenaOppfolgingService.hentArenaOppfolgingsEnhetId(FNR))
             .thenReturn(EnhetId.of(ENHET))
 
@@ -167,7 +167,7 @@ class KvpServiceTest{
             UnsafeRunnable { kvpService!!.stopKvp(FNR, STOP_BEGRUNNELSE) }
         )
 
-        verify(authService, times(1)).sjekkLesetilgangMedAktorId(AKTOR_ID)
+        verify(authService, times(1)).sjekkLesetilgangMedFnr(FNR)
         verify(oppfolgingsStatusRepository, times(1)).hentOppfolging(AKTOR_ID)
         verify(kvpRepositoryMock, times(1)).stopKvp(
             eq(kvpId),

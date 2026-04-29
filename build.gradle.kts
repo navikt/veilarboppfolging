@@ -1,24 +1,24 @@
-val kotlinVersion = "2.2.21"
+val kotlinVersion = "2.3.0"
 val dependencyManagementVersion = "1.1.3"
 val jacocoVersion = "0.8.12"
-val flywayVersion = "11.12.0"
-val commonVersion = "3.2025.10.10_08.21-bb7c7830d93c"
+val flywayVersion = "12.0.3"
+val commonVersion = "3.2026.02.26_11.51-6f89285fe24d-beta"
 val ptoSchemaVersion = "1.2025.09.29_11.36-6e568fa24c23"
 val poaoTilgangVersion = "2025.07.04_08.56-814fa50f6740"
 val wiremockVersion = "3.0.1"
 val schedlockVersion = "6.10.0"
-val googleCloudLibrariesBomVersion = "26.71.0"
+val googleCloudLibrariesBomVersion = "26.77.0"
 val springDoc = "2.8.9"
 val tmsMicrofrontendBuilder = "3.0.0"
 val tmsVarselBuilder = "2.1.1"
-val avroVersion = "1.12.0"
-val logstashVersion = "8.1"
+val logstashVersion = "9.0"
+val avroVersion = "1.12.1"
 val confluentKafkaAvroVersion = "8.1.0"
 
 plugins {
     kotlin("jvm") version "2.2.21"
     kotlin("plugin.spring") version "2.2.10"
-    kotlin("plugin.lombok") version "2.2.21"
+    kotlin("plugin.lombok") version "2.3.10"
     id("org.springframework.boot") version "3.5.6"
     id("io.spring.dependency-management") version "1.1.7"
     id("jacoco")
@@ -64,6 +64,8 @@ repositories {
         url = uri("https://jitpack.io")
     }
 }
+
+val dabBigQuerySchemaVersion = "4a120cb625c20494afac24f0ecf116f73eeefd00"
 
 dependencies {
     annotationProcessor("org.projectlombok:lombok:1.18.42")
@@ -116,7 +118,7 @@ dependencies {
 
     testImplementation("no.nav.common:test:$commonVersion")
     testImplementation("org.springframework.graphql:spring-graphql-test:1.4.3")
-    testImplementation("io.zonky.test:embedded-database-spring-test:2.6.0")
+    testImplementation("io.zonky.test:embedded-database-spring-test:2.7.1")
     testImplementation("io.zonky.test:embedded-postgres:2.2.0")
     testImplementation("junit:junit")
     testImplementation("org.junit.vintage:junit-vintage-engine")
@@ -126,6 +128,9 @@ dependencies {
         exclude(group = "com.vaadin.external.google", module = "android-json")
     }
     testImplementation("org.jetbrains.kotlin:kotlin-test")
+    implementation("com.github.navikt.dab:bigquery-schema:$dabBigQuerySchemaVersion")
+
+    testImplementation("com.github.navikt.dab:bigquery-schema:$dabBigQuerySchemaVersion:test-fixtures")
     testImplementation("org.mockito.kotlin:mockito-kotlin:6.1.0")
 }
 

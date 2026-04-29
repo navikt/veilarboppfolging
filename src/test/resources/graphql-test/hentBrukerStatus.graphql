@@ -20,6 +20,11 @@ query hentBrukerStatus($fnr: String!) {
             kanReaktiveres
             inaktiveringsdato
             kvalifiseringsgruppe
+            formidlingsgruppe
         }
+        veilederTilordning {
+            veilederIdent
+        }
+        harAktiveTiltaksdeltakelser
     }
 }

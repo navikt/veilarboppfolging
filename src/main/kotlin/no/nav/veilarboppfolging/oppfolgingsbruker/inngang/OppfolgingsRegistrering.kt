@@ -5,6 +5,7 @@ import no.nav.common.types.identer.EnhetId
 import no.nav.common.types.identer.Fnr
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
+import no.nav.veilarboppfolging.oppfolgingsbruker.BrukerRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.Registrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.SystemRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant
@@ -19,8 +20,11 @@ sealed class OppfolgingsRegistrering(
         fun arbeidssokerRegistrering(fnr: Fnr, aktorId: AktorId, registrant: Registrant): ArbeidsokerRegistrering {
             return ArbeidsokerRegistrering(fnr, aktorId, registrant)
         }
-        fun manuellRegistrering(fnr: Fnr, aktorId: AktorId, veileder: VeilederRegistrant, kontorSattAvVeileder: String? = null): ManuellRegistrering {
-            return ManuellRegistrering(fnr, aktorId, veileder, kontorSattAvVeileder)
+        fun manuellRegistreringVeileder(fnr: Fnr, aktorId: AktorId, veileder: VeilederRegistrant, kontorSattAvVeileder: String? = null, manueltSjekketLovligOpphold: Boolean): ManuellRegistreringVeileder {
+            return ManuellRegistreringVeileder(fnr, aktorId, veileder, kontorSattAvVeileder, manueltSjekketLovligOpphold)
+        }
+        fun manuellRegistreringBruker(fnr: Fnr, aktorId: AktorId): ManuellRegistreringBruker {
+            return ManuellRegistreringBruker(fnr, aktorId, BrukerRegistrant(fnr))
         }
         fun arenaSyncOppfolgingBrukerRegistrering(fnr: Fnr, aktorId: AktorId, formidlingsgruppe: Formidlingsgruppe, kvalifiseringsgruppe: Kvalifiseringsgruppe, enhet: EnhetId): ArenaSyncRegistrering {
             return ArenaSyncRegistrering(fnr, aktorId, formidlingsgruppe, kvalifiseringsgruppe, enhet)
@@ -34,12 +38,19 @@ data class ArbeidsokerRegistrering(
     override val registrertAv: Registrant,
 ) : OppfolgingsRegistrering(fnr, aktorId, OppfolgingStartBegrunnelse.ARBEIDSSOKER_REGISTRERING, registrertAv)
 
-data class ManuellRegistrering(
+data class ManuellRegistreringVeileder(
     override val fnr: Fnr,
     override val aktorId: AktorId,
     override val registrertAv: Registrant,
     val kontorSattAvVeileder: String?,
+    val manueltSjekketLovligOpphold: Boolean,
 ) : OppfolgingsRegistrering(fnr, aktorId, OppfolgingStartBegrunnelse.MANUELL_REGISTRERING_VEILEDER, registrertAv)
+
+data class ManuellRegistreringBruker(
+    override val fnr: Fnr,
+    override val aktorId: AktorId,
+    override val registrertAv: Registrant
+): OppfolgingsRegistrering(fnr, aktorId, OppfolgingStartBegrunnelse.MANUELL_REGISTRERING_BRUKER, registrertAv)
 
 data class ArenaSyncRegistrering(
     override val fnr: Fnr,

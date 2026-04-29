@@ -10,8 +10,10 @@ import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.common.job.leader_election.LeaderElectionClient;
 import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
 import no.nav.poao_tilgang.client.PoaoTilgangClient;
-import no.nav.veilarboppfolging.client.amtdeltaker.AmtDeltakerClient;
 import no.nav.veilarboppfolging.client.norg.INorgTilhorighetClient;
+import no.nav.veilarboppfolging.client.oppgave.OppgaveClient;
+import no.nav.veilarboppfolging.client.tiltakshistorikk.TiltakshistorikkClient;
+import no.nav.veilarboppfolging.client.ungdomsprogram.UngdomsprogramClient;
 import no.nav.veilarboppfolging.eventsLogger.BigQueryClient;
 import no.nav.veilarboppfolging.test.DbTestUtils;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -97,12 +99,20 @@ public class ApplicationTestConfig {
 	public PoaoTilgangClient poaoTilgangClient() { return mock(PoaoTilgangClient.class); }
 
     @Bean
-    public AmtDeltakerClient amtDeltakerClient() {
-        return mock(AmtDeltakerClient.class);
+    public TiltakshistorikkClient tiltakshistorikkClient() {
+        return mock(TiltakshistorikkClient.class);
+    }
+
+    @Bean
+    public UngdomsprogramClient ungdomsprogramClient() {
+        return mock(UngdomsprogramClient.class);
     }
 
     @Bean
     public INorgTilhorighetClient inorgTilhorighetClient() {
         return mock(INorgTilhorighetClient.class);
     }
+
+    @Bean
+    public OppgaveClient oppgaveClient() { return mock(OppgaveClient.class); }
 }

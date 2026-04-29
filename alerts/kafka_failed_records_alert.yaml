@@ -1,0 +1,23 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: veilarboppfolging-kafka-rules
+  namespace: poao
+  labels:
+    team: poao
+spec:
+  groups:
+    - name: KafkaCommonProsesseringHelse
+      rules:
+        - alert: Veilarboppfolging - Feilet å konsumerer meldinger
+          expr: |
+            sum by(topic) (kafka_consumer_failed_or_backedoff_messages_in_batch{namespace="poao", app="veilarboppfolging"}) > 0
+          for: 5m
+          annotations:
+            consequence: "Klarte ikke konsumere innkommende kafka meldinger fra topic '{{ $labels.topic }}' (fra kafka-common)"
+            action: "Sjekk logger"
+            summary: "'{{ $labels.topic }}' har '{{ $value }}' feilende meldinger"
+            dashboard_url: "https://grafana.nav.cloud.nais.io/a/grafana-lokiexplore-app/explore/service_name/veilarboppfolging/logs?patterns=%5B%5D&from=now-1h&to=now&var-lineFormat=&var-ds=PD969E40991D5C4A8&var-filters=service_name%7C%3D%7Cveilarboppfolging&var-fields=&var-levels=detected_level%7C%3D%7Cerror&var-metadata=&var-jsonFields=&var-patterns=&var-lineFilterV2=&var-lineFilters=&timezone=browser&var-all-fields=&userDisplayedFields=false&displayedFields=%5B%22message%22%5D&urlColumns=%5B%5D&visualizationType=%22logs%22&prettifyLogMessage=true&sortOrder=%22Descending%22&wrapLogMessage=true"
+          labels:
+            namespace: poao
+            severity: critical

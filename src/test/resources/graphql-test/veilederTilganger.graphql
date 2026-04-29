@@ -1,8 +1,10 @@
 query sjekkVeilederTilganger($fnr: String!) {
-    veilederLeseTilgangModia(fnr: $fnr) {
+    veilederTilgang(fnr: $fnr) {
         harVeilederLeseTilgangTilBruker
         harVeilederLeseTilgangTilBrukersKontorsperre
+        harVeilederTilgangFlytteBrukerTilEgetKontor
         tilgang
+        harAktiveTiltaksdeltakelserVedFlyttingTilEgetKontor
     }
     brukerStatus(fnr: $fnr) {
         kontorSperre {

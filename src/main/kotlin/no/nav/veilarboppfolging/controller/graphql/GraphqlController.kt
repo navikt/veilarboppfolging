@@ -6,33 +6,25 @@ import no.nav.common.auth.context.UserRole
 import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.client.norg2.Norg2Client
 import no.nav.common.types.identer.AktorId
+import no.nav.common.types.identer.EksternBrukerId
 import no.nav.common.types.identer.EnhetId
 import no.nav.common.types.identer.Fnr
 import no.nav.poao_tilgang.client.Decision
 import no.nav.poao_tilgang.client.PoaoTilgangClient
 import no.nav.poao_tilgang.client.TilgangType
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
+import no.nav.veilarboppfolging.ForbiddenException
 import no.nav.veilarboppfolging.client.pdl.PdlFolkeregisterStatusClient
-import no.nav.veilarboppfolging.controller.FantIkkeAktorIdForFnrError
 import no.nav.veilarboppfolging.controller.PoaoTilgangError
-import no.nav.veilarboppfolging.controller.graphql.brukerStatus.BrukerStatusArenaDto
-import no.nav.veilarboppfolging.controller.graphql.brukerStatus.BrukerStatusDto
-import no.nav.veilarboppfolging.controller.graphql.brukerStatus.BrukerStatusKrrDto
-import no.nav.veilarboppfolging.controller.graphql.brukerStatus.BrukerStatusManuellDto
-import no.nav.veilarboppfolging.controller.graphql.brukerStatus.KontorSperre
-import no.nav.veilarboppfolging.controller.graphql.oppfolging.EnhetDto
-import no.nav.veilarboppfolging.controller.graphql.oppfolging.KildeDto
-import no.nav.veilarboppfolging.controller.graphql.oppfolging.OppfolgingDto
-import no.nav.veilarboppfolging.controller.graphql.oppfolging.OppfolgingsEnhetQueryDto
-import no.nav.veilarboppfolging.controller.graphql.oppfolging.OppfolgingsperiodeDto
+import no.nav.veilarboppfolging.controller.graphql.brukerStatus.*
+import no.nav.veilarboppfolging.controller.graphql.oppfolging.*
 import no.nav.veilarboppfolging.controller.graphql.veilederTilgang.VeilederTilgangDto
+import no.nav.veilarboppfolging.ident.toCommonIdent
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.*
-import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ALLEREDE_UNDER_OPPFOLGING.oppfolgingSjekk
-import no.nav.veilarboppfolging.repository.EnhetRepository
-import no.nav.veilarboppfolging.repository.KvpRepository
-import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
-import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.KanStarteOppfolgingEksterneDto.Companion.sjekkKanStarteOppfolgingPaBrukerForEksterne
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.KanStarteOppfolgingSjekk.Companion.sjekkKanStarteOppfolgingPaBrukerForVeileder
+import no.nav.veilarboppfolging.repository.*
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity
 import no.nav.veilarboppfolging.service.AuthService
 import no.nav.veilarboppfolging.service.ManuellStatusService
@@ -47,7 +39,6 @@ import org.springframework.stereotype.Controller
 import org.springframework.web.server.ResponseStatusException
 import java.time.format.DateTimeFormatter
 import kotlin.jvm.optionals.getOrNull
-import kotlin.text.isEmpty
 
 enum class TilgangResultat {
     HAR_TILGANG,
@@ -71,7 +62,9 @@ class GraphqlController(
     private val arenaService: ArenaOppfolgingService,
     private val manuellService: ManuellStatusService,
     private val oppfolgingService: OppfolgingService,
-    private val kvpRepository: KvpRepository
+    private val kvpRepository: KvpRepository,
+    private val veilederTilordningerRepository: VeilederTilordningerRepository,
+    private val arbeidsoppfolgingskontorRepository: ArbeidsoppfolgingskontorRepository
 ) {
     private val logger = LoggerFactory.getLogger(GraphqlController::class.java)
 
@@ -80,10 +73,15 @@ class GraphqlController(
     }
 
     @QueryMapping
-    fun oppfolgingsEnhet(@Argument fnr: String?): OppfolgingsEnhetQueryDto {
-        val fnr = sjekkTilgang(fnr, Tilgang.IKKE_EKSTERNBRUKERE).getFnrFromContextOrThrow()
+    fun oppfolgingsEnhet(@Argument fnr: String? = null): DataFetcherResult<OppfolgingsEnhetQueryDto> {
+        val dataFetchResult = DataFetcherResult.newResult<OppfolgingsEnhetQueryDto>()
+        val tilgang = sjekkTilgang(fnr, AlleHarTilgang(AuthService.SikkerthetsNivå.Nivå3))
+        if (tilgang is HarIkkeTilgang) throw ForbiddenException("Ikke tilgang til oppfolgingsenhet: ${tilgang.message}")
 
-        return OppfolgingsEnhetQueryDto(fnr = fnr.get(), enhet = null)
+        val eksternBrukerId = (tilgang as HarTilgang).eksternBrukerId
+        val localContext = GraphQLContext.getDefault().put("fnr", eksternBrukerId.getFnr())
+        return OppfolgingsEnhetQueryDto(enhet = null)
+            .let { dataFetchResult.localContext(localContext).data(it).build() }
     }
 
     private fun erUnderOppfolging(aktorId: AktorId): Boolean {
@@ -93,11 +91,12 @@ class GraphqlController(
 
     @QueryMapping
     fun oppfolging(@Argument fnr: String?): DataFetcherResult<OppfolgingDto> {
-        val tilgangResult = sjekkTilgang(fnr, Tilgang.IKKE_EKSTERNBRUKERE)
-        val fnr = fnrFraContext(fnr)
+        val tilgangResult = sjekkTilgang(fnr, AlleHarTilgang(AuthService.SikkerthetsNivå.Nivå4))
+        val eksternBrukerId = fnrFraContext(fnr)
 
         val dataFetchResult = DataFetcherResult.newResult<OppfolgingDto>()
-        val aktorId = aktorOppslagClient.hentAktorId(fnr) as AktorId? ?: throw FantIkkeAktorIdForFnrError()
+        val fnr = eksternBrukerId.getFnr()
+        val aktorId = eksternBrukerId.getAktorId()
         val erUnderOppfolging = erUnderOppfolging(aktorId)
         val localContext = GraphQLContext.getDefault()
             .put("fnr", fnr)
@@ -113,18 +112,21 @@ class GraphqlController(
     }
 
     @QueryMapping
-    fun veilederLeseTilgangModia(@Argument fnr: String?): DataFetcherResult<VeilederTilgangDto> {
-        if (fnr == null || fnr.isEmpty()) throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Fnr er påkrevd")
+    fun veilederTilgang(@Argument fnr: String?): DataFetcherResult<VeilederTilgangDto> {
+        val eksternBrukerId = fnrFraContext(fnr)
+        val fnr = eksternBrukerId.getFnr()
         val result = DataFetcherResult.newResult<VeilederTilgangDto>()
-        val context = GraphQLContext.getDefault().put("fnr", Fnr.of(fnr))
-        return evaluerNavAnsattTilgangTilEksternBruker(fnr)
+        val context = GraphQLContext.getDefault().put("fnr", fnr)
+        return evaluerNavAnsattTilgangTilEksternBruker(fnr.get())
             .let {
                 VeilederTilgangDto(
                     harTilgang = it == TilgangResultat.HAR_TILGANG,
                     harVeilederLeseTilgangTilBruker = it == TilgangResultat.HAR_TILGANG,
                     tilgang = it,
                     harVeilederLeseTilgangTilKontorsperretBruker = null,
-                    harVeilederLeseTilgangTilBrukersEnhet = null
+                    harVeilederLeseTilgangTilBrukersEnhet = null,
+                    harVeilederTilgangFlytteBrukerTilEgetKontor = null,
+                    harAktiveTiltaksdeltakelserVedFlyttingTilEgetKontor = null,
                 )
             }.let { result.localContext(context).data(it).build() }
     }
@@ -135,11 +137,34 @@ class GraphqlController(
         return oppfolgingService.harVeilederTilgangTilKontorsperretEnhet(aktorId)
     }
 
+    @SchemaMapping(typeName = "VeilederTilgang", field = "harVeilederTilgangFlytteBrukerTilEgetKontor")
+    fun harVeilederTilgangFlytteBrukerTilEgetKontor(tilgang: VeilederTilgangDto, @LocalContextValue fnr: Fnr): Boolean {
+        val aktorId = aktorOppslagClient.hentAktorId(fnr)
+        val underOppfølging = erUnderOppfolging(aktorId)
+        val tilgangTilBruker = evaluerNavAnsattTilgangTilEksternBruker(fnr.get())
+        return underOppfølging && (tilgangTilBruker == TilgangResultat.IKKE_TILGANG_ENHET || tilgangTilBruker == TilgangResultat.HAR_TILGANG)
+    }
+
+    @SchemaMapping(typeName = "VeilederTilgang", field = "harAktiveTiltaksdeltakelserVedFlyttingTilEgetKontor")
+    fun harAktiveTiltaksdeltakelserVedFlyttingTilEgetKontor(tilgang: VeilederTilgangDto, @LocalContextValue fnr: Fnr): Boolean? {
+        val tilgangTilBruker = evaluerNavAnsattTilgangTilEksternBruker(fnr.get())
+        return if (tilgangTilBruker == TilgangResultat.IKKE_TILGANG_ENHET || tilgangTilBruker == TilgangResultat.HAR_TILGANG) {
+            oppfolgingService.harAktiveTiltaksdeltakelser(fnr)
+        } else {
+            null
+        }
+    }
+
+
     @QueryMapping
     fun brukerStatus(@Argument fnr: String?): DataFetcherResult<BrukerStatusDto> {
-        val fnr = sjekkTilgang(fnr, Tilgang.ALLE).getFnrFromContextOrThrow()
         val result = DataFetcherResult.newResult<BrukerStatusDto>()
-        val aktorId = aktorOppslagClient.hentAktorId(fnr)
+        val tilgang = sjekkTilgang(fnr, AlleHarTilgang(AuthService.SikkerthetsNivå.Nivå4))
+        if (tilgang is HarIkkeTilgang) throw ForbiddenException("Ikke tilgang til brukerStatus: ${tilgang.message}")
+
+        val eksternBrukerId = (tilgang as HarTilgang).eksternBrukerId
+        val fnr = eksternBrukerId.getFnr()
+        val aktorId = eksternBrukerId.getAktorId()
         val localContext = GraphQLContext.getDefault()
             .put("fnr", fnr)
             .put("aktorId", aktorId)
@@ -149,36 +174,40 @@ class GraphqlController(
     }
 
 
-    fun fnrFraContext(fnr: String?): Fnr {
-        if (fnr == null || fnr.isEmpty()) throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Fnr er påkrevd")
-        if (authService.erEksternBruker()) return Fnr.of(authService.innloggetBrukerIdent) else return Fnr.of(fnr)
+    fun fnrFraContext(fnr: String?): EksternBrukerId {
+        return when {
+            authService.erEksternBruker() -> Fnr.of(authService.innloggetBrukerIdent)
+            fnr.isNullOrEmpty() -> throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Fnr er påkrevd")
+            else -> fnr.toCommonIdent { throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Ugyldig ident i spørring") }
+        }
     }
 
-    fun TilgangsSjekkResultat.getFnrFromContextOrThrow() = when (this) {
-        is HarIkkeTilgang -> throw ResponseStatusException(HttpStatus.FORBIDDEN)
-        is HarTilgang -> this.fnr
-    }
     private fun sjekkTilgang(inputFnr: String?, tilgang: Tilgang): TilgangsSjekkResultat {
-        val fnr = fnrFraContext(inputFnr)
+        val eksternBrukerId = fnrFraContext(inputFnr)
         val role = authService.role.getOrNull() ?: throw ResponseStatusException(HttpStatus.FORBIDDEN)
         return when (role) {
              UserRole.EKSTERN -> {
                 when (tilgang) {
-                    Tilgang.ALLE -> {
-                        return if (!authService.harEksternBrukerTilgang(fnr)) HarIkkeTilgang("Eksternbrukere har bare tilgang til seg selv")
-                        else HarTilgang(Fnr.of(authService.innloggetBrukerIdent))
+                    is AlleHarTilgang -> {
+                        if (eksternBrukerId !is Fnr)
+                            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Eksternbruker kan bare spørre med fnr")
+                        if (!authService.harEksternBrukerTilgang(eksternBrukerId, tilgang.`påkrevdEksternbrukerInnloggingsNivå`))
+                            HarIkkeTilgang("Eksternbrukere har bare tilgang til seg selv")
+                        else
+                            HarTilgang(Fnr.of(authService.innloggetBrukerIdent))
                     }
-                    Tilgang.IKKE_EKSTERNBRUKERE -> HarIkkeTilgang("Eksternbrukere har ikke tilgang til dette API-et")
+                    EksterneHarIkkeTilgang -> HarIkkeTilgang("Eksternbrukere har ikke tilgang til dette API-et")
                 }
             }
             UserRole.INTERN -> {
+                val fnr = eksternBrukerId.getFnr()
                 val isAllowed = authService.evaluerNavAnsattTilagngTilBruker(fnr, TilgangType.LESE)
-                return when (isAllowed) {
+                when (isAllowed) {
                     is Decision.Deny -> HarIkkeTilgang("Veileder har ikke tilgang til bruker")
-                    Decision.Permit -> HarTilgang(fnr)
+                    Decision.Permit -> HarTilgang(eksternBrukerId)
                 }
             }
-            UserRole.SYSTEM -> HarTilgang(fnr)
+            UserRole.SYSTEM -> HarTilgang(eksternBrukerId)
         }
     }
 
@@ -190,17 +219,14 @@ class GraphqlController(
         }
     }
 
-    private fun kanStarteOppfolgingMtpFregStatus(fnr: Fnr): FregStatusSjekkResultat {
-        return pdlFolkeregisterStatusClient.hentFolkeregisterStatus(fnr).toKanStarteOppfolging()
-    }
-
     @SchemaMapping(typeName = "OppfolgingsEnhetsInfo", field = "enhet")
-    fun arenaOppfolgingsEnhet(oppfolgingsEnhet: OppfolgingsEnhetQueryDto): EnhetDto? {
-        val aktorId = aktorOppslagClient.hentAktorId(Fnr.of(oppfolgingsEnhet.fnr))
-        val arenaEnhet = enhetRepository.hentEnhet(aktorId)
+    fun arenaOppfolgingsEnhet(oppfolgingsEnhet: OppfolgingsEnhetQueryDto, @LocalContextValue fnr: Fnr): EnhetDto? {
+        val aktorId = aktorOppslagClient.hentAktorId(fnr)
+        val enhet = arbeidsoppfolgingskontorRepository.hentEnhet(aktorId)
+
         return when {
-            arenaEnhet == null -> hentDefaultEnhetFraNorg(Fnr.of(oppfolgingsEnhet.fnr))
-            else -> arenaEnhet to KildeDto.ARENA
+            enhet == null -> hentDefaultEnhetFraNorg(fnr)
+            else -> enhet to KildeDto.ARENA
         }?.let { (enhetsNr, kilde) ->
             val enhet = runCatching {
                 norg2Client.hentEnhet(enhetsNr.get())
@@ -219,18 +245,24 @@ class GraphqlController(
     @SchemaMapping(typeName = "OppfolgingDto", field = "kanStarteOppfolging")
     fun kanStarteOppfolging(oppfolgingDto: OppfolgingDto, @LocalContextValue erUnderOppfolging: Boolean, @LocalContextValue fnr: Fnr): KanStarteOppfolgingDto? {
         val gyldigOppfolging = lazy {
-            if (erUnderOppfolging) {
-                val erIservIArena = arenaService.brukerErIservIArena(fnr)
-                if (erIservIArena) {
-                    ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT
-                } else ALLEREDE_UNDER_OPPFOLGING
-            } else {
-                OPPFOLGING_OK
-            }
+            ErBrukerUnderOppfolging.evaluate(erUnderOppfolging, arenaService.brukerErIservIArena(fnr))
         }
         val gyldigTilgang = lazy { evaluerNavAnsattTilgangTilEksternBruker(fnr.get()).toKanStarteOppfolging() }
-        val gyldigFregStatus = lazy { kanStarteOppfolgingMtpFregStatus(fnr) }
-        return oppfolgingSjekk(gyldigOppfolging, gyldigTilgang, gyldigFregStatus)
+        val folkeregisterstatus = lazy { pdlFolkeregisterStatusClient.hentFolkeregisterStatus(fnr) }
+        val brukerErUnder18 = lazy { folkeregisterstatus.value.under18 }
+        val gyldigFregStatus = lazy { folkeregisterstatus.value.toKanStarteOppfolging() }
+        return sjekkKanStarteOppfolgingPaBrukerForVeileder(brukerErUnder18, gyldigOppfolging, gyldigTilgang, gyldigFregStatus)
+    }
+
+    @SchemaMapping(typeName = "OppfolgingDto", field = "kanStarteOppfolgingEkstern")
+    fun kanStarteOppfolgingEkstern(oppfolgingDto: OppfolgingDto, @LocalContextValue erUnderOppfolging: Boolean, @LocalContextValue fnr: Fnr): KanStarteOppfolgingEksterneDto? {
+        val gyldigOppfolging = lazy {
+            ErBrukerUnderOppfolging.evaluate(erUnderOppfolging, arenaService.brukerErIservIArena(fnr))
+        }
+        val folkeregisterstatus = lazy { pdlFolkeregisterStatusClient.hentFolkeregisterStatus(fnr) }
+        val brukerErUnder18 = lazy { folkeregisterstatus.value.under18 }
+        val gyldigFregStatus = lazy { folkeregisterstatus.value.toKanStarteOppfolging() }
+        return sjekkKanStarteOppfolgingPaBrukerForEksterne(gyldigOppfolging, gyldigFregStatus, brukerErUnder18)
     }
 
     @SchemaMapping(typeName = "BrukerStatusDto", field = "manuell")
@@ -239,9 +271,9 @@ class GraphqlController(
             .map { BrukerStatusManuellDto(
                 it.isManuell,
                 it.dato.toString(),
-                it.begrunnelse,
+                it?.begrunnelse,
                 it.opprettetAv.toString(),
-                it.opprettetAvBrukerId
+                it?.opprettetAvBrukerId
             ) }
             .getOrNull()
     }
@@ -257,6 +289,14 @@ class GraphqlController(
         return kvpRepository.hentGjeldendeKvpPeriode(aktorId)
             .map { it.enhet }.getOrNull()
             ?.let { KontorSperre(it) }
+    }
+
+    @SchemaMapping(typeName = "BrukerStatusDto", field = "veilederTilordning")
+    fun veilederTilordning(brukerStatusDto: BrukerStatusDto, @LocalContextValue aktorId: AktorId): VeilederTilordningDto? {
+        return veilederTilordningerRepository.hentTilordnetVeileder(aktorId)
+            .map { it.veilederId }
+            .getOrNull()
+            ?.let { VeilederTilordningDto(it) }
     }
 
     @SchemaMapping(typeName = "BrukerStatusDto", field = "krr")
@@ -278,7 +318,8 @@ class GraphqlController(
                     inaktivIArena = it.formidlingsgruppe == Formidlingsgruppe.ISERV,
                     kanReaktiveres = null,
                     inaktiveringsdato = it.iservFraDato?.toString(),
-                    kvalifiseringsgruppe = it.kvalifiseringsgruppe.toString()
+                    kvalifiseringsgruppe = it.kvalifiseringsgruppe.toString(),
+                    formidlingsgruppe = it.formidlingsgruppe.toString(),
                 )
             }.getOrNull()
     }
@@ -289,7 +330,13 @@ class GraphqlController(
             .map { it.kanEnkeltReaktiveres }.orElse(null)
     }
 
-    fun hentDefaultEnhetFraNorg(fnr: Fnr): Pair<EnhetId, KildeDto>? {
+    @SchemaMapping(typeName = "BrukerStatusDto", field = "harAktiveTiltaksdeltakelser")
+    fun harAktiveTiltaksdeltakelser(brukerStatusDto: BrukerStatusDto, @LocalContextValue aktorId: AktorId): Boolean? {
+        val fnr = aktorOppslagClient.hentFnr(aktorId)
+        return oppfolgingService.harAktiveTiltaksdeltakelser(fnr)
+    }
+
+    private fun hentDefaultEnhetFraNorg(fnr: Fnr): Pair<EnhetId, KildeDto>? {
         val tilgangsattributterResponse = poaoTilgangClient.hentTilgangsAttributter(fnr.get())
         if (tilgangsattributterResponse.isFailure) throw PoaoTilgangError(tilgangsattributterResponse.exception!!)
         val tilgangsAttributter = tilgangsattributterResponse.getOrThrow()
@@ -309,41 +356,80 @@ class GraphqlController(
             .getOrNull()
     }
 
-    private fun sjekkLeseTilgang(fnr: String?): Fnr {
+    private fun sjekkLeseTilgang(fnr: String?): EksternBrukerId {
+        val eksternBrukerId = fnrFraContext(fnr)
         val userRole = authService.role.get()
         return when (userRole) {
-            UserRole.EKSTERN -> {
-                Fnr.of(authService.innloggetBrukerIdent)
-            }
+            UserRole.EKSTERN -> eksternBrukerId as Fnr
             UserRole.SYSTEM,
             UserRole.INTERN -> {
-                fnr?.let { Fnr.of(it) }
-                    ?.also { authService.sjekkLesetilgangMedFnr(it) }
-                    ?: throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Fnr er påkrevd for ${userRole.name}-bruker")
+                val fnr = eksternBrukerId.getFnr()
+                authService.sjekkLesetilgangMedFnr(fnr)
+                eksternBrukerId
             }
         }
     }
 
     @QueryMapping
-    fun oppfolgingsPerioder(@Argument fnr: String?): List<OppfolgingsperiodeDto> {
-        val fnr = sjekkLeseTilgang(fnr)
-        val aktorId = aktorOppslagClient.hentAktorId(fnr)
+    fun oppfolgingsPerioder(@Argument fnr: String?): DataFetcherResult<List<OppfolgingsperiodeDto>> {
+        val result = DataFetcherResult.newResult<List<OppfolgingsperiodeDto>>()
+        val eksternBrukerId = sjekkLeseTilgang(fnr)
+        val aktorId = eksternBrukerId.getAktorId()
         return oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId)
             .map { it.toOppfolgingsperiodeDto() }
+            .let { result.data(it).build() }
+    }
+
+    private fun EksternBrukerId.getAktorId(): AktorId {
+        if (this is Fnr) return aktorOppslagClient.hentAktorId(this)
+        else return AktorId(this.get())
+    }
+
+    private fun EksternBrukerId.getFnr(): Fnr {
+        if (this is AktorId) return aktorOppslagClient.hentFnr(this)
+        return Fnr(this.get())
+    }
+
+    fun Decision.Deny.tryToFindDenyReason(): TilgangResultat {
+        val denyReason = runCatching {
+            DecisionDenyReason.valueOf(this.reason)
+        }.getOrNull()
+
+        return when (denyReason) {
+            DecisionDenyReason.POLICY_IKKE_IMPLEMENTERT,
+            DecisionDenyReason.EKSTERN_BRUKER_HAR_IKKE_TILGANG,
+            DecisionDenyReason.UKLAR_TILGANG_MANGLENDE_INFORMASJON -> TilgangResultat.IKKE_TILGANG_ENHET.also {
+                logger.warn("Fikk uforventet svar om ikke tilgang, skal egentlig ikke skje. Svak programmering – vi må ha gjort noe feil: ${this.reason}, ${this.message}")
+            }
+            DecisionDenyReason.IKKE_TILGANG_TIL_NAV_ENHET -> TilgangResultat.IKKE_TILGANG_ENHET
+            DecisionDenyReason.IKKE_TILGANG_TIL_FORTROLIG_BRUKER ->  TilgangResultat.IKKE_TILGANG_FORTROLIG_ADRESSE
+            DecisionDenyReason.IKKE_TILGANG_TIL_STRENGT_FORTROLIG_BRUKER,
+            DecisionDenyReason.IKKE_TILGANG_TIL_STRENGT_FORTROLIG_UTLAND_BRUKER-> TilgangResultat.IKKE_TILGANG_STRENGT_FORTROLIG_ADRESSE
+            DecisionDenyReason.IKKE_TILGANG_TIL_SKJERMET_PERSON -> TilgangResultat.IKKE_TILGANG_EGNE_ANSATTE
+            DecisionDenyReason.MANGLER_TILGANG_TIL_AD_GRUPPE, null -> when {
+                this.message.contains(AdGruppeNavn.STRENGT_FORTROLIG_ADRESSE) -> return TilgangResultat.IKKE_TILGANG_STRENGT_FORTROLIG_ADRESSE
+                this.message.contains(AdGruppeNavn.FORTROLIG_ADRESSE) -> return TilgangResultat.IKKE_TILGANG_FORTROLIG_ADRESSE
+                this.message.contains(AdGruppeNavn.EGNE_ANSATTE) -> return TilgangResultat.IKKE_TILGANG_EGNE_ANSATTE
+                this.message.contains(AdGruppeNavn.MODIA_GENERELL) -> return TilgangResultat.IKKE_TILGANG_MODIA
+                this.message.contains(AdGruppeNavn.MODIA_OPPFOLGING) -> return TilgangResultat.IKKE_TILGANG_MODIA
+                else -> TilgangResultat.IKKE_TILGANG_ENHET
+            }
+        }
     }
 }
 
-fun Decision.Deny.tryToFindDenyReason(): TilgangResultat {
-    if (this.reason != "MANGLER_TILGANG_TIL_AD_GRUPPE") return TilgangResultat.IKKE_TILGANG_ENHET
-    return when {
-        this.message.contains(AdGruppeNavn.STRENGT_FORTROLIG_ADRESSE) -> return TilgangResultat.IKKE_TILGANG_STRENGT_FORTROLIG_ADRESSE
-        this.message.contains(AdGruppeNavn.FORTROLIG_ADRESSE) -> return TilgangResultat.IKKE_TILGANG_FORTROLIG_ADRESSE
-        this.message.contains(AdGruppeNavn.EGNE_ANSATTE) -> return TilgangResultat.IKKE_TILGANG_EGNE_ANSATTE
-        this.message.contains(AdGruppeNavn.MODIA_GENERELL) -> return TilgangResultat.IKKE_TILGANG_MODIA
-        this.message.contains(AdGruppeNavn.MODIA_OPPFOLGING) -> return TilgangResultat.IKKE_TILGANG_MODIA
-        else -> TilgangResultat.IKKE_TILGANG_ENHET
-    }
+enum class DecisionDenyReason {
+    MANGLER_TILGANG_TIL_AD_GRUPPE,
+    POLICY_IKKE_IMPLEMENTERT,
+    IKKE_TILGANG_TIL_NAV_ENHET,
+    UKLAR_TILGANG_MANGLENDE_INFORMASJON,
+    EKSTERN_BRUKER_HAR_IKKE_TILGANG,
+    IKKE_TILGANG_TIL_FORTROLIG_BRUKER,
+    IKKE_TILGANG_TIL_STRENGT_FORTROLIG_BRUKER,
+    IKKE_TILGANG_TIL_STRENGT_FORTROLIG_UTLAND_BRUKER,
+    IKKE_TILGANG_TIL_SKJERMET_PERSON,
 }
+
 
 object AdGruppeNavn {
     const val STRENGT_FORTROLIG_ADRESSE = "0000-GA-Strengt_Fortrolig_Adresse"
@@ -360,21 +446,16 @@ fun OppfolgingsperiodeEntity.toOppfolgingsperiodeDto(): OppfolgingsperiodeDto {
         startTidspunkt = startDato.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME),
         sluttTidspunkt = sluttDato?.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME),
         id = uuid.toString(),
-        startetBegrunnelse?.let {
-            if (it == OppfolgingStartBegrunnelse.REAKTIVERT_OPPFØLGING) {
-                it.name.replace("ø", "o")
-            } else {
-                it.name
-            }
-        }
+        startetBegrunnelse?.name,
+        avsluttetAv = this.avsluttetAv
     )
 }
 
-enum class Tilgang {
-    ALLE,
-    IKKE_EKSTERNBRUKERE
-}
+
+sealed class Tilgang
+class AlleHarTilgang(var `påkrevdEksternbrukerInnloggingsNivå`: AuthService.SikkerthetsNivå): Tilgang()
+object EksterneHarIkkeTilgang: Tilgang()
 
 sealed class TilgangsSjekkResultat
-class HarTilgang(val fnr: Fnr): TilgangsSjekkResultat()
+class HarTilgang(val eksternBrukerId: EksternBrukerId): TilgangsSjekkResultat()
 class HarIkkeTilgang(val message: String): TilgangsSjekkResultat()

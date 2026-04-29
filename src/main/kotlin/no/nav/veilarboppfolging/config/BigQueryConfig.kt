@@ -1,10 +1,14 @@
 package no.nav.veilarboppfolging.config
 
+import com.google.cloud.bigquery.BigQuery
+import com.google.cloud.bigquery.BigQueryOptions
+import no.nav.poao.dab.bigquery.migrator.BigQueryMigrator
 import no.nav.veilarboppfolging.eventsLogger.BigQueryClient
 import no.nav.veilarboppfolging.eventsLogger.BigQueryClientImplementation
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.DependsOn
 import org.springframework.context.annotation.Profile
 
 @Profile("!test")
@@ -12,7 +16,15 @@ import org.springframework.context.annotation.Profile
 open class BigQueryConfig(@Value("\${app.gcp.projectId}") val projectId: String) {
 
     @Bean
-    open fun bigQueryClient(): BigQueryClient {
-        return BigQueryClientImplementation(projectId)
-    }
+    open fun bigQuery(): BigQuery =
+        BigQueryOptions.newBuilder().setProjectId(projectId).build().service
+
+    @Bean
+    open fun bigQueryMigrator(bigQuery: BigQuery): BigQueryMigrator =
+        BigQueryMigrator(bigQuery, dataset = "oppfolging_metrikker").also { it.migrate() }
+
+    @Bean
+    @DependsOn("bigQueryMigrator")
+    open fun bigQueryClient(bigQuery: BigQuery): BigQueryClient =
+        BigQueryClientImplementation(bigQuery)
 }
