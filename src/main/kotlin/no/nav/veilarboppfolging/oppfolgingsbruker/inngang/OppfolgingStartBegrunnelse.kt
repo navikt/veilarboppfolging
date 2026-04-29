@@ -18,8 +18,8 @@ enum class OppfolgingStartBegrunnelse {
        eller at de får servicegruppe VURDU (sykemeldt uten arbeidsgiver)
        eller servicegruppe OPPFI (helserelatert arbeidsrettet oppfølging i Nav)
        */
-    REAKTIVERT_OPPFØLGING,
-    MANUELL_REGISTRERING_VEILEDER;
+    MANUELL_REGISTRERING_VEILEDER,
+    MANUELL_REGISTRERING_BRUKER;
     /* Oppfølging startet av veileder via registreringsløsningen inngar */
 
     fun toStartetBegrunnelseDTO(): StartetBegrunnelseDTO {

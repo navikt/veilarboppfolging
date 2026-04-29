@@ -90,7 +90,7 @@ class ArenaOppfolgingService @Autowired constructor (
 
     private fun hentEnhetSynkrontFraVeilarbarena(fnr: Fnr): EnhetId? {
         return veilarbarenaClient.hentOppfolgingsbruker(fnr)
-            .map { it.nav_kontor }
+            .map { it.navKontor }
             .map { EnhetId(it) }.orElse(null)
     }
 
@@ -125,7 +125,7 @@ class ArenaOppfolgingService @Autowired constructor (
                         return@let it.get()
                     }
                 OppfolgingsData(
-                    veilarbArenaOppfolging.nav_kontor?.let { EnhetId.of(it) },
+                    veilarbArenaOppfolging.navKontor?.let { EnhetId.of(it) },
                     Kvalifiseringsgruppe.valueOf(veilarbArenaOppfolging.kvalifiseringsgruppekode),
                     Formidlingsgruppe.valueOf(veilarbArenaOppfolging.formidlingsgruppekode),
                     veilarbArenaOppfolging.hovedmaalkode?.let { Hovedmaal.valueOf(it) }

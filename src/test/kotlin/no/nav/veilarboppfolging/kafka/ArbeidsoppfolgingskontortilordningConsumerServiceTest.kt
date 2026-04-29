@@ -19,8 +19,8 @@ class ArbeidsoppfolgingskontortilordningConsumerServiceTest {
 
     @Test
     fun `Skal kalle service for å håndtere melding`() {
-        val kafkamelding: ConsumerRecord<String, OppfolgingskontorMelding?> = mock()
-        whenever(kafkamelding.key()).thenReturn(UUID.randomUUID().toString())
+        val kafkamelding: ConsumerRecord<Long, OppfolgingskontorMelding?> = mock()
+        whenever(kafkamelding.key()).thenReturn(8L)
         EnvironmentUtils.setProperty("NAIS_CLUSTER_NAME", "not prod", EnvironmentUtils.Type.PUBLIC)
         arbeidsoppfolgingskontortilordningConsumerService.consumeKontortilordning(kafkamelding)
 

@@ -11,7 +11,7 @@ import kotlin.jvm.optionals.getOrElse
 class ArbeidsoppfolgingskontortilordningConsumerService(
     val arbeidsoppfolgingsKontorEndretService: ArbeidsoppfolgingsKontorEndretService
 ) {
-    fun consumeKontortilordning(kafkaMelding: ConsumerRecord<String, OppfolgingskontorMelding?>) {
+    fun consumeKontortilordning(kafkaMelding: ConsumerRecord<Long, OppfolgingskontorMelding?>) {
         arbeidsoppfolgingsKontorEndretService.håndterOppfolgingskontorMelding(kafkaMelding.key(), kafkaMelding.value())
     }
 }

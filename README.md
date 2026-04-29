@@ -36,3 +36,10 @@ Avro-genererte klasser er lagt inn manuelt og er ikke en del av pipelinen. Hvis 
 ## Kode generert av GitHub Copilot
 
 Dette repoet bruker GitHub Copilot til å generere kode.
+
+### Teste i GraphiQL playground i dev
+- Skaff et OBO token fra nais sin [azure-token-generator](https://azure-token-generator.intern.dev.nav.no/api/obo?aud=dev-gcp.poao.veilarboppfolging)
+- Bruk token som en "Authorization" header i `Headers` fanen nederst i [GraphiQl](https://veilarboppfolging.intern.dev.nav.no/veilarboppfolging/graphiql)
+    - `{ "Authorization": "Bearer <token>", "nav-consumer-id": "graphiql" }`
+    - Sett `{ "fnr": "<fnr eller aktorId>" }` i variables
+- Profit?

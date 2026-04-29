@@ -34,7 +34,8 @@ public class DtoMappers {
                 avslutningStatusData.underKvp,
                 avslutningStatusData.inaktiveringsDato,
                 avslutningStatusData.erIserv,
-                avslutningStatusData.harAktiveTiltaksdeltakelser
+                avslutningStatusData.harAktiveTiltaksdeltakelser,
+                avslutningStatusData.erDeltakerIUngdomsprogrammet
         );
     }
 

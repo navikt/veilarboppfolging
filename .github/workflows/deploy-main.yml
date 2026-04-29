@@ -20,13 +20,16 @@ jobs:
   build:
     name: Build, test and upload to GAR
     uses: ./.github/workflows/build.yml
-    secrets: inherit
+    secrets:
+      SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+      GRADLE_ENCRYPTION_KEY: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
 
   dev:
     name: Deploy to dev
     needs: build
     uses: ./.github/workflows/deploy.yml
-    secrets: inherit
+    secrets:
+      SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     with:
       env: dev
       image: ${{ needs.build.outputs.image }}
@@ -35,7 +38,8 @@ jobs:
     name: Deploy to prod
     needs: [build]
     uses: ./.github/workflows/deploy.yml
-    secrets: inherit
+    secrets:
+      SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     with:
       env: prod
       image: ${{ needs.build.outputs.image }}

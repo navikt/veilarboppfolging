@@ -8,6 +8,7 @@ import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.client.norg2.Enhet
 import no.nav.common.client.norg2.Norg2Client
 import no.nav.common.json.JsonUtils
+import no.nav.common.token_client.client.TokenXOnBehalfOfTokenClient
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.EnhetId
 import no.nav.common.types.identer.Fnr
@@ -54,10 +55,10 @@ import no.nav.veilarboppfolging.repository.ManuellStatusRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
 import no.nav.veilarboppfolging.repository.SakRepository
+import no.nav.veilarboppfolging.repository.VeilederTilordningerRepository
 import no.nav.veilarboppfolging.repository.entity.ManuellStatusEntity
 import no.nav.veilarboppfolging.repository.enums.KodeverkBruker
 import no.nav.veilarboppfolging.service.AuthService
-import no.nav.veilarboppfolging.service.KvpService
 import no.nav.veilarboppfolging.service.MetricsService
 import no.nav.veilarboppfolging.service.OppfolgingService
 import no.nav.veilarboppfolging.service.StartOppfolgingService
@@ -81,6 +82,9 @@ import org.springframework.web.context.WebApplicationContext
 import java.time.LocalDate
 import java.time.ZonedDateTime
 import java.util.*
+import no.nav.veilarboppfolging.client.oppgave.OppgaveClient
+import no.nav.veilarboppfolging.client.tiltakshistorikk.TiltakshistorikkClient
+import no.nav.veilarboppfolging.client.ungdomsprogram.UngdomsprogramClient
 
 @EmbeddedKafka(partitions = 1)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -113,6 +117,9 @@ open class IntegrationTest {
 
     @MockitoBean
     lateinit var azureAdOnBehalfOfTokenClient: ErrorMappedAzureAdOnBehalfOfTokenClient
+
+    @MockitoBean
+    lateinit var tokenXOnBehalfOfTokenClient: TokenXOnBehalfOfTokenClient
 
     @MockitoBean
     lateinit var norg2Client: Norg2Client
@@ -190,10 +197,22 @@ open class IntegrationTest {
     lateinit var aktiverBrukerManueltService: AktiverBrukerManueltService
 
     @Autowired
+    lateinit var veilederTilordningerRepository: VeilederTilordningerRepository
+
+    @Autowired
     lateinit var kafkaProperties: KafkaProperties
 
     @Autowired
     lateinit var template: NamedParameterJdbcTemplate
+
+    @MockitoBean
+    lateinit var tiltakshistorikkClient: TiltakshistorikkClient
+
+    @MockitoBean
+    lateinit var oppgaveClient: OppgaveClient
+
+    @MockitoBean
+    lateinit var ungdomsprogramClient: UngdomsprogramClient
 
     @BeforeEach
     fun beforeEach() {
@@ -211,17 +230,21 @@ open class IntegrationTest {
         oppfolgingsPeriodeRepository.start(bruker)
     }
 
+    fun setTilordnetVeileder(aktorId: AktorId, veilederIdent: NavIdent) {
+        veilederTilordningerRepository.upsertVeilederTilordning(aktorId, veilederIdent.get())
+    }
+
     fun setBrukerUnderKvp(aktorId: AktorId, enhetId: String, veilederId: String) {
         kvpRepository.startKvp(aktorId, enhetId, veilederId, "fordi", ZonedDateTime.now())
     }
 
-    fun setLocalArenaOppfolging(aktorId: AktorId) {
+    fun setLocalArenaOppfolging(aktorId: AktorId, formidlingsgruppe: Formidlingsgruppe = Formidlingsgruppe.IARBS, enhet: EnhetId? = null) {
         oppfolgingsStatusRepository.oppdaterArenaOppfolgingStatus(aktorId, false,
             LocalArenaOppfolging(
                 Hovedmaal.BEHOLDEA,
                 Kvalifiseringsgruppe.VURDI,
-                Formidlingsgruppe.IARBS,
-                null,
+                formidlingsgruppe,
+                enhet,
                 null,
             ))
     }
@@ -239,9 +262,9 @@ open class IntegrationTest {
 
     fun hentOppfolgingsperioder(fnr: Fnr) = oppfolgingController.hentOppfolgingsperioder(fnr)
 
-    fun avsluttOppfolgingManueltSomVeileder(aktorId: AktorId, veileder: String = "veileder", begrunnelse: String = "Begrunnelse") {
+    fun avsluttOppfolgingManueltSomVeileder(aktorId: AktorId, veileder: NavIdent = NavIdent("veileder"), begrunnelse: String = "Begrunnelse") {
         oppfolgingService.avsluttOppfolging(
-            ManuellAvregistrering(aktorId, VeilederRegistrant(NavIdent.of(veileder)), begrunnelse),
+            ManuellAvregistrering(aktorId, VeilederRegistrant(veileder), begrunnelse),
         )
     }
 
@@ -269,7 +292,7 @@ open class IntegrationTest {
             `when`(authContextHolder.uid).thenReturn(Optional.of(fnr.get()))
     }
 
-    fun mockInternBrukerAuthOk(veilederIOD: UUID,aktørId: AktorId, fnr: Fnr, navIdent: String = "A123456") {
+    fun mockInternBrukerAuthOk(veilederIOD: UUID,aktørId: AktorId, fnr: Fnr, navIdent: NavIdent = NavIdent("A123456")) {
         val claims = JWTClaimsSet.Builder()
             .issuer("microsoftonline.com")
             .claim("azp_name", "cluster:team:veilarbregistrering")
@@ -288,7 +311,7 @@ open class IntegrationTest {
         `when`(authContextHolder.erEksternBruker()).thenReturn(false)
         `when`(aktorOppslagClient.hentAktorId(fnr)).thenReturn(aktørId)
         `when`(aktorOppslagClient.hentFnr(aktørId)).thenReturn(fnr)
-        `when`(authContextHolder.uid).thenReturn(Optional.of(navIdent))
+        `when`(authContextHolder.uid).thenReturn(Optional.of(navIdent.get()))
     }
 
     fun mockPdlGeografiskTilknytning(fnr: Fnr, enhetsNr: String, gtType: GTType = GTType.BYDEL) {
@@ -297,6 +320,15 @@ open class IntegrationTest {
                 GeografiskTilknytningNr(gtType, enhetsNr),
                 false)
             )
+    }
+
+    fun mockTiltakshistorikk(fnr: Fnr, harAktiveDeltakelser: Boolean = false) {
+        `when`(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(fnr.get())).thenReturn(harAktiveDeltakelser)
+
+    }
+
+    fun mockUngdomsprogram(fnr: Fnr, erDeltaker: Boolean = false) {
+        `when`(ungdomsprogramClient.erDeltakerIUngdomsprogrammet(fnr.get())).thenReturn(erDeltaker)
     }
 
     fun mockPdlFolkeregisterStatus(fnr: Fnr, status: FregStatusOgStatsborgerskap) {
@@ -325,6 +357,15 @@ open class IntegrationTest {
         )
         val apiResult = ApiResult.success(decision)
         doReturn(apiResult).`when`(poaoTilgangClient).evaluatePolicy(policyInput)
+    }
+
+    fun mockEksternbrukerErInnlogget(fnr: Fnr, nivå: AuthService.SikkerthetsNivå) {
+
+        `when`(authContextHolder.getUid()).thenReturn(Optional.of(fnr.get()))
+        `when`(authContextHolder.getIdTokenClaims()).thenReturn(
+            Optional.of(JWTClaimsSet.Builder().claim("acr",
+                if (nivå == AuthService.SikkerthetsNivå.Nivå3) "Level3" else "Level4").build())// (mapOf("acr" to "Level4")))
+        )
     }
 
     fun mockPoaoTilgangHarTilgangTilEnhet(veilederUuid: UUID, enhetId: EnhetId, result: Decision = Decision.Permit) {
@@ -372,9 +413,9 @@ open class IntegrationTest {
                     .setFodselsnr(fnr.get())
                     .setFormidlingsgruppekode(formidlingsgruppe?.name)
                     .setHovedmaalkode("BEHOLDEA")
-                    .setIserv_fra_dato(iservFraDato)
+                    .setIservFraDato(iservFraDato)
                     .setKvalifiseringsgruppekode(kvalifiseringsgruppe.name)
-                    .setNav_kontor(oppfolgingsEnhet)
+                    .setNavKontor(oppfolgingsEnhet)
             )
         )
     }

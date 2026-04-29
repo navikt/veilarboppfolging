@@ -2,7 +2,7 @@ package no.nav.veilarboppfolging.repository;
 
 import no.nav.common.types.identer.AktorId;
 import no.nav.veilarboppfolging.oppfolgingsbruker.StartetAvType;
-import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ManuellRegistrering;
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ManuellRegistreringVeileder;
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelse;
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
@@ -45,7 +45,7 @@ public class OppfolgingsPeriodeRepository {
 
     public void start(OppfolgingsRegistrering oppfolgingsbruker) {
         transactor.executeWithoutResult((ignored) -> {
-            var kontorSattAvVeileder = oppfolgingsbruker instanceof ManuellRegistrering ? ((ManuellRegistrering) oppfolgingsbruker).getKontorSattAvVeileder() : null;
+            var kontorSattAvVeileder = oppfolgingsbruker instanceof ManuellRegistreringVeileder ? ((ManuellRegistreringVeileder) oppfolgingsbruker).getKontorSattAvVeileder() : null;
             insert(
                     oppfolgingsbruker.getAktorId(),
                     oppfolgingsbruker.getOppfolgingStartBegrunnelse(),
@@ -91,6 +91,34 @@ public class OppfolgingsPeriodeRepository {
                         hentOppfolingsperioderSQL + "WHERE UUID = ?",
                         OppfolgingsPeriodeRepository::mapTilOppfolgingsperiode, uuid
                 )
+        );
+    }
+
+    public Optional<UUID> hentSisteOppfolgingsperiodeForAoInternId(Long aoKontorInternPersonId) {
+        return queryForNullableObject(
+                () -> db.queryForObject(
+                        """
+                            SELECT uuid
+                            FROM OPPFOLGINGSPERIODE
+                            WHERE ao_kontor_intern_person_id = ?
+                            ORDER BY startdato desc
+                            LIMIT 1;
+                        """,
+                        OppfolgingsPeriodeRepository::mapTilPeriodeUUID,
+                        aoKontorInternPersonId
+                )
+        );
+    }
+
+    public int settInternPersonIdentPåOppfolgingsperiode(Long aoKontorInternPersonId, UUID oppfolgingsperiodeId) {
+        return db.update(
+                """
+                    UPDATE OPPFOLGINGSPERIODE
+                    SET ao_kontor_intern_person_id = ?
+                    WHERE uuid = ?;
+                """,
+                aoKontorInternPersonId,
+                oppfolgingsperiodeId.toString()
         );
     }
 
@@ -168,6 +196,10 @@ public class OppfolgingsPeriodeRepository {
                         + "WHERE aktor_id = ?",
                 aktorId.get()
         );
+    }
+
+    private static UUID mapTilPeriodeUUID(ResultSet result , int id) throws SQLException {
+        return UUID.fromString(result.getString("uuid"));
     }
 
     private static OppfolgingsperiodeEntity mapTilOppfolgingsperiode(ResultSet result, int row) throws SQLException {

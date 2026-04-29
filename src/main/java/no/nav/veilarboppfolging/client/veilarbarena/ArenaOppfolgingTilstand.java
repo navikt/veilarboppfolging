@@ -26,8 +26,8 @@ public class ArenaOppfolgingTilstand {
         return new ArenaOppfolgingTilstand(
                 veilarbArenaOppfolgingsBruker.getFormidlingsgruppekode(),
                 veilarbArenaOppfolgingsBruker.getKvalifiseringsgruppekode(),
-                veilarbArenaOppfolgingsBruker.getNav_kontor(),
-                Optional.ofNullable(veilarbArenaOppfolgingsBruker.getIserv_fra_dato()).map(ZonedDateTime::toLocalDate).orElse(null)
+                veilarbArenaOppfolgingsBruker.getNavKontor(),
+                Optional.ofNullable(veilarbArenaOppfolgingsBruker.getIservFraDato()).map(ZonedDateTime::toLocalDate).orElse(null)
         );
     }
 

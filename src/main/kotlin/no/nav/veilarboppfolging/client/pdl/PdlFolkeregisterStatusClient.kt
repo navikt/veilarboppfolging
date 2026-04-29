@@ -1,6 +1,7 @@
 package no.nav.veilarboppfolging.client.pdl
 
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import java.time.LocalDate
 import no.nav.common.client.pdl.PdlClient
 import no.nav.common.client.utils.graphql.GraphqlRequestBuilder
 import no.nav.common.client.utils.graphql.GraphqlResponse
@@ -44,9 +45,22 @@ data class Statsborgerskap(
     val land: String
 )
 
+data class Foedselsdato(
+    val foedselsdato: String,
+) {
+    fun erUnder18Aar(): Boolean {
+        return toLocalDate().isAfter(LocalDate.now().minusYears(18))
+    }
+
+    private fun toLocalDate(): LocalDate {
+        return LocalDate.parse(foedselsdato)
+    }
+}
+
 data class HentFolkeregisterPersonStatus(
     val folkeregisterpersonstatus: List<Folkeregisterpersonstatus>,
-    val statsborgerskap: List<Statsborgerskap>
+    val statsborgerskap: List<Statsborgerskap>,
+    val foedselsdato: List<Foedselsdato>,
 )
 
 data class HentFolkeregisterPersonStatusQuery(
@@ -57,7 +71,8 @@ typealias StatsborgerskapLand = String
 
 data class FregStatusOgStatsborgerskap(
     val fregStatus: ForenkletFolkeregisterStatus,
-    val statsborgerskap: List<StatsborgerskapLand>
+    val statsborgerskap: List<StatsborgerskapLand>,
+    val under18: Boolean,
 )
 
 class HentFolkeregisterPersonStatusGraphqlWrapper: GraphqlResponse<HentFolkeregisterPersonStatusQuery>()
@@ -81,7 +96,8 @@ class PdlFolkeregisterStatusClient(val pdlClient: PdlClient) {
 
         return FregStatusOgStatsborgerskap(
             getFregStatus(result),
-            result.data.hentPerson.statsborgerskap.map { it.land }
+            result.data.hentPerson.statsborgerskap.map { it.land },
+            result.data.hentPerson.foedselsdato.firstOrNull()?.erUnder18Aar() ?: false,
         )
     }
 
