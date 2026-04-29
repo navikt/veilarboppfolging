@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.server.ResponseStatusException
+import org.springframework.web.servlet.resource.NoResourceFoundException
 import java.lang.RuntimeException
 import java.net.SocketTimeoutException
 import java.lang.Exception
@@ -62,6 +63,12 @@ class DefaultExceptionHandler {
     fun mapException(ex: Exception, response: HttpServletResponse) {
         logger.error("Fanget en uhåndtert feil", ex)
         response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value())
+    }
+
+    @ExceptionHandler(value = [NoResourceFoundException::class])
+    fun mapException(ex: NoResourceFoundException, response: HttpServletResponse) {
+        logger.warn("Klient gjør kall mot et endepunkt som ikke eksisterer", ex)
+        response.sendError(HttpStatus.NOT_FOUND.value())
     }
 
     companion object {
