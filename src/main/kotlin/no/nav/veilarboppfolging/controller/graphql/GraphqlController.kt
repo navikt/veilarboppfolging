@@ -271,7 +271,7 @@ class GraphqlController(
             .map { BrukerStatusManuellDto(
                 it.isManuell,
                 it.dato.toString(),
-                it.begrunnelse,
+                it?.begrunnelse,
                 it.opprettetAv.toString(),
                 it?.opprettetAvBrukerId
             ) }
