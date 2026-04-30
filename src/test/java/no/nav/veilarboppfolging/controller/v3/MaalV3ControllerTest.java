@@ -1,18 +1,16 @@
 package no.nav.veilarboppfolging.controller.v3;
 
+import java.time.ZonedDateTime;
+import java.util.List;
 import no.nav.veilarboppfolging.repository.entity.MaalEntity;
 import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.service.MaalService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-
-import java.time.ZonedDateTime;
-import java.util.List;
 
 import static no.nav.veilarboppfolging.test.TestData.*;
 import static org.mockito.ArgumentMatchers.any;

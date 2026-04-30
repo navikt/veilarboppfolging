@@ -1,28 +1,29 @@
-val kotlinVersion = "2.3.0"
-val dependencyManagementVersion = "1.1.3"
-val jacocoVersion = "0.8.12"
+val kotlinVersion = "2.3.21"
 val flywayVersion = "12.0.3"
-val commonVersion = "3.2026.02.26_11.51-6f89285fe24d-beta"
+val commonVersion = "4.2026.04.29_05.55-9f2b107283bc"
 val ptoSchemaVersion = "1.2025.09.29_11.36-6e568fa24c23"
 val poaoTilgangVersion = "2025.07.04_08.56-814fa50f6740"
-val wiremockVersion = "3.0.1"
-val schedlockVersion = "6.10.0"
-val googleCloudLibrariesBomVersion = "26.77.0"
-val springDoc = "2.8.9"
+val wiremockVersion = "3.13.2"
+val schedlockVersion = "7.7.0"
+val googleCloudLibrariesBomVersion = "26.80.0"
+val springDoc = "3.0.3"
 val tmsMicrofrontendBuilder = "3.0.0"
-val tmsVarselBuilder = "2.1.1"
+val tmsVarselBuilder = "2.2.0"
 val logstashVersion = "9.0"
 val avroVersion = "1.12.1"
-val confluentKafkaAvroVersion = "8.1.0"
+val confluentKafkaAvroVersion = "8.2.0"
+val okHttpVersion = "5.3.2"
+val dabBigQuerySchemaVersion = "2026.04.20-16.33.4a120cb625c2"
 
 plugins {
-    kotlin("jvm") version "2.2.21"
-    kotlin("plugin.spring") version "2.2.10"
-    kotlin("plugin.lombok") version "2.3.10"
-    id("org.springframework.boot") version "3.5.6"
+    val kotlinVersion = "2.3.21"
+    kotlin("jvm") version kotlinVersion
+    kotlin("plugin.spring") version kotlinVersion
+    kotlin("plugin.lombok") version kotlinVersion
+    id("org.springframework.boot") version "4.0.6"
     id("io.spring.dependency-management") version "1.1.7"
     id("jacoco")
-    id("org.sonarqube") version "6.3.1.5724"
+    id("org.sonarqube") version "7.2.3.7755"
 }
 
 group = "no.nav"
@@ -39,10 +40,10 @@ kotlin {
 }
 
 tasks.jacocoTestReport {
-    dependsOn(tasks.test)
-//    reports {
-//        xml.required.set(true)
-//    }
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+    }
 }
 
 tasks.sonar {
@@ -60,31 +61,26 @@ repositories {
     maven {
         url = uri("https://repo.jenkins-ci.org/public/")
     }
-    maven {
-        url = uri("https://jitpack.io")
-    }
 }
 
-val dabBigQuerySchemaVersion = "4a120cb625c20494afac24f0ecf116f73eeefd00"
-
 dependencies {
-    annotationProcessor("org.projectlombok:lombok:1.18.42")
-    testAnnotationProcessor("org.projectlombok:lombok:1.18.42")
+    annotationProcessor("org.projectlombok:lombok:1.18.46")
+    testAnnotationProcessor("org.projectlombok:lombok:1.18.46")
 
     implementation("com.github.ben-manes.caffeine:caffeine")
     implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
     implementation("org.springframework.boot:spring-boot-starter-cache")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
-    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("org.springframework.boot:spring-boot-starter-graphql")
     implementation("org.springframework.boot:spring-boot-starter-logging")
     implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
-    implementation("com.squareup.okhttp3:okhttp")
+    implementation("com.squareup.okhttp3:okhttp-jvm:$okHttpVersion")
     implementation("io.micrometer:micrometer-registry-prometheus")
     implementation("io.micrometer:micrometer-observation")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:$springDoc")
     implementation("org.springframework.boot:spring-boot-devtools")
-    implementation("org.projectlombok:lombok:1.18.42")
+    implementation("org.projectlombok:lombok:1.18.46")
     implementation("org.springframework.boot:spring-boot-configuration-processor")
     implementation("no.nav.poao-tilgang:client:$poaoTilgangVersion")
     implementation("com.zaxxer:HikariCP")
@@ -113,40 +109,30 @@ dependencies {
     implementation(platform("com.google.cloud:libraries-bom:$googleCloudLibrariesBomVersion"))
     implementation("com.google.cloud:google-cloud-bigquery")
     implementation("net.logstash.logback:logstash-logback-encoder:$logstashVersion")
+    implementation("no.nav.poao.dab:bigquery-schema:${dabBigQuerySchemaVersion}")
 
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
     testImplementation("no.nav.common:test:$commonVersion")
-    testImplementation("org.springframework.graphql:spring-graphql-test:1.4.3")
-    testImplementation("io.zonky.test:embedded-database-spring-test:2.7.1")
-    testImplementation("io.zonky.test:embedded-postgres:2.2.0")
+    testImplementation("org.springframework.graphql:spring-graphql-test")
+    testImplementation("io.zonky.test:embedded-database-spring-test:2.8.0")
+    testImplementation("io.zonky.test:embedded-postgres:2.2.2")
     testImplementation("junit:junit")
     testImplementation("org.junit.vintage:junit-vintage-engine")
     testImplementation("org.springframework.kafka:spring-kafka-test")
-    testImplementation("com.github.tomakehurst:wiremock-standalone:$wiremockVersion")
+    testImplementation("org.wiremock:wiremock-standalone:$wiremockVersion")
     testImplementation("org.springframework.boot:spring-boot-starter-test") {
         exclude(group = "com.vaadin.external.google", module = "android-json")
     }
+    testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
     testImplementation("org.jetbrains.kotlin:kotlin-test")
-    implementation("com.github.navikt.dab:bigquery-schema:$dabBigQuerySchemaVersion")
 
-    testImplementation("com.github.navikt.dab:bigquery-schema:$dabBigQuerySchemaVersion:test-fixtures")
-    testImplementation("org.mockito.kotlin:mockito-kotlin:6.1.0")
+    testImplementation("no.nav.poao.dab:bigquery-schema:$dabBigQuerySchemaVersion:test-fixtures")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:6.3.0")
 }
 
 tasks.withType<Test> {
     useJUnitPlatform()
-}
-
-jacoco {
-    toolVersion = jacocoVersion
-}
-
-tasks.jacocoTestReport {
-    reports {
-        xml.required.set(true)
-        html.required.set(true)
-    }
 }
 
 sonarqube {

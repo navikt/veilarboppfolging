@@ -3,7 +3,6 @@ package no.nav.veilarboppfolging.client;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirClient;
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirClientImpl;
-import no.nav.veilarboppfolging.client.digdir_krr.DigdirKontaktinfo;
 
 import no.nav.veilarboppfolging.client.digdir_krr.KRRData;
 import no.nav.veilarboppfolging.service.AuthService;
@@ -66,6 +65,4 @@ public class DigdirClientImplTest {
 
 		assertTrue(digdirClient.hentKontaktInfo(TEST_FNR).isEmpty());
 	}
-
-
 }

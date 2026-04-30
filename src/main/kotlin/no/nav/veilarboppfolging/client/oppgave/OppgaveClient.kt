@@ -1,11 +1,5 @@
 package no.nav.veilarboppfolging.client.oppgave
 
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.readValue
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import java.time.LocalDate
 import java.util.UUID
 import java.util.function.Supplier
@@ -17,6 +11,10 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.slf4j.LoggerFactory
+import tools.jackson.databind.cfg.DateTimeFeature
+import tools.jackson.databind.json.JsonMapper
+import tools.jackson.module.kotlin.KotlinModule
+import tools.jackson.module.kotlin.readValue
 
 /**
  * https://oppgave.dev.intern.nav.no/
@@ -27,11 +25,11 @@ class OppgaveClient(
     private val httpClient: OkHttpClient,
 ) {
     private val logger = LoggerFactory.getLogger(OppgaveClient::class.java)
-    private val objectMapper: ObjectMapper = ObjectMapper()
-        .registerKotlinModule()
-        .registerModule(JavaTimeModule())
-        .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+    private val objectMapper: JsonMapper = JsonMapper.builder()
+        .addModule(KotlinModule.Builder().build())
+        .disable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)
+        .disable(tools.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+        .build()
 
     private val apiPath = "$baseUrl/api/v1/oppgaver"
     private val mediaTypeJson = "application/json".toMediaType()

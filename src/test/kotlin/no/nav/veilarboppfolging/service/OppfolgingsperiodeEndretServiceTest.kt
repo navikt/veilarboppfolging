@@ -1,6 +1,5 @@
 package no.nav.veilarboppfolging.service
 
-import com.fasterxml.jackson.databind.JsonNode
 import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.json.JsonUtils
 import no.nav.common.types.identer.AktorId
@@ -13,12 +12,12 @@ import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within
-import org.junit.Ignore
 import org.junit.Test
 import org.mockito.kotlin.*
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*
+import tools.jackson.databind.JsonNode
 
 
 class OppfolgingsperiodeEndretServiceTest {
@@ -67,15 +66,15 @@ class OppfolgingsperiodeEndretServiceTest {
         val meldingAsJson = JsonUtils.toJson(oppfolgingsperiodeMelding)
         val jsonNode = JsonUtils.getMapper().readTree(meldingAsJson)
         assertThat(personIdentCaptor.lastValue).isEqualTo(internAoPersonIdent)
-        assertThat(jsonNode["sisteEndringsType"].asText()).isEqualTo("OPPFOLGING_STARTET")
-        assertThat(jsonNode["aktorId"].asText()).isEqualTo(oppfolgingsperiode.aktorId)
-        assertThat(jsonNode["ident"].asText()).isEqualTo(oppfolgingskontorMelding.ident)
-        assertThat(jsonNode["oppfolgingsperiodeUuid"].asText()).isEqualTo(oppfolgingsperiode.uuid.toString())
+        assertThat(jsonNode["sisteEndringsType"].asString()).isEqualTo("OPPFOLGING_STARTET")
+        assertThat(jsonNode["aktorId"].asString()).isEqualTo(oppfolgingsperiode.aktorId)
+        assertThat(jsonNode["ident"].asString()).isEqualTo(oppfolgingskontorMelding.ident)
+        assertThat(jsonNode["oppfolgingsperiodeUuid"].asString()).isEqualTo(oppfolgingsperiode.uuid.toString())
         assertThat(jsonNode["startTidspunkt"].asZonedDateTime()).isEqualTo(oppfolgingsperiode.startDato)
         assertThat(jsonNode["sluttTidspunkt"].isNull)
         assertThat(jsonNode["producerTimestamp"].asZonedDateTime()).isCloseTo(ZonedDateTime.now(), within(1, ChronoUnit.SECONDS))
-        assertThat(jsonNode["kontor"]["kontorId"].asText()).isEqualTo(oppfolgingskontorMelding.kontorId)
-        assertThat(jsonNode["kontor"]["kontorNavn"].asText()).isEqualTo(oppfolgingskontorMelding.kontorNavn)
+        assertThat(jsonNode["kontor"]["kontorId"].asString()).isEqualTo(oppfolgingskontorMelding.kontorId)
+        assertThat(jsonNode["kontor"]["kontorNavn"].asString()).isEqualTo(oppfolgingskontorMelding.kontorNavn)
     }
 
     @Test
@@ -95,15 +94,15 @@ class OppfolgingsperiodeEndretServiceTest {
         val meldingAsJson = JsonUtils.toJson(oppfolgingsperiodeMelding)
         val jsonNode = JsonUtils.getMapper().readTree(meldingAsJson)
         assertThat(personIdentCaptor.lastValue).isEqualTo(internAoPersonIdent)
-        assertThat(jsonNode["sisteEndringsType"].asText()).isEqualTo("ARBEIDSOPPFOLGINGSKONTOR_ENDRET")
-        assertThat(jsonNode["aktorId"].asText()).isEqualTo(oppfolgingsperiode.aktorId)
-        assertThat(jsonNode["ident"].asText()).isEqualTo(oppfolgingskontorMelding.ident)
-        assertThat(jsonNode["oppfolgingsperiodeUuid"].asText()).isEqualTo(oppfolgingsperiode.uuid.toString())
+        assertThat(jsonNode["sisteEndringsType"].asString()).isEqualTo("ARBEIDSOPPFOLGINGSKONTOR_ENDRET")
+        assertThat(jsonNode["aktorId"].asString()).isEqualTo(oppfolgingsperiode.aktorId)
+        assertThat(jsonNode["ident"].asString()).isEqualTo(oppfolgingskontorMelding.ident)
+        assertThat(jsonNode["oppfolgingsperiodeUuid"].asString()).isEqualTo(oppfolgingsperiode.uuid.toString())
         assertThat(jsonNode["startTidspunkt"].asZonedDateTime()).isEqualTo(oppfolgingsperiode.startDato)
         assertThat(jsonNode["sluttTidspunkt"].isNull)
         assertThat(jsonNode["producerTimestamp"].asZonedDateTime()).isCloseTo(ZonedDateTime.now(), within(1, ChronoUnit.SECONDS))
-        assertThat(jsonNode["kontor"]["kontorId"].asText()).isEqualTo(oppfolgingskontorMelding.kontorId)
-        assertThat(jsonNode["kontor"]["kontorNavn"].asText()).isEqualTo(oppfolgingskontorMelding.kontorNavn)
+        assertThat(jsonNode["kontor"]["kontorId"].asString()).isEqualTo(oppfolgingskontorMelding.kontorId)
+        assertThat(jsonNode["kontor"]["kontorNavn"].asString()).isEqualTo(oppfolgingskontorMelding.kontorNavn)
     }
 
     @Test
@@ -125,10 +124,10 @@ class OppfolgingsperiodeEndretServiceTest {
         val meldingAsJson = JsonUtils.toJson(oppfolgingsperiodeMelding)
         val jsonNode = JsonUtils.getMapper().readTree(meldingAsJson)
         assertThat(personIdentCaptor.lastValue).isEqualTo(internAoPersonIdent)
-        assertThat(jsonNode["sisteEndringsType"].asText()).isEqualTo("OPPFOLGING_AVSLUTTET")
-        assertThat(jsonNode["aktorId"].asText()).isEqualTo(oppfolgingsperiode.aktorId)
-        assertThat(jsonNode["ident"].asText()).isEqualTo(fnr.get())
-        assertThat(jsonNode["oppfolgingsperiodeUuid"].asText()).isEqualTo(oppfolgingsperiode.uuid.toString())
+        assertThat(jsonNode["sisteEndringsType"].asString()).isEqualTo("OPPFOLGING_AVSLUTTET")
+        assertThat(jsonNode["aktorId"].asString()).isEqualTo(oppfolgingsperiode.aktorId)
+        assertThat(jsonNode["ident"].asString()).isEqualTo(fnr.get())
+        assertThat(jsonNode["oppfolgingsperiodeUuid"].asString()).isEqualTo(oppfolgingsperiode.uuid.toString())
         assertThat(jsonNode["startTidspunkt"].asZonedDateTime()).isEqualTo(oppfolgingsperiode.startDato)
         assertThat(jsonNode["sluttTidspunkt"].asZonedDateTime()).isEqualTo(oppfolgingsperiode.sluttDato)
         assertThat(jsonNode["producerTimestamp"].asZonedDateTime()).isCloseTo(ZonedDateTime.now(), within(1, ChronoUnit.SECONDS))
@@ -136,7 +135,7 @@ class OppfolgingsperiodeEndretServiceTest {
     }
 
     fun JsonNode.asZonedDateTime(): ZonedDateTime {
-        return ZonedDateTime.parse(this.asText())
+        return ZonedDateTime.parse(this.asString())
     }
 
     private fun oppfolgingsperiode(aktorId: String, oppfolgingsperiodeStart: ZonedDateTime = ZonedDateTime.now(), oppfolgingsperiodeSlutt: ZonedDateTime? = null): OppfolgingsperiodeEntity {
