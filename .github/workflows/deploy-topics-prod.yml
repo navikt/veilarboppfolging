@@ -6,6 +6,7 @@ on:
     paths:
       - "kafka-topics/privat-oppfolgingshendelse-prod.yaml"
       - "kafka-topics/siste-oppfolgingsperiode-v2-prod.yaml"
+      - "kafka-topics/siste-oppfolgingsperiode-v3-prod.yaml"
   workflow_dispatch:
 
 jobs:
