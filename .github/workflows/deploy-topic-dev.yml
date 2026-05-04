@@ -29,3 +29,9 @@ jobs:
           CLUSTER: dev-gcp
           RESOURCE: kafka-topics/siste-oppfolgingsperiode-v2-dev.yaml
           PRINT_PAYLOAD: true
+      - name: Deploy kafka topic siste-oppfolgingsperiode-v3-dev
+        uses: nais/deploy/actions/deploy@fa754451577294aae42872a69b888b3470478ec1
+        env:
+          CLUSTER: dev-gcp
+          RESOURCE: kafka-topics/siste-oppfolgingsperiode-v3-dev.yaml
+          PRINT_PAYLOAD: true

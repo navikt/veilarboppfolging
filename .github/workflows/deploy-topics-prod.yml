@@ -29,3 +29,9 @@ jobs:
           CLUSTER: prod-gcp
           RESOURCE: kafka-topics/siste-oppfolgingsperiode-v2-prod.yaml
           PRINT_PAYLOAD: true
+      - name: Deploy kafka topic siste-oppfolgingsperiode-v3-prod
+        uses: nais/deploy/actions/deploy@fa754451577294aae42872a69b888b3470478ec1
+        env:
+          CLUSTER: prod-gcp
+          RESOURCE: kafka-topics/siste-oppfolgingsperiode-v3-prod.yaml
+          PRINT_PAYLOAD: true
