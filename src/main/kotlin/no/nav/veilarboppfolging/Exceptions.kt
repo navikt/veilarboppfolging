@@ -67,7 +67,7 @@ class DefaultExceptionHandler {
 
     @ExceptionHandler(value = [NoResourceFoundException::class])
     fun mapException(ex: NoResourceFoundException, response: HttpServletResponse) {
-        logger.warn("Klient gjør kall mot et endepunkt som ikke eksisterer", ex)
+        logger.warn("Klient gjør kall mot et endepunkt som ikke eksisterer: ${ex.resourcePath}", ex)
         response.sendError(HttpStatus.NOT_FOUND.value())
     }
 
