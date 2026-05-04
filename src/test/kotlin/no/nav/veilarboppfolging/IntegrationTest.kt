@@ -1,7 +1,10 @@
 package no.nav.veilarboppfolging
 
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.nimbusds.jwt.JWTClaimsSet
+import java.time.LocalDate
+import java.time.ZonedDateTime
+import java.util.Optional
+import java.util.UUID
 import no.nav.common.auth.context.AuthContextHolder
 import no.nav.common.auth.context.UserRole
 import no.nav.common.client.aktoroppslag.AktorOppslagClient
@@ -29,11 +32,14 @@ import no.nav.tms.varsel.builder.BuilderEnvironment
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirClient
 import no.nav.veilarboppfolging.client.digdir_krr.KRRData
 import no.nav.veilarboppfolging.client.norg.INorgTilhorighetClient
+import no.nav.veilarboppfolging.client.oppgave.OppgaveClient
 import no.nav.veilarboppfolging.client.pdl.FregStatusOgStatsborgerskap
 import no.nav.veilarboppfolging.client.pdl.GTType
 import no.nav.veilarboppfolging.client.pdl.GeografiskTilknytningClient
 import no.nav.veilarboppfolging.client.pdl.GeografiskTilknytningNr
 import no.nav.veilarboppfolging.client.pdl.PdlFolkeregisterStatusClient
+import no.nav.veilarboppfolging.client.tiltakshistorikk.TiltakshistorikkClient
+import no.nav.veilarboppfolging.client.ungdomsprogram.UngdomsprogramClient
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsBruker
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsStatus
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient
@@ -43,10 +49,10 @@ import no.nav.veilarboppfolging.controller.OppfolgingController
 import no.nav.veilarboppfolging.controller.SakController
 import no.nav.veilarboppfolging.oppfolgingsbruker.BrukerRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant
-import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.LocalArenaOppfolging
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.AktiverBrukerManueltService
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ManuellAvregistrering
 import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.OppfolgingsHendelseDto
 import no.nav.veilarboppfolging.repository.EnhetRepository
@@ -79,12 +85,6 @@ import org.springframework.kafka.test.context.EmbeddedKafka
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.web.context.WebApplicationContext
-import java.time.LocalDate
-import java.time.ZonedDateTime
-import java.util.*
-import no.nav.veilarboppfolging.client.oppgave.OppgaveClient
-import no.nav.veilarboppfolging.client.tiltakshistorikk.TiltakshistorikkClient
-import no.nav.veilarboppfolging.client.ungdomsprogram.UngdomsprogramClient
 
 @EmbeddedKafka(partitions = 1)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -420,9 +420,8 @@ open class IntegrationTest {
         )
     }
 
-    private val objectMapper = JsonUtils.getMapper().also {
-        it.registerKotlinModule()
-    }
+    private val objectMapper = JsonUtils.getMapper()
+
     /* Kafka producer saves record to the kafka_producer_record table before publishing them to kafka */
     fun getRecordsStoredInKafkaOutbox(topic: String, fnr: String): List<OppfolgingsHendelseDto> {
         return template.query("""

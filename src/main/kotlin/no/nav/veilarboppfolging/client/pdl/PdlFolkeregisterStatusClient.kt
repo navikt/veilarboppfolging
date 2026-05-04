@@ -1,12 +1,10 @@
 package no.nav.veilarboppfolging.client.pdl
 
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import java.time.LocalDate
 import no.nav.common.client.pdl.PdlClient
 import no.nav.common.client.utils.graphql.GraphqlRequestBuilder
 import no.nav.common.client.utils.graphql.GraphqlResponse
 import no.nav.common.client.utils.graphql.GraphqlUtils
-import no.nav.common.json.JsonUtils
 import no.nav.common.types.identer.Fnr
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -79,12 +77,7 @@ class HentFolkeregisterPersonStatusGraphqlWrapper: GraphqlResponse<HentFolkeregi
 
 @Service
 class PdlFolkeregisterStatusClient(val pdlClient: PdlClient) {
-    init {
-        JsonUtils.getMapper().registerKotlinModule()
-    }
-
     val logger = LoggerFactory.getLogger(PdlFolkeregisterStatusClient::class.java)
-
 
     fun hentFolkeregisterStatus(fnr: Fnr): FregStatusOgStatsborgerskap {
         val graphqlRequest = GraphqlRequestBuilder<QueryVariables>("graphql/pdl/hentFolkeregisterStatus.graphql")
