@@ -1,6 +1,6 @@
 package no.nav.veilarboppfolging.client.veilarbarena
 
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import java.util.Optional
 import lombok.SneakyThrows
 import lombok.extern.slf4j.Slf4j
 import no.nav.common.health.HealthCheckResult
@@ -17,7 +17,6 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
-import java.util.*
 
 
 sealed class TokenResult {
@@ -37,10 +36,6 @@ class VeilarbarenaClientImpl(
 ) : VeilarbarenaClient {
     private val client: OkHttpClient = RestClient.baseClient()
     private val logger = LoggerFactory.getLogger(this::class.java)
-
-    init {
-        JsonUtils.getMapper().registerKotlinModule()
-    }
 
     private fun getToken(): TokenResult {
         return runCatching {

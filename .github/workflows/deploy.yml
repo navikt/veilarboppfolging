@@ -24,7 +24,7 @@ jobs:
     environment: ${{ inputs.env }}
     steps:
       - uses: actions/checkout@v6
-      - uses: nais/deploy/actions/deploy@fa754451577294aae42872a69b888b3470478ec1
+      - uses: nais/deploy/actions/deploy@2f28259ff29ea37915f5a0c9e2a8e3542c429df7
         env:
           CLUSTER: ${{ inputs.env }}-gcp
           RESOURCE: nais-${{ inputs.env }}-gcp.yaml

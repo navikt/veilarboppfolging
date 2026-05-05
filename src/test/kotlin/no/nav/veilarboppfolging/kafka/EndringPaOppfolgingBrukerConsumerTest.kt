@@ -1,11 +1,5 @@
 package no.nav.veilarboppfolging.kafka
 
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import no.nav.common.client.norg2.Enhet
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
@@ -45,6 +39,10 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import no.nav.veilarboppfolging.repository.ArbeidsoppfolgingskontorRepository
+import tools.jackson.databind.DeserializationFeature
+import tools.jackson.databind.cfg.DateTimeFeature
+import tools.jackson.databind.json.JsonMapper
+import tools.jackson.module.kotlin.KotlinModule
 
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -309,28 +307,40 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
     }
 
     private fun subscribeToTopic(topic: String): KafkaConsumer<String, String> {
-        val consumerProps = KafkaTestUtils.consumerProps(UUID.randomUUID().toString(), "true", embeddedKafkaBroker)
-        consumerProps.put("key.deserializer", StringDeserializer::class.java)
-        consumerProps.put("value.deserializer", StringDeserializer::class.java)
-        consumerProps.put("auto.offset.reset", "latest")
-        consumerProps.put("enable.auto.commit", "true")
-        consumerProps.put("auto.commit.interval.ms", "1")
-        consumerProps.put("max.poll.records", "1")
+        val consumerProps = KafkaTestUtils.consumerProps(embeddedKafkaBroker, UUID.randomUUID().toString(), true)
+        consumerProps["key.deserializer"] = StringDeserializer::class.java
+        consumerProps["value.deserializer"] = StringDeserializer::class.java
+        consumerProps["auto.offset.reset"] = "latest"
+        consumerProps["max.poll.records"] = "1"
         val kafkaConsumer = KafkaConsumer<String, String>(consumerProps)
         kafkaConsumer.subscribe(listOf(topic))
-        kafkaConsumer.poll(Duration.ofMillis(100))
+        // Vent aktivt på at rebalansen blir ferdig og partisjonene tildelt før vi
+        // returnerer. Uten dette kan testen produsere meldingen FØR konsumenten har
+        // fått posisjon, slik at 'auto.offset.reset=latest' setter posisjonen forbi
+        // meldingen og getSingleRecord timer ut. Manifesterer seg som flaky test
+        // når hele test-suiten kjører samtidig (broker er under last → 100ms
+        // poll holder ikke).
+        val deadline = System.currentTimeMillis() + 30_000
+        while (kafkaConsumer.assignment().isEmpty() && System.currentTimeMillis() < deadline) {
+            kafkaConsumer.poll(Duration.ofMillis(200))
+        }
+        check(kafkaConsumer.assignment().isNotEmpty()) {
+            "Konsumenten ble ikke tildelt partisjoner for $topic innen timeout"
+        }
         kafkaConsumer.seekToEnd(kafkaConsumer.assignment())
-        kafkaConsumer.commitSync(Duration.ofSeconds(1))
+        // Tving lazy seek til å materialiseres slik at posisjonen er forankret
+        // før neste poll i testen.
+        kafkaConsumer.assignment().forEach { kafkaConsumer.position(it) }
         return kafkaConsumer
     }
 
     private inline fun <reified T> readOneJsonStringMessageFromTopic(topic: String, kafkaConsumer: KafkaConsumer<String, String>): T {
         val record = KafkaTestUtils.getSingleRecord(kafkaConsumer, topic)
-        val objectMapper: ObjectMapper = jacksonObjectMapper()
-            .registerKotlinModule()
-            .registerModule(JavaTimeModule())
-            .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+        val objectMapper: JsonMapper = JsonMapper.builder()
+            .addModule(KotlinModule.Builder().build())
+            .disable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)
+            .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+            .build()
         return objectMapper.readValue(record.value(), T::class.java)
     }
 

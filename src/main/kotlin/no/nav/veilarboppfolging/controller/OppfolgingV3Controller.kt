@@ -134,7 +134,7 @@ class OppfolgingV3Controller(
             KodeverkBruker.NAV, authService.getInnloggetVeilederIdent()
         )
 
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build<Any?>()
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build<Any>()
     }
 
     @PostMapping("/oppfolging/settDigital")
@@ -167,14 +167,14 @@ class OppfolgingV3Controller(
     fun startKvp(@RequestBody startKvp: KvpRequest): ResponseEntity<*> {
         authService.skalVereInternBruker()
         kvpService.startKvp(startKvp.fnr, startKvp.begrunnelse)
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build<Any?>()
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build<Any>()
     }
 
     @PostMapping("/oppfolging/stoppKvp")
     fun stoppKvp(@RequestBody stoppKvp: KvpRequest): ResponseEntity<*> {
         authService.skalVereInternBruker()
         kvpService.stopKvp(stoppKvp.fnr, stoppKvp.begrunnelse)
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build<Any?>()
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build<Any>()
     }
 
     @PostMapping("/oppfolging/hent-veilederTilgang")

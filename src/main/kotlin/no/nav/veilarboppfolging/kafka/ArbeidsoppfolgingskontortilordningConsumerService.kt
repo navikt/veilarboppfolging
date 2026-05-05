@@ -1,11 +1,9 @@
 package no.nav.veilarboppfolging.kafka
 
-import no.nav.common.utils.EnvironmentUtils
+import java.util.UUID
 import no.nav.veilarboppfolging.service.ArbeidsoppfolgingsKontorEndretService
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.springframework.stereotype.Service
-import java.util.*
-import kotlin.jvm.optionals.getOrElse
 
 @Service
 class ArbeidsoppfolgingskontortilordningConsumerService(
