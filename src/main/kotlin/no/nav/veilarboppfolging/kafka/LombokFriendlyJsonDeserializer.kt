@@ -3,6 +3,7 @@ package no.nav.veilarboppfolging.kafka
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility
 import org.apache.kafka.common.serialization.Deserializer
 import tools.jackson.databind.DeserializationFeature
+import tools.jackson.databind.MapperFeature
 import tools.jackson.databind.ObjectMapper
 import tools.jackson.databind.json.JsonMapper
 import tools.jackson.module.kotlin.KotlinModule
@@ -35,6 +36,7 @@ class LombokFriendlyJsonDeserializer<T : Any>(
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
             .configure(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT, true)
             .configure(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES, false)
+            .configure(MapperFeature.ALLOW_FINAL_FIELDS_AS_MUTATORS, true)
             .changeDefaultVisibility { v ->
                 v.withFieldVisibility(Visibility.ANY)
                     .withGetterVisibility(Visibility.NONE)
