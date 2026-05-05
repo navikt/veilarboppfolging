@@ -46,6 +46,7 @@ public class EnvironmentProperties {
 
     private String ungdomsprogramScope;
 
+
     private String arbeidssoekerregisteretUrl;
 
     private String arbeidssoekerregisteretScope;

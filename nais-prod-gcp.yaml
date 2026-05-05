@@ -78,6 +78,10 @@ spec:
       value: http://ung-deltakelse-opplyser.k9saksbehandling
     - name: UNGDOMSPROGRAM_SCOPE
       value: api://prod-gcp.k9saksbehandling.ung-deltakelse-opplyser/.default
+    - name: ARBEIDSSOEKERREGISTERET_URL
+      value: http://oppslag-v2-arbeidssoekerregisteret.paw
+    - name: ARBEIDSSOEKERREGISTERET_SCOPE
+      value: api://prod-gcp.paw.oppslag-v2-arbeidssoekerregisteret/.default
     - name: KAFKA_ENABLED
       value: "true"
     - name: VEILARBARENA_URL
