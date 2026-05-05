@@ -17,7 +17,6 @@ import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2
 import no.nav.veilarboppfolging.kafka.ArbeidsoppfolgingskontortilordningConsumerService
 import no.nav.veilarboppfolging.kafka.ArbeidssøkerperiodeConsumerService
-import no.nav.veilarboppfolging.kafka.LombokFriendlyJsonDeserializer
 import no.nav.veilarboppfolging.kafka.OppfolgingskontorMelding
 import no.nav.veilarboppfolging.service.KafkaConsumerService
 import org.apache.kafka.clients.consumer.ConsumerRecord
@@ -61,7 +60,7 @@ open class KafkaConsumerConfig(
                     .withConsumerConfig(
                         kafkaProperties.getEndringPaaOppfolgingBrukerTopic(),
                         Deserializers.stringDeserializer(),
-                        LombokFriendlyJsonDeserializer(
+                        Deserializers.jsonDeserializer(
                             EndringPaaOppfoelgingsBrukerV2::class.java
                         ),
                         Consumer<ConsumerRecord<String, EndringPaaOppfoelgingsBrukerV2>> { kafkaMelding: ConsumerRecord<String, EndringPaaOppfoelgingsBrukerV2>? ->
