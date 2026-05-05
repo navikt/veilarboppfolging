@@ -136,6 +136,7 @@ class OppfolgingsbrukerEndretIArenaServiceTest {
         Mockito.`when`(kvpService.erUnderKvp(TEST_AKTOR_ID)).thenReturn(false)
         Mockito.`when`(oppfolgingService.harAktiveTiltaksdeltakelser(TEST_FNR)).thenReturn(false)
         Mockito.`when`(oppfolgingService.erDeltakerIUngdomsprogrammet(TEST_FNR)).thenReturn(false)
+        Mockito.`when`(oppfolgingService.erArbeidssoeker(TEST_FNR)).thenReturn(false)
 
         val brukverV2 = EndringPaaOppfolgingsBruker(
             aktorId = TEST_AKTOR_ID,
@@ -170,6 +171,7 @@ class OppfolgingsbrukerEndretIArenaServiceTest {
         Mockito.`when`(kvpService.erUnderKvp(TEST_AKTOR_ID)).thenReturn(true)
         Mockito.`when`(oppfolgingService.harAktiveTiltaksdeltakelser(TEST_FNR)).thenReturn(false)
         Mockito.`when`(oppfolgingService.erDeltakerIUngdomsprogrammet(TEST_FNR)).thenReturn(false)
+        Mockito.`when`(oppfolgingService.erArbeidssoeker(TEST_FNR)).thenReturn(false)
 
         val brukverV2 = EndringPaaOppfolgingsBruker(
             aktorId = TEST_AKTOR_ID,
@@ -204,6 +206,7 @@ class OppfolgingsbrukerEndretIArenaServiceTest {
         Mockito.`when`(kvpService.erUnderKvp(TEST_AKTOR_ID)).thenReturn(false)
         Mockito.`when`(oppfolgingService.harAktiveTiltaksdeltakelser(TEST_FNR)).thenReturn(true)
         Mockito.`when`(oppfolgingService.erDeltakerIUngdomsprogrammet(TEST_FNR)).thenReturn(false)
+        Mockito.`when`(oppfolgingService.erArbeidssoeker(TEST_FNR)).thenReturn(false)
 
         val brukverV2 = EndringPaaOppfolgingsBruker(
             aktorId = TEST_AKTOR_ID,
@@ -238,6 +241,42 @@ class OppfolgingsbrukerEndretIArenaServiceTest {
         Mockito.`when`(kvpService.erUnderKvp(TEST_AKTOR_ID)).thenReturn(false)
         Mockito.`when`(oppfolgingService.harAktiveTiltaksdeltakelser(TEST_FNR)).thenReturn(false)
         Mockito.`when`(oppfolgingService.erDeltakerIUngdomsprogrammet(TEST_FNR)).thenReturn(true)
+        Mockito.`when`(oppfolgingService.erArbeidssoeker(TEST_FNR)).thenReturn(false)
+
+        val brukverV2 = EndringPaaOppfolgingsBruker(
+            aktorId = TEST_AKTOR_ID,
+            fodselsnummer = TEST_FNR.get(),
+            formidlingsgruppe = Formidlingsgruppe.ISERV,
+            kvalifiseringsgruppe = Kvalifiseringsgruppe.VURDI
+        )
+
+        oppfolgingsbrukerEndretIArenaService.oppdaterOppfolgingMedStatusFraArena(brukverV2)
+
+        Mockito.verify(startOppfolgingService, Mockito.never()).startOppfolgingHvisIkkeAlleredeStartet(
+            any(OppfolgingsRegistrering::class.java)
+        )
+        Mockito.verify(oppfolgingService, Mockito.never())
+            .avsluttOppfolging(any(Avregistrering::class.java))
+    }
+
+    @Test
+    fun oppdaterOppfolgingMedStatusFraArena__skal_ikke_avslutte_oppfolging_pa_bruker_som_er_arbeidssoeker() {
+        Mockito.`when`(authService.getAktorIdOrThrow(TEST_FNR)).thenReturn(TEST_AKTOR_ID)
+        Mockito.`when`(oppfolgingsStatusRepository.hentOppfolging(TEST_AKTOR_ID))
+            .thenReturn(
+                Optional.of(
+                    OppfolgingEntity()
+                        .setLocalArenaOppfolging(Optional.empty())
+                        .setUnderOppfolging(true)
+                )
+            )
+        Mockito.`when`(arenaOppfolgingService.kanEnkeltReaktiveres(TEST_FNR)).thenReturn(
+            Optional.of<Boolean>(false)
+        )
+        Mockito.`when`(kvpService.erUnderKvp(TEST_AKTOR_ID)).thenReturn(false)
+        Mockito.`when`(oppfolgingService.harAktiveTiltaksdeltakelser(TEST_FNR)).thenReturn(false)
+        Mockito.`when`(oppfolgingService.erDeltakerIUngdomsprogrammet(TEST_FNR)).thenReturn(false)
+        Mockito.`when`(oppfolgingService.erArbeidssoeker(TEST_FNR)).thenReturn(true)
 
         val brukverV2 = EndringPaaOppfolgingsBruker(
             aktorId = TEST_AKTOR_ID,

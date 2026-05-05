@@ -40,6 +40,7 @@ import no.nav.veilarboppfolging.client.pdl.GeografiskTilknytningNr
 import no.nav.veilarboppfolging.client.pdl.PdlFolkeregisterStatusClient
 import no.nav.veilarboppfolging.client.tiltakshistorikk.TiltakshistorikkClient
 import no.nav.veilarboppfolging.client.ungdomsprogram.UngdomsprogramClient
+import no.nav.veilarboppfolging.client.arbeidssoekerregisteret.ArbeidssoekerregisteretClient
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsBruker
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsStatus
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient
@@ -214,6 +215,9 @@ open class IntegrationTest {
     @MockitoBean
     lateinit var ungdomsprogramClient: UngdomsprogramClient
 
+    @MockitoBean
+    lateinit var arbeidssoekerregisteretClient: ArbeidssoekerregisteretClient
+
     @BeforeEach
     fun beforeEach() {
         DbTestUtils.cleanupTestDb(jdbcTemplate)
@@ -329,6 +333,10 @@ open class IntegrationTest {
 
     fun mockUngdomsprogram(fnr: Fnr, erDeltaker: Boolean = false) {
         `when`(ungdomsprogramClient.erDeltakerIUngdomsprogrammet(fnr.get())).thenReturn(erDeltaker)
+    }
+
+    fun mockArbeidssoekerregisteret(fnr: Fnr, erArbeidssoeker: Boolean = false) {
+        `when`(arbeidssoekerregisteretClient.erArbeidssoeker(fnr.get())).thenReturn(erArbeidssoeker)
     }
 
     fun mockPdlFolkeregisterStatus(fnr: Fnr, status: FregStatusOgStatsborgerskap) {

@@ -52,7 +52,8 @@ public class DtoMappers {
                 avslutningStatusData.inaktiveringsDato,
                 avslutningStatusData.erIserv,
                 avslutningStatusData.harAktiveTiltaksdeltakelser,
-                avslutningStatusData.erDeltakerIUngdomsprogrammet
+                avslutningStatusData.erDeltakerIUngdomsprogrammet,
+                avslutningStatusData.erArbeidssoeker
         );
     }
 
