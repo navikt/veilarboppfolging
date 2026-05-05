@@ -196,13 +196,11 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
     }
 
     @Test
-    void ikkeAvsluttOppfolgingHvisIservOgErArbeidssoeker() {
+    void ikkeAvsluttOppfolgingHvisErArbeidssoeker() {
         mockAuthOk();
         var startPeriode = startOppfolging();
         ApiResult<Decision> permit = ApiResult.Companion.success(Decision.Permit.INSTANCE);
-        // Tester ikke tilgang
         doReturn(permit).when(poaoTilgangClient).evaluatePolicy(any());
-        // ISERV i arena, ingen ytelser i arena, ingen aktive tiltak, ikke deltaker i ungdomsprogrammet, men er arbeidssoeker.
         when(veilarbarenaClient.hentOppfolgingsbruker(FNR)).thenReturn(Optional.of(new VeilarbArenaOppfolgingsBruker().setFormidlingsgruppekode("ISERV")));
         when(arenaYtelserService.harPagaendeYtelse(FNR)).thenReturn(false);
         when(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(FNR.get())).thenReturn(false);
@@ -214,6 +212,7 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
         dto.setVeilederId(new NavIdent("Z151515"));
         dto.setFnr(FNR);
         var avslutningStatus = oppfolgingV2Controller.avsluttOppfolging(dto);
+        
         assertEquals(avslutningStatus.getStatusCode(), HttpStatusCode.valueOf(204));
         OppfolgingPeriodeMinimalDTO periode = oppfolgingController.hentOppfolgingsPeriode(startPeriode.get(0).uuid.toString());
         assertNull(periode.getSluttDato());
