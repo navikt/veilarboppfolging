@@ -33,7 +33,7 @@ class ArbeidssoekerregisteretClient(
 
     fun erArbeidssoeker(personident: String): Boolean {
         val request = Request.Builder()
-            .url("$baseUrl/api/v1/arbeidssoekerperioder")
+            .url("$baseUrl/api/v3/perioder")
             .addHeader("Authorization", "Bearer ${tokenProvider.get()}")
             .post(
                 objectMapper.writeValueAsString(ArbeidssoekerperioderRequest(personident))
