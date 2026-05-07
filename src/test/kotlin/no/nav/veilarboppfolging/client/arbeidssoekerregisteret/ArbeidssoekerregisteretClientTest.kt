@@ -27,7 +27,7 @@ class ArbeidssoekerregisteretClientTest {
             ]
         """.trimIndent()
         givenThat(
-            WireMock.post("/api/v1/arbeidssoekerperioder")
+            WireMock.post("/api/v3/perioder")
                 .willReturn(
                     WireMock.aResponse()
                         .withStatus(200)
