@@ -21,7 +21,7 @@ class ArbeidssoekerregisteretClientTest {
             [
               {
                 "periodeId": "11111111-1111-1111-1111-111111111111",
-                "startet": { "tidspunkt": "2026-01-01T00:00:00Z" },
+                "startet": "2026-01-01T00:00:00Z",
                 "avsluttet": null
               }
             ]
@@ -48,8 +48,8 @@ class ArbeidssoekerregisteretClientTest {
             [
               {
                 "periodeId": "11111111-1111-1111-1111-111111111111",
-                "startet": { "tidspunkt": "2025-01-01T00:00:00Z" },
-                "avsluttet": { "tidspunkt": "2025-06-01T00:00:00Z" }
+                "startet": "2025-01-01T00:00:00Z",
+                "avsluttet": "2025-06-01T00:00:00Z"
               }
             ]
         """.trimIndent()

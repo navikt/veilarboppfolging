@@ -57,15 +57,12 @@ class ArbeidssoekerregisteretClient(
     }
 }
 
-data class ArbeidssoekerperioderRequest(val identitetsnummer: String)
+data class ArbeidssoekerperioderRequest(val identitetsnummer: String) {
+    val type: String = "IDENTITETSNUMMER"
+}
 
 data class ArbeidssoekerperiodeResponse(
     val periodeId: String,
-    val startet: MetadataResponse,
-    val avsluttet: MetadataResponse?,
+    val startet: Instant,
+    val avsluttet: Instant?,
 )
-
-data class MetadataResponse(
-    val tidspunkt: Instant,
-)
-
