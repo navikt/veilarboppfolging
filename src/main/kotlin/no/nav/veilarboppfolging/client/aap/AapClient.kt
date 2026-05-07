@@ -29,8 +29,6 @@ class AapClient(
         .disable(tools.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
         .build()
 
-    private val mediaTypeJson = "application/json".toMediaType()
-
     fun harAap(personident: String): Boolean {
         val requestBody = AapPerioderRequest(personidentifikator = personident)
 
@@ -39,7 +37,7 @@ class AapClient(
             .addHeader("Authorization", "Bearer ${tokenProvider.get()}")
             .post(
                 objectMapper.writeValueAsString(requestBody)
-                    .toRequestBody(mediaTypeJson)
+                    .toRequestBody("application/json".toMediaType())
             )
             .build()
 
@@ -53,7 +51,7 @@ class AapClient(
 
             val perioder = objectMapper.readValue<AapPerioderResponse>(body).perioder
             val idag = LocalDate.now()
-            val harAktivAap = perioder.any { it.tilOgMedDato == null || !it.tilOgMedDato.isBefore(idag) }
+            val harAktivAap = perioder.any { it.tilOgMedDato == null || it.tilOgMedDato.isAfter(idag) }
             logger.info("Sjekket AAP-status, harAap=$harAktivAap, antallPerioder=${perioder.size}")
             return harAktivAap
         }
