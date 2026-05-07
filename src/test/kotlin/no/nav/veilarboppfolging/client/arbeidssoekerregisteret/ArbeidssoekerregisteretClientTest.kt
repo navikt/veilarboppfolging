@@ -54,7 +54,7 @@ class ArbeidssoekerregisteretClientTest {
             ]
         """.trimIndent()
         givenThat(
-            WireMock.post("/api/v1/arbeidssoekerperioder")
+            WireMock.post("/api/v3/perioder")
                 .willReturn(
                     WireMock.aResponse()
                         .withStatus(200)
@@ -71,7 +71,7 @@ class ArbeidssoekerregisteretClientTest {
     fun `erArbeidssoeker - ingen perioder - returnerer false`(wmRuntimeInfo: WireMockRuntimeInfo) {
         val apiUrl = "http://localhost:" + wmRuntimeInfo.httpPort
         givenThat(
-            WireMock.post("/api/v1/arbeidssoekerperioder")
+            WireMock.post("/api/v3/perioder")
                 .willReturn(
                     WireMock.aResponse()
                         .withStatus(200)
@@ -88,7 +88,7 @@ class ArbeidssoekerregisteretClientTest {
     fun `erArbeidssoeker - feilrespons fra tjenesten - kaster exception`(wmRuntimeInfo: WireMockRuntimeInfo) {
         val apiUrl = "http://localhost:" + wmRuntimeInfo.httpPort
         givenThat(
-            WireMock.post("/api/v1/arbeidssoekerperioder")
+            WireMock.post("/api/v3/perioder")
                 .willReturn(
                     WireMock.aResponse()
                         .withStatus(500)
