@@ -106,11 +106,12 @@ public class OppfolgingsbrukerEndretIArenaService {
                 boolean erUnderKvp = kvpService.erUnderKvp(bruker.getAktorId());
                 boolean harAktiveTiltaksdeltakelser = oppfolgingService.harAktiveTiltaksdeltakelser(fnr);
                 boolean erDeltakerIUngdomsprogrammet = oppfolgingService.erDeltakerIUngdomsprogrammet(fnr);
-                boolean skalAvsluttes = !kanEnkeltReaktiveres && !erUnderKvp && !harAktiveTiltaksdeltakelser && !erDeltakerIUngdomsprogrammet;
+                boolean erArbeidssoeker = oppfolgingService.erArbeidssoeker(fnr);
+                boolean skalAvsluttes = !kanEnkeltReaktiveres && !erUnderKvp && !harAktiveTiltaksdeltakelser && !erDeltakerIUngdomsprogrammet && !erArbeidssoeker;
 
                 secureLog.info(
-                        "Status for automatisk avslutting av oppfølging. aktorId={} kanEnkeltReaktiveres={} erUnderKvp={} harAktiveTiltaksdeltakelser={} erDeltakerIUngdomsprogrammet={} skalAvsluttes={}",
-                        bruker.getAktorId(), kanEnkeltReaktiveres, erUnderKvp, harAktiveTiltaksdeltakelser, erDeltakerIUngdomsprogrammet, skalAvsluttes
+                        "Status for automatisk avslutting av oppfølging. aktorId={} kanEnkeltReaktiveres={} erUnderKvp={} harAktiveTiltaksdeltakelser={} erDeltakerIUngdomsprogrammet={} erArbeidssoeker={} skalAvsluttes={}",
+                        bruker.getAktorId(), kanEnkeltReaktiveres, erUnderKvp, harAktiveTiltaksdeltakelser, erDeltakerIUngdomsprogrammet, erArbeidssoeker, skalAvsluttes
                 );
 
                 if (skalAvsluttes) {

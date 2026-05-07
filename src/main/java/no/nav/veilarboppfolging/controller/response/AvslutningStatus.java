@@ -21,5 +21,6 @@ public class AvslutningStatus {
     public boolean erIserv;
     public boolean harAktiveTiltaksdeltakelser;
     public boolean erDeltakerIUngdomsprogrammet;
+    public boolean erArbeidssoeker;
 
 }

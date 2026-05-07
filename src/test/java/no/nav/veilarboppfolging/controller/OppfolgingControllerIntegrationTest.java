@@ -14,6 +14,7 @@ import no.nav.veilarboppfolging.ForbiddenException;
 import no.nav.veilarboppfolging.IntegrationTest;
 import no.nav.veilarboppfolging.client.tiltakshistorikk.TiltakshistorikkClient;
 import no.nav.veilarboppfolging.client.ungdomsprogram.UngdomsprogramClient;
+import no.nav.veilarboppfolging.client.arbeidssoekerregisteret.ArbeidssoekerregisteretClient;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsStatus;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsBruker;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
@@ -78,6 +79,9 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
 
     @Autowired
     UngdomsprogramClient ungdomsprogramClient;
+
+    @Autowired
+    ArbeidssoekerregisteretClient arbeidssoekerregisteretClient;
 
     @Test
     void hentOppfolgingsPeriode_brukerHarEnAktivOppfolgingsPeriode() throws EmptyResultDataAccessException {
@@ -186,6 +190,29 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
         dto.setVeilederId(new NavIdent("Z151515"));
         dto.setFnr(FNR);
         var avslutningStatus = oppfolgingV2Controller.avsluttOppfolging(dto);
+        assertEquals(avslutningStatus.getStatusCode(), HttpStatusCode.valueOf(204));
+        OppfolgingPeriodeMinimalDTO periode = oppfolgingController.hentOppfolgingsPeriode(startPeriode.get(0).uuid.toString());
+        assertNull(periode.getSluttDato());
+    }
+
+    @Test
+    void ikkeAvsluttOppfolgingHvisErArbeidssoeker() {
+        mockAuthOk();
+        var startPeriode = startOppfolging();
+        ApiResult<Decision> permit = ApiResult.Companion.success(Decision.Permit.INSTANCE);
+        doReturn(permit).when(poaoTilgangClient).evaluatePolicy(any());
+        when(veilarbarenaClient.hentOppfolgingsbruker(FNR)).thenReturn(Optional.of(new VeilarbArenaOppfolgingsBruker().setFormidlingsgruppekode("ISERV")));
+        when(arenaYtelserService.harPagaendeYtelse(FNR)).thenReturn(false);
+        when(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(FNR.get())).thenReturn(false);
+        when(ungdomsprogramClient.erDeltakerIUngdomsprogrammet(FNR.get())).thenReturn(false);
+        when(arbeidssoekerregisteretClient.erArbeidssoeker(FNR.get())).thenReturn(true);
+
+        var dto = new AvsluttOppfolgingV2Request();
+        dto.setBegrunnelse("Begrunnelse");
+        dto.setVeilederId(new NavIdent("Z151515"));
+        dto.setFnr(FNR);
+        var avslutningStatus = oppfolgingV2Controller.avsluttOppfolging(dto);
+        
         assertEquals(avslutningStatus.getStatusCode(), HttpStatusCode.valueOf(204));
         OppfolgingPeriodeMinimalDTO periode = oppfolgingController.hentOppfolgingsPeriode(startPeriode.get(0).uuid.toString());
         assertNull(periode.getSluttDato());

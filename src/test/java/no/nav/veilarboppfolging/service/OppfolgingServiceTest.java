@@ -14,6 +14,7 @@ import no.nav.veilarboppfolging.ForbiddenException;
 import no.nav.veilarboppfolging.client.digdir_krr.KRRData;
 import no.nav.veilarboppfolging.client.tiltakshistorikk.TiltakshistorikkClient;
 import no.nav.veilarboppfolging.client.ungdomsprogram.UngdomsprogramClient;
+import no.nav.veilarboppfolging.client.arbeidssoekerregisteret.ArbeidssoekerregisteretClient;
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolgingTilstand;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsStatus;
 import no.nav.veilarboppfolging.controller.response.UnderOppfolgingDTO;
@@ -76,6 +77,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     private ManuellStatusService manuellStatusService = mock(ManuellStatusService.class);
     private TiltakshistorikkClient tiltakshistorikkClient = mock(TiltakshistorikkClient.class);
     private UngdomsprogramClient ungdomsprogramClient = mock(UngdomsprogramClient.class);
+    private ArbeidssoekerregisteretClient arbeidssoekerregisteretClient = mock(ArbeidssoekerregisteretClient.class);
     private OppfolgingsStatusRepository oppfolgingsStatusRepository;
     private OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
     private OppfolgingService oppfolgingService;
@@ -110,7 +112,8 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
                 arbeidsoppfolgingsKontorEndretService,
                 "https://test.nav.no",
                 tiltakshistorikkClient,
-                ungdomsprogramClient
+                ungdomsprogramClient,
+                arbeidssoekerregisteretClient
                 );
 
         startOppfolgingService = new StartOppfolgingService(
@@ -455,6 +458,20 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
         assertFalse(avslutningStatusData.kanAvslutte);
         assertTrue(avslutningStatusData.erDeltakerIUngdomsprogrammet);
+    }
+
+    @Test
+    public void kanIkkeAvslutteHvisManErArbeidssoeker() {
+        when(arbeidssoekerregisteretClient.erArbeidssoeker(fnr.get())).thenReturn(true);
+        startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.Companion.arbeidssokerRegistrering(fnr, aktorId, new VeilederRegistrant(NAV_IDENT)));
+        assertUnderOppfolgingLagret(aktorId);
+
+        gittArenaOppfolgingStatus("ISERV", "");
+
+        AvslutningStatusData avslutningStatusData = oppfolgingService.hentAvslutningStatus(fnr);
+
+        assertFalse(avslutningStatusData.kanAvslutte);
+        assertTrue(avslutningStatusData.erArbeidssoeker);
     }
 
     @Test

@@ -78,6 +78,10 @@ spec:
       value: http://ung-deltakelse-opplyser.k9saksbehandling
     - name: UNGDOMSPROGRAM_SCOPE
       value: api://prod-gcp.k9saksbehandling.ung-deltakelse-opplyser/.default
+    - name: ARBEIDSSOEKERREGISTERET_URL
+      value: http://paw-arbeidssoekerregisteret-api-oppslag-v2.paw
+    - name: ARBEIDSSOEKERREGISTERET_SCOPE
+      value: api://prod-gcp.paw.paw-arbeidssoekerregisteret-api-oppslag-v2/.default
     - name: KAFKA_ENABLED
       value: "true"
     - name: VEILARBARENA_URL
@@ -128,6 +132,8 @@ spec:
           namespace: team-mulighetsrommet
         - application: ung-deltakelse-opplyser
           namespace: k9saksbehandling
+        - application: paw-arbeidssoekerregisteret-api-oppslag-v2
+          namespace: paw
       external:
         - host: veilarbarena.prod-fss-pub.nais.io
         - host: pdl-api.prod-fss-pub.nais.io

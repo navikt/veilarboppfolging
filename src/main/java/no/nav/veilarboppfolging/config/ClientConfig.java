@@ -16,6 +16,7 @@ import no.nav.veilarboppfolging.client.digdir_krr.DigdirClientImpl;
 import no.nav.veilarboppfolging.client.oppgave.OppgaveClient;
 import no.nav.veilarboppfolging.client.tiltakshistorikk.TiltakshistorikkClient;
 import no.nav.veilarboppfolging.client.ungdomsprogram.UngdomsprogramClient;
+import no.nav.veilarboppfolging.client.arbeidssoekerregisteret.ArbeidssoekerregisteretClient;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClientImpl;
 import no.nav.veilarboppfolging.service.AuthService;
@@ -85,6 +86,17 @@ public class ClientConfig {
                 : tokenClient.createMachineToMachineToken(properties.getUngdomsprogramScope());
 
         return new UngdomsprogramClient(properties.getUngdomsprogramUrl(),
+                tokenSupplier,
+                RestClient.baseClient()
+        );
+    }
+
+    @Bean
+    public ArbeidssoekerregisteretClient arbeidssoekerregisteretClient(EnvironmentProperties properties, ErrorMappedAzureAdMachineToMachineTokenClient tokenClient, AuthService authService) {
+        Supplier<String> tokenSupplier = () -> authService.erInternBruker() ? authService.getAadOboTokenForTjeneste(properties.getArbeidssoekerregisteretScope())
+                : tokenClient.createMachineToMachineToken(properties.getArbeidssoekerregisteretScope());
+
+        return new ArbeidssoekerregisteretClient(properties.getArbeidssoekerregisteretUrl(),
                 tokenSupplier,
                 RestClient.baseClient()
         );
