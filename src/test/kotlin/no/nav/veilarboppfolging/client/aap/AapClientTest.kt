@@ -41,6 +41,31 @@ class AapClientTest {
     }
 
     @Test
+    fun `harAap - periode med tilOgMedDato null - returnerer true`(wmRuntimeInfo: WireMockRuntimeInfo) {
+        val apiUrl = "http://localhost:" + wmRuntimeInfo.httpPort
+        @Language("JSON")
+        val response = """
+            {
+              "perioder": [
+                { "fraOgMedDato": "2025-01-01", "tilOgMedDato": null }
+              ]
+            }
+        """.trimIndent()
+        givenThat(
+            WireMock.post("/perioder")
+                .willReturn(
+                    WireMock.aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(response)
+                )
+        )
+        val client = AapClient(apiUrl, { "token" }, OkHttpClient.Builder().build())
+
+        assertEquals(true, client.harAap("12345678910"))
+    }
+
+    @Test
     fun `harAap - kun avsluttede perioder - returnerer false`(wmRuntimeInfo: WireMockRuntimeInfo) {
         val apiUrl = "http://localhost:" + wmRuntimeInfo.httpPort
         @Language("JSON")

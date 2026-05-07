@@ -32,13 +32,7 @@ class AapClient(
     private val mediaTypeJson = "application/json".toMediaType()
 
     fun harAap(personident: String): Boolean {
-        // Endepunktet krever et datointervall - bruker tidenes morgen og langt inn i fremtiden
-        // for å fange opp alle perioder.
-        val requestBody = AapPerioderRequest(
-            fraOgMedDato = LocalDate.of(1970, 1, 1),
-            personidentifikator = personident,
-            tilOgMedDato = LocalDate.of(9999, 12, 31),
-        )
+        val requestBody = AapPerioderRequest(personidentifikator = personident)
 
         val request = Request.Builder()
             .url("$baseUrl/perioder")
@@ -59,7 +53,7 @@ class AapClient(
 
             val perioder = objectMapper.readValue<AapPerioderResponse>(body).perioder
             val idag = LocalDate.now()
-            val harAktivAap = perioder.any { !it.tilOgMedDato.isBefore(idag) }
+            val harAktivAap = perioder.any { it.tilOgMedDato == null || !it.tilOgMedDato.isBefore(idag) }
             logger.info("Sjekket AAP-status, harAap=$harAktivAap, antallPerioder=${perioder.size}")
             return harAktivAap
         }
@@ -67,9 +61,7 @@ class AapClient(
 }
 
 data class AapPerioderRequest(
-    val fraOgMedDato: LocalDate,
     val personidentifikator: String,
-    val tilOgMedDato: LocalDate,
 )
 
 data class AapPerioderResponse(
@@ -78,6 +70,5 @@ data class AapPerioderResponse(
 
 data class AapPeriode(
     val fraOgMedDato: LocalDate,
-    val tilOgMedDato: LocalDate,
+    val tilOgMedDato: LocalDate?,
 )
-
