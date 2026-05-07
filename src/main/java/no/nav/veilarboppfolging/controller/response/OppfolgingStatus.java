@@ -23,7 +23,7 @@ public class OppfolgingStatus {
     public ZonedDateTime oppfolgingUtgang;
     private boolean kanStarteOppfolging;
     @Deprecated
-    private AvslutningStatus avslutningStatus;
+    private AvslutningsStatusDto avslutningStatus;
     private List<OppfolgingPeriodeDTO> oppfolgingsPerioder;
     private boolean harSkriveTilgang;
     private Boolean inaktivIArena;

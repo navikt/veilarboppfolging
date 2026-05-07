@@ -13,7 +13,7 @@ import no.nav.veilarboppfolging.client.veilarbarena.RegistrerIArenaError
 import no.nav.veilarboppfolging.client.veilarbarena.RegistrerIArenaSuccess
 import no.nav.veilarboppfolging.client.veilarbarena.RegistrerIkkeArbeidssokerDto
 import no.nav.veilarboppfolging.client.veilarbarena.UkjentFeilUnderReaktiveringError
-import no.nav.veilarboppfolging.controller.response.AvslutningStatus
+import no.nav.veilarboppfolging.controller.response.AvslutningsStatusDto
 import no.nav.veilarboppfolging.controller.response.Bruker
 import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeDTO
 import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeMinimalDTO
@@ -93,7 +93,7 @@ class OppfolgingV3Controller(
     }
 
     @PostMapping("/oppfolging/hent-avslutning-status")
-    fun hentAvslutningStatus(@RequestBody oppfolgingRequest: OppfolgingRequest): AvslutningStatus {
+    fun hentAvslutningStatus(@RequestBody oppfolgingRequest: OppfolgingRequest): AvslutningsStatusDto {
         authService.skalVereInternBruker()
         return DtoMappers.tilDto(oppfolgingService.hentAvslutningStatus(oppfolgingRequest.fnr))
     }

@@ -43,7 +43,7 @@ public class OppfolgingController {
     }
 
     @GetMapping("/avslutningStatus")
-    public AvslutningStatus hentAvslutningStatus(@RequestParam("fnr") Fnr fnr) {
+    public AvslutningsStatusDto hentAvslutningStatus(@RequestParam("fnr") Fnr fnr) {
         authService.skalVereInternBruker();
         return tilDto(oppfolgingService.hentAvslutningStatus(fnr));
     }

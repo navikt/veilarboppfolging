@@ -18,7 +18,7 @@ import no.nav.veilarboppfolging.client.arbeidssoekerregisteret.Arbeidssoekerregi
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsStatus;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsBruker;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
-import no.nav.veilarboppfolging.controller.response.AvslutningStatus;
+import no.nav.veilarboppfolging.controller.response.AvslutningsStatusDto;
 import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeDTO;
 import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeMinimalDTO;
 import no.nav.veilarboppfolging.controller.v2.OppfolgingV2Controller;
@@ -135,8 +135,8 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
         when(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(FNR.get())).thenReturn(false);
         when(ungdomsprogramClient.erDeltakerIUngdomsprogrammet(FNR.get())).thenReturn(false);
 
-        AvslutningStatus avslutningStatus = oppfolgingController.hentAvslutningStatus(FNR);
-        assertTrue(avslutningStatus.kanAvslutte);
+        AvslutningsStatusDto avslutningStatus = oppfolgingController.hentAvslutningStatus(FNR);
+        assertTrue(avslutningStatus.getKanAvslutte());
         var navIdent = new NavIdent("Z151515");
         var begrunnelse = "Har fått jobb";
         var dto = new AvsluttOppfolgingV2Request();

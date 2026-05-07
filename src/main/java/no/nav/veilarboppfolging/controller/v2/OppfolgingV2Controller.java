@@ -5,7 +5,7 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.BadRequestException;
 import no.nav.veilarboppfolging.NotFoundException;
-import no.nav.veilarboppfolging.controller.response.AvslutningStatus;
+import no.nav.veilarboppfolging.controller.response.AvslutningsStatusDto;
 import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeDTO;
 import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeMinimalDTO;
 import no.nav.veilarboppfolging.controller.v2.request.AvsluttOppfolgingV2Request;
@@ -68,7 +68,7 @@ public class OppfolgingV2Controller {
     }
 
     @GetMapping("/avslutning-status")
-    public AvslutningStatus hentAvslutningStatus(@RequestParam("fnr") Fnr fnr) {
+    public AvslutningsStatusDto hentAvslutningStatus(@RequestParam("fnr") Fnr fnr) {
         authService.skalVereInternBruker();
         return tilDto(oppfolgingService.hentAvslutningStatus(fnr));
     }

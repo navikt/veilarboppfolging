@@ -43,8 +43,8 @@ public class DtoMappers {
                 .setOpprettetDato(k.getOpprettetDato());
     }
 
-    public static AvslutningStatus tilDto(AvslutningStatusData avslutningStatusData) {
-        return new AvslutningStatus(
+    public static AvslutningsStatusDto tilDto(AvslutningStatusData avslutningStatusData) {
+        return new AvslutningsStatusDto(
                 avslutningStatusData.kanAvslutte,
                 avslutningStatusData.underOppfolging,
                 avslutningStatusData.harYtelser,

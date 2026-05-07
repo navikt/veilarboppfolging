@@ -61,7 +61,6 @@ class DefaultExceptionHandler {
 
     @ExceptionHandler(value = [Exception::class])
     fun mapException(ex: Exception, response: HttpServletResponse) {
-        logger.error("Fanget en uhåndtert feil", ex)
         response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value())
     }
 
