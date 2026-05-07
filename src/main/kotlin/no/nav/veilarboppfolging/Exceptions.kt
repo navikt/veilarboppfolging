@@ -67,7 +67,12 @@ class DefaultExceptionHandler {
 
     @ExceptionHandler(value = [NoResourceFoundException::class])
     fun mapException(ex: NoResourceFoundException, response: HttpServletResponse) {
-        logger.warn("Klient gjør kall mot et endepunkt som ikke eksisterer: ${ex.resourcePath}", ex)
+        val erKallFraTjenesteSomNekterAaHorePaaOssOmAtDeSkalSlutteAaKallePaaOss = ex.resourcePath == "internal/navstatus"
+        if (erKallFraTjenesteSomNekterAaHorePaaOssOmAtDeSkalSlutteAaKallePaaOss) {
+            logger.info("Klient gjør mot bedre viten kall mot et endepunkt som ikke eksisterer: ${ex.resourcePath}", ex)
+        } else {
+            logger.warn("Klient gjør kall mot et endepunkt som ikke eksisterer: ${ex.resourcePath}", ex)
+        }
         response.sendError(HttpStatus.NOT_FOUND.value())
     }
 
