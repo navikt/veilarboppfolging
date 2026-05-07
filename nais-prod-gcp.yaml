@@ -82,6 +82,10 @@ spec:
       value: http://paw-arbeidssoekerregisteret-api-oppslag-v2.paw
     - name: ARBEIDSSOEKERREGISTERET_SCOPE
       value: api://prod-gcp.paw.paw-arbeidssoekerregisteret-api-oppslag-v2/.default
+    - name: AAP_URL
+      value: http://api-intern.aap
+    - name: AAP_SCOPE
+      value: api://prod-gcp.aap.api-intern/.default
     - name: KAFKA_ENABLED
       value: "true"
     - name: VEILARBARENA_URL
