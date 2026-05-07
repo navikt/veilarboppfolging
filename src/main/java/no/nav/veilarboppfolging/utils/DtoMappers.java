@@ -53,7 +53,8 @@ public class DtoMappers {
                 avslutningStatusData.erIserv,
                 avslutningStatusData.harAktiveTiltaksdeltakelser,
                 avslutningStatusData.erDeltakerIUngdomsprogrammet,
-                avslutningStatusData.erArbeidssoeker
+                avslutningStatusData.erArbeidssoeker,
+                avslutningStatusData.harAap
         );
     }
 

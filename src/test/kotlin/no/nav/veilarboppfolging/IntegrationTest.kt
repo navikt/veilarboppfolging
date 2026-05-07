@@ -41,6 +41,7 @@ import no.nav.veilarboppfolging.client.pdl.PdlFolkeregisterStatusClient
 import no.nav.veilarboppfolging.client.tiltakshistorikk.TiltakshistorikkClient
 import no.nav.veilarboppfolging.client.ungdomsprogram.UngdomsprogramClient
 import no.nav.veilarboppfolging.client.arbeidssoekerregisteret.ArbeidssoekerregisteretClient
+import no.nav.veilarboppfolging.client.aap.AapClient
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsBruker
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsStatus
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient
@@ -218,6 +219,9 @@ open class IntegrationTest {
     @MockitoBean
     lateinit var arbeidssoekerregisteretClient: ArbeidssoekerregisteretClient
 
+    @MockitoBean
+    lateinit var aapClient: AapClient
+
     @BeforeEach
     fun beforeEach() {
         DbTestUtils.cleanupTestDb(jdbcTemplate)
@@ -337,6 +341,10 @@ open class IntegrationTest {
 
     fun mockArbeidssoekerregisteret(fnr: Fnr, erArbeidssoeker: Boolean = false) {
         `when`(arbeidssoekerregisteretClient.erArbeidssoeker(fnr.get())).thenReturn(erArbeidssoeker)
+    }
+
+    fun mockAap(fnr: Fnr, harAap: Boolean = false) {
+        `when`(aapClient.harAap(fnr.get())).thenReturn(harAap)
     }
 
     fun mockPdlFolkeregisterStatus(fnr: Fnr, status: FregStatusOgStatsborgerskap) {

@@ -137,6 +137,7 @@ class OppfolgingsbrukerEndretIArenaServiceTest {
         Mockito.`when`(oppfolgingService.harAktiveTiltaksdeltakelser(TEST_FNR)).thenReturn(false)
         Mockito.`when`(oppfolgingService.erDeltakerIUngdomsprogrammet(TEST_FNR)).thenReturn(false)
         Mockito.`when`(oppfolgingService.erArbeidssoeker(TEST_FNR)).thenReturn(false)
+        Mockito.`when`(oppfolgingService.harAap(TEST_FNR)).thenReturn(false)
 
         val brukverV2 = EndringPaaOppfolgingsBruker(
             aktorId = TEST_AKTOR_ID,
@@ -172,6 +173,7 @@ class OppfolgingsbrukerEndretIArenaServiceTest {
         Mockito.`when`(oppfolgingService.harAktiveTiltaksdeltakelser(TEST_FNR)).thenReturn(false)
         Mockito.`when`(oppfolgingService.erDeltakerIUngdomsprogrammet(TEST_FNR)).thenReturn(false)
         Mockito.`when`(oppfolgingService.erArbeidssoeker(TEST_FNR)).thenReturn(false)
+        Mockito.`when`(oppfolgingService.harAap(TEST_FNR)).thenReturn(false)
 
         val brukverV2 = EndringPaaOppfolgingsBruker(
             aktorId = TEST_AKTOR_ID,
@@ -207,6 +209,7 @@ class OppfolgingsbrukerEndretIArenaServiceTest {
         Mockito.`when`(oppfolgingService.harAktiveTiltaksdeltakelser(TEST_FNR)).thenReturn(true)
         Mockito.`when`(oppfolgingService.erDeltakerIUngdomsprogrammet(TEST_FNR)).thenReturn(false)
         Mockito.`when`(oppfolgingService.erArbeidssoeker(TEST_FNR)).thenReturn(false)
+        Mockito.`when`(oppfolgingService.harAap(TEST_FNR)).thenReturn(false)
 
         val brukverV2 = EndringPaaOppfolgingsBruker(
             aktorId = TEST_AKTOR_ID,
@@ -242,6 +245,7 @@ class OppfolgingsbrukerEndretIArenaServiceTest {
         Mockito.`when`(oppfolgingService.harAktiveTiltaksdeltakelser(TEST_FNR)).thenReturn(false)
         Mockito.`when`(oppfolgingService.erDeltakerIUngdomsprogrammet(TEST_FNR)).thenReturn(true)
         Mockito.`when`(oppfolgingService.erArbeidssoeker(TEST_FNR)).thenReturn(false)
+        Mockito.`when`(oppfolgingService.harAap(TEST_FNR)).thenReturn(false)
 
         val brukverV2 = EndringPaaOppfolgingsBruker(
             aktorId = TEST_AKTOR_ID,

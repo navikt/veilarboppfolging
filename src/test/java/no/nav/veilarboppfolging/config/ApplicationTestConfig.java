@@ -15,6 +15,7 @@ import no.nav.veilarboppfolging.client.oppgave.OppgaveClient;
 import no.nav.veilarboppfolging.client.tiltakshistorikk.TiltakshistorikkClient;
 import no.nav.veilarboppfolging.client.ungdomsprogram.UngdomsprogramClient;
 import no.nav.veilarboppfolging.client.arbeidssoekerregisteret.ArbeidssoekerregisteretClient;
+import no.nav.veilarboppfolging.client.aap.AapClient;
 import no.nav.veilarboppfolging.eventsLogger.BigQueryClient;
 import no.nav.veilarboppfolging.test.DbTestUtils;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -112,6 +113,11 @@ public class ApplicationTestConfig {
     @Bean
     public ArbeidssoekerregisteretClient arbeidssoekerregisteretClient() {
         return mock(ArbeidssoekerregisteretClient.class);
+    }
+
+    @Bean
+    public AapClient aapClient() {
+        return mock(AapClient.class);
     }
 
     @Bean

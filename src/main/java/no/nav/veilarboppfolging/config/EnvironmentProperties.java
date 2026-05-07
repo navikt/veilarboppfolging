@@ -51,4 +51,8 @@ public class EnvironmentProperties {
 
     private String arbeidssoekerregisteretScope;
 
+    private String aapUrl;
+
+    private String aapScope;
+
 }

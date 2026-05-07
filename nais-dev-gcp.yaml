@@ -129,8 +129,10 @@ spec:
           namespace: team-mulighetsrommet
         - application: ung-deltakelse-opplyser
           namespace: k9saksbehandling
-        - application: paw-arbeidssoekerregisteret-api-oppslag-v2
+        - application: oppslag-v2-arbeidssoekerregisteret
           namespace: paw
+        - application: api-intern
+          namespace: aap
       external:
         - host: veilarbarena.dev-fss-pub.nais.io
         - host: norg2.dev-fss-pub.nais.io
