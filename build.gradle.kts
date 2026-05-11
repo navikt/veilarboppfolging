@@ -140,7 +140,8 @@ sonarqube {
         property("sonar.projectKey", "navikt_veilarboppfolging")
         property("sonar.organization", "navikt")
         property("sonar.host.url", "https://sonarcloud.io")
-        property("sonar.java.binaries", "${project.layout.buildDirectory.get().asFile}/classes/java/main")
+        property("sonar.java.binaries", "${project.layout.buildDirectory.get().asFile}/classes/java/main, ${project.layout.buildDirectory.get().asFile}/classes/kotlin/main")
+        property("sonar.coverage.jacoco.xmlReportPaths", "${project.layout.buildDirectory.get().asFile}/reports/jacoco/test/jacocoTestReport.xml")
     }
 }
 
