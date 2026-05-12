@@ -107,11 +107,12 @@ public class OppfolgingsbrukerEndretIArenaService {
                 boolean harAktiveTiltaksdeltakelser = oppfolgingService.harAktiveTiltaksdeltakelser(fnr);
                 boolean erDeltakerIUngdomsprogrammet = oppfolgingService.erDeltakerIUngdomsprogrammet(fnr);
                 boolean erArbeidssoeker = oppfolgingService.erArbeidssoeker(fnr);
-                boolean skalAvsluttes = !kanEnkeltReaktiveres && !erUnderKvp && !harAktiveTiltaksdeltakelser && !erDeltakerIUngdomsprogrammet && !erArbeidssoeker;
+                boolean harAap = oppfolgingService.harAap(fnr);
+                boolean skalAvsluttes = !kanEnkeltReaktiveres && !erUnderKvp && !harAktiveTiltaksdeltakelser && !erDeltakerIUngdomsprogrammet && !erArbeidssoeker && !harAap;
 
                 secureLog.info(
-                        "Status for automatisk avslutting av oppfølging. aktorId={} kanEnkeltReaktiveres={} erUnderKvp={} harAktiveTiltaksdeltakelser={} erDeltakerIUngdomsprogrammet={} erArbeidssoeker={} skalAvsluttes={}",
-                        bruker.getAktorId(), kanEnkeltReaktiveres, erUnderKvp, harAktiveTiltaksdeltakelser, erDeltakerIUngdomsprogrammet, erArbeidssoeker, skalAvsluttes
+                        "Status for automatisk avslutting av oppfølging. aktorId={} kanEnkeltReaktiveres={} erUnderKvp={} harAktiveTiltaksdeltakelser={} erDeltakerIUngdomsprogrammet={} erArbeidssoeker={} harAap={} skalAvsluttes={}",
+                        bruker.getAktorId(), kanEnkeltReaktiveres, erUnderKvp, harAktiveTiltaksdeltakelser, erDeltakerIUngdomsprogrammet, erArbeidssoeker, harAap, skalAvsluttes
                 );
 
                 if (skalAvsluttes) {

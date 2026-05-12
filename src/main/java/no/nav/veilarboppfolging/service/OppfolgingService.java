@@ -18,6 +18,7 @@ import no.nav.veilarboppfolging.client.digdir_krr.KRRData;
 import no.nav.veilarboppfolging.client.tiltakshistorikk.TiltakshistorikkClient;
 import no.nav.veilarboppfolging.client.ungdomsprogram.UngdomsprogramClient;
 import no.nav.veilarboppfolging.client.arbeidssoekerregisteret.ArbeidssoekerregisteretClient;
+import no.nav.veilarboppfolging.client.aap.AapClient;
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolgingTilstand;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsStatus;
 import no.nav.veilarboppfolging.controller.response.UnderOppfolgingDTO;
@@ -70,6 +71,7 @@ public class OppfolgingService {
     private final TiltakshistorikkClient tiltakshistorikkClient;
     private final UngdomsprogramClient ungdomsprogramClient;
     private final ArbeidssoekerregisteretClient arbeidssoekerregisteretClient;
+    private final AapClient aapClient;
 
     private final KvpRepository kvpRepository;
     private final MaalRepository maalRepository;
@@ -98,7 +100,8 @@ public class OppfolgingService {
             @Value("${app.env.nav-no-url}") String navNoUrl,
             TiltakshistorikkClient tiltakshistorikkClient,
             UngdomsprogramClient ungdomsprogramClient,
-            ArbeidssoekerregisteretClient arbeidssoekerregisteretClient) {
+            ArbeidssoekerregisteretClient arbeidssoekerregisteretClient,
+            AapClient aapClient) {
         this.kafkaProducerService = kafkaProducerService;
         this.kvpService = kvpService;
         this.arenaOppfolgingService = arenaOppfolgingService;
@@ -116,6 +119,7 @@ public class OppfolgingService {
         this.tiltakshistorikkClient = tiltakshistorikkClient;
         this.ungdomsprogramClient = ungdomsprogramClient;
         this.arbeidssoekerregisteretClient = arbeidssoekerregisteretClient;
+        this.aapClient = aapClient;
     }
 
     @Transactional // TODO: kan denne være read only?
@@ -169,8 +173,9 @@ public class OppfolgingService {
         boolean harAktiveTiltaksdeltakelser = harAktiveTiltaksdeltakelser(fnr);
         boolean erDeltakerIUngdomsprogrammet = erDeltakerIUngdomsprogrammet(fnr);
         boolean erArbeidssoeker = erArbeidssoeker(fnr);
+        boolean harAap = harAap(fnr);
         boolean underKvp = kvpService.erUnderKvp(aktorId);
-        KanAvslutteMedBegrunnelse kanAvslutte = kanAvslutteOppfolging(aktorId, erUnderOppfolging(aktorId), erIserv, harAktiveTiltaksdeltakelser, erDeltakerIUngdomsprogrammet, erArbeidssoeker, underKvp);
+        KanAvslutteMedBegrunnelse kanAvslutte = kanAvslutteOppfolging(aktorId, erUnderOppfolging(aktorId), erIserv, harAktiveTiltaksdeltakelser, erDeltakerIUngdomsprogrammet, erArbeidssoeker, harAap, underKvp);
         if (kanAvslutte.kanAvslutte) {
             var veilederId = avregistrering.getAvsluttetAv().getIdent();
             var begrunnelse = avregistrering.getBegrunnelse();
@@ -295,9 +300,9 @@ public class OppfolgingService {
         boolean kanAvslutte;
         String begrunnelse;
     }
-    private KanAvslutteMedBegrunnelse kanAvslutteOppfolging(AktorId aktorId, boolean erUnderOppfolging, boolean erIservIArena, boolean harAktiveTiltaksdeltakelser, boolean erDeltakerIUngdomsprogrammet, boolean erArbeidssoeker, boolean underKvp) {
-        secureLog.info("Kan oppfolging avsluttes for aktorid {}?, oppfolging.isUnderOppfolging(): {}, erIservIArena(): {}, underKvp(): {}, harAktiveTiltaksdeltakelser(): {}, erArbeidssoeker(): {}",
-                aktorId, erUnderOppfolging, erIservIArena, underKvp, harAktiveTiltaksdeltakelser, erArbeidssoeker);
+    private KanAvslutteMedBegrunnelse kanAvslutteOppfolging(AktorId aktorId, boolean erUnderOppfolging, boolean erIservIArena, boolean harAktiveTiltaksdeltakelser, boolean erDeltakerIUngdomsprogrammet, boolean erArbeidssoeker, boolean harAap, boolean underKvp) {
+        secureLog.info("Kan oppfolging avsluttes for aktorid {}?, oppfolging.isUnderOppfolging(): {}, erIservIArena(): {}, underKvp(): {}, harAktiveTiltaksdeltakelser(): {}, erArbeidssoeker(): {}, harAap(): {}",
+                aktorId, erUnderOppfolging, erIservIArena, underKvp, harAktiveTiltaksdeltakelser, erArbeidssoeker, harAap);
 
         if (!erUnderOppfolging) return new KanAvslutteMedBegrunnelse(false, "bruker var ikke under oppfølging");
         if (!erIservIArena) return new KanAvslutteMedBegrunnelse(false, "bruker var ikke inaktivert i Arena");
@@ -305,6 +310,7 @@ public class OppfolgingService {
         if (harAktiveTiltaksdeltakelser) return new KanAvslutteMedBegrunnelse(false, "bruker hadde aktive tiltaksdeltakelser");
         if (erDeltakerIUngdomsprogrammet) return new KanAvslutteMedBegrunnelse(false, "bruker er deltaker i ungdomsprogrammet");
         if (erArbeidssoeker) return new KanAvslutteMedBegrunnelse(false, "bruker er registrert som arbeidssøker");
+        if (harAap) return new KanAvslutteMedBegrunnelse(false, "bruker har AAP");
 
         return new KanAvslutteMedBegrunnelse(true, null);
     }
@@ -395,6 +401,10 @@ public class OppfolgingService {
         return arbeidssoekerregisteretClient.erArbeidssoeker(fnr.get());
     }
 
+    public boolean harAap(Fnr fnr) {
+        return aapClient.harAap(fnr.get());
+    }
+
     private Optional<OppfolgingEntity> getOppfolgingStatus(Fnr fnr) {
         AktorId aktorId = authService.getAktorIdOrThrow(fnr);
         authService.sjekkLesetilgangMedAktorId(aktorId);
@@ -480,8 +490,9 @@ public class OppfolgingService {
         boolean harAktiveTiltaksdeltakelser = harAktiveTiltaksdeltakelser(fnr);
         boolean erDeltakerIUngdomsprogrammet = erDeltakerIUngdomsprogrammet(fnr);
         boolean erArbeidssoeker = erArbeidssoeker(fnr);
+        boolean harAap = harAap(fnr);
         boolean underKvp = kvpService.erUnderKvp(aktorId);
-        boolean kanAvslutte = kanAvslutteOppfolging(aktorId, erUnderOppfolging(aktorId), erIserv, harAktiveTiltaksdeltakelser, erDeltakerIUngdomsprogrammet, erArbeidssoeker, underKvp).kanAvslutte;
+        boolean kanAvslutte = kanAvslutteOppfolging(aktorId, erUnderOppfolging(aktorId), erIserv, harAktiveTiltaksdeltakelser, erDeltakerIUngdomsprogrammet, erArbeidssoeker, harAap, underKvp).kanAvslutte;
 
         boolean erUnderOppfolgingIArena = maybeArenaOppfolging
                 .map(status -> ArenaUtils.erUnderOppfolging(EnumUtils.valueOf(Formidlingsgruppe.class, status.getFormidlingsgruppe()), EnumUtils.valueOf(Kvalifiseringsgruppe.class, status.getServicegruppe())))
@@ -501,6 +512,7 @@ public class OppfolgingService {
                 .harAktiveTiltaksdeltakelser(harAktiveTiltaksdeltakelser)
                 .erDeltakerIUngdomsprogrammet(erDeltakerIUngdomsprogrammet)
                 .erArbeidssoeker(erArbeidssoeker)
+                .harAap(harAap)
                 .build();
     }
 

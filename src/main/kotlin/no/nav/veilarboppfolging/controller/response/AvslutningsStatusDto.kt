@@ -12,4 +12,5 @@ data class AvslutningsStatusDto(
     val harAktiveTiltaksdeltakelser: Boolean,
     val erDeltakerIUngdomsprogrammet: Boolean,
     val erArbeidssoeker: Boolean,
+    val harAap: Boolean,
 )

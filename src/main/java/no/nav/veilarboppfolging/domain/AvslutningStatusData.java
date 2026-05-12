@@ -17,4 +17,5 @@ public class AvslutningStatusData {
     public final boolean harAktiveTiltaksdeltakelser;
     public final boolean erDeltakerIUngdomsprogrammet;
     public final boolean erArbeidssoeker;
+    public final boolean harAap;
 }
