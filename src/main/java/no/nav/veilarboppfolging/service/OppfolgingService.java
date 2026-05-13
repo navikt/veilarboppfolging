@@ -499,6 +499,7 @@ public class OppfolgingService {
         Optional<ArenaOppfolgingTilstand> maybeArenaOppfolging = arenaOppfolgingService.hentArenaOppfolgingTilstand(fnr);
 
         boolean erIserv = maybeArenaOppfolging.map(ao -> erIserv(EnumUtils.valueOf(Formidlingsgruppe.class, ao.getFormidlingsgruppe()))).orElse(false);
+        boolean underOppfolging = getOppfolgingStatusData(fnr).underOppfolging;
 
         boolean harAktiveTiltaksdeltakelser = harAktiveTiltaksdeltakelser(fnr);
         boolean erDeltakerIUngdomsprogrammet = erDeltakerIUngdomsprogrammet(fnr);
@@ -517,7 +518,8 @@ public class OppfolgingService {
 
         return AvslutningStatusData.builder()
                 .kanAvslutte(kanAvslutte)
-                .underOppfolging(erUnderOppfolgingIArena)
+                .underOppfolging(underOppfolging)
+                .underOppfolgingIArena(erUnderOppfolgingIArena)
                 .harYtelser(arenaYtelserService.harPagaendeYtelse(fnr))
                 .underKvp(kvpService.erUnderKvp(aktorId))
                 .inaktiveringsDato(inaktiveringsDato)

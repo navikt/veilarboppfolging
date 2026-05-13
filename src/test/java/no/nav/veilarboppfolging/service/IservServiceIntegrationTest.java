@@ -44,7 +44,7 @@ public class IservServiceIntegrationTest {
         DbTestUtils.cleanupTestDb();
 
         when(oppfolgingService.erUnderOppfolging(any(AktorId.class))).thenReturn(true);
-        when(oppfolgingService.avsluttOppfolging(any(Avregistrering.class))).thenReturn(AvslutningStatusData.builder().kanAvslutte(true).underOppfolging(false).build());
+        when(oppfolgingService.avsluttOppfolging(any(Avregistrering.class))).thenReturn(AvslutningStatusData.builder().kanAvslutte(true).underOppfolgingIArena(false).underOppfolging(false).build());
         when(authService.getFnrOrThrow(any())).thenReturn(FNR);
 
         utmeldingRepository = new UtmeldingRepository(db);
@@ -169,7 +169,7 @@ public class IservServiceIntegrationTest {
     public void automatiskAvslutteOppfolging_skalIkkeFjerneBrukerSomErIserv28dagerMenIkkeAvsluttet(){
         insertIservBruker(AKTOR_ID, iservFraDato.minusDays(30));
 
-        when(oppfolgingService.avsluttOppfolging(any(UtmeldtEtter28Dager.class))).thenReturn(AvslutningStatusData.builder().underOppfolging(true).build());
+        when(oppfolgingService.avsluttOppfolging(any(UtmeldtEtter28Dager.class))).thenReturn(AvslutningStatusData.builder().underOppfolgingIArena(true).underOppfolging(true).build());
 
         utmeldEtter28Cron.automatiskAvslutteOppfolging();
 

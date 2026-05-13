@@ -10,6 +10,7 @@ import java.time.LocalDate;
 public class AvslutningStatusData {
     public final boolean kanAvslutte;
     public final boolean underOppfolging;
+    public final boolean underOppfolgingIArena;
     public final boolean harYtelser;
     public final boolean underKvp;
     public final LocalDate inaktiveringsDato;

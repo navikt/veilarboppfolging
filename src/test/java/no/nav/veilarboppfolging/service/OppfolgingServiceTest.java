@@ -466,7 +466,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         assertUnderOppfolgingLagret(aktorId);
         gittArenaOppfolgingStatus("ARBS", null);
 
-        oppfolgingService.avsluttOppfolging(new ArenaIservKanIkkeReaktiveres(aktorId));
+        AvslutningStatusData avslutningStatusData = oppfolgingService.avsluttOppfolging(new ArenaIservKanIkkeReaktiveres(aktorId));
 
         assertTrue(hentOppfolgingStatus().underOppfolging);
     }
