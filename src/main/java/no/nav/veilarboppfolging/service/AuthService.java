@@ -221,6 +221,19 @@ public class AuthService {
         }
     }
 
+    public boolean harSkriveTilgangTilFnr(Fnr fnr) {
+        if (erEksternBruker()) {
+            return harEksternBrukerTilgang(fnr);
+        } else {
+            try {
+                sjekkTilgang(TilgangType.SKRIVE, fnr);
+            } catch (Exception e) {
+                return false;
+            }
+            return true;
+        }
+    }
+
     public void sjekkSkrivetilgangMedAktorId(AktorId aktorId) {
         sjekkTilgang(TilgangType.SKRIVE, aktorId);
     }

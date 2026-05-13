@@ -88,7 +88,8 @@ class OppfolgingV3Controller(
         val fodselsnummer = authService.hentIdentForEksternEllerIntern(maybeFodselsnummer)
         return DtoMappers.tilDto(
             oppfolgingService.hentOppfolgingsStatus(fodselsnummer),
-            authService.erInternBruker()
+            authService.erInternBruker(),
+            authService.harSkriveTilgangTilFnr(fodselsnummer)
         )
     }
 

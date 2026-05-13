@@ -58,7 +58,7 @@ public class DtoMappers {
         );
     }
 
-    public static OppfolgingStatus tilDto(OppfolgingStatusData oppfolgingStatusData, boolean erInternBruker) {
+    public static OppfolgingStatus tilDto(OppfolgingStatusData oppfolgingStatusData, boolean erInternBruker, boolean harSkriveTilgang) {
         OppfolgingStatus status = new OppfolgingStatus()
                 .setFnr(oppfolgingStatusData.fnr)
                 .setAktorId(oppfolgingStatusData.aktorId)
@@ -72,7 +72,7 @@ public class DtoMappers {
                 .setInaktiveringsdato(oppfolgingStatusData.inaktiveringsdato)
                 .setErIkkeArbeidssokerUtenOppfolging(oppfolgingStatusData.getErSykmeldtMedArbeidsgiver())
                 .setErSykmeldtMedArbeidsgiver(oppfolgingStatusData.getErSykmeldtMedArbeidsgiver())
-                .setHarSkriveTilgang(true)
+                .setHarSkriveTilgang(harSkriveTilgang)
                 .setServicegruppe(oppfolgingStatusData.getServicegruppe())
                 .setFormidlingsgruppe(oppfolgingStatusData.getFormidlingsgruppe())
                 .setRettighetsgruppe(oppfolgingStatusData.getRettighetsgruppe())

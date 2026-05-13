@@ -39,7 +39,7 @@ public class OppfolgingController {
     @GetMapping
     public OppfolgingStatus hentOppfolgingsStatus(@RequestParam(value = "fnr", required = false) Fnr fnr) {
         Fnr fodselsnummer = authService.hentIdentForEksternEllerIntern(fnr);
-        return tilDto(oppfolgingService.hentOppfolgingsStatus(fodselsnummer), authService.erInternBruker());
+        return tilDto(oppfolgingService.hentOppfolgingsStatus(fodselsnummer), authService.erInternBruker(), authService.harSkriveTilgangTilFnr(fodselsnummer));
     }
 
     @GetMapping("/avslutningStatus")
@@ -58,7 +58,7 @@ public class OppfolgingController {
                 KodeverkBruker.NAV, authService.getInnloggetVeilederIdent()
         );
 
-        return tilDto(oppfolgingService.hentOppfolgingsStatus(fnr), authService.erInternBruker());
+        return tilDto(oppfolgingService.hentOppfolgingsStatus(fnr), authService.erInternBruker(), authService.harSkriveTilgangTilFnr(fnr));
     }
 
     // TODO: Ikke returner OppfolgingStatus
@@ -70,7 +70,7 @@ public class OppfolgingController {
 
         if (authService.erEksternBruker()) {
             manuellStatusService.settDigitalBruker(fodselsnummer);
-            return tilDto(oppfolgingService.hentOppfolgingsStatus(fodselsnummer), authService.erInternBruker());
+            return tilDto(oppfolgingService.hentOppfolgingsStatus(fodselsnummer), authService.erInternBruker(), authService.harSkriveTilgangTilFnr(fnr));
         }
 
         // Påkrevd for intern bruker
@@ -83,7 +83,7 @@ public class OppfolgingController {
                 KodeverkBruker.NAV, hentBrukerInfo().getId()
         );
 
-        return tilDto(oppfolgingService.hentOppfolgingsStatus(fodselsnummer), authService.erInternBruker());
+        return tilDto(oppfolgingService.hentOppfolgingsStatus(fodselsnummer), authService.erInternBruker(), authService.harSkriveTilgangTilFnr(fodselsnummer));
     }
 
     @PostMapping("/startKvp")
