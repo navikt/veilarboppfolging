@@ -5,6 +5,7 @@ import java.time.LocalDate
 data class AvslutningsStatusDto(
     val kanAvslutte: Boolean,
     val underOppfolging: Boolean,
+    val underOppfolgingIArena: Boolean,
     val harYtelser: Boolean,
     val underKvp: Boolean,
     val inaktiveringsDato: LocalDate?,
