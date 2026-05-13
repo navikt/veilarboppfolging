@@ -433,7 +433,8 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
         AvslutningStatusData avslutningStatusData = oppfolgingService.avsluttOppfolging(new ManuellAvregistrering(aktorId, new VeilederRegistrant(new NavIdent(VEILEDER)), ""));
 
-        assertFalse(hentOppfolgingStatus().underOppfolging);
+        assertTrue(avslutningStatusData.underOppfolgingIArena);
+        assertFalse(avslutningStatusData.underOppfolging);
     }
 
     @Test
@@ -445,7 +446,8 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
         AvslutningStatusData avslutningStatusData = oppfolgingService.avsluttOppfolging(new AdminAvregistrering(aktorId, new VeilederRegistrant(new NavIdent(VEILEDER)), "", oppfolgingsperiodeId));
 
-        assertFalse(hentOppfolgingStatus().underOppfolging);
+        assertTrue(avslutningStatusData.underOppfolgingIArena);
+        assertFalse(avslutningStatusData.underOppfolging);
     }
 
     @Test
@@ -456,7 +458,8 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
         AvslutningStatusData avslutningStatusData = oppfolgingService.avsluttOppfolging(new UtmeldtEtter28Dager(aktorId));
 
-        assertTrue(hentOppfolgingStatus().underOppfolging);
+        assertTrue(avslutningStatusData.underOppfolgingIArena);
+        assertTrue(avslutningStatusData.underOppfolging);
     }
 
     // TODO: Denne er jo litt teit
@@ -468,7 +471,8 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
         AvslutningStatusData avslutningStatusData = oppfolgingService.avsluttOppfolging(new ArenaIservKanIkkeReaktiveres(aktorId));
 
-        assertTrue(hentOppfolgingStatus().underOppfolging);
+        assertTrue(avslutningStatusData.underOppfolgingIArena);
+        assertTrue(avslutningStatusData.underOppfolging);
     }
 
     @Test
