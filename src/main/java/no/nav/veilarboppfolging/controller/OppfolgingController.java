@@ -7,6 +7,7 @@ import no.nav.veilarboppfolging.BadRequestException;
 import no.nav.veilarboppfolging.NotFoundException;
 import no.nav.veilarboppfolging.controller.request.*;
 import no.nav.veilarboppfolging.controller.response.*;
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvregistreringsType;
 import no.nav.veilarboppfolging.repository.enums.KodeverkBruker;
 import no.nav.veilarboppfolging.service.*;
 import org.springframework.http.ResponseEntity;
@@ -45,7 +46,7 @@ public class OppfolgingController {
     @GetMapping("/avslutningStatus")
     public AvslutningsStatusDto hentAvslutningStatus(@RequestParam("fnr") Fnr fnr) {
         authService.skalVereInternBruker();
-        return tilDto(oppfolgingService.hentAvslutningStatus(fnr));
+        return tilDto(oppfolgingService.hentAvslutningstatusForManuellAvslutning(fnr));
     }
 
     // TODO: Ikke returner OppfolgingStatus
