@@ -20,8 +20,8 @@ import java.util.List;
 import java.util.Optional;
 
 import static java.util.Optional.ofNullable;
-import static no.nav.veilarboppfolging.utils.ArenaUtils.erIserv;
-import static no.nav.veilarboppfolging.utils.ArenaUtils.erUnderOppfolging;
+import static no.nav.veilarboppfolging.service.EndringPaaOppfolgingsbrukerEventKt.harBlittSykmeldtUtenArbeidsgiver;
+import static no.nav.veilarboppfolging.utils.ArenaUtils.*;
 import static no.nav.veilarboppfolging.utils.SecureLog.secureLog;
 
 @Slf4j
@@ -36,55 +36,58 @@ public class OppfolgingsbrukerEndretIArenaService {
     private final MetricsService metricsService;
     private final OppfolgingsStatusRepository oppfolgingsStatusRepository;
 
-    public void oppdaterOppfolgingMedStatusFraArena(EndringPaaOppfolgingsBruker bruker) {
-        Fnr fnr = Fnr.of(bruker.getFodselsnummer());
+    public void oppdaterOppfolgingMedStatusFraArena(EndringPaaOppfolgingsBruker endringOppfolgingsbruker) {
+        Fnr fnr = Fnr.of(endringOppfolgingsbruker.getFodselsnummer());
 
-        Formidlingsgruppe formidlingsgruppe = ofNullable(bruker.getFormidlingsgruppe()).orElse(null);
-        Kvalifiseringsgruppe kvalifiseringsgruppe = ofNullable(bruker.getKvalifiseringsgruppe()).orElse(null);
+        Formidlingsgruppe formidlingsgruppe = ofNullable(endringOppfolgingsbruker.getFormidlingsgruppe()).orElse(null);
+        Kvalifiseringsgruppe kvalifiseringsgruppe = ofNullable(endringOppfolgingsbruker.getKvalifiseringsgruppe()).orElse(null);
 
-        Optional<OppfolgingEntity> currentLocalOppfolging = oppfolgingsStatusRepository.hentOppfolging(bruker.getAktorId());
+        Optional<OppfolgingEntity> currentLocalOppfolging = oppfolgingsStatusRepository.hentOppfolging(endringOppfolgingsbruker.getAktorId());
 
         boolean erBrukerUnderOppfolgingLokalt = currentLocalOppfolging.map(OppfolgingEntity::isUnderOppfolging).orElse(false);
         boolean erUnderOppfolgingIArena = erUnderOppfolging(formidlingsgruppe, kvalifiseringsgruppe);
         boolean erInaktivIArena = erIserv(formidlingsgruppe);
-        boolean skalOppfolges = !erBrukerUnderOppfolgingLokalt && erUnderOppfolgingIArena;
+        boolean harBlittSykmeldtUtenArbeidsgiver = harBlittSykmeldtUtenArbeidsgiver(
+                endringOppfolgingsbruker,
+                currentLocalOppfolging.flatMap(OppfolgingEntity::getLocalArenaOppfolging).orElse(null)
+        );
 
         secureLog.info(
                 "Status for automatisk oppdatering av oppfølging."
                         + " aktorId={} erUnderOppfølgingIVeilarboppfolging={}"
                         + " erUnderOppfølgingIArena={} erInaktivIArena={}"
                         + " formidlingsgruppe={} kvalifiseringsgruppe={}",
-                bruker.getAktorId(), erBrukerUnderOppfolgingLokalt,
+                endringOppfolgingsbruker.getAktorId(), erBrukerUnderOppfolgingLokalt,
                 erUnderOppfolgingIArena, erInaktivIArena,
                 formidlingsgruppe, kvalifiseringsgruppe
         );
 
         var harIngenOppfolgingLagret = currentLocalOppfolging.isEmpty();
         oppfolgingService.oppdaterArenaOppfolgingStatus(
-                bruker.getAktorId(),
+                endringOppfolgingsbruker.getAktorId(),
                 harIngenOppfolgingLagret,
                 new LocalArenaOppfolging(
-                        bruker.getHovedmaal(),
+                        endringOppfolgingsbruker.getHovedmaal(),
                         kvalifiseringsgruppe,
                         formidlingsgruppe,
-                        Optional.ofNullable(bruker.getOppfolgingsenhet()).map(EnhetId::new).orElse(null),
-                        bruker.getIservFraDato()
+                        Optional.ofNullable(endringOppfolgingsbruker.getOppfolgingsenhet()).map(EnhetId::new).orElse(null),
+                        endringOppfolgingsbruker.getIservFraDato()
                 )
         );
 
         if (skalOppfolges) {
-            secureLog.info("Starter oppfølging på bruker som er under oppfølging i Arena, men ikke i veilarboppfolging. aktorId={}", bruker.getAktorId());
+            secureLog.info("Starter oppfølging på bruker som er under oppfølging i Arena, men ikke i veilarboppfolging. aktorId={}", endringOppfolgingsbruker.getAktorId());
             startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(
                     OppfolgingsRegistrering.Companion.arenaSyncOppfolgingBrukerRegistrering(
                             fnr,
-                            bruker.getAktorId(),
+                            endringOppfolgingsbruker.getAktorId(),
                             formidlingsgruppe,
                             kvalifiseringsgruppe,
-                            EnhetId.of(bruker.getOppfolgingsenhet())
+                            EnhetId.of(endringOppfolgingsbruker.getOppfolgingsenhet())
                     )
             );
         } else if (erBrukerUnderOppfolgingLokalt && erInaktivIArena) {
-            Optional<Boolean> kanEnkeltReaktiveresLokalt = kanEnkeltReaktiveresLokalt(currentLocalOppfolging, bruker);
+            Optional<Boolean> kanEnkeltReaktiveresLokalt = kanEnkeltReaktiveresLokalt(currentLocalOppfolging, endringOppfolgingsbruker);
             var maybeKanEnkeltReaktiveres = arenaOppfolgingService.kanEnkeltReaktiveres(fnr);
 
             if (kanEnkeltReaktiveresLokalt.isPresent() && maybeKanEnkeltReaktiveres.isPresent()) {
@@ -94,8 +97,8 @@ public class OppfolgingsbrukerEndretIArenaService {
                                     "\n iservDato: {}, kvalifiseringsGruppe: {}, forrige lagrede formidlingsgruppe: {}",
                             kanEnkeltReaktiveresLokalt.get(),
                             maybeKanEnkeltReaktiveres.get(),
-                            bruker.getIservFraDato(),
-                            bruker.getKvalifiseringsgruppe(),
+                            endringOppfolgingsbruker.getIservFraDato(),
+                            endringOppfolgingsbruker.getKvalifiseringsgruppe(),
                             currentLocalOppfolging.get().getLocalArenaOppfolging().map(LocalArenaOppfolging::getFormidlingsgruppe).orElse(null)
                     );
                 }
@@ -103,7 +106,7 @@ public class OppfolgingsbrukerEndretIArenaService {
 
             if (maybeKanEnkeltReaktiveres.isPresent()) {
                 boolean kanEnkeltReaktiveres = maybeKanEnkeltReaktiveres.get();
-                boolean erUnderKvp = kvpService.erUnderKvp(bruker.getAktorId());
+                boolean erUnderKvp = kvpService.erUnderKvp(endringOppfolgingsbruker.getAktorId());
                 boolean harAktiveTiltaksdeltakelser = oppfolgingService.harAktiveTiltaksdeltakelser(fnr);
                 boolean erDeltakerIUngdomsprogrammet = oppfolgingService.erDeltakerIUngdomsprogrammet(fnr);
                 boolean erArbeidssoeker = oppfolgingService.erArbeidssoeker(fnr);
@@ -112,18 +115,18 @@ public class OppfolgingsbrukerEndretIArenaService {
 
                 secureLog.info(
                         "Status for automatisk avslutting av oppfølging. aktorId={} kanEnkeltReaktiveres={} erUnderKvp={} harAktiveTiltaksdeltakelser={} erDeltakerIUngdomsprogrammet={} erArbeidssoeker={} harAap={} skalAvsluttes={}",
-                        bruker.getAktorId(), kanEnkeltReaktiveres, erUnderKvp, harAktiveTiltaksdeltakelser, erDeltakerIUngdomsprogrammet, erArbeidssoeker, harAap, skalAvsluttes
+                        endringOppfolgingsbruker.getAktorId(), kanEnkeltReaktiveres, erUnderKvp, harAktiveTiltaksdeltakelser, erDeltakerIUngdomsprogrammet, erArbeidssoeker, harAap, skalAvsluttes
                 );
 
                 if (skalAvsluttes) {
-                    secureLog.info("Automatisk avslutting av oppfølging på bruker. aktorId={}", bruker.getAktorId());
+                    secureLog.info("Automatisk avslutting av oppfølging på bruker. aktorId={}", endringOppfolgingsbruker.getAktorId());
                     log.info("Utgang: Oppfølging avsluttet automatisk pga. inaktiv bruker som ikke kan reaktiveres");
-                    var avregistrering = new ArenaIservKanIkkeReaktiveres(bruker.getAktorId());
+                    var avregistrering = new ArenaIservKanIkkeReaktiveres(endringOppfolgingsbruker.getAktorId());
                     oppfolgingService.avsluttOppfolging(avregistrering);
                     metricsService.rapporterAutomatiskAvslutningAvOppfolging(true);
                 }
             } else {
-                secureLog.warn("Bruker har ikke oppfølgingtilstand i Arena. aktorId={}", bruker.getAktorId());
+                secureLog.warn("Bruker har ikke oppfølgingtilstand i Arena. aktorId={}", endringOppfolgingsbruker.getAktorId());
             }
         }
     }
