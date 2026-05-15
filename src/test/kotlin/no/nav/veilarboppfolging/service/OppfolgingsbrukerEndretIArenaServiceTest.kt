@@ -23,7 +23,7 @@ class OppfolgingsbrukerEndretIArenaServiceTest {
     private val startOppfolgingService: StartOppfolgingService = Mockito.mock(StartOppfolgingService::class.java)
     private val arenaOppfolgingService: ArenaOppfolgingService = Mockito.mock(ArenaOppfolgingService::class.java)
     private val kvpService: KvpService = Mockito.mock(KvpService::class.java)
-    private val metricsService: MetricsService? = Mockito.mock(MetricsService::class.java)
+    private val metricsService: MetricsService = Mockito.mock(MetricsService::class.java)
     private val oppfolgingsStatusRepository: OppfolgingsStatusRepository = Mockito.mock(OppfolgingsStatusRepository::class.java)
 
     private fun <T> any(type: Class<T>): T = Mockito.any<T>(type)
