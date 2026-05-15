@@ -297,11 +297,11 @@ public class OppfolgingService {
 
     @Data
     @AllArgsConstructor
-    class KanAvslutteMedBegrunnelse {
+    public static class KanAvslutteMedBegrunnelse {
         boolean kanAvslutte;
         String begrunnelse;
     }
-    public KanAvslutteMedBegrunnelse kanAvslutteOppfolging(
+    public static KanAvslutteMedBegrunnelse kanAvslutteOppfolging(
             AktorId aktorId,
             AvregistreringsType avregistreringsType,
             boolean erUnderOppfolging,
@@ -312,8 +312,8 @@ public class OppfolgingService {
             boolean harAap,
             boolean underKvp
     ) {
-        secureLog.info("Kan oppfolging avsluttes for aktorid {}?, oppfolging.isUnderOppfolging(): {}, erIservIArena(): {}, underKvp(): {}, harAktiveTiltaksdeltakelser(): {}, erArbeidssoeker(): {}, harAap(): {}",
-                aktorId, erUnderOppfolging, erIservIArena, underKvp, harAktiveTiltaksdeltakelser, erArbeidssoeker, harAap);
+        secureLog.info("Kan oppfolging avsluttes for aktorid {}?, oppfolging.isUnderOppfolging(): {}, erIservIArena(): {}, underKvp(): {}, harAktiveTiltaksdeltakelser(): {}, erDeltakerIUngdomsprogrammet(): {}, erArbeidssoeker(): {}, harAap(): {}",
+                aktorId, erUnderOppfolging, erIservIArena, underKvp, harAktiveTiltaksdeltakelser, erDeltakerIUngdomsprogrammet, erArbeidssoeker, harAap);
 
         var manuellAvslutning = avregistreringsType.equals(AvregistreringsType.ManuellAvregistrering) || avregistreringsType.equals(AvregistreringsType.AdminAvregistrering);
 

@@ -13,6 +13,7 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ArenaIservKanIkkeReakti
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvregistreringsType
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
 import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity
+import no.nav.veilarboppfolging.service.OppfolgingService.kanAvslutteOppfolging
 import no.nav.veilarboppfolging.utils.ArenaUtils
 import no.nav.veilarboppfolging.utils.SecureLog.secureLog
 import org.slf4j.LoggerFactory
@@ -47,14 +48,14 @@ class OppfolgingsbrukerEndretIArenaService(
         val erUnderOppfolgingIArena = ArenaUtils.erUnderOppfolging(formidlingsgruppe, kvalifiseringsgruppe)
         val erInaktivIArena = ArenaUtils.erIserv(formidlingsgruppe)
 
-        fun kanAvsluttes(kanEnkeltReaktiveres: Boolean): Boolean {
+        fun kanAvsluttes(kanEnkeltReaktiveres: Boolean): OppfolgingService.KanAvslutteMedBegrunnelse {
             val erUnderKvp = kvpService.erUnderKvp(endringOppfolgingsbruker.aktorId)
             val harAktiveTiltaksdeltakelser = oppfolgingService.harAktiveTiltaksdeltakelser(fnr)
             val erDeltakerIUngdomsprogrammet = oppfolgingService.erDeltakerIUngdomsprogrammet(fnr)
             val erArbeidssoeker = oppfolgingService.erArbeidssoeker(fnr)
             val harAap = oppfolgingService.harAap(fnr)
 
-            val kanAvsluttesMedBegrunnelse = oppfolgingService.kanAvslutteOppfolging(
+            val kanAvsluttesMedBegrunnelse = kanAvslutteOppfolging(
                 endringOppfolgingsbruker.aktorId,
                 AvregistreringsType.ArenaIservKanIkkeReaktiveres,
                 erBrukerUnderOppfolgingLokalt,
@@ -80,7 +81,10 @@ class OppfolgingsbrukerEndretIArenaService(
                 kanAvsluttes
             )
 
-            return kanAvsluttes
+            if (kanEnkeltReaktiveres) {
+                return OppfolgingService.KanAvslutteMedBegrunnelse( false,"Bruker kan enkelt reaktiveres i Arena, og vil derfor ikke automatisk avsluttes")
+            }
+            return kanAvsluttesMedBegrunnelse
         }
 
         val harIngenOppfolgingLagret = currentLocalOppfolging.isEmpty
@@ -137,7 +141,7 @@ class OppfolgingsbrukerEndretIArenaService(
                 log.info("Irrelevant endring – gjør ingenting")
             }
             is KanIkkeAvsluttes -> {
-                log.info("Inaktiv i Arena men kan ikke avslutte oppfølging fordi én eller flere sperrer er aktive – gjør ingenting")
+                log.info("Inaktiv i Arena men kan ikke avslutte oppfølging fordi det er en eller flere aktive sperrer, første sperre: ${kanAvsluttes(false).begrunnelse}")
             }
         }
 

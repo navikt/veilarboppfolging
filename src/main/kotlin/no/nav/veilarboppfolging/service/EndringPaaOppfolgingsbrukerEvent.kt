@@ -11,7 +11,7 @@ fun resolveEndringPaaOppfolgingsbrukerEvent(
     endringPaaOppfolgingsBruker: EndringPaaOppfolgingsBruker,
     nåværendeOppfolgingsstatus: OppfolgingEntity?,
     getKanReaktiveresIArena: () -> Optional<Boolean>,
-    kanAvsluttes: (kanReaktiveres: Boolean) -> Boolean
+    kanAvsluttes: (kanReaktiveres: Boolean) -> OppfolgingService.KanAvslutteMedBegrunnelse
 ): OppfolgingsbrukerEndretEvent {
     val erSykmeldtUtenArbeidsgiver =  sykmeldtUtenArbeidsgiver(endringPaaOppfolgingsBruker.kvalifiseringsgruppe, endringPaaOppfolgingsBruker.formidlingsgruppe)
     val varSykmeldtUtenArbeidsgiver = nåværendeOppfolgingsstatus?.localArenaOppfolging?.orElse(null)?.let { sykmeldtUtenArbeidsgiver(it.kvalifiseringsgruppe, it.formidlingsgruppe) } ?: false
@@ -23,7 +23,8 @@ fun resolveEndringPaaOppfolgingsbrukerEvent(
     if (erInaktivIArena && erUnderOppfolging) {
         val kanReaktiveres = getKanReaktiveresIArena()
         if (kanReaktiveres.isEmpty) return IrrelevantEndring()
-        if (!kanAvsluttes(kanReaktiveres.get())) return KanIkkeAvsluttes()
+        val kanAvsluttesMedBegrunnelse = kanAvsluttes(kanReaktiveres.get())
+        if (!kanAvsluttesMedBegrunnelse.kanAvslutte) return KanIkkeAvsluttes(kanAvsluttesMedBegrunnelse.begrunnelse)
         return when (kanReaktiveres.get()) {
             true -> BleInaktivertMedKanReaktiveres()
             false -> BleInaktivertUtenKanReaktiveres()
@@ -42,5 +43,5 @@ sealed interface OppfolgingsbrukerEndretEvent
 class BleSykmeldtUtenArbeidsgiver : OppfolgingsbrukerEndretEvent
 class BleInaktivertUtenKanReaktiveres : OppfolgingsbrukerEndretEvent
 class BleInaktivertMedKanReaktiveres : OppfolgingsbrukerEndretEvent
-class KanIkkeAvsluttes : OppfolgingsbrukerEndretEvent
+class KanIkkeAvsluttes(val begrunnelse: String) : OppfolgingsbrukerEndretEvent
 class IrrelevantEndring : OppfolgingsbrukerEndretEvent
