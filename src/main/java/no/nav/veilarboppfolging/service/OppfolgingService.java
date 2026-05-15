@@ -301,7 +301,7 @@ public class OppfolgingService {
         boolean kanAvslutte;
         String begrunnelse;
     }
-    private KanAvslutteMedBegrunnelse kanAvslutteOppfolging(
+    public KanAvslutteMedBegrunnelse kanAvslutteOppfolging(
             AktorId aktorId,
             AvregistreringsType avregistreringsType,
             boolean erUnderOppfolging,

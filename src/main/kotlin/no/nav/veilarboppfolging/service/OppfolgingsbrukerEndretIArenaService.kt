@@ -10,6 +10,7 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.arena.EndringPaaOppfolgingsBru
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.LocalArenaOppfolging
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering.Companion.arenaSyncOppfolgingBrukerRegistrering
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ArenaIservKanIkkeReaktiveres
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvregistreringsType
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
 import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity
 import no.nav.veilarboppfolging.utils.ArenaUtils
@@ -17,6 +18,7 @@ import no.nav.veilarboppfolging.utils.SecureLog.secureLog
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.util.*
+import kotlin.jvm.optionals.getOrElse
 
 @Service
 @RequiredArgsConstructor
@@ -41,7 +43,7 @@ class OppfolgingsbrukerEndretIArenaService(
         val currentLocalOppfolging: Optional<OppfolgingEntity> =
             oppfolgingsStatusRepository.hentOppfolging(endringOppfolgingsbruker.aktorId)
 
-        val erBrukerUnderOppfolgingLokalt = currentLocalOppfolging.map { it.isUnderOppfolging }.orElse(false)
+        val erBrukerUnderOppfolgingLokalt: Boolean = currentLocalOppfolging.map { it.isUnderOppfolging }.getOrElse { false }
         val erUnderOppfolgingIArena = ArenaUtils.erUnderOppfolging(formidlingsgruppe, kvalifiseringsgruppe)
         val erInaktivIArena = ArenaUtils.erIserv(formidlingsgruppe)
 
@@ -52,7 +54,19 @@ class OppfolgingsbrukerEndretIArenaService(
             val erArbeidssoeker = oppfolgingService.erArbeidssoeker(fnr)
             val harAap = oppfolgingService.harAap(fnr)
 
-            val kanAvsluttes = !kanEnkeltReaktiveres && !erUnderKvp && !harAktiveTiltaksdeltakelser && !erDeltakerIUngdomsprogrammet && !erArbeidssoeker && !harAap
+            val kanAvsluttesMedBegrunnelse = oppfolgingService.kanAvslutteOppfolging(
+                endringOppfolgingsbruker.aktorId,
+                AvregistreringsType.ArenaIservKanIkkeReaktiveres,
+                erBrukerUnderOppfolgingLokalt,
+                erInaktivIArena,
+                harAktiveTiltaksdeltakelser,
+                erDeltakerIUngdomsprogrammet,
+                erArbeidssoeker,
+                harAap,
+                erUnderKvp,
+            )
+
+            val kanAvsluttes = !kanEnkeltReaktiveres && kanAvsluttesMedBegrunnelse.kanAvslutte
 
             secureLog.info(
                 "Status for automatisk avslutting av oppfølging. aktorId={} kanEnkeltReaktiveres={} erUnderKvp={} harAktiveTiltaksdeltakelser={} erDeltakerIUngdomsprogrammet={} erArbeidssoeker={} harAap={} kanAvsluttes={}",
