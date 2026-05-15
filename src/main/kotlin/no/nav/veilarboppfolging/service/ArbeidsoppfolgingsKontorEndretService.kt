@@ -2,9 +2,6 @@ package no.nav.veilarboppfolging.service
 
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
-import java.time.ZonedDateTime
-import java.util.UUID
-import kotlin.jvm.optionals.getOrElse
 import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.types.identer.AktorId
 import no.nav.veilarboppfolging.kafka.OppfolgingskontorMelding
@@ -14,8 +11,10 @@ import no.nav.veilarboppfolging.kafka.Tilordningstype.KONTOR_VED_OPPFOLGINGSPERI
 import no.nav.veilarboppfolging.repository.ArbeidsoppfolgingskontorRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity
-import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import java.time.ZonedDateTime
+import java.util.*
+import kotlin.jvm.optionals.getOrElse
 
 @Service
 class ArbeidsoppfolgingsKontorEndretService(
@@ -24,7 +23,6 @@ class ArbeidsoppfolgingsKontorEndretService(
     val aktorOppslagClient: AktorOppslagClient,
     val arbeidsoppfolgingskontorRepository: ArbeidsoppfolgingskontorRepository,
 ) {
-    private val log = LoggerFactory.getLogger(ArbeidsoppfolgingsKontorEndretService::class.java)
 
     /**
      * Avsluttet status betyr at kontorId og kontorNavn er nullet ut
@@ -48,11 +46,6 @@ class ArbeidsoppfolgingsKontorEndretService(
 
         if (melding == null) {
             // Det skal finnes en inter-nperson-ident når kontoret har blitt slettet
-            if (aoKontorInternPersonId == 2794149L || aoKontorInternPersonId == 6007050L) {
-                log.info("Ignorerer feilende melding")
-                return
-            }
-
             val oppfolgingsperiodeId = oppfolgingsPeriodeRepository.hentSisteOppfolgingsperiodeForAoInternId(aoKontorInternPersonId)
                 .getOrElse { throw RuntimeException("Fant ingen oppfølgingsperioder på aoKontorInternPersonId og kan derfor ikke publisere oppfølging avsluttet eller kontor endret melding på siste-oppfølgingsperiode v2/v3 topic, dette skal aldri skje") }
             val oppfolgingsperiode =
