@@ -130,9 +130,15 @@ class OppfolgingsbrukerEndretIArenaService(
                 oppfolgingService.avsluttOppfolging(avregistrering)
                 metricsService.rapporterAutomatiskAvslutningAvOppfolging(true)
             }
-            is BleInaktivertMedKanReaktiveres -> {}
-            is IrrelevantEndring -> {}
-            is KanIkkeAvsluttes -> {}
+            is BleInaktivertMedKanReaktiveres -> {
+                log.info("Ble inaktivert men ligger allerede på utmeldingstabellen.") // Blir satt på utmeldingstabellen i prosesseringssteget før dette
+            }
+            is IrrelevantEndring -> {
+                log.info("Irrelevant endring – gjør ingenting")
+            }
+            is KanIkkeAvsluttes -> {
+                log.info("Inaktiv i Arena men kan ikke avslutte oppfølging fordi én eller flere sperrer er aktive – gjør ingenting")
+            }
         }
 
         secureLog.info(
