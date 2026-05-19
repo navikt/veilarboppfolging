@@ -13,7 +13,7 @@ val logstashVersion = "9.0"
 val avroVersion = "1.12.1"
 val confluentKafkaAvroVersion = "8.2.0"
 val okHttpVersion = "5.3.2"
-val dabBigQuerySchemaVersion = "2026.05.08-13.34.cc03ad5613af"
+val dabBigQuerySchemaVersion = "2026.05.11-16.10.4d6c1e3c3451"
 
 plugins {
     val kotlinVersion = "2.3.21"
