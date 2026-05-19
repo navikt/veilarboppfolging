@@ -11,7 +11,7 @@ spec:
       rules:
         - alert: Veilarboppfolging - Feilet å konsumerer meldinger
           expr: |
-            max by(topic) (kafka_consumer_failed_or_backedoff_messages_in_batch{namespace="poao", app="veilarboppfolging"}) > 0
+            sum(max by(topic, partition) (kafka_consumer_failed_or_backedoff_messages_in_batch{namespace="poao", app="veilarboppfolging"})) > 0
           for: 5m
           annotations:
             consequence: "Klarte ikke konsumere innkommende kafka meldinger fra topic '{{ $labels.topic }}' (fra kafka-common)"
