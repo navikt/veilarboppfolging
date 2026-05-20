@@ -146,7 +146,7 @@ class OppfolgingV3ControllerTest {
                         .build()
         );
 
-        String expectedJson = "{\"kanAvslutte\":true,\"underOppfolging\":true,\"underOppfolgingIArena\":true,\"harYtelser\":false,\"underKvp\":false,\"inaktiveringsDato\":\"2023-01-01\",\"erIserv\":false,\"harAktiveTiltaksdeltakelser\":false,\"erDeltakerIUngdomsprogrammet\":false,\"erArbeidssoeker\":false,\"harAap\":false}";
+        String expectedJson = "{\"kanAvslutte\":true,\"underOppfolging\":true,\"harYtelser\":false,\"underKvp\":false,\"inaktiveringsDato\":\"2023-01-01\",\"erIserv\":false,\"harAktiveTiltaksdeltakelser\":false,\"erDeltakerIUngdomsprogrammet\":false,\"erArbeidssoeker\":false,\"harAap\":false}";
         mockMvc.perform(post("/api/v3/oppfolging/hent-avslutning-status")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"fnr\":\"12345678900\"}")
