@@ -318,7 +318,7 @@ public class OppfolgingService {
         var manuellAvslutning = avregistreringsType.equals(AvregistreringsType.ManuellAvregistrering) || avregistreringsType.equals(AvregistreringsType.AdminAvregistrering);
 
         if (!erUnderOppfolging) return new KanAvslutteMedBegrunnelse(false, "bruker var ikke under oppfølging");
-        if (!manuellAvslutning && !erIservIArena) return new KanAvslutteMedBegrunnelse(false, "bruker var ikke inaktivert i Arena");
+        if (!manuellAvslutning && !erIservIArena) return new KanAvslutteMedBegrunnelse(false, "bruker var ikke inaktivert i Arena ved forsøk på automatisk avslutning");
         if (underKvp) return new KanAvslutteMedBegrunnelse(false, "bruker var under kvp");
         if (harAktiveTiltaksdeltakelser) return new KanAvslutteMedBegrunnelse(false, "bruker hadde aktive tiltaksdeltakelser");
         if (erDeltakerIUngdomsprogrammet) return new KanAvslutteMedBegrunnelse(false, "bruker er deltaker i ungdomsprogrammet");
