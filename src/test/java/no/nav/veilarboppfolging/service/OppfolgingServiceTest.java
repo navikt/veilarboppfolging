@@ -433,7 +433,6 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
         AvslutningStatusData avslutningStatusData = oppfolgingService.avsluttOppfolging(new ManuellAvregistrering(aktorId, new VeilederRegistrant(new NavIdent(VEILEDER)), ""));
 
-        assertTrue(avslutningStatusData.underOppfolgingIArena);
         assertFalse(avslutningStatusData.underOppfolging);
     }
 
@@ -446,7 +445,6 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
         AvslutningStatusData avslutningStatusData = oppfolgingService.avsluttOppfolging(new AdminAvregistrering(aktorId, new VeilederRegistrant(new NavIdent(VEILEDER)), "", oppfolgingsperiodeId));
 
-        assertTrue(avslutningStatusData.underOppfolgingIArena);
         assertFalse(avslutningStatusData.underOppfolging);
     }
 
@@ -458,11 +456,9 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
         AvslutningStatusData avslutningStatusData = oppfolgingService.avsluttOppfolging(new UtmeldtEtter28Dager(aktorId));
 
-        assertTrue(avslutningStatusData.underOppfolgingIArena);
         assertTrue(avslutningStatusData.underOppfolging);
     }
 
-    // TODO: Denne er jo litt teit
     @Test
     public void kanIkkeAvslutteOmManErAktivIArenaHvisAvslutningEr_ArenaIservKanIkkeReaktiveres() {
         startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.Companion.arbeidssokerRegistrering(fnr, aktorId, new VeilederRegistrant(NAV_IDENT)));
@@ -471,7 +467,6 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
         AvslutningStatusData avslutningStatusData = oppfolgingService.avsluttOppfolging(new ArenaIservKanIkkeReaktiveres(aktorId));
 
-        assertTrue(avslutningStatusData.underOppfolgingIArena);
         assertTrue(avslutningStatusData.underOppfolging);
     }
 

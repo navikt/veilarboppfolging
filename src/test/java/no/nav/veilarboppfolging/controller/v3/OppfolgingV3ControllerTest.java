@@ -135,7 +135,6 @@ class OppfolgingV3ControllerTest {
                 AvslutningStatusData.builder()
                         .kanAvslutte(true)
                         .underOppfolging(true)
-                        .underOppfolgingIArena(true)
                         .harYtelser(false)
                         .underKvp(false)
                         .inaktiveringsDato(LocalDate.parse("2023-01-01"))

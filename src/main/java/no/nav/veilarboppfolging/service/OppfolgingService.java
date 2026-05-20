@@ -508,10 +508,6 @@ public class OppfolgingService {
         boolean underKvp = kvpService.erUnderKvp(aktorId);
         boolean kanAvslutte = kanAvslutteOppfolging(aktorId, avregistreringsType, erUnderOppfolging(aktorId), erIserv, harAktiveTiltaksdeltakelser, erDeltakerIUngdomsprogrammet, erArbeidssoeker, harAap, underKvp).kanAvslutte;
 
-        boolean erUnderOppfolgingIArena = maybeArenaOppfolging
-                .map(status -> ArenaUtils.erUnderOppfolging(EnumUtils.valueOf(Formidlingsgruppe.class, status.getFormidlingsgruppe()), EnumUtils.valueOf(Kvalifiseringsgruppe.class, status.getServicegruppe())))
-                .orElse(false);
-
         LocalDate inaktiveringsDato = maybeArenaOppfolging
                 .map(ArenaOppfolgingTilstand::getInaktiveringsdato)
                 .orElse(null);
@@ -519,7 +515,6 @@ public class OppfolgingService {
         return AvslutningStatusData.builder()
                 .kanAvslutte(kanAvslutte)
                 .underOppfolging(underOppfolging)
-                .underOppfolgingIArena(erUnderOppfolgingIArena)
                 .harYtelser(arenaYtelserService.harPagaendeYtelse(fnr))
                 .underKvp(kvpService.erUnderKvp(aktorId))
                 .inaktiveringsDato(inaktiveringsDato)

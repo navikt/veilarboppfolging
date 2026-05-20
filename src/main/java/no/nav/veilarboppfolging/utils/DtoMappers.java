@@ -47,7 +47,6 @@ public class DtoMappers {
         return new AvslutningsStatusDto(
                 avslutningStatusData.kanAvslutte,
                 avslutningStatusData.underOppfolging,
-                avslutningStatusData.underOppfolgingIArena,
                 avslutningStatusData.harYtelser,
                 avslutningStatusData.underKvp,
                 avslutningStatusData.inaktiveringsDato,
