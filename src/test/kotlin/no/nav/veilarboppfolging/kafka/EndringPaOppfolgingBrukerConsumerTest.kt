@@ -3,6 +3,7 @@ package no.nav.veilarboppfolging.kafka
 import no.nav.common.client.norg2.Enhet
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
+import no.nav.common.types.identer.NavIdent
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.pto_schema.enums.arena.Hovedmaal
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
@@ -14,9 +15,11 @@ import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsStatu
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient
 import no.nav.veilarboppfolging.kafka.TestUtils.oppfølgingsBrukerEndret
 import no.nav.veilarboppfolging.oppfolgingsbruker.SystemRegistrant
+import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.GetOppfolginsstatusFailure
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.GetOppfolginsstatusSuccess
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ArenaIservKanIkkeReaktiveres
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ManuellAvregistrering
 import no.nav.veilarboppfolging.service.KafkaConsumerService
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.consumer.KafkaConsumer
@@ -39,6 +42,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import no.nav.veilarboppfolging.repository.ArbeidsoppfolgingskontorRepository
+import org.mockito.kotlin.any
 import tools.jackson.databind.DeserializationFeature
 import tools.jackson.databind.cfg.DateTimeFeature
 import tools.jackson.databind.json.JsonMapper
@@ -66,6 +70,29 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
     @BeforeAll
     fun beforeAll() {
         mockInternBrukerAuthOk(veilederOid, aktorId, fnr)
+    }
+
+    @Test
+    fun `Skal starte oppfølging for bruker som har blitt sykmeldt uten arbeidsgiver`() {
+        meldingFraVeilarbArenaPåBrukerMedStatus(fnr = fnr, formidlingsgruppe = Formidlingsgruppe.IARBS, kvalifiseringsgruppe = Kvalifiseringsgruppe.VURDU)
+        val oppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId)
+        assert(oppfolging.isPresent) { "Oppfolgingsstatus fra arena var null" }
+        assertTrue(oppfolging.get().isUnderOppfolging)
+    }
+
+    @Test
+    fun `Skal ikke starte oppfølging når bruker ble avsluttet manuelt og fortsatt er sykmeldt uten arbeidsgiver`() {
+        meldingFraVeilarbArenaPåBrukerMedStatus(fnr = fnr, formidlingsgruppe = Formidlingsgruppe.IARBS, kvalifiseringsgruppe = Kvalifiseringsgruppe.VURDU)
+        val oppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId)
+        assertTrue(oppfolging.get().isUnderOppfolging)
+        oppfolgingsPeriodeRepository.avsluttSistePeriodeOgAvsluttOppfolging(aktorId, "A111111", "begrunnelse")
+        val avsluttetOppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId)
+        assertFalse(avsluttetOppfolging.get().isUnderOppfolging)
+
+        meldingFraVeilarbArenaPåBrukerMedStatus(fnr = fnr, formidlingsgruppe = Formidlingsgruppe.IARBS, kvalifiseringsgruppe = Kvalifiseringsgruppe.VURDU)
+
+        val oppfolgingEtterMeldingMedSammeStatus = oppfolgingsStatusRepository.hentOppfolging(aktorId)
+        assertFalse(oppfolgingEtterMeldingMedSammeStatus.get().isUnderOppfolging)
     }
 
     @Test
@@ -415,7 +442,7 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
         kafkaConsumerService.consumeEndringPaOppfolgingBruker(record)
     }
 
-    fun meldingFraVeilarbArenaPåBrukerMedStatus(fnr: Fnr, formidlingsgruppe: Formidlingsgruppe, kvalifiseringsgruppe: Kvalifiseringsgruppe?, hovedmaal: Hovedmaal?, enhetId: String, iservFraDato: LocalDate? = null) {
+    fun meldingFraVeilarbArenaPåBrukerMedStatus(fnr: Fnr, formidlingsgruppe: Formidlingsgruppe, kvalifiseringsgruppe: Kvalifiseringsgruppe?, hovedmaal: Hovedmaal? = null, enhetId: String = "0101", iservFraDato: LocalDate? = null) {
         val record = ConsumerRecord("topic", 0, 0, "key", oppfølgingsBrukerEndret(fnr.get(), enhetId = enhetId, hovedmaal = hovedmaal, kvalifiseringsgruppe = kvalifiseringsgruppe, formidlingsgruppe = formidlingsgruppe, iservFraDato = iservFraDato))
         kafkaConsumerService.consumeEndringPaOppfolgingBruker(record)
     }
