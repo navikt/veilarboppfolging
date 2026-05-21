@@ -6,6 +6,7 @@ import no.nav.veilarboppfolging.controller.KontaktBrukerDto
 import no.nav.common.types.identer.Fnr
 import no.nav.veilarboppfolging.client.oppgave.OppgaveClient
 import no.nav.veilarboppfolging.client.pdl.PdlFolkeregisterStatusClient
+import no.nav.veilarboppfolging.eventsLogger.BigQueryClient
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
 import org.springframework.stereotype.Service
 
@@ -15,6 +16,7 @@ class KontaktBrukerService(
     private val pdlFolkeregisterStatusClient: PdlFolkeregisterStatusClient,
     private val aktorOppslagClient: AktorOppslagClient,
     private val oppgaveClient: OppgaveClient,
+    private val bigQueryClient: BigQueryClient,
 ) {
     fun opprettOppgave(fnr: Fnr): KontaktBrukerDto {
         if (!erUnder18Aar(fnr)) {
@@ -25,6 +27,7 @@ class KontaktBrukerService(
             throw IllegalArgumentException("Bruker er under oppfølging og skal ikke kunne be om å bli kontaktet")
         }
 
+        bigQueryClient.loggUnder18()
         return KontaktBrukerDto(frist = oppgaveClient.opprettOppgave(fnr, aktorId))
     }
 

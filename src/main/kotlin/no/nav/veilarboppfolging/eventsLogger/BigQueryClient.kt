@@ -11,7 +11,9 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ArbeidsøkerRegSync_Ble
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ArbeidsøkerRegSync_IkkeLengerIserv
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ArbeidsøkerRegSync_NoOp
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ArbeidsøkerRegSync_OppdaterIservDato
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.Avregistrering
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvregistreringsType
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ManuellAvregistrering
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.OppdateringFraArena_AlleredeUteAvOppfolging
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.OppdateringFraArena_BleIserv
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.OppdateringFraArena_IkkeLengerIserv
@@ -36,35 +38,39 @@ data class UtmeldingsAntall(
 
 interface BigQueryClient {
     fun loggStartOppfolgingsperiode(startBegrunnelse: OppfolgingStartBegrunnelse, oppfolgingPeriodeId: UUID, startedAvType: StartetAvType, kvalifiseringsgruppe: Optional<Kvalifiseringsgruppe>, manuellSjekkLovligOpphold: Boolean? = null)
-    fun loggAvsluttOppfolgingsperiode(oppfolgingPeriodeId: UUID, avregistreringsType: AvregistreringsType)
+    fun loggAvsluttOppfolgingsperiode(oppfolgingPeriodeId: UUID, avregistrering: Avregistrering, aktivIArena: Boolean? = null)
     fun loggUtmeldingsHendelse(utmelding: UtmeldingsHendelse)
     fun loggUtmeldingsCount(utmelding: UtmeldingsAntall)
+    fun loggUnder18()
 }
 
 class BigQueryClientImplementation(private val bigQuery: BigQuery): BigQueryClient {
     val OPPFOLGING_EVENTS = "OPPFOLGINGSPERIODE_EVENTS"
     val UTMELDING_EVENTS = "UTMELDING_EVENTS"
     val UTMELDING_COUNTS = "UTMELDING_COUNTS"
+    val UNDER18_EVENTS = "UNDER18_EVENTS"
     val DATASET_NAME = "oppfolging_metrikker"
     val oppfolgingsperiodeEventsTable = TableId.of(DATASET_NAME, OPPFOLGING_EVENTS)
     val utmeldingEventsTable = TableId.of(DATASET_NAME, UTMELDING_EVENTS)
     val utmeldingCountsTable = TableId.of(DATASET_NAME, UTMELDING_COUNTS)
+    val under18EventsTable = TableId.of(DATASET_NAME, UNDER18_EVENTS)
 
-    private fun TableId.insertRequest(row: Map<String, Any>): InsertAllRequest {
+    private fun TableId.insertRequest(row: Map<String, Any?>): InsertAllRequest {
         return InsertAllRequest.newBuilder(this).addRow(row).build()
     }
 
     val log = LoggerFactory.getLogger(this.javaClass)
 
-    override fun loggAvsluttOppfolgingsperiode(oppfolgingPeriodeId: UUID, avregistreringsType: AvregistreringsType) {
-        val erAutomatiskAvsluttet = avregistreringsType != AvregistreringsType.ManuellAvregistrering
+    override fun loggAvsluttOppfolgingsperiode(oppfolgingPeriodeId: UUID, avregistrering: Avregistrering, aktivIArena: Boolean?) {
+        val erAutomatiskAvsluttet = !avregistrering.getAvregistreringsType().erManuellAvregistrering()
         insertIntoOppfolgingEvents(oppfolgingsperiodeEventsTable) {
             mapOf(
                 "id" to oppfolgingPeriodeId.toString(),
                 "automatiskAvsluttet" to erAutomatiskAvsluttet,
                 "timestamp" to ZonedDateTime.now().toOffsetDateTime().toString(),
                 "event" to BigQueryEventType.OPPFOLGINGSPERIODE_SLUTT.name,
-                "avregistreringsType" to avregistreringsType.name
+                "avregistreringsType" to avregistrering.getAvregistreringsType().name,
+                "erAktivIArena" to aktivIArena
             )
         }
     }
@@ -126,7 +132,15 @@ class BigQueryClientImplementation(private val bigQuery: BigQuery): BigQueryClie
         }
     }
 
-    private fun insertIntoOppfolgingEvents(table: TableId, getRow: () -> Map<String, Any>?) {
+    override fun loggUnder18() {
+        insertIntoOppfolgingEvents(under18EventsTable) {
+            mapOf(
+                "timestamp" to ZonedDateTime.now().toOffsetDateTime().toString()
+            )
+        }
+    }
+
+    private fun insertIntoOppfolgingEvents(table: TableId, getRow: () -> Map<String, Any?>?) {
         runCatching {
             val row = getRow()
             if (row == null) return
