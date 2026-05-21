@@ -3,6 +3,7 @@ package no.nav.veilarboppfolging.kafka
 import no.nav.common.client.norg2.Enhet
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
+import no.nav.common.types.identer.NavIdent
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.pto_schema.enums.arena.Hovedmaal
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
@@ -14,9 +15,11 @@ import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsStatu
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient
 import no.nav.veilarboppfolging.kafka.TestUtils.oppfølgingsBrukerEndret
 import no.nav.veilarboppfolging.oppfolgingsbruker.SystemRegistrant
+import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.GetOppfolginsstatusFailure
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.GetOppfolginsstatusSuccess
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ArenaIservKanIkkeReaktiveres
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ManuellAvregistrering
 import no.nav.veilarboppfolging.service.KafkaConsumerService
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.consumer.KafkaConsumer
@@ -39,6 +42,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import no.nav.veilarboppfolging.repository.ArbeidsoppfolgingskontorRepository
+import org.mockito.kotlin.any
 import tools.jackson.databind.DeserializationFeature
 import tools.jackson.databind.cfg.DateTimeFeature
 import tools.jackson.databind.json.JsonMapper
@@ -66,6 +70,29 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
     @BeforeAll
     fun beforeAll() {
         mockInternBrukerAuthOk(veilederOid, aktorId, fnr)
+    }
+
+    @Test
+    fun `Skal starte oppfølging for bruker som har blitt sykmeldt uten arbeidsgiver`() {
+        meldingFraVeilarbArenaPåBrukerMedStatus(fnr = fnr, formidlingsgruppe = Formidlingsgruppe.IARBS, kvalifiseringsgruppe = Kvalifiseringsgruppe.VURDU)
+        val oppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId)
+        assert(oppfolging.isPresent) { "Oppfolgingsstatus fra arena var null" }
+        assertTrue(oppfolging.get().isUnderOppfolging)
+    }
+
+    @Test
+    fun `Skal ikke starte oppfølging når bruker ble avsluttet manuelt og fortsatt er sykmeldt uten arbeidsgiver`() {
+        meldingFraVeilarbArenaPåBrukerMedStatus(fnr = fnr, formidlingsgruppe = Formidlingsgruppe.IARBS, kvalifiseringsgruppe = Kvalifiseringsgruppe.VURDU)
+        val oppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId)
+        assertTrue(oppfolging.get().isUnderOppfolging)
+        oppfolgingsPeriodeRepository.avsluttSistePeriodeOgAvsluttOppfolging(aktorId, "A111111", "begrunnelse")
+        val avsluttetOppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId)
+        assertFalse(avsluttetOppfolging.get().isUnderOppfolging)
+
+        meldingFraVeilarbArenaPåBrukerMedStatus(fnr = fnr, formidlingsgruppe = Formidlingsgruppe.IARBS, kvalifiseringsgruppe = Kvalifiseringsgruppe.VURDU)
+
+        val oppfolgingEtterMeldingMedSammeStatus = oppfolgingsStatusRepository.hentOppfolging(aktorId)
+        assertFalse(oppfolgingEtterMeldingMedSammeStatus.get().isUnderOppfolging)
     }
 
     @Test
@@ -99,7 +126,6 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
         val enhetIdVest = "0123"
         val enhetNavnVest = "Nav VEST"
         mockEnhetINorg(enhetIdVest, enhetNavnVest)
-
         val enhetIdØst = "0122"
         val enhetNavnØst = "Nav ØST"
         mockEnhetINorg(enhetIdØst, enhetNavnØst)
@@ -107,6 +133,7 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
         val ingenEnhet = arenaOppfolgingService.hentArenaOppfolgingsEnhet(fnr)
         assert(ingenEnhet == null)
 
+        startOppfolgingSomArbeidsoker(aktorId, fnr)
         meldingFraVeilarbArenaPåBrukerMedEnhet(fnr, enhetIdVest)
 
         val skalVæreEnhetVest = arenaOppfolgingService.hentArenaOppfolgingsEnhet(fnr)
@@ -252,8 +279,8 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
     fun `skal starte oppfølging på syfo-bruker når 14a i arena`() {
         mockEnhetINorg("8989", "Nav enhet")
 
-        val localStatus0 = oppfolgingsStatusRepository.hentOppfolging(aktorId)
-        assert(localStatus0.isEmpty)
+        val localStatus = oppfolgingsStatusRepository.hentOppfolging(aktorId)
+        assert(localStatus.isEmpty)
 
         meldingFraVeilarbArenaPåBrukerMedStatus(
             fnr = fnr,
@@ -273,9 +300,10 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
             formidlingsgruppe = Formidlingsgruppe.IARBS,
             kvalifiseringsgruppe = Kvalifiseringsgruppe.BATT
         )
-        val localStatus2 = oppfolgingsStatusRepository.hentOppfolging(aktorId)
-        assert(localStatus2.isPresent) { "Oppfolgingsstatus fra arena var null" }
-        assertTrue(localStatus2.get().isUnderOppfolging, "Skulle vært under oppfølging")
+        oppfolgingsStatusRepository.hentOppfolging(aktorId).let { nesteStatus ->
+            assert(nesteStatus.isPresent) { "Oppfolgingsstatus fra arena var null" }
+            assertFalse(nesteStatus.get().isUnderOppfolging, "Vi skal ikke reagere på 14a vedtak i arena lenger")
+        }
     }
 
     @Test
@@ -285,16 +313,9 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
         val localStatus0 = oppfolgingsStatusRepository.hentOppfolging(aktorId)
         assert(localStatus0.isEmpty)
 
-
         /* Make a new consumer to read the message from the end of the topic */
         val kafkaConsumer = subscribeToTopic("min-side.aapen-brukervarsel-v1")
-        meldingFraVeilarbArenaPåBrukerMedStatus(
-            fnr = fnr,
-            enhetId = "8989",
-            hovedmaal = Hovedmaal.BEHOLDEA,
-            formidlingsgruppe = Formidlingsgruppe.IARBS,
-            kvalifiseringsgruppe = Kvalifiseringsgruppe.BATT
-        )
+        startOppfolgingSomArbeidsoker(aktorId, fnr)
         val localStatus2 = oppfolgingsStatusRepository.hentOppfolging(aktorId)
         assert(localStatus2.isPresent) { "Oppfolgingsstatus fra arena var null" }
         assertTrue(localStatus2.get().isUnderOppfolging, "Skulle vært under oppfølging")
@@ -421,7 +442,7 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
         kafkaConsumerService.consumeEndringPaOppfolgingBruker(record)
     }
 
-    fun meldingFraVeilarbArenaPåBrukerMedStatus(fnr: Fnr, formidlingsgruppe: Formidlingsgruppe, kvalifiseringsgruppe: Kvalifiseringsgruppe?, hovedmaal: Hovedmaal?, enhetId: String, iservFraDato: LocalDate? = null) {
+    fun meldingFraVeilarbArenaPåBrukerMedStatus(fnr: Fnr, formidlingsgruppe: Formidlingsgruppe, kvalifiseringsgruppe: Kvalifiseringsgruppe?, hovedmaal: Hovedmaal? = null, enhetId: String = "0101", iservFraDato: LocalDate? = null) {
         val record = ConsumerRecord("topic", 0, 0, "key", oppfølgingsBrukerEndret(fnr.get(), enhetId = enhetId, hovedmaal = hovedmaal, kvalifiseringsgruppe = kvalifiseringsgruppe, formidlingsgruppe = formidlingsgruppe, iservFraDato = iservFraDato))
         kafkaConsumerService.consumeEndringPaOppfolgingBruker(record)
     }

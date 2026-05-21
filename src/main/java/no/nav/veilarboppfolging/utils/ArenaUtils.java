@@ -23,6 +23,10 @@ public class ArenaUtils {
         return erArbeidssoker(formidlingsgruppeKode) || erIARBSMedOppfolging(formidlingsgruppeKode, kvalifiseringsgruppeKode);
     }
 
+    public static boolean erSykmeldtUtenArbeidsgiver(Formidlingsgruppe formidlingsgruppeKode, Kvalifiseringsgruppe kvalifiseringsgruppeKode) {
+        return IKKE_ARBEIDSSOKER.equals(formidlingsgruppeKode) && Kvalifiseringsgruppe.VURDU.equals(kvalifiseringsgruppeKode);
+    }
+
     public static boolean kanSettesUnderOppfolging(Formidlingsgruppe formidlingsgruppeKode, Kvalifiseringsgruppe kvalifiseringsgruppeKode) {
         return erIARBSUtenOppfolging(formidlingsgruppeKode, kvalifiseringsgruppeKode);
     }

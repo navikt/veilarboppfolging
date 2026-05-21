@@ -70,7 +70,7 @@ public class OppfolgingV2Controller {
     @GetMapping("/avslutning-status")
     public AvslutningsStatusDto hentAvslutningStatus(@RequestParam("fnr") Fnr fnr) {
         authService.skalVereInternBruker();
-        return tilDto(oppfolgingService.hentAvslutningStatus(fnr));
+        return tilDto(oppfolgingService.hentAvslutningstatusForManuellAvslutning(fnr));
     }
 
     @GetMapping("/periode/{uuid}")

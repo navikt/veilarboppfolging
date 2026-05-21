@@ -95,7 +95,7 @@ class OppfolgingV3Controller(
     @PostMapping("/oppfolging/hent-avslutning-status")
     fun hentAvslutningStatus(@RequestBody oppfolgingRequest: OppfolgingRequest): AvslutningsStatusDto {
         authService.skalVereInternBruker()
-        return DtoMappers.tilDto(oppfolgingService.hentAvslutningStatus(oppfolgingRequest.fnr))
+        return DtoMappers.tilDto(oppfolgingService.hentAvslutningstatusForManuellAvslutning(oppfolgingRequest.fnr))
     }
 
     @PostMapping("/oppfolging/hent-gjeldende-periode")

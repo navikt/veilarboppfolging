@@ -7,7 +7,6 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.NavIdent;
-import no.nav.poao_tilgang.client.TilgangType;
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe;
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe;
 import no.nav.veilarboppfolging.ForbiddenException;
@@ -28,7 +27,10 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.BrukerRegistrant;
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant;
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService;
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering;
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AdminAvregistrering;
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ArenaIservKanIkkeReaktiveres;
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ManuellAvregistrering;
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.UtmeldtEtter28Dager;
 import no.nav.veilarboppfolging.repository.KvpRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
@@ -418,21 +420,54 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     public void kanIkkeAvslutteNarManIkkeErUnderOppfolging() {
         oppfolgingsStatusRepository.opprettOppfolging(aktorId);
 
-        AvslutningStatusData avslutningStatusData = oppfolgingService.hentAvslutningStatus(fnr);
+        AvslutningStatusData avslutningStatusData = oppfolgingService.hentAvslutningstatusForManuellAvslutning(fnr);
 
         assertFalse(avslutningStatusData.kanAvslutte);
     }
 
     @Test
-    public void kanIkkeAvslutteNarManIkkeErUnderOppfolgingIArena() {
+    public void kanAvslutteSelvOmManErAktivIArenaHvisAvslutningGjøresManuelt() {
         startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.Companion.arbeidssokerRegistrering(fnr, aktorId, new VeilederRegistrant(NAV_IDENT)));
         assertUnderOppfolgingLagret(aktorId);
-
         gittArenaOppfolgingStatus("ARBS", null);
 
-        AvslutningStatusData avslutningStatusData = oppfolgingService.hentAvslutningStatus(fnr);
+        AvslutningStatusData avslutningStatusData = oppfolgingService.avsluttOppfolging(new ManuellAvregistrering(aktorId, new VeilederRegistrant(new NavIdent(VEILEDER)), ""));
 
-        assertFalse(avslutningStatusData.kanAvslutte);
+        assertFalse(avslutningStatusData.underOppfolging);
+    }
+
+    @Test
+    public void kanAvslutteSelvOmManErAktivIArenaHvisAvslutningGjøresAvAdmin() {
+        startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.Companion.arbeidssokerRegistrering(fnr, aktorId, new VeilederRegistrant(NAV_IDENT)));
+        assertUnderOppfolgingLagret(aktorId);
+        gittArenaOppfolgingStatus("ARBS", null);
+        var oppfolgingsperiodeId = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId).getFirst().getUuid();
+
+        AvslutningStatusData avslutningStatusData = oppfolgingService.avsluttOppfolging(new AdminAvregistrering(aktorId, new VeilederRegistrant(new NavIdent(VEILEDER)), "", oppfolgingsperiodeId));
+
+        assertFalse(avslutningStatusData.underOppfolging);
+    }
+
+    @Test
+    public void kanIkkeAvslutteOmManErAktivIArenaHvisAvslutningEr_UtmeldtEtter28Dager() {
+        startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.Companion.arbeidssokerRegistrering(fnr, aktorId, new VeilederRegistrant(NAV_IDENT)));
+        assertUnderOppfolgingLagret(aktorId);
+        gittArenaOppfolgingStatus("ARBS", null);
+
+        AvslutningStatusData avslutningStatusData = oppfolgingService.avsluttOppfolging(new UtmeldtEtter28Dager(aktorId));
+
+        assertTrue(avslutningStatusData.underOppfolging);
+    }
+
+    @Test
+    public void kanIkkeAvslutteOmManErAktivIArenaHvisAvslutningEr_ArenaIservKanIkkeReaktiveres() {
+        startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.Companion.arbeidssokerRegistrering(fnr, aktorId, new VeilederRegistrant(NAV_IDENT)));
+        assertUnderOppfolgingLagret(aktorId);
+        gittArenaOppfolgingStatus("ARBS", null);
+
+        AvslutningStatusData avslutningStatusData = oppfolgingService.avsluttOppfolging(new ArenaIservKanIkkeReaktiveres(aktorId));
+
+        assertTrue(avslutningStatusData.underOppfolging);
     }
 
     @Test
@@ -443,7 +478,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
         gittArenaOppfolgingStatus("ISERV", "");
 
-        AvslutningStatusData avslutningStatusData = oppfolgingService.hentAvslutningStatus(fnr);
+        AvslutningStatusData avslutningStatusData = oppfolgingService.hentAvslutningstatusForManuellAvslutning(fnr);
 
         assertFalse(avslutningStatusData.kanAvslutte);
         assertTrue(avslutningStatusData.harAktiveTiltaksdeltakelser);
@@ -457,7 +492,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
         gittArenaOppfolgingStatus("ISERV", "");
 
-        AvslutningStatusData avslutningStatusData = oppfolgingService.hentAvslutningStatus(fnr);
+        AvslutningStatusData avslutningStatusData = oppfolgingService.hentAvslutningstatusForManuellAvslutning(fnr);
 
         assertFalse(avslutningStatusData.kanAvslutte);
         assertTrue(avslutningStatusData.erDeltakerIUngdomsprogrammet);
@@ -471,7 +506,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
         gittArenaOppfolgingStatus("ISERV", "");
 
-        AvslutningStatusData avslutningStatusData = oppfolgingService.hentAvslutningStatus(fnr);
+        AvslutningStatusData avslutningStatusData = oppfolgingService.hentAvslutningstatusForManuellAvslutning(fnr);
 
         assertFalse(avslutningStatusData.kanAvslutte);
         assertTrue(avslutningStatusData.erArbeidssoeker);
@@ -485,7 +520,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
         gittArenaOppfolgingStatus("ISERV", "");
 
-        AvslutningStatusData avslutningStatusData = oppfolgingService.hentAvslutningStatus(fnr);
+        AvslutningStatusData avslutningStatusData = oppfolgingService.hentAvslutningstatusForManuellAvslutning(fnr);
 
         assertFalse(avslutningStatusData.kanAvslutte);
         assertTrue(avslutningStatusData.harAap);
@@ -499,7 +534,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         gittArenaOppfolgingStatus("ISERV", "");
         when(arenaYtelserService.harPagaendeYtelse(fnr)).thenReturn(true);
 
-        AvslutningStatusData avslutningStatusData = oppfolgingService.hentAvslutningStatus(fnr);
+        AvslutningStatusData avslutningStatusData = oppfolgingService.hentAvslutningstatusForManuellAvslutning(fnr);
 
         assertTrue(avslutningStatusData.kanAvslutte);
         assertTrue(avslutningStatusData.harYtelser);

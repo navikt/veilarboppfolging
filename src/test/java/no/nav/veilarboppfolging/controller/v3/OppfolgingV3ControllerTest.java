@@ -131,7 +131,7 @@ class OppfolgingV3ControllerTest {
 
     @Test
     void hentAvslutningStatus_skal_returnere_avslutningstatus() throws Exception {
-        when(oppfolgingService.hentAvslutningStatus(TEST_FNR)).thenReturn(
+        when(oppfolgingService.hentAvslutningstatusForManuellAvslutning(TEST_FNR)).thenReturn(
                 AvslutningStatusData.builder()
                         .kanAvslutte(true)
                         .underOppfolging(true)

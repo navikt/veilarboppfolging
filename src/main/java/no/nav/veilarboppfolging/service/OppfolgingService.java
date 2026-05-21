@@ -34,6 +34,7 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ArenaSyncRegistrering;
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering;
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AdminAvregistrering;
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.Avregistrering;
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvregistreringsType;
 import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.hendelser.OppfolgingsAvsluttetHendelseDto;
 import no.nav.veilarboppfolging.repository.*;
 import no.nav.veilarboppfolging.repository.entity.*;
@@ -148,9 +149,9 @@ public class OppfolgingService {
         return harFlereAktorIdMedOppfolging;
     }
 
-    public AvslutningStatusData hentAvslutningStatus(Fnr fnr) {
+    public AvslutningStatusData hentAvslutningstatusForManuellAvslutning(Fnr fnr) {
         authService.sjekkLesetilgangMedFnr(fnr);
-        return getAvslutningStatus(fnr);
+        return getAvslutningStatus(fnr, AvregistreringsType.ManuellAvregistrering);
     }
 
     @SneakyThrows
@@ -175,7 +176,7 @@ public class OppfolgingService {
         boolean erArbeidssoeker = erArbeidssoeker(fnr);
         boolean harAap = harAap(fnr);
         boolean underKvp = kvpService.erUnderKvp(aktorId);
-        KanAvslutteMedBegrunnelse kanAvslutte = kanAvslutteOppfolging(aktorId, erUnderOppfolging(aktorId), erIserv, harAktiveTiltaksdeltakelser, erDeltakerIUngdomsprogrammet, erArbeidssoeker, harAap, underKvp);
+        KanAvslutteMedBegrunnelse kanAvslutte = kanAvslutteOppfolging(aktorId, avregistrering.getAvregistreringsType(), erUnderOppfolging(aktorId), erIserv, harAktiveTiltaksdeltakelser, erDeltakerIUngdomsprogrammet, erArbeidssoeker, harAap, underKvp);
         if (kanAvslutte.kanAvslutte) {
             var veilederId = avregistrering.getAvsluttetAv().getIdent();
             var begrunnelse = avregistrering.getBegrunnelse();
@@ -185,7 +186,7 @@ public class OppfolgingService {
             log.warn("Oppfølging ble ikke avsluttet likevel, avregistreringstype {}: begrunnelse {}",avregistrering.getAvregistreringsType() , kanAvslutte.begrunnelse);
         }
 
-        return getAvslutningStatus(fnr);
+        return getAvslutningStatus(fnr, avregistrering.getAvregistreringsType());
     }
 
     @SneakyThrows
@@ -296,16 +297,28 @@ public class OppfolgingService {
 
     @Data
     @AllArgsConstructor
-    class KanAvslutteMedBegrunnelse {
+    public static class KanAvslutteMedBegrunnelse {
         boolean kanAvslutte;
         String begrunnelse;
     }
-    private KanAvslutteMedBegrunnelse kanAvslutteOppfolging(AktorId aktorId, boolean erUnderOppfolging, boolean erIservIArena, boolean harAktiveTiltaksdeltakelser, boolean erDeltakerIUngdomsprogrammet, boolean erArbeidssoeker, boolean harAap, boolean underKvp) {
-        secureLog.info("Kan oppfolging avsluttes for aktorid {}?, oppfolging.isUnderOppfolging(): {}, erIservIArena(): {}, underKvp(): {}, harAktiveTiltaksdeltakelser(): {}, erArbeidssoeker(): {}, harAap(): {}",
-                aktorId, erUnderOppfolging, erIservIArena, underKvp, harAktiveTiltaksdeltakelser, erArbeidssoeker, harAap);
+    public static KanAvslutteMedBegrunnelse kanAvslutteOppfolging(
+            AktorId aktorId,
+            AvregistreringsType avregistreringsType,
+            boolean erUnderOppfolging,
+            boolean erIservIArena,
+            boolean harAktiveTiltaksdeltakelser,
+            boolean erDeltakerIUngdomsprogrammet,
+            boolean erArbeidssoeker,
+            boolean harAap,
+            boolean underKvp
+    ) {
+        secureLog.info("Kan oppfolging avsluttes for aktorid {}?, oppfolging.isUnderOppfolging(): {}, erIservIArena(): {}, underKvp(): {}, harAktiveTiltaksdeltakelser(): {}, erDeltakerIUngdomsprogrammet(): {}, erArbeidssoeker(): {}, harAap(): {}",
+                aktorId, erUnderOppfolging, erIservIArena, underKvp, harAktiveTiltaksdeltakelser, erDeltakerIUngdomsprogrammet, erArbeidssoeker, harAap);
+
+        var manuellAvslutning = avregistreringsType.equals(AvregistreringsType.ManuellAvregistrering) || avregistreringsType.equals(AvregistreringsType.AdminAvregistrering);
 
         if (!erUnderOppfolging) return new KanAvslutteMedBegrunnelse(false, "bruker var ikke under oppfølging");
-        if (!erIservIArena) return new KanAvslutteMedBegrunnelse(false, "bruker var ikke inaktivert i Arena");
+        if (!manuellAvslutning && !erIservIArena) return new KanAvslutteMedBegrunnelse(false, "bruker var ikke inaktivert i Arena ved forsøk på automatisk avslutning");
         if (underKvp) return new KanAvslutteMedBegrunnelse(false, "bruker var under kvp");
         if (harAktiveTiltaksdeltakelser) return new KanAvslutteMedBegrunnelse(false, "bruker hadde aktive tiltaksdeltakelser");
         if (erDeltakerIUngdomsprogrammet) return new KanAvslutteMedBegrunnelse(false, "bruker er deltaker i ungdomsprogrammet");
@@ -480,23 +493,20 @@ public class OppfolgingService {
         );
     }
 
-    private AvslutningStatusData getAvslutningStatus(Fnr fnr) {
+    private AvslutningStatusData getAvslutningStatus(Fnr fnr, AvregistreringsType avregistreringsType) {
         AktorId aktorId = authService.getAktorIdOrThrow(fnr);
 
         Optional<ArenaOppfolgingTilstand> maybeArenaOppfolging = arenaOppfolgingService.hentArenaOppfolgingTilstand(fnr);
 
         boolean erIserv = maybeArenaOppfolging.map(ao -> erIserv(EnumUtils.valueOf(Formidlingsgruppe.class, ao.getFormidlingsgruppe()))).orElse(false);
+        boolean underOppfolging = getOppfolgingStatusData(fnr).underOppfolging;
 
         boolean harAktiveTiltaksdeltakelser = harAktiveTiltaksdeltakelser(fnr);
         boolean erDeltakerIUngdomsprogrammet = erDeltakerIUngdomsprogrammet(fnr);
         boolean erArbeidssoeker = erArbeidssoeker(fnr);
         boolean harAap = harAap(fnr);
         boolean underKvp = kvpService.erUnderKvp(aktorId);
-        boolean kanAvslutte = kanAvslutteOppfolging(aktorId, erUnderOppfolging(aktorId), erIserv, harAktiveTiltaksdeltakelser, erDeltakerIUngdomsprogrammet, erArbeidssoeker, harAap, underKvp).kanAvslutte;
-
-        boolean erUnderOppfolgingIArena = maybeArenaOppfolging
-                .map(status -> ArenaUtils.erUnderOppfolging(EnumUtils.valueOf(Formidlingsgruppe.class, status.getFormidlingsgruppe()), EnumUtils.valueOf(Kvalifiseringsgruppe.class, status.getServicegruppe())))
-                .orElse(false);
+        boolean kanAvslutte = kanAvslutteOppfolging(aktorId, avregistreringsType, erUnderOppfolging(aktorId), erIserv, harAktiveTiltaksdeltakelser, erDeltakerIUngdomsprogrammet, erArbeidssoeker, harAap, underKvp).kanAvslutte;
 
         LocalDate inaktiveringsDato = maybeArenaOppfolging
                 .map(ArenaOppfolgingTilstand::getInaktiveringsdato)
@@ -504,7 +514,7 @@ public class OppfolgingService {
 
         return AvslutningStatusData.builder()
                 .kanAvslutte(kanAvslutte)
-                .underOppfolging(erUnderOppfolgingIArena)
+                .underOppfolging(underOppfolging)
                 .harYtelser(arenaYtelserService.harPagaendeYtelse(fnr))
                 .underKvp(kvpService.erUnderKvp(aktorId))
                 .inaktiveringsDato(inaktiveringsDato)
