@@ -6,10 +6,12 @@ import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.veilarboppfolging.client.oppgave.OppgaveClient
+import no.nav.veilarboppfolging.client.oppgave.OppgaveClientTest
 import no.nav.veilarboppfolging.client.oppgave.finnFristForFerdigstillingAvOppgave
 import no.nav.veilarboppfolging.client.pdl.ForenkletFolkeregisterStatus
 import no.nav.veilarboppfolging.client.pdl.FregStatusOgStatsborgerskap
 import no.nav.veilarboppfolging.client.pdl.PdlFolkeregisterStatusClient
+import no.nav.veilarboppfolging.eventsLogger.BigQueryClient
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
 import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity
 import org.assertj.core.api.Assertions
@@ -36,6 +38,9 @@ class KontaktBrukerServiceTest {
 
     @Mock
     private lateinit var oppgaveClient: OppgaveClient
+
+    @Mock
+    private lateinit var bigQueryClient: BigQueryClient
 
     @InjectMocks
     private lateinit var kontaktBrukerService: KontaktBrukerService
