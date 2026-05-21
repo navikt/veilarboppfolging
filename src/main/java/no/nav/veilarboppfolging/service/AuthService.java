@@ -168,8 +168,8 @@ public class AuthService {
     }
 
     public boolean harTilgangTilEnhetMedSperre(String enhetId) {
-        if (erEksternBruker()) {
-            return true; // sluttbruker har altid tilgang til egne data
+        if (erEksternBruker() || erSystemBruker()) {
+            return true;
         }
         Decision decision = poaoTilgangClient.evaluatePolicy(new NavAnsattTilgangTilNavEnhetMedSperrePolicyInput(
                 hentInnloggetVeilederUUID(), enhetId
