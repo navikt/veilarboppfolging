@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - 'alerts/kafka_failed_records_alert.yaml'
+      - 'alerts/alerts.yaml'
       - '.github/workflows/alerts.yml'
 
 concurrency:
@@ -25,7 +26,9 @@ jobs:
         uses: nais/deploy/actions/deploy@823ec9b7e305ce7cf911d0f9a25f7da9d7486cf2
         env:
           CLUSTER: dev-gcp
-          RESOURCE: alerts/kafka_failed_records_alert.yaml
+          RESOURCE: >-
+            alerts/kafka_failed_records_alert.yaml,
+            alerts/alerts.yaml
 
   apply-alerts-prod:
     name: Apply alerts til prod
@@ -39,4 +42,6 @@ jobs:
         uses: nais/deploy/actions/deploy@823ec9b7e305ce7cf911d0f9a25f7da9d7486cf2
         env:
           CLUSTER: prod-gcp
-          RESOURCE: alerts/kafka_failed_records_alert.yaml
+          RESOURCE: >-
+            alerts/kafka_failed_records_alert.yaml,
+            alerts/alerts.yaml
