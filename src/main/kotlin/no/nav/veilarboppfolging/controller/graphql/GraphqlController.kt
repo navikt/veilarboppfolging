@@ -2,6 +2,8 @@ package no.nav.veilarboppfolging.controller.graphql
 
 import graphql.GraphQLContext
 import graphql.execution.DataFetcherResult
+import java.time.format.DateTimeFormatter
+import kotlin.jvm.optionals.getOrNull
 import no.nav.common.auth.context.UserRole
 import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.client.norg2.Norg2Client
@@ -16,15 +18,31 @@ import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.veilarboppfolging.ForbiddenException
 import no.nav.veilarboppfolging.client.pdl.PdlFolkeregisterStatusClient
 import no.nav.veilarboppfolging.controller.PoaoTilgangError
-import no.nav.veilarboppfolging.controller.graphql.brukerStatus.*
-import no.nav.veilarboppfolging.controller.graphql.oppfolging.*
+import no.nav.veilarboppfolging.controller.graphql.brukerStatus.BrukerStatusArenaDto
+import no.nav.veilarboppfolging.controller.graphql.brukerStatus.BrukerStatusDto
+import no.nav.veilarboppfolging.controller.graphql.brukerStatus.BrukerStatusKrrDto
+import no.nav.veilarboppfolging.controller.graphql.brukerStatus.BrukerStatusManuellDto
+import no.nav.veilarboppfolging.controller.graphql.brukerStatus.KontorSperre
+import no.nav.veilarboppfolging.controller.graphql.brukerStatus.VeilederTilordningDto
+import no.nav.veilarboppfolging.controller.graphql.oppfolging.EnhetDto
+import no.nav.veilarboppfolging.controller.graphql.oppfolging.KildeDto
+import no.nav.veilarboppfolging.controller.graphql.oppfolging.OppfolgingDto
+import no.nav.veilarboppfolging.controller.graphql.oppfolging.OppfolgingsEnhetQueryDto
+import no.nav.veilarboppfolging.controller.graphql.oppfolging.OppfolgingsperiodeDto
 import no.nav.veilarboppfolging.controller.graphql.veilederTilgang.VeilederTilgangDto
 import no.nav.veilarboppfolging.ident.toCommonIdent
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
-import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.*
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ErBrukerUnderOppfolging
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.KanStarteOppfolgingDto
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.KanStarteOppfolgingEksterneDto
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.KanStarteOppfolgingEksterneDto.Companion.sjekkKanStarteOppfolgingPaBrukerForEksterne
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.KanStarteOppfolgingSjekk.Companion.sjekkKanStarteOppfolgingPaBrukerForVeileder
-import no.nav.veilarboppfolging.repository.*
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.toKanStarteOppfolging
+import no.nav.veilarboppfolging.repository.ArbeidsoppfolgingskontorRepository
+import no.nav.veilarboppfolging.repository.KvpRepository
+import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
+import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
+import no.nav.veilarboppfolging.repository.VeilederTilordningerRepository
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity
 import no.nav.veilarboppfolging.service.AuthService
 import no.nav.veilarboppfolging.service.ManuellStatusService
@@ -37,8 +55,6 @@ import org.springframework.graphql.data.method.annotation.SchemaMapping
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Controller
 import org.springframework.web.server.ResponseStatusException
-import java.time.format.DateTimeFormatter
-import kotlin.jvm.optionals.getOrNull
 
 enum class TilgangResultat {
     HAR_TILGANG,
@@ -51,7 +67,6 @@ enum class TilgangResultat {
 
 @Controller
 class GraphqlController(
-    private val enhetRepository: EnhetRepository,
     private val oppfolgingsStatusRepository: OppfolgingsStatusRepository,
     private val norg2Client: Norg2Client,
     private val aktorOppslagClient: AktorOppslagClient,

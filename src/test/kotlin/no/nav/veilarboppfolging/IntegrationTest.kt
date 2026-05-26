@@ -29,6 +29,8 @@ import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.pto_schema.enums.arena.Hovedmaal
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
 import no.nav.tms.varsel.builder.BuilderEnvironment
+import no.nav.veilarboppfolging.client.aap.AapClient
+import no.nav.veilarboppfolging.client.arbeidssoekerregisteret.ArbeidssoekerregisteretClient
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirClient
 import no.nav.veilarboppfolging.client.digdir_krr.KRRData
 import no.nav.veilarboppfolging.client.norg.INorgTilhorighetClient
@@ -40,8 +42,6 @@ import no.nav.veilarboppfolging.client.pdl.GeografiskTilknytningNr
 import no.nav.veilarboppfolging.client.pdl.PdlFolkeregisterStatusClient
 import no.nav.veilarboppfolging.client.tiltakshistorikk.TiltakshistorikkClient
 import no.nav.veilarboppfolging.client.ungdomsprogram.UngdomsprogramClient
-import no.nav.veilarboppfolging.client.arbeidssoekerregisteret.ArbeidssoekerregisteretClient
-import no.nav.veilarboppfolging.client.aap.AapClient
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsBruker
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsStatus
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient
@@ -58,7 +58,6 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrerin
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ManuellAvregistrering
 import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.OppfolgingsHendelseDto
 import no.nav.veilarboppfolging.repository.ArbeidsoppfolgingskontorRepository
-import no.nav.veilarboppfolging.repository.EnhetRepository
 import no.nav.veilarboppfolging.repository.KvpRepository
 import no.nav.veilarboppfolging.repository.ManuellStatusRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
@@ -186,9 +185,6 @@ open class IntegrationTest {
 
     @Autowired
     lateinit var namedParameterJdbcTemplate: NamedParameterJdbcTemplate
-
-    @Autowired
-    lateinit var enhetRepository: EnhetRepository
 
     @Autowired
     lateinit var poaoTilgangClient: PoaoTilgangClient
