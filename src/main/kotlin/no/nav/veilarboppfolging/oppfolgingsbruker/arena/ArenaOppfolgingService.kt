@@ -15,6 +15,7 @@ import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsBruke
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsStatus
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.OppfolgingEnhetMedVeilederResponse.Oppfolgingsenhet
+import no.nav.veilarboppfolging.repository.ArbeidsoppfolgingskontorRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
 import no.nav.veilarboppfolging.service.AuthService
 import org.slf4j.LoggerFactory
@@ -30,6 +31,7 @@ class ArenaOppfolgingService @Autowired constructor (
     private val aktorOppslagClient: AktorOppslagClient,
     private val veilarbarenaClient: VeilarbarenaClient,
     private val oppfolgingsStatusRepository: OppfolgingsStatusRepository,
+    private val arbeidsoppfolgingskontorRepository: ArbeidsoppfolgingskontorRepository,
     private val authService: AuthService,
     private val norg2Client: Norg2Client,
 ) {
@@ -72,26 +74,18 @@ class ArenaOppfolgingService @Autowired constructor (
     }
 
     /*
-    * Oppfolgingsenhet i arena inkl navn, det finnes Noen få brukere som ikke har enhet.
+    * Oppfolgingsenhet fra ao-kontor inkl navn.
     * Det gjøres oppslag i norg2 for å finne navn
     * */
-    fun hentArenaOppfolgingsEnhet(fnr: Fnr): Oppfolgingsenhet? {
-        return hentArenaOppfolgingsEnhetId(fnr)
+    fun hentOppfolgingsEnhet(fnr: Fnr): Oppfolgingsenhet? {
+        return hentOppfolgingsEnhetId(fnr)
             ?.let { hentEnhet(it) }
     }
 
-    /* Bare enhetsId, den blir cached lokalt så man trenger ikke alltid hente den synkront */
-    fun hentArenaOppfolgingsEnhetId(fnr: Fnr): EnhetId? {
+    /* Bare enhetsId fra ao_kontor-tabellen */
+    fun hentOppfolgingsEnhetId(fnr: Fnr): EnhetId? {
         val aktorId = authService.getAktorIdOrThrow(fnr)
-        return oppfolgingsStatusRepository.hentOppfolging(aktorId)
-            .flatMap { it.localArenaOppfolging.map { it.oppfolgingsenhet } }
-            .orElseGet { hentEnhetSynkrontFraVeilarbarena(fnr) }
-    }
-
-    private fun hentEnhetSynkrontFraVeilarbarena(fnr: Fnr): EnhetId? {
-        return veilarbarenaClient.hentOppfolgingsbruker(fnr)
-            .map { it.navKontor }
-            .map { EnhetId(it) }.orElse(null)
+        return arbeidsoppfolgingskontorRepository.hentEnhet(aktorId)
     }
 
     fun hentIservDatoOgFormidlingsGruppe(fnr: Fnr): IservDatoOgFormidlingsGruppe? {

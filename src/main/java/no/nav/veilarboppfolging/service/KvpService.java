@@ -10,7 +10,6 @@ import no.nav.veilarboppfolging.BadRequestException;
 import no.nav.veilarboppfolging.ForbiddenException;
 import no.nav.veilarboppfolging.kafka.KvpPeriode;
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService;
-import no.nav.veilarboppfolging.oppfolgingsbruker.arena.EndringPaaOppfolgingsBruker;
 import no.nav.veilarboppfolging.repository.KvpRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
 import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity;
@@ -59,7 +58,7 @@ public class KvpService {
             throw new BadRequestException("Bruker må være under oppfølging for å starte KVP");
         }
 
-        var enhet = Optional.ofNullable(arenaOppfolgingService.hentArenaOppfolgingsEnhetId(fnr))
+        var enhet = Optional.ofNullable(arenaOppfolgingService.hentOppfolgingsEnhetId(fnr))
                 .map(Id::get)
                 .orElse(null);
 
@@ -95,7 +94,7 @@ public class KvpService {
         AktorId aktorId = authService.getAktorIdOrThrow(fnr);
 
         authService.sjekkLesetilgangMedFnr(fnr);
-        String enhet = Optional.ofNullable(arenaOppfolgingService.hentArenaOppfolgingsEnhetId(fnr))
+        String enhet = Optional.ofNullable(arenaOppfolgingService.hentOppfolgingsEnhetId(fnr))
                 .map(Id::get).orElse(null);
 
         if (!authService.harTilgangTilEnhet(enhet)) {
@@ -146,17 +145,17 @@ public class KvpService {
         metricsService.kvpStoppet();
     }
 
-    public void avsluttKvpVedEnhetBytte(EndringPaaOppfolgingsBruker endretBruker) {
-        Optional<KvpPeriodeEntity> maybeGjeldendeKvpPeriode = hentGjeldendeKvpPeriode(endretBruker.getAktorId());
+    public void avsluttKvpVedEnhetBytte(AktorId aktorId, String nyEnhet) {
+        Optional<KvpPeriodeEntity> maybeGjeldendeKvpPeriode = hentGjeldendeKvpPeriode(aktorId);
 
         if (maybeGjeldendeKvpPeriode.isEmpty()) {
             return;
         }
 
-        boolean harByttetKontor = !endretBruker.getOppfolgingsenhet().equals(maybeGjeldendeKvpPeriode.get().getEnhet());
+        boolean harByttetKontor = !nyEnhet.equals(maybeGjeldendeKvpPeriode.get().getEnhet());
 
         if (harByttetKontor) {
-            stopKvpUtenEnhetSjekk(SYSTEM_USER_NAME, endretBruker.getAktorId(), "KVP avsluttet automatisk pga. endret Nav-enhet", SYSTEM);
+            stopKvpUtenEnhetSjekk(SYSTEM_USER_NAME, aktorId, "KVP avsluttet automatisk pga. endret Nav-enhet", SYSTEM);
             metricsService.stopKvpDueToChangedUnit();
         }
     }

@@ -467,6 +467,7 @@ class GraphqlControllerTest: IntegrationTest() {
         mockPoaoTilgangHarTilgangTilEnhet(veilederId, enhet, Decision.Permit)
         setBrukerUnderOppfolging(aktorId, fnr)
         setLocalArenaOppfolging(aktorId, Formidlingsgruppe.ISERV, enhet = enhet)
+        setAoKontor(fnr, aktorId, enhet.get())
         avsluttOppfolgingManueltSomVeileder(aktorId, veilederNavIdent, "fordi")
 
         /* Query is hidden in test/resources/graphl-test :) */

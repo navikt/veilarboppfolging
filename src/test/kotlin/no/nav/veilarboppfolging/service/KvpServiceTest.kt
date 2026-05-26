@@ -7,13 +7,11 @@ import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.EnhetId
 import no.nav.common.types.identer.Fnr
 import no.nav.common.utils.fn.UnsafeRunnable
-import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.veilarboppfolging.BadRequestException
 import no.nav.veilarboppfolging.ForbiddenException
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsBruker
 import no.nav.veilarboppfolging.kafka.KvpPeriode
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
-import no.nav.veilarboppfolging.oppfolgingsbruker.arena.EndringPaaOppfolgingsBruker
 import no.nav.veilarboppfolging.repository.KvpRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
 import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity
@@ -68,7 +66,7 @@ class KvpServiceTest{
 
         val veilarbArenaOppfolgingsBruker = VeilarbArenaOppfolgingsBruker()
         veilarbArenaOppfolgingsBruker.setNavKontor(ENHET)
-        `when`<EnhetId?>(arenaOppfolgingService.hentArenaOppfolgingsEnhetId(FNR))
+        `when`<EnhetId?>(arenaOppfolgingService.hentOppfolgingsEnhetId(FNR))
             .thenReturn(EnhetId.of(ENHET))
 
         `when`(authService.harTilgangTilEnhet(ArgumentMatchers.anyString())).thenReturn(true)
@@ -223,14 +221,8 @@ class KvpServiceTest{
         gittBrukerErUnderOppfolging(kvpId)
         gittBrukerHarAktivKvp(kvpId, kvpStartTidspunkt, ENHET)
         val annenEnhet = "1235"
-        val endringPaaOppfolgingsBruker = EndringPaaOppfolgingsBruker(
-            AKTOR_ID,
-            FNR.get(),
-            Formidlingsgruppe.IARBS,
-            annenEnhet
-        )
 
-        kvpService?.avsluttKvpVedEnhetBytte(endringPaaOppfolgingsBruker)
+        kvpService?.avsluttKvpVedEnhetBytte(AKTOR_ID, annenEnhet)
 
         verify(kvpRepositoryMock, times(1)).stopKvp(
             eq(kvpId),

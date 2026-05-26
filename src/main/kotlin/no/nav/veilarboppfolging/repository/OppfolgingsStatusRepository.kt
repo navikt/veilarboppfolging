@@ -108,8 +108,7 @@ class OppfolgingsStatusRepository(private val db: NamedParameterJdbcTemplate) {
                 kvalifiseringsgruppe = kvalifiseringsgruppe,
                 formidlingsgruppe = formidlingsgruppe,
                 hovedmaal = rs.getStringOrNull("hovedmaal")?.let(Hovedmaal::valueOf),
-                oppfolgingsenhet = rs.getStringOrNull("kontor_id")?.let { EnhetId(it) }
-                    ?: rs.getStringOrNull("oppfolgingsenhet")?.let { EnhetId(it) },
+                oppfolgingsenhet = rs.getStringOrNull("kontor_id")?.let { EnhetId(it) },
                 // Dårlig konvertering av ZonedDataTime til LocalDateTime men trenger bare datoen
                 iservFraDato = DbUtils.hentZonedDateTime(rs, "iserv_fra_dato")?.toLocalDate()
             ) else null

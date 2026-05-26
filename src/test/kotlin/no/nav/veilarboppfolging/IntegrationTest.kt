@@ -57,6 +57,7 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.AktiverBrukerManueltSe
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ManuellAvregistrering
 import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.OppfolgingsHendelseDto
+import no.nav.veilarboppfolging.repository.ArbeidsoppfolgingskontorRepository
 import no.nav.veilarboppfolging.repository.EnhetRepository
 import no.nav.veilarboppfolging.repository.KvpRepository
 import no.nav.veilarboppfolging.repository.ManuellStatusRepository
@@ -202,6 +203,9 @@ open class IntegrationTest {
     lateinit var veilederTilordningerRepository: VeilederTilordningerRepository
 
     @Autowired
+    lateinit var arbeidsoppfolgingskontorRepository: ArbeidsoppfolgingskontorRepository
+
+    @Autowired
     lateinit var kafkaProperties: KafkaProperties
 
     @Autowired
@@ -255,6 +259,11 @@ open class IntegrationTest {
                 enhet,
                 null,
             ))
+    }
+
+    fun setAoKontor(fnr: Fnr, aktorId: AktorId, kontorId: String) {
+        val oppfolgingsperiodeId = oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId).get().uuid
+        arbeidsoppfolgingskontorRepository.settNavKontor(fnr.get(), aktorId.get(), oppfolgingsperiodeId, kontorId)
     }
 
     fun setManuellStatus(aktorId: AktorId) {

@@ -76,7 +76,6 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     private ArenaYtelserService arenaYtelserService = mock(ArenaYtelserService.class);
     private KvpService kvpService = mock(KvpService.class);
     private KvpRepository kvpRepository = mock(KvpRepository.class);
-    private MetricsService metricsService = mock(MetricsService.class);
     private ManuellStatusService manuellStatusService = mock(ManuellStatusService.class);
     private TiltakshistorikkClient tiltakshistorikkClient = mock(TiltakshistorikkClient.class);
     private UngdomsprogramClient ungdomsprogramClient = mock(UngdomsprogramClient.class);
@@ -128,7 +127,6 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
                 kafkaProducerService,
                 bigQueryClient,
                 transactor,
-                arenaOppfolgingService,
                 "https://test.nav.no"
                 );
 
@@ -139,7 +137,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         when(authService.getFnrOrThrow(aktorId)).thenReturn(fnr);
         when(arenaOppfolgingService.hentArenaOppfolgingTilstand(fnr)).thenReturn(Optional.of(arenaOppfolgingTilstand));
         when(arenaOppfolgingService.hentArenaOppfolgingsStatus(fnr)).thenReturn(Optional.of(arenaOppfolgingStatus));
-        when(arenaOppfolgingService.hentArenaOppfolgingsEnhetId(fnr)).thenReturn(EnhetId.of(ENHET));
+        when(arenaOppfolgingService.hentOppfolgingsEnhetId(fnr)).thenReturn(EnhetId.of(ENHET));
         when(manuellStatusService.hentDigdirKontaktinfo(fnr)).thenReturn(new KRRData());
         when(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(fnr.get())).thenReturn(false);
     }

@@ -59,7 +59,7 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
     public void setup() {
         TransactionTemplate transactor = DbTestUtils.createTransactor(db);
 
-        when(arenaOppfolgingService.hentArenaOppfolgingsEnhetId(FNR)).thenReturn(EnhetId.of(ENHET));
+        when(arenaOppfolgingService.hentOppfolgingsEnhetId(FNR)).thenReturn(EnhetId.of(ENHET));
         doCallRealMethod().when(authService).sjekkTilgangTilEnhet(any());
         when(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID);
 

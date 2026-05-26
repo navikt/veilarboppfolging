@@ -132,7 +132,7 @@ public class ManuellStatusService {
         authService.sjekkLesetilgangMedFnr(fnr);
 
         if (!authService.erEksternBruker()) {
-            var enhet = Optional.ofNullable(arenaOppfolgingService.hentArenaOppfolgingsEnhetId(fnr)).orElseThrow();
+            var enhet = Optional.ofNullable(arenaOppfolgingService.hentOppfolgingsEnhetId(fnr)).orElseThrow();
             authService.sjekkTilgangTilEnhet(enhet.get());
         }
 

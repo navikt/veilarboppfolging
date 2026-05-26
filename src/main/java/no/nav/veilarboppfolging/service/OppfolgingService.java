@@ -192,7 +192,7 @@ public class OppfolgingService {
     @SneakyThrows
     public VeilederTilgang hentVeilederTilgang(Fnr fnr) {
         authService.sjekkLesetilgangMedFnr(fnr);
-        return Optional.ofNullable(arenaOppfolgingService.hentArenaOppfolgingsEnhetId(fnr))
+        return Optional.ofNullable(arenaOppfolgingService.hentOppfolgingsEnhetId(fnr))
                 .map(Id::get)
                 .map(authService::harTilgangTilEnhet)
                 .map(VeilederTilgang::new)
