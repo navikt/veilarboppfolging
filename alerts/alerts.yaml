@@ -18,3 +18,13 @@ spec:
           labels:
             namespace: poao
             severity: critical
+        - alert: Oppfolgingsperioder mangler ao_kontor
+          expr: veilarboppfolging_oppfolgingsperioder_uten_ao_kontor > 0
+          for: 15m
+          annotations:
+            consequence: "Det finnes aktive oppfølgingsperioder uten tilhørende rad i ao_kontor"
+            action: "Undersøk hvilke oppfølgingsperioder som mangler ao_kontor. Kjør spørringen manuelt for detaljer."
+            summary: "{{ $value }} oppfølgingsperioder mangler ao_kontor"
+          labels:
+            namespace: poao
+            severity: critical
