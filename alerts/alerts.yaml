@@ -20,7 +20,7 @@ spec:
             severity: critical
         - alert: Oppfolgingsperioder mangler ao_kontor
           expr: veilarboppfolging_oppfolgingsperioder_uten_ao_kontor > 0
-          for: 15m
+          for: 1m
           annotations:
             consequence: "Det finnes aktive oppfølgingsperioder uten tilhørende rad i ao_kontor"
             action: "Undersøk hvilke oppfølgingsperioder som mangler ao_kontor. Kjør spørringen manuelt for detaljer."
