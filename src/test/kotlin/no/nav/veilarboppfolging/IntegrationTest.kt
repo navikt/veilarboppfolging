@@ -66,7 +66,6 @@ import no.nav.veilarboppfolging.repository.SakRepository
 import no.nav.veilarboppfolging.repository.VeilederTilordningerRepository
 import no.nav.veilarboppfolging.repository.entity.ManuellStatusEntity
 import no.nav.veilarboppfolging.repository.enums.KodeverkBruker
-import no.nav.veilarboppfolging.service.ArbeidsoppfolgingsKontorService
 import no.nav.veilarboppfolging.service.AuthService
 import no.nav.veilarboppfolging.service.MetricsService
 import no.nav.veilarboppfolging.service.OppfolgingService
@@ -156,9 +155,6 @@ open class IntegrationTest {
 
     @Autowired
     lateinit var startOppfolgingService: StartOppfolgingService
-
-    @Autowired
-    lateinit var arbeidsoppfolgingsKontorService: ArbeidsoppfolgingsKontorService
 
     @Autowired
     lateinit var oppfolgingsPeriodeRepository: OppfolgingsPeriodeRepository

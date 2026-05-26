@@ -17,7 +17,6 @@ import org.mockito.kotlin.*
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*
-import no.nav.common.client.norg2.Norg2Client
 import tools.jackson.databind.JsonNode
 
 
@@ -28,15 +27,13 @@ class OppfolgingsperiodeEndretServiceTest {
     val aktorOppslagClient: AktorOppslagClient = mock()
     val arbeidsoppfolgingskontorRepository: ArbeidsoppfolgingskontorRepository = mock()
     val kvpService: KvpService = mock()
-    val norg2Client: Norg2Client = mock()
 
-    private val arbeidsoppfolgingsKontorService = ArbeidsoppfolgingsKontorService(
+    private val arbeidsoppfolgingsKontorEndretService = ArbeidsoppfolgingsKontorEndretService(
         oppfolgingsPeriodeRepository,
         kafkaProducerService,
         aktorOppslagClient,
         arbeidsoppfolgingskontorRepository,
         kvpService,
-        norg2Client,
     )
 
     @Test
@@ -50,7 +47,7 @@ class OppfolgingsperiodeEndretServiceTest {
         whenever(oppfolgingsPeriodeRepository.hentSisteOppfolgingsperiodeForAoInternId(internAoPersonIdent)).thenReturn(Optional.of(oppfolgingsperiode.uuid))
         whenever(oppfolgingsPeriodeRepository.hentOppfolgingsperiode(oppfolgingsperiode.uuid.toString())).thenReturn(Optional.of(oppfolgingsperiode))
         whenever(aktorOppslagClient.hentFnr(AktorId.of(aktorId))).thenReturn(fnr)
-        arbeidsoppfolgingsKontorService.håndterOppfolgingskontorMelding(8L, null)
+        arbeidsoppfolgingsKontorEndretService.håndterOppfolgingskontorMelding(8L, null)
 
         verify(kafkaProducerService).publiserOppfolgingsperiodeMedKontor(captor.capture(), personIdentCaptor.capture())
         assertThat(personIdentCaptor.lastValue).isEqualTo(internAoPersonIdent)
@@ -67,7 +64,7 @@ class OppfolgingsperiodeEndretServiceTest {
         whenever(oppfolgingsPeriodeRepository.hentOppfolgingsperiode(oppfolgingsperiode.uuid.toString())).thenReturn(Optional.of(oppfolgingsperiode))
         val oppfolgingskontorMelding = oppfolgingskontorMelding(aktorId = aktorId, tilordningstype = Tilordningstype.KONTOR_VED_OPPFOLGINGSPERIODE_START, oppfolgingsperiodeId = oppfolgingsperiode.uuid)
 
-        arbeidsoppfolgingsKontorService.håndterOppfolgingskontorMelding(internAoPersonIdent, oppfolgingskontorMelding)
+        arbeidsoppfolgingsKontorEndretService.håndterOppfolgingskontorMelding(internAoPersonIdent, oppfolgingskontorMelding)
 
         val captor = argumentCaptor<SisteOppfolgingsperiodeDto>()
         val personIdentCaptor = argumentCaptor<Long>()
@@ -95,7 +92,7 @@ class OppfolgingsperiodeEndretServiceTest {
         whenever(oppfolgingsPeriodeRepository.hentOppfolgingsperiode(oppfolgingsperiode.uuid.toString())).thenReturn(Optional.of(oppfolgingsperiode))
         val oppfolgingskontorMelding = oppfolgingskontorMelding(aktorId = aktorId, tilordningstype = Tilordningstype.ENDRET_KONTOR, oppfolgingsperiodeId = oppfolgingsperiode.uuid)
 
-        arbeidsoppfolgingsKontorService.håndterOppfolgingskontorMelding(internAoPersonIdent, oppfolgingskontorMelding)
+        arbeidsoppfolgingsKontorEndretService.håndterOppfolgingskontorMelding(internAoPersonIdent, oppfolgingskontorMelding)
 
         val captor = argumentCaptor<SisteOppfolgingsperiodeDto>()
         val personIdentCaptor = argumentCaptor<Long>()
@@ -125,7 +122,7 @@ class OppfolgingsperiodeEndretServiceTest {
         val internAoPersonIdent = 8L
         whenever(aktorOppslagClient.hentFnr(AktorId.of(aktorId))).thenReturn(fnr)
 
-        arbeidsoppfolgingsKontorService.publiserSisteOppfolgingsperiodeV2MedAvsluttetStatus(oppfolgingsperiode, internAoPersonIdent)
+        arbeidsoppfolgingsKontorEndretService.publiserSisteOppfolgingsperiodeV2MedAvsluttetStatus(oppfolgingsperiode, internAoPersonIdent)
 
         val captor = argumentCaptor<SisteOppfolgingsperiodeDto>()
         val personIdentCaptor = argumentCaptor<Long>()

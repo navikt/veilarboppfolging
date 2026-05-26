@@ -1,7 +1,5 @@
 package no.nav.veilarboppfolging.service;
 
-import java.time.ZonedDateTime;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -11,6 +9,7 @@ import no.nav.common.types.identer.Id;
 import no.nav.veilarboppfolging.BadRequestException;
 import no.nav.veilarboppfolging.ForbiddenException;
 import no.nav.veilarboppfolging.kafka.KvpPeriode;
+import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService;
 import no.nav.veilarboppfolging.repository.KvpRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
 import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity;
@@ -18,6 +17,9 @@ import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity;
 import no.nav.veilarboppfolging.repository.enums.KodeverkBruker;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
+
+import java.time.ZonedDateTime;
+import java.util.Optional;
 
 import static java.lang.String.format;
 import static no.nav.veilarboppfolging.config.ApplicationConfig.SYSTEM_USER_NAME;
@@ -36,13 +38,13 @@ public class KvpService {
 
     private final KvpRepository kvpRepository;
 
+    private final ArenaOppfolgingService arenaOppfolgingService;
+
     private final OppfolgingsStatusRepository oppfolgingsStatusRepository;
 
     private final AuthService authService;
 
     private final TransactionTemplate transactor;
-
-    private final ArbeidsoppfolgingsKontorService arbeidsoppfolgingsKontorService;
 
     @SneakyThrows
     public void startKvp(Fnr fnr, String begrunnelse) {
@@ -56,7 +58,7 @@ public class KvpService {
             throw new BadRequestException("Bruker må være under oppfølging for å starte KVP");
         }
 
-        var enhet = Optional.ofNullable(arbeidsoppfolgingsKontorService.hentOppfolgingsEnhetId(fnr))
+        var enhet = Optional.ofNullable(arenaOppfolgingService.hentOppfolgingsEnhetId(fnr))
                 .map(Id::get)
                 .orElse(null);
 
@@ -92,7 +94,7 @@ public class KvpService {
         AktorId aktorId = authService.getAktorIdOrThrow(fnr);
 
         authService.sjekkLesetilgangMedFnr(fnr);
-        String enhet = Optional.ofNullable(arbeidsoppfolgingsKontorService.hentOppfolgingsEnhetId(fnr))
+        String enhet = Optional.ofNullable(arenaOppfolgingService.hentOppfolgingsEnhetId(fnr))
                 .map(Id::get).orElse(null);
 
         if (!authService.harTilgangTilEnhet(enhet)) {

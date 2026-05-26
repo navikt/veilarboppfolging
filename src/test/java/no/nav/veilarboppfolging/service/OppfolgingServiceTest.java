@@ -86,7 +86,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     private OppfolgingService oppfolgingService;
     private StartOppfolgingService startOppfolgingService;
     private BigQueryClient bigQueryClient = mock(BigQueryClient.class);
-    private ArbeidsoppfolgingsKontorService arbeidsoppfolgingsKontorService = mock(ArbeidsoppfolgingsKontorService.class);
+    private ArbeidsoppfolgingsKontorEndretService arbeidsoppfolgingsKontorEndretService = mock(ArbeidsoppfolgingsKontorEndretService.class);
 
     @Before
     public void setup() {
@@ -112,7 +112,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
                  transactor,
                 arenaYtelserService,
                 bigQueryClient,
-                arbeidsoppfolgingsKontorService,
+                arbeidsoppfolgingsKontorEndretService,
                 "https://test.nav.no",
                 tiltakshistorikkClient,
                 ungdomsprogramClient,
@@ -137,7 +137,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         when(authService.getFnrOrThrow(aktorId)).thenReturn(fnr);
         when(arenaOppfolgingService.hentArenaOppfolgingTilstand(fnr)).thenReturn(Optional.of(arenaOppfolgingTilstand));
         when(arenaOppfolgingService.hentArenaOppfolgingsStatus(fnr)).thenReturn(Optional.of(arenaOppfolgingStatus));
-        when(arbeidsoppfolgingsKontorService.hentOppfolgingsEnhetId(fnr)).thenReturn(EnhetId.of(ENHET));
+        when(arenaOppfolgingService.hentOppfolgingsEnhetId(fnr)).thenReturn(EnhetId.of(ENHET));
         when(manuellStatusService.hentDigdirKontaktinfo(fnr)).thenReturn(new KRRData());
         when(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(fnr.get())).thenReturn(false);
     }

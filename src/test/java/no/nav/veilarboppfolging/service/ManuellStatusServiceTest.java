@@ -6,6 +6,7 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.ForbiddenException;
 import no.nav.veilarboppfolging.client.digdir_krr.KRRData;
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirClient;
+import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService;
 import no.nav.veilarboppfolging.repository.ManuellStatusRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
@@ -38,7 +39,7 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
 
     private final AuthService authService = mock(AuthService.class);
 
-    private final ArbeidsoppfolgingsKontorService arbeidsoppfolgingsKontorService = mock(ArbeidsoppfolgingsKontorService.class);
+    private final ArenaOppfolgingService arenaOppfolgingService = mock(ArenaOppfolgingService.class);
 
     private final DigdirClient digdirClient = mock(DigdirClient.class);
 
@@ -58,7 +59,7 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
     public void setup() {
         TransactionTemplate transactor = DbTestUtils.createTransactor(db);
 
-        when(arbeidsoppfolgingsKontorService.hentOppfolgingsEnhetId(FNR)).thenReturn(EnhetId.of(ENHET));
+        when(arenaOppfolgingService.hentOppfolgingsEnhetId(FNR)).thenReturn(EnhetId.of(ENHET));
         doCallRealMethod().when(authService).sjekkTilgangTilEnhet(any());
         when(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID);
 
@@ -69,12 +70,12 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
         manuellStatusService = new ManuellStatusService(
                 authService,
                 manuellStatusRepository,
+                arenaOppfolgingService,
                 oppfolgingService,
                 oppfolgingsStatusRepository,
                 digdirClient,
                 kafkaProducerService,
-                transactor,
-                arbeidsoppfolgingsKontorService
+                transactor
         );
     }
 

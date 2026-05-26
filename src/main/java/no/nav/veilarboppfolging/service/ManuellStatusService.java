@@ -1,15 +1,13 @@
 package no.nav.veilarboppfolging.service;
 
-import java.time.ZonedDateTime;
-import java.util.List;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.veilarboppfolging.client.digdir_krr.DigdirClient;
 import no.nav.veilarboppfolging.client.digdir_krr.KRRData;
+import no.nav.veilarboppfolging.client.digdir_krr.DigdirClient;
+import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService;
 import no.nav.veilarboppfolging.repository.ManuellStatusRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
 import no.nav.veilarboppfolging.repository.entity.ManuellStatusEntity;
@@ -17,6 +15,10 @@ import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity;
 import no.nav.veilarboppfolging.repository.enums.KodeverkBruker;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
+
+import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.Optional;
 
 import static no.nav.veilarboppfolging.repository.enums.KodeverkBruker.SYSTEM;
 import static no.nav.veilarboppfolging.utils.SecureLog.secureLog;
@@ -27,12 +29,12 @@ import static no.nav.veilarboppfolging.utils.SecureLog.secureLog;
 public class ManuellStatusService {
     private final AuthService authService;
     private final ManuellStatusRepository manuellStatusRepository;
+    private final ArenaOppfolgingService arenaOppfolgingService;
     private final OppfolgingService oppfolgingService;
     private final OppfolgingsStatusRepository oppfolgingsStatusRepository;
     private final DigdirClient digdirClient;
     private final KafkaProducerService kafkaProducerService;
     private final TransactionTemplate transactor;
-    private final ArbeidsoppfolgingsKontorService arbeidsoppfolgingskontorService;
 
     public Optional<ManuellStatusEntity> hentManuellStatus(AktorId aktorId) {
         Long manuellStatusId = oppfolgingsStatusRepository.hentOppfolging(aktorId)
@@ -130,7 +132,7 @@ public class ManuellStatusService {
         authService.sjekkLesetilgangMedFnr(fnr);
 
         if (!authService.erEksternBruker()) {
-            var enhet = Optional.ofNullable(arbeidsoppfolgingskontorService.hentOppfolgingsEnhetId(fnr)).orElseThrow();
+            var enhet = Optional.ofNullable(arenaOppfolgingService.hentOppfolgingsEnhetId(fnr)).orElseThrow();
             authService.sjekkTilgangTilEnhet(enhet.get());
         }
 
