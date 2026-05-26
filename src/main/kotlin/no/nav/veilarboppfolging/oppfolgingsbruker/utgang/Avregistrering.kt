@@ -10,7 +10,11 @@ enum class AvregistreringsType {
     UtmeldtEtter28Dager,
     ManuellAvregistrering,
     ArenaIservKanIkkeReaktiveres,
-    AdminAvregistrering,
+    AdminAvregistrering;
+
+    fun erManuellAvregistrering(): Boolean {
+        return this == ManuellAvregistrering || this == AdminAvregistrering
+    }
 }
 
 sealed class Avregistrering(
@@ -32,7 +36,7 @@ data class UtmeldtEtter28Dager(override val aktorId: AktorId) : Avregistrering(a
 data class ManuellAvregistrering(
     override val aktorId: AktorId,
     val veileder: VeilederRegistrant,
-    override val begrunnelse: String
+    override val begrunnelse: String,
 ) : Avregistrering(aktorId, veileder, begrunnelse) {
     override fun getAvregistreringsType() = AvregistreringsType.ManuellAvregistrering
 

@@ -181,7 +181,7 @@ public class OppfolgingService {
             var veilederId = avregistrering.getAvsluttetAv().getIdent();
             var begrunnelse = avregistrering.getBegrunnelse();
             secureLog.info("Avslutting av oppfølging utført av: {}, begrunnelse: {}, tilstand i Arena for aktorid {}: {}", veilederId, begrunnelse, aktorId, arenaOppfolgingTilstand);
-            avsluttOppfolgingForBruker(avregistrering);
+            avsluttOppfolgingForBruker(avregistrering, !erIserv);
         } else {
             log.warn("Oppfølging ble ikke avsluttet likevel, avregistreringstype {}: begrunnelse {}",avregistrering.getAvregistreringsType() , kanAvslutte.begrunnelse);
         }
@@ -315,7 +315,7 @@ public class OppfolgingService {
         secureLog.info("Kan oppfolging avsluttes for aktorid {}?, oppfolging.isUnderOppfolging(): {}, erIservIArena(): {}, underKvp(): {}, harAktiveTiltaksdeltakelser(): {}, erDeltakerIUngdomsprogrammet(): {}, erArbeidssoeker(): {}, harAap(): {}",
                 aktorId, erUnderOppfolging, erIservIArena, underKvp, harAktiveTiltaksdeltakelser, erDeltakerIUngdomsprogrammet, erArbeidssoeker, harAap);
 
-        var manuellAvslutning = avregistreringsType.equals(AvregistreringsType.ManuellAvregistrering) || avregistreringsType.equals(AvregistreringsType.AdminAvregistrering);
+        var manuellAvslutning = avregistreringsType.erManuellAvregistrering();
 
         if (!erUnderOppfolging) return new KanAvslutteMedBegrunnelse(false, "bruker var ikke under oppfølging");
         if (!manuellAvslutning && !erIservIArena) return new KanAvslutteMedBegrunnelse(false, "bruker var ikke inaktivert i Arena ved forsøk på automatisk avslutning");
@@ -333,6 +333,10 @@ public class OppfolgingService {
     }
 
     private void avsluttOppfolgingForBruker(Avregistrering avregistrering) {
+        avsluttOppfolgingForBruker(avregistrering, null);
+    }
+
+    private void avsluttOppfolgingForBruker(Avregistrering avregistrering, Boolean aktivIArena) {
         var fnr = authService.getFnrOrThrow(avregistrering.getAktorId());
         var aktorId = avregistrering.getAktorId();
         transactor.executeWithoutResult((ignored) -> {
@@ -350,7 +354,7 @@ public class OppfolgingService {
             kafkaProducerService.publiserSkjulAoMinSideMicrofrontend(aktorId, fnr);
             // oppfolgingsperiodeEndretService.oppdaterSisteOppfolgingsperiodeV2MedAvsluttetStatus(sistePeriode); // TODO I en overgangsperiode lytter vi heller på tombstone fra ao-oppfolgingskontor
 
-            bigQueryClient.loggAvsluttOppfolgingsperiode(sistePeriode.getUuid(), avregistrering.getAvregistreringsType());
+            bigQueryClient.loggAvsluttOppfolgingsperiode(sistePeriode.getUuid(), avregistrering, aktivIArena);
         });
     }
 
@@ -393,7 +397,7 @@ public class OppfolgingService {
 
         log.info("Oppfølgingsperiode med UUID: {} avsluttet for bruker - publiserer endringer på oppfølgingsperiode-topics.", oppfolgingsperiodeUUID);
         kafkaProducerService.publiserValgtOppfolgingsperiode(DtoMappers.tilOppfolgingsperiodeDTO(avsluttetOppfolgingsperiode));
-        bigQueryClient.loggAvsluttOppfolgingsperiode(oppfolgingsperiodeUUID, avregistrering.getAvregistreringsType());
+        bigQueryClient.loggAvsluttOppfolgingsperiode(oppfolgingsperiodeUUID, avregistrering, null);
     }
 
     public boolean erUnderOppfolging(AktorId aktorId) {

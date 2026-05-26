@@ -38,10 +38,26 @@ private fun sykmeldtUtenArbeidsgiver(kvalifiseringsgruppe: Kvalifiseringsgruppe,
     Kvalifiseringsgruppe.VURDU == kvalifiseringsgruppe &&
             formidlingsgruppe != Formidlingsgruppe.ISERV
 
-sealed interface OppfolgingsbrukerEndretEvent
+sealed interface OppfolgingsbrukerEndretEvent {
+    fun loggMessage(): String
+}
 
-class BleSykmeldtUtenArbeidsgiver : OppfolgingsbrukerEndretEvent
-class BleInaktivertUtenKanReaktiveres : OppfolgingsbrukerEndretEvent
-class BleInaktivertMedKanReaktiveres : OppfolgingsbrukerEndretEvent
-class KanIkkeAvsluttes(val begrunnelse: String) : OppfolgingsbrukerEndretEvent
-class IrrelevantEndring : OppfolgingsbrukerEndretEvent
+class BleSykmeldtUtenArbeidsgiver : OppfolgingsbrukerEndretEvent {
+    override fun loggMessage(): String = "BleSykmeldtUtenArbeidsgiver"
+}
+
+class BleInaktivertUtenKanReaktiveres : OppfolgingsbrukerEndretEvent {
+    override fun loggMessage(): String = "Bruker ble inaktivert, kunne ikke reaktiveres"
+}
+
+class BleInaktivertMedKanReaktiveres : OppfolgingsbrukerEndretEvent {
+    override fun loggMessage(): String = "Bruker ble inaktivert, kan reaktiveres"
+}
+
+class KanIkkeAvsluttes(val begrunnelse: String) : OppfolgingsbrukerEndretEvent {
+    override fun loggMessage(): String = "Bruker kunne ikke avsluttes, første hindring er: $begrunnelse"
+}
+
+class IrrelevantEndring : OppfolgingsbrukerEndretEvent {
+    override fun loggMessage(): String = "Irrelevant endring – gjør ingenting"
+}
