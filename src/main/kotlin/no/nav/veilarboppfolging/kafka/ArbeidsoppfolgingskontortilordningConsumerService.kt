@@ -1,16 +1,16 @@
 package no.nav.veilarboppfolging.kafka
 
 import java.util.UUID
-import no.nav.veilarboppfolging.service.ArbeidsoppfolgingsKontorEndretService
+import no.nav.veilarboppfolging.service.ArbeidsoppfolgingsKontorService
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.springframework.stereotype.Service
 
 @Service
 class ArbeidsoppfolgingskontortilordningConsumerService(
-    val arbeidsoppfolgingsKontorEndretService: ArbeidsoppfolgingsKontorEndretService
+    val arbeidsoppfolgingsKontorService: ArbeidsoppfolgingsKontorService
 ) {
     fun consumeKontortilordning(kafkaMelding: ConsumerRecord<Long, OppfolgingskontorMelding?>) {
-        arbeidsoppfolgingsKontorEndretService.håndterOppfolgingskontorMelding(kafkaMelding.key(), kafkaMelding.value())
+        arbeidsoppfolgingsKontorService.håndterOppfolgingskontorMelding(kafkaMelding.key(), kafkaMelding.value())
     }
 }
 

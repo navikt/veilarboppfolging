@@ -2,28 +2,38 @@ package no.nav.veilarboppfolging.service
 
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
+import java.time.ZonedDateTime
+import java.util.UUID
+import kotlin.jvm.optionals.getOrElse
+import lombok.extern.slf4j.Slf4j
 import no.nav.common.client.aktoroppslag.AktorOppslagClient
+import no.nav.common.client.norg2.Norg2Client
 import no.nav.common.types.identer.AktorId
+import no.nav.common.types.identer.EnhetId
+import no.nav.common.types.identer.Fnr
 import no.nav.veilarboppfolging.kafka.OppfolgingskontorMelding
 import no.nav.veilarboppfolging.kafka.Tilordningstype
 import no.nav.veilarboppfolging.kafka.Tilordningstype.ENDRET_KONTOR
 import no.nav.veilarboppfolging.kafka.Tilordningstype.KONTOR_VED_OPPFOLGINGSPERIODE_START
+import no.nav.veilarboppfolging.oppfolgingsbruker.arena.OppfolgingEnhetMedVeilederResponse.Oppfolgingsenhet
 import no.nav.veilarboppfolging.repository.ArbeidsoppfolgingskontorRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity
+import org.slf4j.LoggerFactory
+import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Service
-import java.time.ZonedDateTime
-import java.util.*
-import kotlin.jvm.optionals.getOrElse
 
+@Slf4j
 @Service
-class ArbeidsoppfolgingsKontorEndretService(
+class ArbeidsoppfolgingsKontorService(
     val oppfolgingsPeriodeRepository: OppfolgingsPeriodeRepository,
     val kafkaProducerService: KafkaProducerService,
     val aktorOppslagClient: AktorOppslagClient,
     val arbeidsoppfolgingskontorRepository: ArbeidsoppfolgingskontorRepository,
-    val kvpService: KvpService,
+    @Lazy val kvpService: KvpService,
+    val norg2Client: Norg2Client,
 ) {
+    private val log = LoggerFactory.getLogger(ArbeidsoppfolgingsKontorService::class.java)
 
     /**
      * Avsluttet status betyr at kontorId og kontorNavn er nullet ut
@@ -83,6 +93,26 @@ class ArbeidsoppfolgingsKontorEndretService(
                 melding.kontorId
             )
             kafkaProducerService.publiserOppfolgingsperiodeMedKontor(gjeldendeOppfolgingsperiode, aoKontorInternPersonId)
+        }
+    }
+
+    fun hentOppfolgingsEnhet(fnr: Fnr): Oppfolgingsenhet? {
+        return hentOppfolgingsEnhetId(fnr)
+            ?.let { hentEnhet(it) }
+    }
+
+    fun hentOppfolgingsEnhetId(fnr: Fnr): EnhetId? {
+        return arbeidsoppfolgingskontorRepository.hentEnhet(fnr)
+    }
+
+    private fun hentEnhet(enhetId: EnhetId?): Oppfolgingsenhet? {
+        if (enhetId == null) return null
+        try {
+            val enhetNavn = norg2Client.hentEnhet(enhetId.get()).getNavn()
+            return Oppfolgingsenhet(navn = enhetNavn, enhetId = enhetId.get())
+        } catch (e: Exception) {
+            log.warn("Fant ikke navn på enhet", e)
+            return Oppfolgingsenhet("", enhetId.get())
         }
     }
 }

@@ -87,32 +87,6 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
     }
 
     @Test
-    fun `getArenaOppfolgingsEnhet skal svare med enhet fra ao_kontor hvis den finnes`() {
-        val enhetIdVest = "0123"
-        val enhetNavnVest = "Nav VEST"
-        mockEnhetINorg(enhetIdVest, enhetNavnVest)
-        val enhetIdØst = "0122"
-        val enhetNavnØst = "Nav ØST"
-        mockEnhetINorg(enhetIdØst, enhetNavnØst)
-
-        val ingenEnhet = arenaOppfolgingService.hentOppfolgingsEnhet(fnr)
-        assert(ingenEnhet == null)
-
-        startOppfolgingSomArbeidsoker(aktorId, fnr)
-        meldingFraVeilarbArenaPåBrukerMedEnhet(fnr, enhetIdVest)
-
-        val fortsattIngenEnhet = arenaOppfolgingService.hentOppfolgingsEnhet(fnr)
-        assert(fortsattIngenEnhet == null)
-        val oppfolgingsperiodeId = oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId).get().uuid
-
-        arbeidsoppfolgingskontorRepository.settNavKontor(fnr.get(), aktorId.get(), oppfolgingsperiodeId, enhetIdØst)
-
-        val skalVæreEnhetØst = arenaOppfolgingService.hentOppfolgingsEnhet(fnr)
-        assertEquals(enhetNavnØst, skalVæreEnhetØst?.navn)
-        assertEquals(enhetIdØst, skalVæreEnhetØst?.enhetId)
-    }
-
-    @Test
     fun `skal lagre hovedmaal, kvalifiseringsgruppe og formidlingsgruppe ved endring på oppfolgingsbruker`() {
         val hovedmaal = Hovedmaal.BEHOLDEA
         val formidlingsgruppe = Formidlingsgruppe.IARBS

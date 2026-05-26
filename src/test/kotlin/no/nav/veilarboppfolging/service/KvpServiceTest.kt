@@ -47,7 +47,7 @@ class KvpServiceTest{
     @Mock
     private lateinit var oppfolgingsStatusRepository: OppfolgingsStatusRepository
     @Mock
-    private lateinit var arenaOppfolgingService: ArenaOppfolgingService
+    private lateinit var arbeidsoppfolgingsKontorService: ArbeidsoppfolgingsKontorService
     @Mock
     private lateinit var metricsService: MetricsService
     @Mock
@@ -66,7 +66,7 @@ class KvpServiceTest{
 
         val veilarbArenaOppfolgingsBruker = VeilarbArenaOppfolgingsBruker()
         veilarbArenaOppfolgingsBruker.setNavKontor(ENHET)
-        `when`<EnhetId?>(arenaOppfolgingService.hentOppfolgingsEnhetId(FNR))
+        `when`<EnhetId?>(arbeidsoppfolgingsKontorService.hentOppfolgingsEnhetId(FNR))
             .thenReturn(EnhetId.of(ENHET))
 
         `when`(authService.harTilgangTilEnhet(ArgumentMatchers.anyString())).thenReturn(true)

@@ -15,7 +15,6 @@ import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsBruke
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsStatus
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.OppfolgingEnhetMedVeilederResponse.Oppfolgingsenhet
-import no.nav.veilarboppfolging.repository.ArbeidsoppfolgingskontorRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
 import no.nav.veilarboppfolging.service.AuthService
 import org.slf4j.LoggerFactory
@@ -31,7 +30,6 @@ class ArenaOppfolgingService @Autowired constructor (
     private val aktorOppslagClient: AktorOppslagClient,
     private val veilarbarenaClient: VeilarbarenaClient,
     private val oppfolgingsStatusRepository: OppfolgingsStatusRepository,
-    private val arbeidsoppfolgingskontorRepository: ArbeidsoppfolgingskontorRepository,
     private val authService: AuthService,
     private val norg2Client: Norg2Client,
 ) {
@@ -71,21 +69,6 @@ class ArenaOppfolgingService @Autowired constructor (
                 veilarbarenaClient.hentOppfolgingsbruker(fnr)
                     .map { ArenaOppfolgingTilstand.fraArenaBruker(it) } // Oppfølgingsbruker endepunkt
             }
-    }
-
-    /*
-    * Oppfolgingsenhet fra ao-kontor inkl navn.
-    * Det gjøres oppslag i norg2 for å finne navn
-    * */
-    fun hentOppfolgingsEnhet(fnr: Fnr): Oppfolgingsenhet? {
-        return hentOppfolgingsEnhetId(fnr)
-            ?.let { hentEnhet(it) }
-    }
-
-    /* Bare enhetsId fra ao_kontor-tabellen */
-    fun hentOppfolgingsEnhetId(fnr: Fnr): EnhetId? {
-        val aktorId = authService.getAktorIdOrThrow(fnr)
-        return arbeidsoppfolgingskontorRepository.hentEnhet(aktorId)
     }
 
     fun hentIservDatoOgFormidlingsGruppe(fnr: Fnr): IservDatoOgFormidlingsGruppe? {
