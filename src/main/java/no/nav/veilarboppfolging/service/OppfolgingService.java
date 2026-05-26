@@ -72,7 +72,7 @@ public class OppfolgingService {
     private final TiltakshistorikkClient tiltakshistorikkClient;
     private final UngdomsprogramClient ungdomsprogramClient;
     private final ArbeidssoekerregisteretClient arbeidssoekerregisteretClient;
-    private final AapClient aapClient;
+    private final AapClient aapClient;E
 
     private final KvpRepository kvpRepository;
     private final MaalRepository maalRepository;
