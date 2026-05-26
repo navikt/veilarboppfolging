@@ -1,0 +1,30 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: veilarboppfolging-alerts
+  namespace: poao
+  labels:
+    team: poao
+spec:
+  groups:
+    - name: AppAlerts
+      rules:
+        - alert: Veilarboppfolging er nede
+          expr: kube_deployment_status_replicas_available{namespace="poao", deployment="veilarboppfolging"} == 0
+          for: 5m
+          annotations:
+            consequence: Veilarboppfolging er nede – ingen podder
+            action: "Sjekk logger og sørg for at appen kommer opp igjen"
+          labels:
+            namespace: poao
+            severity: critical
+        - alert: Oppfolgingsperioder mangler ao_kontor
+          expr: veilarboppfolging_oppfolgingsperioder_uten_ao_kontor > 0
+          for: 1m
+          annotations:
+            consequence: "Det finnes aktive oppfølgingsperioder uten tilhørende rad i ao_kontor"
+            action: "Undersøk hvilke oppfølgingsperioder som mangler ao_kontor. Kjør spørringen manuelt for detaljer."
+            summary: "{{ $value }} oppfølgingsperioder mangler ao_kontor"
+          labels:
+            namespace: poao
+            severity: critical
