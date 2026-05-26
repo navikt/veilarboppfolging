@@ -54,6 +54,8 @@ class KvpServiceTest{
     private lateinit var kafkaProducerService: KafkaProducerService
     @Mock
     private lateinit var transactor: TransactionTemplate
+    @Mock
+    private lateinit var arbeidsoppfolgingsKontorService: ArbeidsoppfolgingsKontorService
 
     @InjectMocks
     private val kvpService: KvpService? = null
@@ -66,7 +68,7 @@ class KvpServiceTest{
 
         val veilarbArenaOppfolgingsBruker = VeilarbArenaOppfolgingsBruker()
         veilarbArenaOppfolgingsBruker.setNavKontor(ENHET)
-        `when`<EnhetId?>(arenaOppfolgingService.hentOppfolgingsEnhetId(FNR))
+        `when`<EnhetId?>(arbeidsoppfolgingsKontorService.hentOppfolgingsEnhetId(FNR))
             .thenReturn(EnhetId.of(ENHET))
 
         `when`(authService.harTilgangTilEnhet(ArgumentMatchers.anyString())).thenReturn(true)
