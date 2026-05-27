@@ -57,7 +57,7 @@ data class AdminAvregistrering(
     override val aktorId: AktorId,
     val veileder: VeilederRegistrant,
     override val begrunnelse: String,
-    val oppfolgingsperiodeUUID: UUID
+    val oppfolgingsperiodeUUID: UUID?,
 ) : Avregistrering(aktorId, veileder, begrunnelse) {
     override fun getAvregistreringsType() = AvregistreringsType.AdminAvregistrering
 }
