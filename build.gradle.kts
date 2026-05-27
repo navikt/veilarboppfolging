@@ -1,5 +1,5 @@
 val kotlinVersion = "2.3.21"
-val flywayVersion = "12.6.1"
+val flywayVersion = "12.6.2"
 val commonVersion = "4.2026.05.19_05.29-4b5633c82ec0"
 val ptoSchemaVersion = "1.2025.09.29_11.36-6e568fa24c23"
 val poaoTilgangVersion = "4.2026.05.11_07.01-54ab6eae4dde"
