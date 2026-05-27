@@ -6,6 +6,7 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Repository
 import java.util.*
+import no.nav.common.types.identer.Fnr
 
 @Repository
 class ArbeidsoppfolgingskontorRepository(private val db: NamedParameterJdbcTemplate) {
@@ -42,6 +43,12 @@ class ArbeidsoppfolgingskontorRepository(private val db: NamedParameterJdbcTempl
     fun hentEnhet(aktorId: AktorId): EnhetId? {
         val params = mapOf("aktorId" to aktorId.get())
         val sql = "SELECT kontor_id FROM ao_kontor WHERE aktor_id = :aktorId"
+        return db.query(sql, params) { rs, _ -> rs.getString("kontor_id")?.let { EnhetId.of(it) } }.firstOrNull()
+    }
+
+    fun hentEnhet(fnr: Fnr): EnhetId? {
+        val params = mapOf("ident" to fnr.get())
+        val sql = "SELECT kontor_id FROM ao_kontor WHERE ident = :ident"
         return db.query(sql, params) { rs, _ -> rs.getString("kontor_id")?.let { EnhetId.of(it) } }.firstOrNull()
     }
 }

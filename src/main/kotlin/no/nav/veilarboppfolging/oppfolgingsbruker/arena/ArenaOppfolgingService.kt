@@ -1,5 +1,7 @@
 package no.nav.veilarboppfolging.oppfolgingsbruker.arena
 
+import java.time.LocalDate
+import java.util.Optional
 import lombok.extern.slf4j.Slf4j
 import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.client.norg2.Norg2Client
@@ -20,8 +22,6 @@ import no.nav.veilarboppfolging.service.AuthService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
-import java.time.LocalDate
-import java.util.*
 
 @Slf4j
 @Service
@@ -69,29 +69,6 @@ class ArenaOppfolgingService @Autowired constructor (
                 veilarbarenaClient.hentOppfolgingsbruker(fnr)
                     .map { ArenaOppfolgingTilstand.fraArenaBruker(it) } // Oppfølgingsbruker endepunkt
             }
-    }
-
-    /*
-    * Oppfolgingsenhet i arena inkl navn, det finnes Noen få brukere som ikke har enhet.
-    * Det gjøres oppslag i norg2 for å finne navn
-    * */
-    fun hentArenaOppfolgingsEnhet(fnr: Fnr): Oppfolgingsenhet? {
-        return hentArenaOppfolgingsEnhetId(fnr)
-            ?.let { hentEnhet(it) }
-    }
-
-    /* Bare enhetsId, den blir cached lokalt så man trenger ikke alltid hente den synkront */
-    fun hentArenaOppfolgingsEnhetId(fnr: Fnr): EnhetId? {
-        val aktorId = authService.getAktorIdOrThrow(fnr)
-        return oppfolgingsStatusRepository.hentOppfolging(aktorId)
-            .flatMap { it.localArenaOppfolging.map { it.oppfolgingsenhet } }
-            .orElseGet { hentEnhetSynkrontFraVeilarbarena(fnr) }
-    }
-
-    private fun hentEnhetSynkrontFraVeilarbarena(fnr: Fnr): EnhetId? {
-        return veilarbarenaClient.hentOppfolgingsbruker(fnr)
-            .map { it.navKontor }
-            .map { EnhetId(it) }.orElse(null)
     }
 
     fun hentIservDatoOgFormidlingsGruppe(fnr: Fnr): IservDatoOgFormidlingsGruppe? {

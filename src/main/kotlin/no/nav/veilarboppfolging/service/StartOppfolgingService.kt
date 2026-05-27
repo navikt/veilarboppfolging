@@ -6,7 +6,6 @@ import no.nav.common.types.identer.Fnr
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
 import no.nav.veilarboppfolging.client.digdir_krr.KRRData
 import no.nav.veilarboppfolging.eventsLogger.BigQueryClient
-import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ArbeidsokerRegistrering
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ArenaSyncRegistrering
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ManuellRegistreringBruker
@@ -35,7 +34,6 @@ open class StartOppfolgingService(
     val kafkaProducerService: KafkaProducerService,
     val bigQueryClient: BigQueryClient,
     val transactor: TransactionTemplate,
-    val arenaOppfolgingService: ArenaOppfolgingService,
     @Value("\${app.env.nav-no-url}")
     val navNoUrl: String
 ) {
@@ -80,7 +78,7 @@ open class StartOppfolgingService(
             val arenaKontor = when (oppfolgingsbruker) {
                 is ArbeidsokerRegistrering,
                 is ManuellRegistreringBruker,
-                is ManuellRegistreringVeileder -> arenaOppfolgingService.hentArenaOppfolgingsEnhetId(fnr)
+                is ManuellRegistreringVeileder -> null
                 is ArenaSyncRegistrering -> oppfolgingsbruker.enhet
             }
             kafkaProducerService.publiserOppfolgingsStartet(lagOppfolgingStartetHendelseDto(fnr, sistePeriode, arenaKontor, kontorSattAvVeileder))

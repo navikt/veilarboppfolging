@@ -25,9 +25,16 @@ class OppfolgingsperiodeEndretServiceTest {
     val oppfolgingsPeriodeRepository: OppfolgingsPeriodeRepository = mock()
     val kafkaProducerService: KafkaProducerService = mock()
     val aktorOppslagClient: AktorOppslagClient = mock()
-    val ArbeidsoppfolgingskontorRepository: ArbeidsoppfolgingskontorRepository = mock()
+    val arbeidsoppfolgingskontorRepository: ArbeidsoppfolgingskontorRepository = mock()
+    val kvpService: KvpService = mock()
 
-    private val arbeidsoppfolgingsKontorEndretService = ArbeidsoppfolgingsKontorEndretService(oppfolgingsPeriodeRepository, kafkaProducerService, aktorOppslagClient, ArbeidsoppfolgingskontorRepository)
+    private val arbeidsoppfolgingsKontorEndretService = ArbeidsoppfolgingsKontorEndretService(
+        oppfolgingsPeriodeRepository,
+        kafkaProducerService,
+        aktorOppslagClient,
+        arbeidsoppfolgingskontorRepository,
+        kvpService,
+    )
 
     @Test
     fun `skal ignorere tom arbeidsOppfolgingsKontortilordning-melding`() {

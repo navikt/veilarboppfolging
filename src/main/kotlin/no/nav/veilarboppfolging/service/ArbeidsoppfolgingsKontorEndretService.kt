@@ -22,6 +22,7 @@ class ArbeidsoppfolgingsKontorEndretService(
     val kafkaProducerService: KafkaProducerService,
     val aktorOppslagClient: AktorOppslagClient,
     val arbeidsoppfolgingskontorRepository: ArbeidsoppfolgingskontorRepository,
+    val kvpService: KvpService,
 ) {
 
     /**
@@ -60,6 +61,8 @@ class ArbeidsoppfolgingsKontorEndretService(
 
             val oppfolgingsperiode = oppfolgingsPeriodeRepository.hentOppfolgingsperiode(periodeId.toString())
                     .getOrElse { throw RuntimeException("Ugyldig oppfølgingsperiodeId, noe gikk veldig galt, dette skal aldri skje") }
+
+            kvpService.avsluttKvpVedEnhetBytte(AktorId.of(melding.aktorId), melding.kontorId)
 
             val gjeldendeOppfolgingsperiode = GjeldendeOppfolgingsperiode(
                 oppfolgingsperiodeId = oppfolgingsperiode.uuid,

@@ -14,7 +14,6 @@ import no.nav.veilarboppfolging.client.aap.AapClient;
 import no.nav.veilarboppfolging.domain.Oppfolging;
 import no.nav.veilarboppfolging.eventsLogger.BigQueryClient;
 import no.nav.veilarboppfolging.oppfolgingsbruker.BrukerRegistrant;
-import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService;
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering;
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant;
 import no.nav.veilarboppfolging.repository.*;
@@ -68,8 +67,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
     private OppfolgingService oppfolgingServiceMock = mock(OppfolgingService.class);
     private StartOppfolgingService startOppfolgingService;
     private ArenaYtelserService arenaYtelserService = mock(ArenaYtelserService.class);
-    private ArenaOppfolgingService arenaOppfolgingService = mock(ArenaOppfolgingService.class);
-    private ArbeidsoppfolgingsKontorEndretService arbeidsoppfolgingsKontorEndretService = mock(ArbeidsoppfolgingsKontorEndretService.class);
+    private ArbeidsoppfolgingsKontorService arbeidsoppfolgingsKontorService = mock(ArbeidsoppfolgingsKontorService.class);
 
     @Before
     public void setup() {
@@ -99,7 +97,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
                 manuellStatusService,
                 new KvpRepository(db, namedParameterJdbcTemplate, transactor), maalRepository,
                 new BrukerOppslagFlereOppfolgingAktorRepository(db), transactor, arenaYtelserService,
-                mock(BigQueryClient.class), arbeidsoppfolgingsKontorEndretService,"https://test.nav.no",
+                mock(BigQueryClient.class), arbeidsoppfolgingsKontorService,"https://test.nav.no",
                 mock(TiltakshistorikkClient.class),
                 mock(UngdomsprogramClient.class),
                 mock(ArbeidssoekerregisteretClient.class),
@@ -113,7 +111,6 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
                 mock(),
                 mock(),
                 transactor,
-                arenaOppfolgingService,
                 "https://test.nav.no"
         );
 

@@ -26,7 +26,6 @@ import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
 public class KafkaConsumerService {
 
     private final AuthService authService;
-    private final KvpService kvpService;
     private final UtmeldingsService utmeldingsService;
     private final OppfolgingsenhetEndringService oppfolgingsenhetEndringService;
     private final OppfolgingsbrukerEndretIArenaService oppfolgingsbrukerEndretIArenaService;
@@ -43,7 +42,6 @@ public class KafkaConsumerService {
             AktorOppslagClient aktorOppslagClient,
             SisteEndringPaaOppfolgingBrukerService sisteEndringPaaOppfolgingBrukerService) {
         this.authService = authService;
-        this.kvpService = kvpService;
         this.utmeldingsService = utmeldingsService;
         this.oppfolgingsenhetEndringService = oppfolgingsenhetEndringService;
         this.oppfolgingsbrukerEndretIArenaService = oppfolgingsbrukerEndretIArenaService;
@@ -71,8 +69,8 @@ public class KafkaConsumerService {
         try {
             var aktorId = authService.getAktorIdOrThrow(brukerFnr);
             var endring = EndringPaaOppfolgingsBruker.Companion.from(endringPaBruker, aktorId);
-            kvpService.avsluttKvpVedEnhetBytte(endring);
             utmeldingsService.oppdaterUtmeldingsStatus(KanskjeIservBruker.Companion.of(endringPaBruker, aktorId));
+            // behandleBrukerEndring har ingen praktisk funksjon lenger siden ao-kontor er master for oppfølgingskontoret, men beholdes inntil videre for sikkerhets skyld
             oppfolgingsenhetEndringService.behandleBrukerEndring(endring);
             oppfolgingsbrukerEndretIArenaService.oppdaterOppfolgingMedStatusFraArena(endring);
             sisteEndringPaaOppfolgingBrukerService.lagreSisteEndring(brukerFnr, endringPaBruker.getSistEndretDato());

@@ -3,23 +3,19 @@ package no.nav.veilarboppfolging.kafka
 import no.nav.common.client.norg2.Enhet
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
-import no.nav.common.types.identer.NavIdent
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.pto_schema.enums.arena.Hovedmaal
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
 import no.nav.tms.varsel.action.OpprettVarsel
 import no.nav.tms.varsel.action.Varseltype
 import no.nav.veilarboppfolging.IntegrationTest
-import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsBruker
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsStatus
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient
 import no.nav.veilarboppfolging.kafka.TestUtils.oppfølgingsBrukerEndret
 import no.nav.veilarboppfolging.oppfolgingsbruker.SystemRegistrant
-import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.GetOppfolginsstatusFailure
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.GetOppfolginsstatusSuccess
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ArenaIservKanIkkeReaktiveres
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ManuellAvregistrering
 import no.nav.veilarboppfolging.service.KafkaConsumerService
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.consumer.KafkaConsumer
@@ -41,8 +37,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
-import no.nav.veilarboppfolging.repository.ArbeidsoppfolgingskontorRepository
-import org.mockito.kotlin.any
 import tools.jackson.databind.DeserializationFeature
 import tools.jackson.databind.cfg.DateTimeFeature
 import tools.jackson.databind.json.JsonMapper
@@ -59,9 +53,6 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
 
     @Autowired
     lateinit var veilarbarenaClient: VeilarbarenaClient
-
-    @Autowired
-    lateinit var arbeidsoppfolgingskontorRepository: ArbeidsoppfolgingskontorRepository
 
     val fnr = Fnr.of("12345678901")
     val aktorId = AktorId.of("098765432109876")
@@ -93,59 +84,6 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
 
         val oppfolgingEtterMeldingMedSammeStatus = oppfolgingsStatusRepository.hentOppfolging(aktorId)
         assertFalse(oppfolgingEtterMeldingMedSammeStatus.get().isUnderOppfolging)
-    }
-
-    @Test
-    fun `getArenaOppfolgingsEnhet skal svare med siste enhet man har fått på oppfølginsbruker topic`() {
-        val enhetIdVest = "0123"
-        val enhetNavnVest = "Nav VEST"
-        mockEnhetINorg(enhetIdVest, enhetNavnVest)
-
-        val enhetIdØst = "0122"
-        val enhetNavnØst = "Nav ØST"
-        mockEnhetINorg(enhetIdØst, enhetNavnØst)
-
-        val ingenEnhet = arenaOppfolgingService.hentArenaOppfolgingsEnhet(fnr)
-        assert(ingenEnhet == null)
-
-        meldingFraVeilarbArenaPåBrukerMedEnhet(fnr, enhetIdVest)
-
-        val skalVæreEnhetVest = arenaOppfolgingService.hentArenaOppfolgingsEnhet(fnr)
-        assertEquals(enhetNavnVest, skalVæreEnhetVest?.navn)
-        assertEquals(enhetIdVest, skalVæreEnhetVest?.enhetId)
-
-        meldingFraVeilarbArenaPåBrukerMedEnhet(fnr, enhetIdØst)
-
-        val skalVæreEnhetØst = arenaOppfolgingService.hentArenaOppfolgingsEnhet(fnr)
-        assertEquals(enhetNavnØst, skalVæreEnhetØst?.navn)
-        assertEquals(enhetIdØst, skalVæreEnhetØst?.enhetId)
-    }
-
-    @Test
-    fun `getArenaOppfolgingsEnhet skal svare med enhet fra ao_kontor hvis den finnes`() {
-        val enhetIdVest = "0123"
-        val enhetNavnVest = "Nav VEST"
-        mockEnhetINorg(enhetIdVest, enhetNavnVest)
-        val enhetIdØst = "0122"
-        val enhetNavnØst = "Nav ØST"
-        mockEnhetINorg(enhetIdØst, enhetNavnØst)
-
-        val ingenEnhet = arenaOppfolgingService.hentArenaOppfolgingsEnhet(fnr)
-        assert(ingenEnhet == null)
-
-        startOppfolgingSomArbeidsoker(aktorId, fnr)
-        meldingFraVeilarbArenaPåBrukerMedEnhet(fnr, enhetIdVest)
-
-        val skalVæreEnhetVest = arenaOppfolgingService.hentArenaOppfolgingsEnhet(fnr)
-        assertEquals(enhetNavnVest, skalVæreEnhetVest?.navn)
-        assertEquals(enhetIdVest, skalVæreEnhetVest?.enhetId)
-        val oppfolgingsperiodeId = oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId).get().uuid
-
-        arbeidsoppfolgingskontorRepository.settNavKontor(fnr.get(), aktorId.get(), oppfolgingsperiodeId, enhetIdØst)
-
-        val skalVæreEnhetØst = arenaOppfolgingService.hentArenaOppfolgingsEnhet(fnr)
-        assertEquals(enhetNavnØst, skalVæreEnhetØst?.navn)
-        assertEquals(enhetIdØst, skalVæreEnhetØst?.enhetId)
     }
 
     @Test
@@ -228,16 +166,6 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
         assert(oppfolgingsStatus.isEmpty)
         val arenaOppfolginsStatus = arenaOppfolgingService.hentArenaOppfolginsstatusMedHovedmaal(fnr)
         assert(arenaOppfolginsStatus is GetOppfolginsstatusFailure)
-    }
-
-    @Test
-    fun `skal bruke veilarbarena som fallback til oppfølgingsenhet`() {
-        val arenaEnhet = "6112"
-        val arenaOppfolging = VeilarbArenaOppfolgingsBruker()
-            .setNavKontor(arenaEnhet)
-        `when`(veilarbarenaClient.hentOppfolgingsbruker(fnr)).thenReturn(Optional.of(arenaOppfolging))
-        val enhet = arenaOppfolgingService.hentArenaOppfolgingsEnhetId(fnr)
-        assertEquals(arenaEnhet, enhet?.get())
     }
 
     @Test

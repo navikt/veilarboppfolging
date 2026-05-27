@@ -67,7 +67,7 @@ public class OppfolgingService {
     private final OppfolgingsStatusRepository oppfolgingsStatusRepository;
     private final OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
     private final ManuellStatusService manuellStatusService;
-    private final ArbeidsoppfolgingsKontorEndretService arbeidsoppfolgingsKontorEndretService;
+    private final ArbeidsoppfolgingsKontorService arbeidsoppfolgingsKontorService;
 
     private final TiltakshistorikkClient tiltakshistorikkClient;
     private final UngdomsprogramClient ungdomsprogramClient;
@@ -97,7 +97,7 @@ public class OppfolgingService {
             TransactionTemplate transactor,
             ArenaYtelserService arenaYtelserService,
             BigQueryClient bigQueryClient,
-            ArbeidsoppfolgingsKontorEndretService arbeidsoppfolgingsKontorEndretService,
+            ArbeidsoppfolgingsKontorService arbeidsoppfolgingsKontorService,
             @Value("${app.env.nav-no-url}") String navNoUrl,
             TiltakshistorikkClient tiltakshistorikkClient,
             UngdomsprogramClient ungdomsprogramClient,
@@ -116,7 +116,7 @@ public class OppfolgingService {
         this.transactor = transactor;
         this.arenaYtelserService = arenaYtelserService;
         this.bigQueryClient = bigQueryClient;
-        this.arbeidsoppfolgingsKontorEndretService = arbeidsoppfolgingsKontorEndretService;
+        this.arbeidsoppfolgingsKontorService = arbeidsoppfolgingsKontorService;
         this.tiltakshistorikkClient = tiltakshistorikkClient;
         this.ungdomsprogramClient = ungdomsprogramClient;
         this.arbeidssoekerregisteretClient = arbeidssoekerregisteretClient;
@@ -192,7 +192,7 @@ public class OppfolgingService {
     @SneakyThrows
     public VeilederTilgang hentVeilederTilgang(Fnr fnr) {
         authService.sjekkLesetilgangMedFnr(fnr);
-        return Optional.ofNullable(arenaOppfolgingService.hentArenaOppfolgingsEnhetId(fnr))
+        return Optional.ofNullable(arbeidsoppfolgingsKontorService.hentOppfolgingsEnhetId(fnr))
                 .map(Id::get)
                 .map(authService::harTilgangTilEnhet)
                 .map(VeilederTilgang::new)
