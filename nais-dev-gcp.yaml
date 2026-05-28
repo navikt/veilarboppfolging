@@ -233,6 +233,9 @@ spec:
           namespace: tilleggsstonader
         - application: azure-token-generator
           namespace: nais
+        - application: arena
+          namespace: teamarenanais
+          cluster: dev-fss
         - application: ida
           namespace: traktor
           cluster: prod-fss # Dette er med vilje

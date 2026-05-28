@@ -234,4 +234,7 @@ spec:
           namespace: dab
         - application: tilleggsstonader-sak
           namespace: tilleggsstonader
+        - application: arena
+          namespace: teamarenanais
+          cluster: prod-fss
 
