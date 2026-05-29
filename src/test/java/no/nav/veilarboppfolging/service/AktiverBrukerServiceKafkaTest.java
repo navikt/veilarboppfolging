@@ -40,15 +40,6 @@ public class AktiverBrukerServiceKafkaTest extends IntegrationTest {
     EmbeddedKafkaBroker kafkaContainer;
 
     @Autowired
-    DataSource dataSource;
-
-    @Autowired
-    AktiverBrukerManueltService aktiverBrukerManueltService;
-
-    @Autowired
-    OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
-
-    @Autowired
     JdbcTemplate jdbcTemplate;
 
     private final Fnr fnr = Fnr.of("12345678901");

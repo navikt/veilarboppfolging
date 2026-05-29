@@ -23,8 +23,8 @@ class OppfolgingsStatusRepository(private val db: NamedParameterJdbcTemplate) {
     private val logger = LoggerFactory.getLogger(OppfolgingsStatusRepository::class.java)
 
     fun hentOppfolging(aktorId: AktorId): Optional<OppfolgingEntity> {
-        return DbUtils.queryForNullableObject<OppfolgingEntity?>(Supplier {
-            db.queryForObject<OppfolgingEntity>(
+        return DbUtils.queryForNullableObject {
+            db.queryForObject(
                 """
                     SELECT os.*, aok.kontor_id 
                     FROM OPPFOLGINGSTATUS os
@@ -32,9 +32,9 @@ class OppfolgingsStatusRepository(private val db: NamedParameterJdbcTemplate) {
                     WHERE os.aktor_id = :aktorId
                     """.trimIndent(),
                 mapOf("aktorId" to aktorId.get()),
-                { rs, row -> map(rs) },
+                { rs, _ -> map(rs) },
             )
-        })
+        }
     }
 
     fun oppdaterArenaOppfolgingStatus(aktorId: AktorId, skalOppretteOppfolgingForst: Boolean, arenaOppfolging: LocalArenaOppfolging) {
@@ -46,7 +46,6 @@ class OppfolgingsStatusRepository(private val db: NamedParameterJdbcTemplate) {
             "formidlingsgruppe" to arenaOppfolging.formidlingsgruppe.name,
             "hovedmaal" to arenaOppfolging.hovedmaal?.name,
             "kvalifiseringsgruppe" to arenaOppfolging.kvalifiseringsgruppe.name,
-            "oppfolgingsenhet" to arenaOppfolging.oppfolgingsenhet?.get(),
             "iserv_fra_dato" to arenaOppfolging.iservFraDato,
         )
         val sql = """
@@ -54,7 +53,6 @@ class OppfolgingsStatusRepository(private val db: NamedParameterJdbcTemplate) {
             SET formidlingsgruppe = :formidlingsgruppe, 
             kvalifiseringsgruppe = :kvalifiseringsgruppe, 
             hovedmaal = :hovedmaal, 
-            oppfolgingsenhet = :oppfolgingsenhet,
             iserv_fra_dato = :iserv_fra_dato,
             oppdatert = CURRENT_TIMESTAMP
             WHERE aktor_id = :aktorId
@@ -108,12 +106,12 @@ class OppfolgingsStatusRepository(private val db: NamedParameterJdbcTemplate) {
                 kvalifiseringsgruppe = kvalifiseringsgruppe,
                 formidlingsgruppe = formidlingsgruppe,
                 hovedmaal = rs.getStringOrNull("hovedmaal")?.let(Hovedmaal::valueOf),
-                oppfolgingsenhet = rs.getStringOrNull("kontor_id")?.let { EnhetId(it) },
                 // Dårlig konvertering av ZonedDataTime til LocalDateTime men trenger bare datoen
                 iservFraDato = DbUtils.hentZonedDateTime(rs, "iserv_fra_dato")?.toLocalDate()
             ) else null
 
             return OppfolgingEntity()
+                .setOppfolgingsEnhet(rs.getStringOrNull("kontor_id")?.let { EnhetId(it) })
                 .setAktorId(rs.getString(AKTOR_ID))
                 .setGjeldendeManuellStatusId(rs.getLong(GJELDENDE_MANUELL_STATUS))
                 .setGjeldendeMaalId(rs.getLong(GJELDENDE_MAL))

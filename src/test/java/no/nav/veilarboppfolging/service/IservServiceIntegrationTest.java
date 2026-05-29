@@ -36,6 +36,7 @@ public class IservServiceIntegrationTest {
     private UtmeldingRepository utmeldingRepository;
     private AuthService authService = mock(AuthService.class);
     private OppfolgingService oppfolgingService = mock(OppfolgingService.class);
+    private AvsluttOppfolgingService avsluttOppfolgingService = mock(AvsluttOppfolgingService.class);
 
     @Before
     public void setup() {
@@ -44,11 +45,12 @@ public class IservServiceIntegrationTest {
         DbTestUtils.cleanupTestDb();
 
         when(oppfolgingService.erUnderOppfolging(any(AktorId.class))).thenReturn(true);
-        when(oppfolgingService.avsluttOppfolging(any(Avregistrering.class))).thenReturn(AvslutningStatusData.builder().kanAvslutte(true).underOppfolging(false).build());
+        when(avsluttOppfolgingService.avsluttOppfolging(any(Avregistrering.class)))
+                .thenReturn(new KunneAvsluttes(new UtmeldtEtter28Dager(AKTOR_ID), true));
         when(authService.getFnrOrThrow(any())).thenReturn(FNR);
 
         utmeldingRepository = new UtmeldingRepository(db);
-        utmeldingsService = new UtmeldingsService(mock(MetricsService.class), utmeldingRepository, oppfolgingService, mock());
+        utmeldingsService = new UtmeldingsService(mock(MetricsService.class), utmeldingRepository, oppfolgingService, avsluttOppfolgingService, mock());
         utmeldEtter28Cron = new UtmeldEtter28Cron(
                 utmeldingsService,
                 utmeldingRepository,
@@ -126,7 +128,7 @@ public class IservServiceIntegrationTest {
 
         utmeldingsService.avsluttOppfolgingOgFjernFraUtmeldingsTabell(AKTOR_ID);
 
-        verify(oppfolgingService).avsluttOppfolging(new UtmeldtEtter28Dager(AKTOR_ID));
+        verify(avsluttOppfolgingService).avsluttOppfolging(new UtmeldtEtter28Dager(AKTOR_ID));
         assertTrue(utmeldingRepository.eksisterendeIservBruker(AKTOR_ID).isEmpty());
     }
 
@@ -155,25 +157,21 @@ public class IservServiceIntegrationTest {
     @Test
     public void automatiskAvslutteOppfolging_skalFjerneBrukerSomErIserv28dagerOgIkkeUnderOppfolging(){
         insertIservBruker(AKTOR_ID, iservFraDato.minusDays(30));
-
         when(oppfolgingService.erUnderOppfolging(AKTOR_ID)).thenReturn(false);
 
         utmeldEtter28Cron.automatiskAvslutteOppfolging();
 
-        verify(oppfolgingService, never()).avsluttOppfolging(any(Avregistrering.class));
-
+        verify(avsluttOppfolgingService, never()).avsluttOppfolging(any(Avregistrering.class));
         assertTrue(utmeldingRepository.eksisterendeIservBruker(AKTOR_ID).isEmpty());
     }
     
     @Test
-    public void automatiskAvslutteOppfolging_skalIkkeFjerneBrukerSomErIserv28dagerMenIkkeAvsluttet(){
-        insertIservBruker(AKTOR_ID, iservFraDato.minusDays(30));
-
-        when(oppfolgingService.avsluttOppfolging(any(UtmeldtEtter28Dager.class))).thenReturn(AvslutningStatusData.builder().underOppfolging(true).build());
+    public void automatiskAvslutteOppfolging_skalFjerneBrukerSomErIserv28dagerMenIkkeAvsluttet(){
+        insertIservBruker(AKTOR_ID, iservFraDato.minusDays(29));
 
         utmeldEtter28Cron.automatiskAvslutteOppfolging();
 
-        assertTrue(utmeldingRepository.eksisterendeIservBruker(AKTOR_ID).isPresent());
+        assertTrue(utmeldingRepository.eksisterendeIservBruker(AKTOR_ID).isEmpty());
     }
     
     private EndringPaaOppfoelgingsBrukerV2.EndringPaaOppfoelgingsBrukerV2Builder getArenaBrukerBuilder() {

@@ -2,6 +2,7 @@ package no.nav.veilarboppfolging.repository.entity;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
+import no.nav.common.types.identer.EnhetId;
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.LocalArenaOppfolging;
 
 import java.util.Optional;
@@ -21,5 +22,6 @@ public class OppfolgingEntity {
     Long gjeldendeManuellStatusId;
     long gjeldendeMaalId;
     long gjeldendeKvpId;
+    EnhetId oppfolgingsEnhet;
     Optional<LocalArenaOppfolging> localArenaOppfolging;
 }

@@ -64,7 +64,6 @@ object TestUtils {
             hovedmaal = Hovedmaal.BEHOLDEA,
             kvalifiseringsgruppe = kvalifiseringsgruppe,
             formidlingsgruppe = formidlingsgruppe,
-            oppfolgingsenhet = EnhetId("8686"),
             iservFraDato = null
         )
 }

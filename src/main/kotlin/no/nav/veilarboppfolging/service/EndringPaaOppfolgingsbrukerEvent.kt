@@ -11,20 +11,22 @@ fun resolveEndringPaaOppfolgingsbrukerEvent(
     endringPaaOppfolgingsBruker: EndringPaaOppfolgingsBruker,
     nåværendeOppfolgingsstatus: OppfolgingEntity?,
     getKanReaktiveresIArena: () -> Optional<Boolean>,
-    kanAvsluttes: (kanReaktiveres: Boolean) -> OppfolgingService.KanAvslutteMedBegrunnelse
 ): OppfolgingsbrukerEndretEvent {
     val erSykmeldtUtenArbeidsgiver =  sykmeldtUtenArbeidsgiver(endringPaaOppfolgingsBruker.kvalifiseringsgruppe, endringPaaOppfolgingsBruker.formidlingsgruppe)
     val varSykmeldtUtenArbeidsgiver = nåværendeOppfolgingsstatus?.localArenaOppfolging?.orElse(null)?.let { sykmeldtUtenArbeidsgiver(it.kvalifiseringsgruppe, it.formidlingsgruppe) } ?: false
     if (erSykmeldtUtenArbeidsgiver && !varSykmeldtUtenArbeidsgiver) return BleSykmeldtUtenArbeidsgiver()
 
     val erInaktivIArena = Formidlingsgruppe.ISERV == endringPaaOppfolgingsBruker.formidlingsgruppe
+    val varInaktivIArena = nåværendeOppfolgingsstatus?.localArenaOppfolging?.orElse(null)?.formidlingsgruppe == Formidlingsgruppe.ISERV
     val erUnderOppfolging = nåværendeOppfolgingsstatus?.isUnderOppfolging ?: false
 
-    if (erInaktivIArena && erUnderOppfolging) {
+    if (erInaktivIArena && varInaktivIArena) return IrrelevantEndring()
+
+    if (erUnderOppfolging && erInaktivIArena && !varInaktivIArena) {
         val kanReaktiveres = getKanReaktiveresIArena()
+        // Ikke helt riktig men bør ikke gjøre noen skade å returnere IrrelevantEndring
         if (kanReaktiveres.isEmpty) return IrrelevantEndring()
-        val kanAvsluttesMedBegrunnelse = kanAvsluttes(kanReaktiveres.get())
-        if (!kanAvsluttesMedBegrunnelse.kanAvslutte) return KanIkkeAvsluttes(kanAvsluttesMedBegrunnelse.begrunnelse)
+
         return when (kanReaktiveres.get()) {
             true -> BleInaktivertMedKanReaktiveres()
             false -> BleInaktivertUtenKanReaktiveres()

@@ -67,12 +67,14 @@ import no.nav.veilarboppfolging.repository.VeilederTilordningerRepository
 import no.nav.veilarboppfolging.repository.entity.ManuellStatusEntity
 import no.nav.veilarboppfolging.repository.enums.KodeverkBruker
 import no.nav.veilarboppfolging.service.AuthService
+import no.nav.veilarboppfolging.service.AvsluttOppfolgingService
 import no.nav.veilarboppfolging.service.MetricsService
 import no.nav.veilarboppfolging.service.OppfolgingService
 import no.nav.veilarboppfolging.service.StartOppfolgingService
 import no.nav.veilarboppfolging.test.DbTestUtils
 import no.nav.veilarboppfolging.tokenClient.ErrorMappedAzureAdMachineToMachineTokenClient
 import no.nav.veilarboppfolging.tokenClient.ErrorMappedAzureAdOnBehalfOfTokenClient
+import org.apache.kafka.clients.producer.KafkaProducer
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.mockito.ArgumentMatchers.anyString
@@ -155,6 +157,9 @@ open class IntegrationTest {
 
     @Autowired
     lateinit var startOppfolgingService: StartOppfolgingService
+
+    @Autowired
+    lateinit var avsluttOppfolgingService: AvsluttOppfolgingService
 
     @Autowired
     lateinit var oppfolgingsPeriodeRepository: OppfolgingsPeriodeRepository
@@ -252,7 +257,6 @@ open class IntegrationTest {
                 Hovedmaal.BEHOLDEA,
                 Kvalifiseringsgruppe.VURDI,
                 formidlingsgruppe,
-                enhet,
                 null,
             ))
     }
@@ -276,7 +280,7 @@ open class IntegrationTest {
     fun hentOppfolgingsperioder(fnr: Fnr) = oppfolgingController.hentOppfolgingsperioder(fnr)
 
     fun avsluttOppfolgingManueltSomVeileder(aktorId: AktorId, veileder: NavIdent = NavIdent("veileder"), begrunnelse: String = "Begrunnelse") {
-        oppfolgingService.avsluttOppfolging(
+        avsluttOppfolgingService.avsluttOppfolging(
             ManuellAvregistrering(aktorId, VeilederRegistrant(veileder), begrunnelse),
         )
     }

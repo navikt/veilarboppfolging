@@ -1,6 +1,7 @@
 package no.nav.veilarboppfolging.oppfolgingsbruker.arena
 
 import no.nav.common.types.identer.AktorId
+import no.nav.common.types.identer.EnhetId
 import no.nav.common.types.identer.Fnr
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.pto_schema.enums.arena.Hovedmaal
@@ -9,6 +10,7 @@ import no.nav.veilarboppfolging.IntegrationTest
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsBruker
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.OppfolgingEnhetMedVeilederResponse.Oppfolgingsenhet
+import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
@@ -26,6 +28,8 @@ class VeilarbArenaOppfolgingsStatusServiceIntegrationTest: IntegrationTest() {
 
     @Test
     fun `getOppfolginsstatus skal retunere success når bruker finnes i arena`() {
+        setBrukerUnderOppfolging(aktorId, fnr)
+        setAoKontor(fnr, aktorId, "1010")
         mockNorgEnhetsNavn("1010", "Nav 1010")
         mockInternBrukerAuthOk(UUID.randomUUID(), aktorId, fnr)
         `when`(veilarbarenaClient.hentOppfolgingsbruker(fnr)).thenReturn(Optional.of(
@@ -39,7 +43,7 @@ class VeilarbArenaOppfolgingsStatusServiceIntegrationTest: IntegrationTest() {
 
         val hentarenaResult = arenaOppfolgingService.hentArenaOppfolginsstatusMedHovedmaal(fnr)
 
-        assertEquals(hentarenaResult, GetOppfolginsstatusSuccess(
+        assertEquals(GetOppfolginsstatusSuccess(
             OppfolgingEnhetMedVeilederResponse(
                 formidlingsgruppe = Formidlingsgruppe.ARBS.name,
                 servicegruppe = Kvalifiseringsgruppe.VURDU.name,
@@ -47,7 +51,7 @@ class VeilarbArenaOppfolgingsStatusServiceIntegrationTest: IntegrationTest() {
                 veilederId = null,
                 oppfolgingsenhet = Oppfolgingsenhet(enhetId = "1010",navn = "Nav 1010")
             )
-        ))
+        ), hentarenaResult)
     }
 
     @Test

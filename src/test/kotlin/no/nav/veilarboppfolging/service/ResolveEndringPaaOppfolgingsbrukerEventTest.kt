@@ -26,7 +26,6 @@ class ResolveEndringPaaOppfolgingsbrukerEventTest {
             endringPaaOppfolgingsBruker = EndringPaaOppfolgingsBruker.from(oppfolgingsbrukerEndret, aktorId),
             nåværendeOppfolgingsstatus = nåværendeOppfølgingstatus,
             getKanReaktiveresIArena = { Optional.of(true) },
-            kanAvsluttes = { OppfolgingService.KanAvslutteMedBegrunnelse(true, "Begrunnelse") }
         )
 
         assertThat(endring).isInstanceOf(IrrelevantEndring::class.java)
@@ -43,7 +42,6 @@ class ResolveEndringPaaOppfolgingsbrukerEventTest {
             endringPaaOppfolgingsBruker = EndringPaaOppfolgingsBruker.from(oppfolgingsbrukerEndret, aktorId),
             nåværendeOppfolgingsstatus = nåværendeOppfølgingstatus,
             getKanReaktiveresIArena = { Optional.of(true) },
-            kanAvsluttes = { OppfolgingService.KanAvslutteMedBegrunnelse(true, "Begrunnelse") }
         )
 
         assertThat(endring).isInstanceOf(BleSykmeldtUtenArbeidsgiver::class.java)

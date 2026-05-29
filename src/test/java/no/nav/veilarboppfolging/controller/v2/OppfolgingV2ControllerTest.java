@@ -4,6 +4,7 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
 import no.nav.veilarboppfolging.service.AuthService;
+import no.nav.veilarboppfolging.service.AvsluttOppfolgingService;
 import no.nav.veilarboppfolging.service.OppfolgingService;
 
 import no.nav.veilarboppfolging.utils.auth.AuthorizationInterceptor;
@@ -40,6 +41,9 @@ class OppfolgingV2ControllerTest {
 
     @MockitoBean
     private OppfolgingService oppfolgingService;
+
+    @MockitoBean
+    private AvsluttOppfolgingService avsluttOppfolgingService;
 
     @Test
     void hentGjeldendeOppfolginsperiode_should_return_gjeldende() throws Exception {

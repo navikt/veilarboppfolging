@@ -29,11 +29,11 @@ public class OppfolgingStatus {
     private Boolean inaktivIArena;
     private Boolean kanReaktiveres;
     public LocalDate inaktiveringsdato;
+    /*
+    * Får treff i "mulighetsrommet", "arbopp", "arbopp-new"
+    * */
     private Boolean erSykmeldtMedArbeidsgiver;
     private String servicegruppe;
     private String formidlingsgruppe;
     private String rettighetsgruppe;
-
-    @Deprecated
-    private Boolean erIkkeArbeidssokerUtenOppfolging;
 }

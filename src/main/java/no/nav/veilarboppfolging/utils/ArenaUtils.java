@@ -17,47 +17,12 @@ public class ArenaUtils {
     // kvalifiseringsgruppe = servicegruppe + innsatsgruppe
     protected static final Set<Kvalifiseringsgruppe> OPPFOLGING_KVALIFISERINGSGRUPPEKODER = new HashSet<>(asList(Kvalifiseringsgruppe.BATT, Kvalifiseringsgruppe.BFORM, Kvalifiseringsgruppe.IKVAL, Kvalifiseringsgruppe.VURDU, Kvalifiseringsgruppe.OPPFI, Kvalifiseringsgruppe.VARIG));
 
-    // Logikken som utleder om en bruker er under oppfolging kjøres også ved indeksering av brukere i VeilArbPortefølje.
-    // Endringer i logikken må implementeres begge steder
-    public static boolean erUnderOppfolging(Formidlingsgruppe formidlingsgruppeKode, Kvalifiseringsgruppe kvalifiseringsgruppeKode) {
-        return erArbeidssoker(formidlingsgruppeKode) || erIARBSMedOppfolging(formidlingsgruppeKode, kvalifiseringsgruppeKode);
-    }
-
-    public static boolean erSykmeldtUtenArbeidsgiver(Formidlingsgruppe formidlingsgruppeKode, Kvalifiseringsgruppe kvalifiseringsgruppeKode) {
-        return IKKE_ARBEIDSSOKER.equals(formidlingsgruppeKode) && Kvalifiseringsgruppe.VURDU.equals(kvalifiseringsgruppeKode);
-    }
-
-    public static boolean kanSettesUnderOppfolging(Formidlingsgruppe formidlingsgruppeKode, Kvalifiseringsgruppe kvalifiseringsgruppeKode) {
-        return erIARBSUtenOppfolging(formidlingsgruppeKode, kvalifiseringsgruppeKode);
-    }
-
-    private static boolean erIARBSMedOppfolging(Formidlingsgruppe formidlingsgruppeKode, Kvalifiseringsgruppe kvalifiseringsgruppeKode) {
-        return IKKE_ARBEIDSSOKER.equals(formidlingsgruppeKode) && OPPFOLGING_KVALIFISERINGSGRUPPEKODER.contains(kvalifiseringsgruppeKode);
-    }
-
     public static boolean erIARBSUtenOppfolging(Formidlingsgruppe formidlingsgruppeKode, Kvalifiseringsgruppe kvalifiseringsgruppeKode) {
         return IKKE_ARBEIDSSOKER.equals(formidlingsgruppeKode) && !OPPFOLGING_KVALIFISERINGSGRUPPEKODER.contains(kvalifiseringsgruppeKode);
-    }
-
-    private static boolean erArbeidssoker(Formidlingsgruppe formidlingsgruppeKode) {
-        return ARBS.equals(formidlingsgruppeKode);
     }
 
     public static boolean erIserv(Formidlingsgruppe formidlingsgruppe) {
         return ISERV.equals(formidlingsgruppe);
     }
-
-    /*
-    public static boolean erSykmeldtMedArbeidsgiver(ArenaOppfolgingTilstand arenaOppfolgingTilstand) {
-        return ArenaUtils.erIARBSUtenOppfolging(
-                arenaOppfolgingTilstand.getFormidlingsgruppe(),
-                arenaOppfolgingTilstand.getServicegruppe()
-        );
-    }
-
-    public static boolean erInaktivIArena(ArenaOppfolgingTilstand arenaOppfolgingTilstand) {
-        return erIserv(arenaOppfolgingTilstand.getFormidlingsgruppe());
-    }
-    */
 
 }

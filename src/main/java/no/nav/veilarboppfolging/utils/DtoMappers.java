@@ -70,7 +70,6 @@ public class DtoMappers {
                 .setKanReaktiveres(oppfolgingStatusData.kanReaktiveres)
                 .setOppfolgingsPerioder(oppfolgingStatusData.oppfolgingsperioder.stream().map(o -> tilOppfolgingPeriodeDTO(o, erInternBruker)).collect(toList()))
                 .setInaktiveringsdato(oppfolgingStatusData.inaktiveringsdato)
-                .setErIkkeArbeidssokerUtenOppfolging(oppfolgingStatusData.getErSykmeldtMedArbeidsgiver())
                 .setErSykmeldtMedArbeidsgiver(oppfolgingStatusData.getErSykmeldtMedArbeidsgiver())
                 .setHarSkriveTilgang(true)
                 .setServicegruppe(oppfolgingStatusData.getServicegruppe())

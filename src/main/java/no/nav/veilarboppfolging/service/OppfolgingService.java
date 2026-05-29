@@ -30,11 +30,7 @@ import no.nav.veilarboppfolging.eventsLogger.BigQueryClient;
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant;
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService;
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.LocalArenaOppfolging;
-import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ArenaSyncRegistrering;
-import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering;
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AdminAvregistrering;
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.Avregistrering;
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvregistreringsType;
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.*;
 import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.hendelser.OppfolgingsAvsluttetHendelseDto;
 import no.nav.veilarboppfolging.repository.*;
 import no.nav.veilarboppfolging.repository.entity.*;
@@ -53,7 +49,6 @@ import static java.time.ZonedDateTime.now;
 import static java.util.Optional.empty;
 import static java.util.stream.Collectors.toList;
 import static no.nav.veilarboppfolging.utils.ArenaUtils.erIserv;
-import static no.nav.veilarboppfolging.utils.ArenaUtils.kanSettesUnderOppfolging;
 import static no.nav.veilarboppfolging.utils.SecureLog.secureLog;
 
 @Slf4j
@@ -151,42 +146,59 @@ public class OppfolgingService {
 
     public AvslutningStatusData hentAvslutningstatusForManuellAvslutning(Fnr fnr) {
         authService.sjekkLesetilgangMedFnr(fnr);
-        return getAvslutningStatus(fnr, AvregistreringsType.ManuellAvregistrering);
+        return getAvslutningStatusForManuellAvslutning(fnr);
+    }
+
+    private KunneAvsluttesResultat kanAvslutteOppfolging(Avregistrering avregistrering, Fnr fnr, Optional<OppfolgingEntity> oppfolging) {
+        ArenaOppfolgingTilstand arenaOppfolgingTilstand = arenaOppfolgingService.hentArenaOppfolgingTilstand(fnr)
+                .orElseThrow(() -> new RuntimeException("Feilet under henting av areana-oppfolgingsstatus (db) med fallback til veilarbarena /oppfolgingsbruker"));
+        boolean erIserv = erIserv(EnumUtils.valueOf(Formidlingsgruppe.class, arenaOppfolgingTilstand.getFormidlingsgruppe()));
+        boolean harAktiveTiltaksdeltakelser = harAktiveTiltaksdeltakelser(fnr);
+        boolean erDeltakerIUngdomsprogrammet = erDeltakerIUngdomsprogrammet(fnr);
+        boolean erArbeidssoeker = erArbeidssoeker(fnr);
+        boolean harAap = harAap(fnr);
+        boolean underKvp = kvpService.erUnderKvp(avregistrering.getAktorId());
+        return KunneAvsluttesResultat.kanAvsluttes(
+                avregistrering,
+                new KanAvsluttesInput(
+                    oppfolging.map(OppfolgingEntity::isUnderOppfolging).orElse(false),
+                    erIserv,
+                    harAktiveTiltaksdeltakelser,
+                    erDeltakerIUngdomsprogrammet,
+                    erArbeidssoeker,
+                    harAap,
+                    underKvp
+                )
+        );
     }
 
     @SneakyThrows
-    public AvslutningStatusData avsluttOppfolging(Avregistrering avregistrering) {
+    private KunneAvsluttesResultat avsluttOppfolging(Avregistrering avregistrering) {
         AktorId aktorId = avregistrering.getAktorId();
         Fnr fnr = authService.getFnrOrThrow(aktorId);
-        ArenaOppfolgingTilstand arenaOppfolgingTilstand = arenaOppfolgingService.hentArenaOppfolgingTilstand(fnr)
-                .orElseThrow(() -> new RuntimeException("Feilet under henting av areana-oppfolgingsstatus (db) med fallback til veilarbarena /oppfolgingsbruker"));
+
+        var oppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId);
 
         if (authService.erInternBruker()) {
             authService.sjekkSkriveTilgangMedFnr(fnr);
-            authService.sjekkTilgangTilEnhet(arenaOppfolgingTilstand.getOppfolgingsenhet());
+            oppfolging
+                    .map(OppfolgingEntity::getOppfolgingsEnhet)
+                    .ifPresent((enhet) -> authService.sjekkTilgangTilEnhet(enhet.get()));
             secureLog.info("Veileder: {} forsøker å avslutte oppfølging for fnr: {}", authService.getInnloggetBrukerIdent(), fnr.get());
         } else {
             secureLog.info("Forsøker å avslutte oppfølging for fnr: {} som systembruker", fnr.get());
         }
 
-        boolean erIserv = erIserv(EnumUtils.valueOf(Formidlingsgruppe.class, arenaOppfolgingTilstand.getFormidlingsgruppe()));
-
-        boolean harAktiveTiltaksdeltakelser = harAktiveTiltaksdeltakelser(fnr);
-        boolean erDeltakerIUngdomsprogrammet = erDeltakerIUngdomsprogrammet(fnr);
-        boolean erArbeidssoeker = erArbeidssoeker(fnr);
-        boolean harAap = harAap(fnr);
-        boolean underKvp = kvpService.erUnderKvp(aktorId);
-        KanAvslutteMedBegrunnelse kanAvslutte = kanAvslutteOppfolging(aktorId, avregistrering.getAvregistreringsType(), erUnderOppfolging(aktorId), erIserv, harAktiveTiltaksdeltakelser, erDeltakerIUngdomsprogrammet, erArbeidssoeker, harAap, underKvp);
-        if (kanAvslutte.kanAvslutte) {
+        var kanAvslutte = kanAvslutteOppfolging(avregistrering, fnr, oppfolging);
+        if (kanAvslutte instanceof KunneAvsluttes kunneAvsluttesResultat) {
             var veilederId = avregistrering.getAvsluttetAv().getIdent();
             var begrunnelse = avregistrering.getBegrunnelse();
-            secureLog.info("Avslutting av oppfølging utført av: {}, begrunnelse: {}, tilstand i Arena for aktorid {}: {}", veilederId, begrunnelse, aktorId, arenaOppfolgingTilstand);
-            avsluttOppfolgingForBruker(avregistrering, !erIserv);
+            secureLog.info("Avslutting av oppfølging utført av: {}, begrunnelse: {}, tilstand i Arena for aktorid {}", veilederId, begrunnelse, aktorId);
+            avsluttOppfolgingForBruker(kunneAvsluttesResultat);
         } else {
-            log.warn("Oppfølging ble ikke avsluttet likevel, avregistreringstype {}: begrunnelse {}",avregistrering.getAvregistreringsType() , kanAvslutte.begrunnelse);
+            log.warn("Oppfølging ble ikke avsluttet likevel, avregistreringstype {}: begrunnelse {}",avregistrering.getAvregistreringsType() , ((KunneIkkeAvsluttes) kanAvslutte).getBegrunnelse());
         }
-
-        return getAvslutningStatus(fnr, avregistrering.getAvregistreringsType());
+        return kanAvslutte;
     }
 
     @SneakyThrows
@@ -287,18 +299,11 @@ public class OppfolgingService {
         return Optional.of(oppfolging);
     }
 
-    private Optional<Kvalifiseringsgruppe> getKvalifiseringsGruppe(OppfolgingsRegistrering oppfolgingsbruker) {
-        if (oppfolgingsbruker instanceof ArenaSyncRegistrering arenasyncoppfolgingsbruker) {
-            return Optional.ofNullable(arenasyncoppfolgingsbruker.getKvalifiseringsgruppe());
-        } else {
-            return Optional.empty();
-        }
-    }
-
     @Data
     @AllArgsConstructor
     public static class KanAvslutteMedBegrunnelse {
         boolean kanAvslutte;
+        boolean erIserv;
         String begrunnelse;
     }
     public static KanAvslutteMedBegrunnelse kanAvslutteOppfolging(
@@ -317,27 +322,32 @@ public class OppfolgingService {
 
         var manuellAvslutning = avregistreringsType.erManuellAvregistrering();
 
-        if (!erUnderOppfolging) return new KanAvslutteMedBegrunnelse(false, "bruker var ikke under oppfølging");
-        if (!manuellAvslutning && !erIservIArena) return new KanAvslutteMedBegrunnelse(false, "bruker var ikke inaktivert i Arena ved forsøk på automatisk avslutning");
-        if (underKvp) return new KanAvslutteMedBegrunnelse(false, "bruker var under kvp");
-        if (harAktiveTiltaksdeltakelser) return new KanAvslutteMedBegrunnelse(false, "bruker hadde aktive tiltaksdeltakelser");
-        if (erDeltakerIUngdomsprogrammet) return new KanAvslutteMedBegrunnelse(false, "bruker er deltaker i ungdomsprogrammet");
-        if (erArbeidssoeker) return new KanAvslutteMedBegrunnelse(false, "bruker er registrert som arbeidssøker");
-        if (harAap) return new KanAvslutteMedBegrunnelse(false, "bruker har AAP");
+        if (!erUnderOppfolging) return new KanAvslutteMedBegrunnelse(false, erIservIArena, "bruker var ikke under oppfølging");
+        if (!manuellAvslutning && !erIservIArena) return new KanAvslutteMedBegrunnelse(false, erIservIArena, "bruker var ikke inaktivert i Arena ved forsøk på automatisk avslutning");
+        if (underKvp) return new KanAvslutteMedBegrunnelse(false, erIservIArena, "bruker var under kvp");
+        if (harAktiveTiltaksdeltakelser) return new KanAvslutteMedBegrunnelse(false, erIservIArena, "bruker hadde aktive tiltaksdeltakelser");
+        if (erDeltakerIUngdomsprogrammet) return new KanAvslutteMedBegrunnelse(false, erIservIArena, "bruker er deltaker i ungdomsprogrammet");
+        if (erArbeidssoeker) return new KanAvslutteMedBegrunnelse(false, erIservIArena, "bruker er registrert som arbeidssøker");
+        if (harAap) return new KanAvslutteMedBegrunnelse(false, erIservIArena, "bruker har AAP");
 
-        return new KanAvslutteMedBegrunnelse(true, null);
+        return new KanAvslutteMedBegrunnelse(true, erIservIArena, null);
     }
 
     public void adminForceAvsluttOppfolgingForBruker(AktorId aktorId, String veilederId, String begrunnelse) {
-        avsluttOppfolgingForBruker(new AdminAvregistrering(aktorId, new VeilederRegistrant(new NavIdent(veilederId)), begrunnelse, null));
+        adminAvsluttOppfolgingForBruker(new AdminAvregistrering(aktorId, new VeilederRegistrant(new NavIdent(veilederId)), begrunnelse, null));
     }
 
-    private void avsluttOppfolgingForBruker(Avregistrering avregistrering) {
-        avsluttOppfolgingForBruker(avregistrering, null);
-    }
-
-    private void avsluttOppfolgingForBruker(Avregistrering avregistrering, Boolean aktivIArena) {
+    private void adminAvsluttOppfolgingForBruker(AdminAvregistrering avregistrering) {
         var fnr = authService.getFnrOrThrow(avregistrering.getAktorId());
+        var oppfolging = hentOppfolgingsStatus(fnr);
+        var erIservIArena = oppfolging.inaktivIArena;
+        avsluttOppfolgingForBruker(new KunneAvsluttes(avregistrering, erIservIArena));
+    }
+
+    private void avsluttOppfolgingForBruker(KunneAvsluttes kanAvsluttesResultat) {
+        var avregistrering = kanAvsluttesResultat.getAvregistrering();
+        var fnr = authService.getFnrOrThrow(avregistrering.getAktorId());
+        var aktivIArena = !kanAvsluttesResultat.getErIserv();
         var aktorId = avregistrering.getAktorId();
         transactor.executeWithoutResult((ignored) -> {
             oppfolgingsPeriodeRepository.avsluttSistePeriodeOgAvsluttOppfolging(aktorId, avregistrering.getAvsluttetAv().getIdent(), avregistrering.getBegrunnelse());
@@ -366,13 +376,13 @@ public class OppfolgingService {
 
         try {
             UUID oppfolgingsperiodeUUID = UUID.fromString(uuid);
-            avsluttValgtOppfolgingsperiode(new AdminAvregistrering(aktorId, new VeilederRegistrant(new NavIdent(veilederId)), begrunnelse, oppfolgingsperiodeUUID));
+            adminAvsluttValgtOppfolgingsperiode(new AdminAvregistrering(aktorId, new VeilederRegistrant(new NavIdent(veilederId)), begrunnelse, oppfolgingsperiodeUUID));
         } catch (IllegalArgumentException e) {
             log.warn("Invalid UUID format for oppfolgingsperiodeUUID: {}", uuid, e);
         }
     }
 
-    private void avsluttValgtOppfolgingsperiode(AdminAvregistrering avregistrering) {
+    private void adminAvsluttValgtOppfolgingsperiode(AdminAvregistrering avregistrering) {
         var oppfolgingsperiodeUUID = avregistrering.getOppfolgingsperiodeUUID();
         var gjeldendePerioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(avregistrering.getAktorId()).stream().filter(p -> p.getSluttDato() == null).toList();
         var sisteGjeldendePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(gjeldendePerioder);
@@ -388,7 +398,7 @@ public class OppfolgingService {
 
         if (erSisteGjeldendePeriode && erEnesteGjeldendePeriode) {
             log.info("Valgt oppfølgingsperiode er siste og eneste. Avslutter oppfølging.");
-            avsluttOppfolgingForBruker(avregistrering);
+            adminAvsluttOppfolgingForBruker(avregistrering);
             return;
         }
 
@@ -441,10 +451,6 @@ public class OppfolgingService {
         // TODO: Burde kanskje heller feile istedenfor å bruke Optional
         Optional<VeilarbArenaOppfolgingsStatus> maybeArenaOppfolging = arenaOppfolgingService.hentArenaOppfolgingsStatus(fnr);
 
-        boolean kanSettesUnderOppfolging = !oppfolging.isUnderOppfolging() && maybeArenaOppfolging
-                .map(s -> kanSettesUnderOppfolging(EnumUtils.valueOf(Formidlingsgruppe.class, s.getFormidlingsgruppe()), EnumUtils.valueOf(Kvalifiseringsgruppe.class, s.getServicegruppe())))
-                .orElse(false);
-
         boolean harSkrivetilgangTilBruker = harVeilederTilgangTilKontorsperretEnhet(aktorId);
 
         Boolean erInaktivIArena = maybeArenaOppfolging.map(ao -> erIserv(EnumUtils.valueOf(Formidlingsgruppe.class, ao.getFormidlingsgruppe()))).orElse(null);
@@ -473,13 +479,13 @@ public class OppfolgingService {
                 .setReservasjonKRR(digdirKontaktinfo.isReservert())
                 .setRegistrertKRR(digdirKontaktinfo.isAktiv())
                 .setManuell(erManuell || digdirKontaktinfo.isReservert())
-                .setKanStarteOppfolging(kanSettesUnderOppfolging)
+                .setKanStarteOppfolging(!oppfolging.isUnderOppfolging())
                 .setOppfolgingsperioder(oppfolging.getOppfolgingsperioder())
                 .setHarSkriveTilgang(harSkrivetilgangTilBruker)
                 .setInaktivIArena(erInaktivIArena)
                 .setKanReaktiveres(kanReaktiveres)
+                // Usikker på om dette feltet er i bruk av konsumenter
                 .setErSykmeldtMedArbeidsgiver(erSykmeldtMedArbeidsgiver)
-                .setErIkkeArbeidssokerUtenOppfolging(erSykmeldtMedArbeidsgiver)
                 .setInaktiveringsdato(inaktiveringsDato)
                 .setServicegruppe(maybeArenaOppfolging.map(VeilarbArenaOppfolgingsStatus::getServicegruppe).orElse(null))
                 .setFormidlingsgruppe(maybeArenaOppfolging.map(VeilarbArenaOppfolgingsStatus::getFormidlingsgruppe).orElse(null))
@@ -497,7 +503,7 @@ public class OppfolgingService {
         );
     }
 
-    private AvslutningStatusData getAvslutningStatus(Fnr fnr, AvregistreringsType avregistreringsType) {
+    private AvslutningStatusData getAvslutningStatusForManuellAvslutning(Fnr fnr) {
         AktorId aktorId = authService.getAktorIdOrThrow(fnr);
 
         Optional<ArenaOppfolgingTilstand> maybeArenaOppfolging = arenaOppfolgingService.hentArenaOppfolgingTilstand(fnr);
@@ -510,7 +516,9 @@ public class OppfolgingService {
         boolean erArbeidssoeker = erArbeidssoeker(fnr);
         boolean harAap = harAap(fnr);
         boolean underKvp = kvpService.erUnderKvp(aktorId);
-        boolean kanAvslutte = kanAvslutteOppfolging(aktorId, avregistreringsType, erUnderOppfolging(aktorId), erIserv, harAktiveTiltaksdeltakelser, erDeltakerIUngdomsprogrammet, erArbeidssoeker, harAap, underKvp).kanAvslutte;
+        boolean kanAvslutte = KunneAvsluttesResultat.kanKanAvsluttesManuelt(
+            new KanAvsluttesInput(erUnderOppfolging(aktorId), erIserv, harAktiveTiltaksdeltakelser, erDeltakerIUngdomsprogrammet, erArbeidssoeker, harAap, underKvp)
+        );
 
         LocalDate inaktiveringsDato = maybeArenaOppfolging
                 .map(ArenaOppfolgingTilstand::getInaktiveringsdato)

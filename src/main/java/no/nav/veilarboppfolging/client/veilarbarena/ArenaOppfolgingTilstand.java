@@ -19,14 +19,12 @@ import java.util.Optional;
 public class ArenaOppfolgingTilstand {
     String formidlingsgruppe;
     String servicegruppe;
-    String oppfolgingsenhet;
     LocalDate inaktiveringsdato;
 
     public static ArenaOppfolgingTilstand fraArenaBruker(VeilarbArenaOppfolgingsBruker veilarbArenaOppfolgingsBruker) {
         return new ArenaOppfolgingTilstand(
                 veilarbArenaOppfolgingsBruker.getFormidlingsgruppekode(),
                 veilarbArenaOppfolgingsBruker.getKvalifiseringsgruppekode(),
-                veilarbArenaOppfolgingsBruker.getNavKontor(),
                 Optional.ofNullable(veilarbArenaOppfolgingsBruker.getIservFraDato()).map(ZonedDateTime::toLocalDate).orElse(null)
         );
     }
@@ -35,7 +33,6 @@ public class ArenaOppfolgingTilstand {
         return new ArenaOppfolgingTilstand(
                 lokaleData.getFormidlingsgruppe().name(),
                 lokaleData.getKvalifiseringsgruppe().name(),
-                Optional.ofNullable(lokaleData.getOppfolgingsenhet()).map(Id::get).orElse(null),
                 Optional.ofNullable(lokaleData.getIservFraDato()).orElse(null)
         );
     }
