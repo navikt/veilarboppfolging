@@ -6,7 +6,6 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe;
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
 import no.nav.veilarboppfolging.LocalDatabaseSingleton;
-import no.nav.veilarboppfolging.domain.AvslutningStatusData;
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.*;
 import no.nav.veilarboppfolging.repository.UtmeldingRepository;
 import no.nav.veilarboppfolging.repository.entity.UtmeldingEntity;
@@ -45,7 +44,7 @@ public class IservServiceIntegrationTest {
         DbTestUtils.cleanupTestDb();
 
         when(oppfolgingService.erUnderOppfolging(any(AktorId.class))).thenReturn(true);
-        when(avsluttOppfolgingService.avsluttOppfolging(any(Avregistrering.class)))
+        when(avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(any(Avregistrering.class)))
                 .thenReturn(new KunneAvsluttes(new UtmeldtEtter28Dager(AKTOR_ID), true));
         when(authService.getFnrOrThrow(any())).thenReturn(FNR);
 
@@ -128,7 +127,7 @@ public class IservServiceIntegrationTest {
 
         utmeldingsService.avsluttOppfolgingOgFjernFraUtmeldingsTabell(AKTOR_ID);
 
-        verify(avsluttOppfolgingService).avsluttOppfolging(new UtmeldtEtter28Dager(AKTOR_ID));
+        verify(avsluttOppfolgingService).avsluttOppfolgingHvisKanAvsluttes(new UtmeldtEtter28Dager(AKTOR_ID));
         assertTrue(utmeldingRepository.eksisterendeIservBruker(AKTOR_ID).isEmpty());
     }
 
@@ -161,7 +160,7 @@ public class IservServiceIntegrationTest {
 
         utmeldEtter28Cron.automatiskAvslutteOppfolging();
 
-        verify(avsluttOppfolgingService, never()).avsluttOppfolging(any(Avregistrering.class));
+        verify(avsluttOppfolgingService, never()).avsluttOppfolgingHvisKanAvsluttes(any(Avregistrering.class));
         assertTrue(utmeldingRepository.eksisterendeIservBruker(AKTOR_ID).isEmpty());
     }
     

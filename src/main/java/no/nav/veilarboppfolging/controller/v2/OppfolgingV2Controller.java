@@ -65,14 +65,14 @@ public class OppfolgingV2Controller {
         var navIdent = request.getVeilederId();
         var aktorId = authService.getAktorIdOrThrow(request.getFnr());
         var avregistrering = new ManuellAvregistrering(aktorId, new VeilederRegistrant(navIdent), request.getBegrunnelse());
-        avsluttOppfolgingService.avsluttOppfolging(avregistrering);
+        avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(avregistrering);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @GetMapping("/avslutning-status")
     public AvslutningsStatusDto hentAvslutningStatus(@RequestParam("fnr") Fnr fnr) {
         authService.skalVereInternBruker();
-        return tilDto(oppfolgingService.hentAvslutningstatusForManuellAvslutning(fnr));
+        return tilDto(avsluttOppfolgingService.hentAvslutningstatusForManuellAvslutning(fnr));
     }
 
     @GetMapping("/periode/{uuid}")

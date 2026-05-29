@@ -27,18 +27,16 @@ class OppfolgingControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
-
     @MockitoBean
     private AuthService authService;
-
     @MockitoBean
     private OppfolgingService oppfolgingService;
-
     @MockitoBean
     private KvpService kvpService;
-
     @MockitoBean
     private ManuellStatusService manuellStatusService;
+    @MockitoBean
+    private AvsluttOppfolgingService avsluttOppfolgingService;
 
     @Test
     void oppfolgingsperioder_skal_sjekke_at_bruker_er_systembruker() throws Exception {

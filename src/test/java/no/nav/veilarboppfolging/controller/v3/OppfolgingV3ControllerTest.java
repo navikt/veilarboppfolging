@@ -62,6 +62,8 @@ class OppfolgingV3ControllerTest {
     private ReaktiveringService reaktiveringService;
     @MockitoBean
     private KontaktBrukerService kontaktBrukerService;
+    @MockitoBean
+    private AvsluttOppfolgingService avsluttOppfolgingService;
 
     @BeforeEach
     void setup() throws Exception {
@@ -131,7 +133,7 @@ class OppfolgingV3ControllerTest {
 
     @Test
     void hentAvslutningStatus_skal_returnere_avslutningstatus() throws Exception {
-        when(oppfolgingService.hentAvslutningstatusForManuellAvslutning(TEST_FNR)).thenReturn(
+        when(avsluttOppfolgingService.hentAvslutningstatusForManuellAvslutning(TEST_FNR)).thenReturn(
                 AvslutningStatusData.builder()
                         .kanAvslutte(true)
                         .underOppfolging(true)

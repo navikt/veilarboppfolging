@@ -9,6 +9,7 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.EndringPaaOppfolgingsBruker
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.LocalArenaOppfolging
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ArenaIservKanIkkeReaktiveres
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.KanAvsluttesInput
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.KunneAvsluttes
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
 import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity
@@ -49,7 +50,7 @@ class OppfolgingsbrukerEndretIArenaServiceTest {
 
         oppfolgingsbrukerEndretIArenaService.oppdaterOppfolgingMedStatusFraArena(melding)
 
-        verify(avsluttOppfolgingService, never()).avsluttOppfolging(any())
+        verify(avsluttOppfolgingService, never()).avsluttOppfolgingHvisKanAvsluttes(any())
     }
 
     @Test
@@ -61,7 +62,7 @@ class OppfolgingsbrukerEndretIArenaServiceTest {
 
         oppfolgingsbrukerEndretIArenaService.oppdaterOppfolgingMedStatusFraArena(melding)
 
-        verify(avsluttOppfolgingService, times(1)).avsluttOppfolging(any())
+        verify(avsluttOppfolgingService, times(1)).avsluttOppfolgingHvisKanAvsluttes(any())
     }
 
     @Test
@@ -89,7 +90,7 @@ class OppfolgingsbrukerEndretIArenaServiceTest {
         verify(startOppfolgingService, never())
             .startOppfolgingHvisIkkeAlleredeStartet(any())
         verify(avsluttOppfolgingService, never())
-            .avsluttOppfolging(any())
+            .avsluttOppfolgingHvisKanAvsluttes(any())
     }
 
     @ParameterizedTest
@@ -103,7 +104,7 @@ class OppfolgingsbrukerEndretIArenaServiceTest {
         verify(startOppfolgingService, never())
             .startOppfolgingHvisIkkeAlleredeStartet(any())
         verify(avsluttOppfolgingService, never())
-            .avsluttOppfolging(any())
+            .avsluttOppfolgingHvisKanAvsluttes(any())
     }
 
     @ParameterizedTest
@@ -117,7 +118,7 @@ class OppfolgingsbrukerEndretIArenaServiceTest {
         verify(startOppfolgingService, never())
             .startOppfolgingHvisIkkeAlleredeStartet(any())
         verify(avsluttOppfolgingService, never())
-            .avsluttOppfolging(any())
+            .avsluttOppfolgingHvisKanAvsluttes(any())
     }
 
     private fun meldingFraArena(formidlingsgruppe: Formidlingsgruppe, kvalifiseringsgruppe: Kvalifiseringsgruppe): EndringPaaOppfolgingsBruker {
@@ -151,10 +152,19 @@ class OppfolgingsbrukerEndretIArenaServiceTest {
     }
 
     private fun kanAvsluttes() {
-        `when`(avsluttOppfolgingService.avsluttOppfolging(any()))
+        `when`(avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(any()))
             .thenReturn(KunneAvsluttes(
                 ArenaIservKanIkkeReaktiveres(AKTOR_ID),
                 true,
+                KanAvsluttesInput(
+                    erUnderOppfolging = true,
+                    erIservIArena = false,
+                    harAktiveTiltaksdeltakelser = false,
+                    erDeltakerIUngdomsprogrammet = false,
+                    erArbeidssoeker = false,
+                    harAap = false,
+                    underKvp = false
+                )
             ))
     }
 

@@ -15,14 +15,11 @@ import no.nav.veilarboppfolging.client.tiltakshistorikk.TiltakshistorikkClient;
 import no.nav.veilarboppfolging.client.ungdomsprogram.UngdomsprogramClient;
 import no.nav.veilarboppfolging.client.arbeidssoekerregisteret.ArbeidssoekerregisteretClient;
 import no.nav.veilarboppfolging.client.aap.AapClient;
-import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolgingTilstand;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsStatus;
 import no.nav.veilarboppfolging.controller.response.UnderOppfolgingDTO;
 import no.nav.veilarboppfolging.controller.response.VeilederTilgang;
-import no.nav.veilarboppfolging.domain.AvslutningStatusData;
 import no.nav.veilarboppfolging.domain.Oppfolging;
 import no.nav.veilarboppfolging.domain.OppfolgingStatusData;
-import no.nav.veilarboppfolging.eventsLogger.BigQueryClient;
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService;
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.LocalArenaOppfolging;
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.*;
@@ -31,11 +28,9 @@ import no.nav.veilarboppfolging.repository.entity.*;
 import no.nav.veilarboppfolging.utils.ArenaUtils;
 import no.nav.veilarboppfolging.utils.EnumUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionTemplate;
 
 import static java.util.Optional.empty;
 import static java.util.stream.Collectors.toList;
@@ -54,18 +49,13 @@ public class OppfolgingService {
     private final ArbeidsoppfolgingsKontorService arbeidsoppfolgingsKontorService;
 
     private final TiltakshistorikkClient tiltakshistorikkClient;
-    private final UngdomsprogramClient ungdomsprogramClient;
-    private final ArbeidssoekerregisteretClient arbeidssoekerregisteretClient;
-    private final AapClient aapClient;
 
     private final KvpRepository kvpRepository;
     private final MaalRepository maalRepository;
     private final BrukerOppslagFlereOppfolgingAktorRepository brukerOppslagFlereOppfolgingAktorRepository;
-    private final ArenaYtelserService arenaYtelserService;
 
     @Autowired
     public OppfolgingService(
-            KafkaProducerService kafkaProducerService,
             KvpService kvpService,
             ArenaOppfolgingService arenaOppfolgingService,
             AuthService authService,
@@ -76,15 +66,8 @@ public class OppfolgingService {
             KvpRepository kvpRepository,
             MaalRepository maalRepository,
             BrukerOppslagFlereOppfolgingAktorRepository brukerOppslagFlereOppfolgingAktorRepository,
-            TransactionTemplate transactor,
-            ArenaYtelserService arenaYtelserService,
-            BigQueryClient bigQueryClient,
             ArbeidsoppfolgingsKontorService arbeidsoppfolgingsKontorService,
-            @Value("${app.env.nav-no-url}") String navNoUrl,
-            TiltakshistorikkClient tiltakshistorikkClient,
-            UngdomsprogramClient ungdomsprogramClient,
-            ArbeidssoekerregisteretClient arbeidssoekerregisteretClient,
-            AapClient aapClient) {
+            TiltakshistorikkClient tiltakshistorikkClient) {
         this.kvpService = kvpService;
         this.arenaOppfolgingService = arenaOppfolgingService;
         this.authService = authService;
@@ -94,12 +77,8 @@ public class OppfolgingService {
         this.kvpRepository = kvpRepository;
         this.maalRepository = maalRepository;
         this.brukerOppslagFlereOppfolgingAktorRepository = brukerOppslagFlereOppfolgingAktorRepository;
-        this.arenaYtelserService = arenaYtelserService;
         this.arbeidsoppfolgingsKontorService = arbeidsoppfolgingsKontorService;
         this.tiltakshistorikkClient = tiltakshistorikkClient;
-        this.ungdomsprogramClient = ungdomsprogramClient;
-        this.arbeidssoekerregisteretClient = arbeidssoekerregisteretClient;
-        this.aapClient = aapClient;
     }
 
     @Transactional // TODO: kan denne være read only?
@@ -126,11 +105,6 @@ public class OppfolgingService {
         }
 
         return harFlereAktorIdMedOppfolging;
-    }
-
-    public AvslutningStatusData hentAvslutningstatusForManuellAvslutning(Fnr fnr) {
-        authService.sjekkLesetilgangMedFnr(fnr);
-        return getAvslutningStatusForManuellAvslutning(fnr);
     }
 
     @SneakyThrows
@@ -241,18 +215,6 @@ public class OppfolgingService {
         return tiltakshistorikkClient.harAktiveTiltaksdeltakelser(fnr.get());
     }
 
-    public boolean erDeltakerIUngdomsprogrammet(Fnr fnr) {
-        return ungdomsprogramClient.erDeltakerIUngdomsprogrammet(fnr.get());
-    }
-
-    public boolean erArbeidssoeker(Fnr fnr) {
-        return arbeidssoekerregisteretClient.erArbeidssoeker(fnr.get());
-    }
-
-    public boolean harAap(Fnr fnr) {
-        return aapClient.harAap(fnr.get());
-    }
-
     private Optional<OppfolgingEntity> getOppfolgingStatus(Fnr fnr) {
         AktorId aktorId = authService.getAktorIdOrThrow(fnr);
         authService.sjekkLesetilgangMedAktorId(aktorId);
@@ -322,41 +284,6 @@ public class OppfolgingService {
                         .orElseThrow()
                         .getEnhet()
         );
-    }
-
-    private AvslutningStatusData getAvslutningStatusForManuellAvslutning(Fnr fnr) {
-        AktorId aktorId = authService.getAktorIdOrThrow(fnr);
-
-        Optional<ArenaOppfolgingTilstand> maybeArenaOppfolging = arenaOppfolgingService.hentArenaOppfolgingTilstand(fnr);
-
-        boolean erIserv = maybeArenaOppfolging.map(ao -> erIserv(EnumUtils.valueOf(Formidlingsgruppe.class, ao.getFormidlingsgruppe()))).orElse(false);
-        boolean underOppfolging = getOppfolgingStatusData(fnr).underOppfolging;
-
-        boolean harAktiveTiltaksdeltakelser = harAktiveTiltaksdeltakelser(fnr);
-        boolean erDeltakerIUngdomsprogrammet = erDeltakerIUngdomsprogrammet(fnr);
-        boolean erArbeidssoeker = erArbeidssoeker(fnr);
-        boolean harAap = harAap(fnr);
-        boolean underKvp = kvpService.erUnderKvp(aktorId);
-        boolean kanAvslutte = KunneAvsluttesResultat.kanKanAvsluttesManuelt(
-            new KanAvsluttesInput(erUnderOppfolging(aktorId), erIserv, harAktiveTiltaksdeltakelser, erDeltakerIUngdomsprogrammet, erArbeidssoeker, harAap, underKvp)
-        );
-
-        LocalDate inaktiveringsDato = maybeArenaOppfolging
-                .map(ArenaOppfolgingTilstand::getInaktiveringsdato)
-                .orElse(null);
-
-        return AvslutningStatusData.builder()
-                .kanAvslutte(kanAvslutte)
-                .underOppfolging(underOppfolging)
-                .harYtelser(arenaYtelserService.harPagaendeYtelse(fnr))
-                .underKvp(kvpService.erUnderKvp(aktorId))
-                .inaktiveringsDato(inaktiveringsDato)
-                .erIserv(erIserv)
-                .harAktiveTiltaksdeltakelser(harAktiveTiltaksdeltakelser)
-                .erDeltakerIUngdomsprogrammet(erDeltakerIUngdomsprogrammet)
-                .erArbeidssoeker(erArbeidssoeker)
-                .harAap(harAap)
-                .build();
     }
 
     private List<OppfolgingsperiodeEntity> populerKvpPerioder(List<OppfolgingsperiodeEntity> oppfolgingsPerioder, List<KvpPeriodeEntity> kvpPerioder) {

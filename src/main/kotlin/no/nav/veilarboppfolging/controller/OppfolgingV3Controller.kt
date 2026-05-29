@@ -29,6 +29,7 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.AktiverBrukerManueltSe
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity
 import no.nav.veilarboppfolging.repository.enums.KodeverkBruker
 import no.nav.veilarboppfolging.service.AuthService
+import no.nav.veilarboppfolging.service.AvsluttOppfolgingService
 import no.nav.veilarboppfolging.service.KontaktBrukerService
 import no.nav.veilarboppfolging.service.KvpService
 import no.nav.veilarboppfolging.service.ManuellStatusService
@@ -51,6 +52,7 @@ import org.springframework.web.server.ResponseStatusException
 @RequiredArgsConstructor
 class OppfolgingV3Controller(
     val oppfolgingService: OppfolgingService,
+    val avsluttOppfolgingService: AvsluttOppfolgingService,
     val authService: AuthService,
     val manuellStatusService: ManuellStatusService,
     val kvpService: KvpService,
@@ -95,7 +97,7 @@ class OppfolgingV3Controller(
     @PostMapping("/oppfolging/hent-avslutning-status")
     fun hentAvslutningStatus(@RequestBody oppfolgingRequest: OppfolgingRequest): AvslutningsStatusDto {
         authService.skalVereInternBruker()
-        return DtoMappers.tilDto(oppfolgingService.hentAvslutningstatusForManuellAvslutning(oppfolgingRequest.fnr))
+        return DtoMappers.tilDto(avsluttOppfolgingService.hentAvslutningstatusForManuellAvslutning(oppfolgingRequest.fnr))
     }
 
     @PostMapping("/oppfolging/hent-gjeldende-periode")

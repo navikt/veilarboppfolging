@@ -3,8 +3,6 @@ package no.nav.veilarboppfolging.service
 import lombok.RequiredArgsConstructor
 import no.nav.common.types.identer.EnhetId
 import no.nav.common.types.identer.Fnr
-import no.nav.pto_schema.enums.arena.Formidlingsgruppe
-import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.EndringPaaOppfolgingsBruker
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.LocalArenaOppfolging
@@ -17,7 +15,6 @@ import no.nav.veilarboppfolging.utils.ArenaUtils
 import no.nav.veilarboppfolging.utils.SecureLog.secureLog
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
-import java.util.*
 import kotlin.jvm.optionals.getOrElse
 
 @Service
@@ -78,7 +75,7 @@ class OppfolgingsbrukerEndretIArenaService(
             }
             is BleInaktivertUtenKanReaktiveres -> {
                 val avregistrering = ArenaIservKanIkkeReaktiveres(endringOppfolgingsbruker.aktorId)
-                val kunneAvsluttesResultat = avsluttOppfolgingService.avsluttOppfolging(avregistrering)
+                val kunneAvsluttesResultat = avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(avregistrering)
                 when (kunneAvsluttesResultat) {
                     is KunneAvsluttes -> {
                         secureLog.info(

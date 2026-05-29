@@ -8,6 +8,8 @@ import no.nav.veilarboppfolging.client.aap.AapClient
 import no.nav.veilarboppfolging.client.arbeidssoekerregisteret.ArbeidssoekerregisteretClient
 import no.nav.veilarboppfolging.client.tiltakshistorikk.TiltakshistorikkClient
 import no.nav.veilarboppfolging.client.ungdomsprogram.UngdomsprogramClient
+import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolgingTilstand
+import no.nav.veilarboppfolging.domain.AvslutningStatusData
 import no.nav.veilarboppfolging.eventsLogger.BigQueryClient
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
@@ -24,11 +26,9 @@ import no.nav.veilarboppfolging.utils.OppfolgingsperiodeUtils
 import no.nav.veilarboppfolging.utils.SecureLog.secureLog
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
-import org.springframework.transaction.TransactionStatus
 import org.springframework.transaction.support.TransactionTemplate
 import java.time.ZonedDateTime
 import java.util.*
-import java.util.function.Consumer
 
 @Service
 class AvsluttOppfolgingService(
@@ -42,17 +42,18 @@ class AvsluttOppfolgingService(
     val ungdomsprogramClient: UngdomsprogramClient,
     val aapClient: AapClient,
     val arbeidssoekerregisteretClient: ArbeidssoekerregisteretClient,
+    val arenaYtelserService: ArenaYtelserService,
     val bigQueryClient: BigQueryClient,
     val transactor: TransactionTemplate
 ) {
 
     val log = LoggerFactory.getLogger(this::class.java)
 
-    fun avsluttOppfolging(avregistrering: Avregistrering): KunneAvsluttesResultat {
+    fun avsluttOppfolgingHvisKanAvsluttes(avregistrering: Avregistrering): KunneAvsluttesResultat {
         val aktorId = avregistrering.aktorId
         val fnr = authService.getFnrOrThrow(aktorId)
 
-        val oppfolging: OppfolgingEntity? = oppfolgingsStatusRepository.hentOppfolging(aktorId).orElse(null)
+        val oppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId).orElse(null)
 
         if (authService.erInternBruker()) {
             authService.sjekkSkriveTilgangMedFnr(fnr)
@@ -63,37 +64,80 @@ class AvsluttOppfolgingService(
                 authService.innloggetBrukerIdent,
                 fnr.get()
             )
+        }
+        else if (authService.erEksternBruker()) {
+            throw IllegalStateException("Vi støtter ikke at eksternbrukere kan avslutte oppfølging")
         } else {
             secureLog.info("Forsøker å avslutte oppfølging for fnr: {} som systembruker", fnr.get())
         }
 
         val kanAvslutte: KunneAvsluttesResultat = samleDataSynkrontOgSjekkOmOppfolgingKanAvsluttes(avregistrering, fnr, oppfolging)
-        if (kanAvslutte is KunneAvsluttes) {
-            val veilederId = avregistrering.avsluttetAv.getIdent()
-            val begrunnelse = avregistrering.begrunnelse
-            secureLog.info(
-                "Avslutting av oppfølging utført av: {}, begrunnelse: {}, tilstand i Arena for aktorid {}",
-                veilederId,
-                begrunnelse,
-                aktorId
-            )
-            avsluttOppfolgingForBruker(kanAvslutte)
-        } else {
-            log.warn(
-                "Oppfølging ble ikke avsluttet likevel, avregistreringstype {}: begrunnelse {}",
-                avregistrering.getAvregistreringsType(),
-                (kanAvslutte as KunneIkkeAvsluttes).begrunnelse
-            )
+        when (kanAvslutte) {
+            is KunneAvsluttes -> {
+                secureLog.info(
+                    "Avslutting av oppfølging utført av: {}, begrunnelse: {}, tilstand i Arena for aktorid {}",
+                    avregistrering.avsluttetAv.getIdent(),
+                    avregistrering.begrunnelse,
+                    avregistrering.aktorId
+                )
+                avsluttOppfolgingForBruker(kanAvslutte)
+            }
+            is KunneIkkeAvsluttes -> {
+                log.warn(
+                    "Oppfølging ble ikke avsluttet likevel, avregistreringstype {}: begrunnelse {}",
+                    avregistrering.getAvregistreringsType(),
+                    kanAvslutte.begrunnelse
+                )
+            }
         }
         return kanAvslutte
     }
 
-    private fun avsluttOppfolgingForBruker(kanAvsluttesResultat: KunneAvsluttes) {
+    fun hentAvslutningstatusForManuellAvslutning(fnr: Fnr): AvslutningStatusData {
+        authService.sjekkLesetilgangMedFnr(fnr)
+        return getAvslutningStatusForManuellAvslutning(fnr)
+    }
+
+    private fun getAvslutningStatusForManuellAvslutning(fnr: Fnr): AvslutningStatusData {
+        val aktorId = authService.getAktorIdOrThrow(fnr)
+        val maybeArenaOppfolging = arenaOppfolgingService.hentArenaOppfolgingTilstand(fnr)
+        val inaktiveringsDato = maybeArenaOppfolging
+            .map { obj -> obj.getInaktiveringsdato() }
+            .orElse(null)
+
+        val oppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId).orElse(null)
+
+        val kanAvsluttes = samleDataSynkrontOgSjekkOmOppfolgingKanAvsluttes(
+            ManuellAvregistrering(
+                aktorId,
+                VeilederRegistrant(NavIdent("12321")),
+                "fordi"
+            ), fnr, oppfolging
+        )
+
+        return AvslutningStatusData.builder()
+            .kanAvslutte(kanAvsluttes is KunneAvsluttes)
+            .underOppfolging(kanAvsluttes.kanAvsluttesInput.erUnderOppfolging)
+            .harYtelser(arenaYtelserService.harPagaendeYtelse(fnr))
+            .underKvp(kanAvsluttes.kanAvsluttesInput.underKvp)
+            .inaktiveringsDato(inaktiveringsDato)
+            .erIserv(kanAvsluttes.kanAvsluttesInput.erIservIArena)
+            .harAktiveTiltaksdeltakelser(kanAvsluttes.kanAvsluttesInput.harAktiveTiltaksdeltakelser)
+            .erDeltakerIUngdomsprogrammet(kanAvsluttes.kanAvsluttesInput.erDeltakerIUngdomsprogrammet)
+            .erArbeidssoeker(kanAvsluttes.kanAvsluttesInput.erArbeidssoeker)
+            .harAap(kanAvsluttes.kanAvsluttesInput.harAap)
+            .build()
+    }
+
+    private fun avsluttOppfolgingForBruker(kanAvsluttesResultat: AvslutningsInput) {
         val avregistrering = kanAvsluttesResultat.avregistrering
         val fnr = authService.getFnrOrThrow(avregistrering.aktorId)
-        val aktivIArena = !kanAvsluttesResultat.erIserv
+        val aktivIArena = when (kanAvsluttesResultat) {
+            is KunneAvsluttes -> !kanAvsluttesResultat.erIserv
+            is KunneAvsluttesOverstyring -> null
+        }
         val aktorId = avregistrering.aktorId
-        transactor.executeWithoutResult(Consumer { ignored: TransactionStatus? ->
+        transactor.executeWithoutResult { _ ->
             oppfolgingsPeriodeRepository.avsluttSistePeriodeOgAvsluttOppfolging(
                 aktorId,
                 avregistrering.avsluttetAv.getIdent(),
@@ -112,15 +156,7 @@ class AvsluttOppfolgingService(
 
             // oppfolgingsperiodeEndretService.oppdaterSisteOppfolgingsperiodeV2MedAvsluttetStatus(sistePeriode); // TODO I en overgangsperiode lytter vi heller på tombstone fra ao-oppfolgingskontor
             bigQueryClient.loggAvsluttOppfolgingsperiode(sistePeriode.getUuid(), avregistrering, aktivIArena)
-        })
-    }
-
-    fun adminAvsluttOppfolgingForBruker(avregistrering: AdminAvregistrering) {
-        val formidlingsgruppe = oppfolgingsStatusRepository.hentOppfolging(avregistrering.aktorId)
-            .flatMap { it.localArenaOppfolging }
-            .map { it.formidlingsgruppe }.orElse(null)
-        val erIservIArena = Formidlingsgruppe.ISERV == formidlingsgruppe
-        avsluttOppfolgingForBruker(KunneAvsluttes(avregistrering, erIservIArena))
+        }
     }
 
     private fun samleDataSynkrontOgSjekkOmOppfolgingKanAvsluttes(
@@ -225,6 +261,10 @@ class AvsluttOppfolgingService(
             )
         )
         bigQueryClient.loggAvsluttOppfolgingsperiode(oppfolgingsperiodeUUID!!, avregistrering, null)
+    }
+
+    fun adminAvsluttOppfolgingForBruker(avregistrering: AdminAvregistrering) {
+        avsluttOppfolgingForBruker(KunneAvsluttesOverstyring(avregistrering))
     }
 
     fun harAktiveTiltaksdeltakelser(fnr: Fnr) = tiltakshistorikkClient.harAktiveTiltaksdeltakelser(fnr.get())

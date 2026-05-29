@@ -39,6 +39,7 @@ class AvsluttOppfolgingServiceTest {
     private val ungdomsprogramClient: UngdomsprogramClient = Mockito.mock(UngdomsprogramClient::class.java)
     private val aapClient: AapClient = Mockito.mock(AapClient::class.java)
     private val arbeidssokerRegisterClient: ArbeidssoekerregisteretClient = Mockito.mock(ArbeidssoekerregisteretClient::class.java)
+    private val arenaYtelserService: ArenaYtelserService = Mockito.mock(ArenaYtelserService::class.java)
     private val bigQueryClient: BigQueryClient = Mockito.mock(BigQueryClient::class.java)
     private val transactionTemplate: TransactionTemplate = Mockito.mock(TransactionTemplate::class.java)
 
@@ -50,6 +51,7 @@ class AvsluttOppfolgingServiceTest {
         ungdomsprogramClient,
         aapClient = aapClient,
         arbeidssoekerregisteretClient = arbeidssokerRegisterClient,
+        arenaYtelserService = arenaYtelserService,
         bigQueryClient = bigQueryClient,
         transactor = transactionTemplate,
     )
@@ -89,7 +91,7 @@ class AvsluttOppfolgingServiceTest {
 
         val brukverV2 = arenaIservAvregistrering()
 
-        val result = avsluttOppfolgingService.avsluttOppfolging(brukverV2)
+        val result = avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(brukverV2)
 
         verify(startOppfolgingService, never()).startOppfolgingHvisIkkeAlleredeStartet(any())
         assertInstanceOf<KunneAvsluttes>(result)
@@ -100,14 +102,14 @@ class AvsluttOppfolgingServiceTest {
         brukerErUnderOppfolgingLokalt()
         kanIkkeReaktiveres()
         `when`(kvpService.erUnderKvp(TEST_AKTOR_ID)).thenReturn(true)
-        `when`(oppfolgingService.harAktiveTiltaksdeltakelser(TEST_FNR)).thenReturn(false)
-        `when`(oppfolgingService.erDeltakerIUngdomsprogrammet(TEST_FNR)).thenReturn(false)
-        `when`(oppfolgingService.erArbeidssoeker(TEST_FNR)).thenReturn(false)
-        `when`(oppfolgingService.harAap(TEST_FNR)).thenReturn(false)
+        `when`(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(TEST_FNR.get())).thenReturn(false)
+        `when`(ungdomsprogramClient.erDeltakerIUngdomsprogrammet(TEST_FNR.get())).thenReturn(false)
+        `when`(arbeidssokerRegisterClient.erArbeidssoeker(TEST_FNR.get())).thenReturn(false)
+        `when`(aapClient.harAap(TEST_FNR.get())).thenReturn(false)
 
         val brukverV2 = arenaIservAvregistrering()
 
-        val result = avsluttOppfolgingService.avsluttOppfolging(brukverV2)
+        val result = avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(brukverV2)
 
         verify(startOppfolgingService, never()).startOppfolgingHvisIkkeAlleredeStartet(
             any(OppfolgingsRegistrering::class.java)
@@ -127,7 +129,7 @@ class AvsluttOppfolgingServiceTest {
 
         val brukverV2 = arenaIservAvregistrering()
 
-        val result = avsluttOppfolgingService.avsluttOppfolging(brukverV2)
+        val result = avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(brukverV2)
 
         verify(startOppfolgingService, never()).startOppfolgingHvisIkkeAlleredeStartet(any())
         assertInstanceOf<KunneIkkeAvsluttes>(result)
@@ -144,7 +146,7 @@ class AvsluttOppfolgingServiceTest {
         `when`(aapClient.harAap(TEST_FNR.get())).thenReturn(false)
         val brukverV2 = arenaIservAvregistrering()
 
-        val result = avsluttOppfolgingService.avsluttOppfolging(brukverV2)
+        val result = avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(brukverV2)
 
         assertInstanceOf<KunneIkkeAvsluttes>(result)
     }
@@ -159,7 +161,7 @@ class AvsluttOppfolgingServiceTest {
 
         val brukverV2 = arenaIservAvregistrering()
 
-        val result = avsluttOppfolgingService.avsluttOppfolging(brukverV2)
+        val result = avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(brukverV2)
 
         verify(startOppfolgingService, never()).startOppfolgingHvisIkkeAlleredeStartet(any())
         assertInstanceOf<KunneIkkeAvsluttes>(result)

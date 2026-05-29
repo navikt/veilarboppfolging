@@ -74,7 +74,6 @@ import no.nav.veilarboppfolging.service.StartOppfolgingService
 import no.nav.veilarboppfolging.test.DbTestUtils
 import no.nav.veilarboppfolging.tokenClient.ErrorMappedAzureAdMachineToMachineTokenClient
 import no.nav.veilarboppfolging.tokenClient.ErrorMappedAzureAdOnBehalfOfTokenClient
-import org.apache.kafka.clients.producer.KafkaProducer
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.mockito.ArgumentMatchers.anyString
@@ -280,7 +279,7 @@ open class IntegrationTest {
     fun hentOppfolgingsperioder(fnr: Fnr) = oppfolgingController.hentOppfolgingsperioder(fnr)
 
     fun avsluttOppfolgingManueltSomVeileder(aktorId: AktorId, veileder: NavIdent = NavIdent("veileder"), begrunnelse: String = "Begrunnelse") {
-        avsluttOppfolgingService.avsluttOppfolging(
+        avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(
             ManuellAvregistrering(aktorId, VeilederRegistrant(veileder), begrunnelse),
         )
     }
