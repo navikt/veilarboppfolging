@@ -8,8 +8,6 @@ import no.nav.veilarboppfolging.client.aap.AapClient
 import no.nav.veilarboppfolging.client.arbeidssoekerregisteret.ArbeidssoekerregisteretClient
 import no.nav.veilarboppfolging.client.tiltakshistorikk.TiltakshistorikkClient
 import no.nav.veilarboppfolging.client.ungdomsprogram.UngdomsprogramClient
-import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolgingTilstand
-import no.nav.veilarboppfolging.domain.OppfolgingStatusData
 import no.nav.veilarboppfolging.eventsLogger.BigQueryClient
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
@@ -20,7 +18,6 @@ import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
 import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity
-import no.nav.veilarboppfolging.utils.ArenaUtils
 import no.nav.veilarboppfolging.utils.DtoMappers
 import no.nav.veilarboppfolging.utils.EnumUtils
 import no.nav.veilarboppfolging.utils.OppfolgingsperiodeUtils
@@ -29,7 +26,8 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.TransactionStatus
 import org.springframework.transaction.support.TransactionTemplate
-import java.util.Optional
+import java.time.ZonedDateTime
+import java.util.*
 import java.util.function.Consumer
 
 @Service
@@ -50,7 +48,7 @@ class AvsluttOppfolgingService(
 
     val log = LoggerFactory.getLogger(this::class.java)
 
-    public fun avsluttOppfolging(avregistrering: Avregistrering): KunneAvsluttesResultat {
+    fun avsluttOppfolging(avregistrering: Avregistrering): KunneAvsluttesResultat {
         val aktorId = avregistrering.aktorId
         val fnr = authService.getFnrOrThrow(aktorId)
 
@@ -69,7 +67,7 @@ class AvsluttOppfolgingService(
             secureLog.info("Forsøker å avslutte oppfølging for fnr: {} som systembruker", fnr.get())
         }
 
-        val kanAvslutte: KunneAvsluttesResultat = kanAvslutteOppfolging(avregistrering, fnr, oppfolging)
+        val kanAvslutte: KunneAvsluttesResultat = samleDataSynkrontOgSjekkOmOppfolgingKanAvsluttes(avregistrering, fnr, oppfolging)
         if (kanAvslutte is KunneAvsluttes) {
             val veilederId = avregistrering.avsluttetAv.getIdent()
             val begrunnelse = avregistrering.begrunnelse
@@ -117,18 +115,7 @@ class AvsluttOppfolgingService(
         })
     }
 
-    fun adminForceAvsluttOppfolgingForBruker(aktorId: AktorId, veilederId: String, begrunnelse: String) {
-        adminAvsluttOppfolgingForBruker(
-            AdminAvregistrering(
-                aktorId,
-                VeilederRegistrant(NavIdent(veilederId)),
-                begrunnelse,
-                null
-            )
-        )
-    }
-
-    private fun adminAvsluttOppfolgingForBruker(avregistrering: AdminAvregistrering) {
+    fun adminAvsluttOppfolgingForBruker(avregistrering: AdminAvregistrering) {
         val formidlingsgruppe = oppfolgingsStatusRepository.hentOppfolging(avregistrering.aktorId)
             .flatMap { it.localArenaOppfolging }
             .map { it.formidlingsgruppe }.orElse(null)
@@ -136,52 +123,7 @@ class AvsluttOppfolgingService(
         avsluttOppfolgingForBruker(KunneAvsluttes(avregistrering, erIservIArena))
     }
 
-    fun kanAvsluttePgaBleIserv(
-        fnr: Fnr,
-        aktorId: AktorId,
-        oppfolging: Optional<OppfolgingEntity>,
-        erInaktivIArena: Boolean,
-        kanEnkeltReaktiveres: Boolean
-    ): OppfolgingService.KanAvslutteMedBegrunnelse {
-        val harAktiveTiltaksdeltakelser = harAktiveTiltaksdeltakelser(fnr)
-        val erDeltakerIUngdomsprogrammet = erDeltakerIUngdomsprogrammet(fnr)
-        val erArbeidssoeker = erArbeidssoeker(fnr)
-        val harAap = harAap(fnr)
-        val underKvp = kvpService.erUnderKvp(aktorId)
-
-        val kanIkkeAvsluttesBegrunnelse = KunneAvsluttesResultat.kanAvsluttesPgaIservIArena(
-            KanAvsluttesInput(
-                erUnderOppfolging = oppfolging.map { it.isUnderOppfolging }.orElse(false) ?: false,
-                erIservIArena = erInaktivIArena,
-                harAktiveTiltaksdeltakelser = harAktiveTiltaksdeltakelser,
-                erDeltakerIUngdomsprogrammet = erDeltakerIUngdomsprogrammet,
-                erArbeidssoeker = erArbeidssoeker,
-                harAap = harAap,
-                underKvp = underKvp,
-            ),
-            kanReaktiveres = kanEnkeltReaktiveres
-        )
-
-        secureLog.info(
-            "Status for automatisk avslutting av oppfølging. aktorId={} kanEnkeltReaktiveres={} erUnderKvp={} harAktiveTiltaksdeltakelser={} erDeltakerIUngdomsprogrammet={} erArbeidssoeker={} harAap={} kanAvsluttes={}",
-            aktorId,
-            kanEnkeltReaktiveres,
-            underKvp,
-            harAktiveTiltaksdeltakelser,
-            erDeltakerIUngdomsprogrammet,
-            erArbeidssoeker,
-            harAap,
-            kanIkkeAvsluttesBegrunnelse
-        )
-
-        return when (kanIkkeAvsluttesBegrunnelse) {
-            null -> OppfolgingService.KanAvslutteMedBegrunnelse(true, erInaktivIArena, null)
-            else -> OppfolgingService.KanAvslutteMedBegrunnelse(false, erInaktivIArena, kanIkkeAvsluttesBegrunnelse)
-        }
-    }
-
-
-    private fun kanAvslutteOppfolging(
+    private fun samleDataSynkrontOgSjekkOmOppfolgingKanAvsluttes(
         avregistrering: Avregistrering,
         fnr: Fnr,
         oppfolging: OppfolgingEntity?
@@ -213,6 +155,76 @@ class AvsluttOppfolgingService(
                 underKvp = underKvp
             )
         )
+    }
+
+    fun adminAvsluttSpesifikkOppfolgingsperiode(
+        aktorId: AktorId,
+        veilederId: String,
+        begrunnelse: String,
+        uuid: String?
+    ) {
+        if (uuid == null) {
+            log.info("oppfolgingsperiodeUUID er null")
+            return
+        }
+
+        try {
+            val oppfolgingsperiodeUUID = UUID.fromString(uuid)
+            adminAvsluttValgtOppfolgingsperiode(
+                AdminAvregistrering(
+                    aktorId,
+                    VeilederRegistrant(NavIdent(veilederId)),
+                    begrunnelse,
+                    oppfolgingsperiodeUUID
+                )
+            )
+        } catch (e: IllegalArgumentException) {
+            log.warn("Invalid UUID format for oppfolgingsperiodeUUID: {}", uuid, e)
+        }
+    }
+
+    private fun adminAvsluttValgtOppfolgingsperiode(avregistrering: AdminAvregistrering) {
+        val oppfolgingsperiodeUUID = avregistrering.oppfolgingsperiodeUUID
+        val gjeldendePerioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(avregistrering.aktorId)
+            .filter { p -> p.sluttDato == null }
+        val sisteGjeldendePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(gjeldendePerioder)
+        val valgtGjeldendePeriode = gjeldendePerioder.firstOrNull { p -> p.uuid == oppfolgingsperiodeUUID }
+
+        if (valgtGjeldendePeriode == null) {
+            log.warn(
+                "Fant ikke oppfølgingsperiode med UUID: {}. (eller den er allerede avsluttet)",
+                oppfolgingsperiodeUUID
+            )
+            return
+        }
+
+        val erSisteGjeldendePeriode = valgtGjeldendePeriode.uuid == sisteGjeldendePeriode.uuid
+        val erEnesteGjeldendePeriode = gjeldendePerioder.size == 1
+
+        if (erSisteGjeldendePeriode && erEnesteGjeldendePeriode) {
+            log.info("Valgt oppfølgingsperiode er siste og eneste. Avslutter oppfølging.")
+            adminAvsluttOppfolgingForBruker(avregistrering)
+            return
+        }
+
+        val sluttDato = if (erSisteGjeldendePeriode) ZonedDateTime.now() else sisteGjeldendePeriode.startDato
+        val avsluttetOppfolgingsperiode = oppfolgingsPeriodeRepository.avsluttOppfolgingsperiode(
+            oppfolgingsperiodeUUID,
+            avregistrering.avsluttetAv.getIdent(),
+            avregistrering.begrunnelse,
+            sluttDato
+        )
+
+        log.info(
+            "Oppfølgingsperiode med UUID: {} avsluttet for bruker - publiserer endringer på oppfølgingsperiode-topics.",
+            oppfolgingsperiodeUUID
+        )
+        kafkaProducerService.publiserValgtOppfolgingsperiode(
+            DtoMappers.tilOppfolgingsperiodeDTO(
+                avsluttetOppfolgingsperiode
+            )
+        )
+        bigQueryClient.loggAvsluttOppfolgingsperiode(oppfolgingsperiodeUUID!!, avregistrering, null)
     }
 
     fun harAktiveTiltaksdeltakelser(fnr: Fnr) = tiltakshistorikkClient.harAktiveTiltaksdeltakelser(fnr.get())

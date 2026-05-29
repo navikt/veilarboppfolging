@@ -13,20 +13,20 @@ import no.nav.veilarboppfolging.domain.AvsluttOppfolgingsperiodePayload;
 import no.nav.veilarboppfolging.domain.AvsluttResultat;
 import no.nav.veilarboppfolging.domain.RepubliserOppfolgingsperioderRequest;
 import no.nav.veilarboppfolging.domain.AvsluttPayload;
+import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant;
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AdminAvregistrering;
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
 import no.nav.veilarboppfolging.repository.VeilederTilordningerRepository;
 import no.nav.veilarboppfolging.repository.entity.ManuellStatusEntity;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
 import no.nav.veilarboppfolging.repository.entity.VeilederTilordningEntity;
-import no.nav.veilarboppfolging.service.AuthService;
-import no.nav.veilarboppfolging.service.KafkaRepubliseringService;
-import no.nav.veilarboppfolging.service.ManuellStatusService;
-import no.nav.veilarboppfolging.service.OppfolgingService;
+import no.nav.veilarboppfolging.service.*;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Slf4j
 @RestController
@@ -42,6 +42,7 @@ public class AdminController {
     private final ManuellStatusService manuellStatusService;
     private final OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
     private final OppfolgingService oppfolgingService;
+    private final AvsluttOppfolgingService avsluttOppfolgingService;
 
     @PostMapping("/republiser/oppfolgingsperioder")
     public String republiserOppfolgingsperioder(@RequestBody(required = false) RepubliserOppfolgingsperioderRequest request) {
@@ -100,7 +101,14 @@ public class AdminController {
                 .stream()
                 .map(aktorId -> {
                     try {
-                        oppfolgingService.adminForceAvsluttOppfolgingForBruker(AktorId.of(aktorId), innloggetBruker, brukereSomSkalAvsluttes.getBegrunnelse());
+                        avsluttOppfolgingService.adminAvsluttOppfolgingForBruker(
+                                new AdminAvregistrering(
+                                        AktorId.of(aktorId),
+                                        new VeilederRegistrant(new NavIdent(innloggetBruker)),
+                                        brukereSomSkalAvsluttes.getBegrunnelse(),
+                                        null
+                                )
+                        );
                         return true;
                     } catch (Exception e) {
                         log.warn("Kunne ikke avslutte oppfølging: {}", e.getMessage());
@@ -123,7 +131,7 @@ public class AdminController {
         var innloggetBruker = authService.getInnloggetVeilederIdent();
 
         try {
-            oppfolgingService.adminAvsluttSpesifikkOppfolgingsperiode(
+            avsluttOppfolgingService.adminAvsluttSpesifikkOppfolgingsperiode(
                     AktorId.of(oppfolgingsperiodeSomSkalAvsluttes.getAktorId()),
                     innloggetBruker,
                     oppfolgingsperiodeSomSkalAvsluttes.getBegrunnelse(),
