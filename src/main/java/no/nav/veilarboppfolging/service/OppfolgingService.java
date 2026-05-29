@@ -3,15 +3,11 @@ package no.nav.veilarboppfolging.service;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
-import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.Id;
-import no.nav.common.types.identer.NavIdent;
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe;
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe;
 import no.nav.veilarboppfolging.client.digdir_krr.KRRData;
@@ -27,17 +23,13 @@ import no.nav.veilarboppfolging.domain.AvslutningStatusData;
 import no.nav.veilarboppfolging.domain.Oppfolging;
 import no.nav.veilarboppfolging.domain.OppfolgingStatusData;
 import no.nav.veilarboppfolging.eventsLogger.BigQueryClient;
-import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant;
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService;
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.LocalArenaOppfolging;
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.*;
-import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.hendelser.OppfolgingsAvsluttetHendelseDto;
 import no.nav.veilarboppfolging.repository.*;
 import no.nav.veilarboppfolging.repository.entity.*;
 import no.nav.veilarboppfolging.utils.ArenaUtils;
-import no.nav.veilarboppfolging.utils.DtoMappers;
 import no.nav.veilarboppfolging.utils.EnumUtils;
-import no.nav.veilarboppfolging.utils.OppfolgingsperiodeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
@@ -45,17 +37,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import static java.time.ZonedDateTime.now;
 import static java.util.Optional.empty;
 import static java.util.stream.Collectors.toList;
 import static no.nav.veilarboppfolging.utils.ArenaUtils.erIserv;
-import static no.nav.veilarboppfolging.utils.SecureLog.secureLog;
 
 @Slf4j
 @Service
 public class OppfolgingService {
 
-    private final KafkaProducerService kafkaProducerService;
     private final KvpService kvpService;
     private final ArenaOppfolgingService arenaOppfolgingService;
     private final AuthService authService;
@@ -72,9 +61,7 @@ public class OppfolgingService {
     private final KvpRepository kvpRepository;
     private final MaalRepository maalRepository;
     private final BrukerOppslagFlereOppfolgingAktorRepository brukerOppslagFlereOppfolgingAktorRepository;
-    private final TransactionTemplate transactor;
     private final ArenaYtelserService arenaYtelserService;
-    private final BigQueryClient bigQueryClient;
 
     @Autowired
     public OppfolgingService(
@@ -98,7 +85,6 @@ public class OppfolgingService {
             UngdomsprogramClient ungdomsprogramClient,
             ArbeidssoekerregisteretClient arbeidssoekerregisteretClient,
             AapClient aapClient) {
-        this.kafkaProducerService = kafkaProducerService;
         this.kvpService = kvpService;
         this.arenaOppfolgingService = arenaOppfolgingService;
         this.authService = authService;
@@ -108,9 +94,7 @@ public class OppfolgingService {
         this.kvpRepository = kvpRepository;
         this.maalRepository = maalRepository;
         this.brukerOppslagFlereOppfolgingAktorRepository = brukerOppslagFlereOppfolgingAktorRepository;
-        this.transactor = transactor;
         this.arenaYtelserService = arenaYtelserService;
-        this.bigQueryClient = bigQueryClient;
         this.arbeidsoppfolgingsKontorService = arbeidsoppfolgingsKontorService;
         this.tiltakshistorikkClient = tiltakshistorikkClient;
         this.ungdomsprogramClient = ungdomsprogramClient;
