@@ -149,58 +149,6 @@ public class OppfolgingService {
         return getAvslutningStatusForManuellAvslutning(fnr);
     }
 
-    private KunneAvsluttesResultat kanAvslutteOppfolging(Avregistrering avregistrering, Fnr fnr, Optional<OppfolgingEntity> oppfolging) {
-        ArenaOppfolgingTilstand arenaOppfolgingTilstand = arenaOppfolgingService.hentArenaOppfolgingTilstand(fnr)
-                .orElseThrow(() -> new RuntimeException("Feilet under henting av areana-oppfolgingsstatus (db) med fallback til veilarbarena /oppfolgingsbruker"));
-        boolean erIserv = erIserv(EnumUtils.valueOf(Formidlingsgruppe.class, arenaOppfolgingTilstand.getFormidlingsgruppe()));
-        boolean harAktiveTiltaksdeltakelser = harAktiveTiltaksdeltakelser(fnr);
-        boolean erDeltakerIUngdomsprogrammet = erDeltakerIUngdomsprogrammet(fnr);
-        boolean erArbeidssoeker = erArbeidssoeker(fnr);
-        boolean harAap = harAap(fnr);
-        boolean underKvp = kvpService.erUnderKvp(avregistrering.getAktorId());
-        return KunneAvsluttesResultat.kanAvsluttes(
-                avregistrering,
-                new KanAvsluttesInput(
-                    oppfolging.map(OppfolgingEntity::isUnderOppfolging).orElse(false),
-                    erIserv,
-                    harAktiveTiltaksdeltakelser,
-                    erDeltakerIUngdomsprogrammet,
-                    erArbeidssoeker,
-                    harAap,
-                    underKvp
-                )
-        );
-    }
-
-    @SneakyThrows
-    private KunneAvsluttesResultat avsluttOppfolging(Avregistrering avregistrering) {
-        AktorId aktorId = avregistrering.getAktorId();
-        Fnr fnr = authService.getFnrOrThrow(aktorId);
-
-        var oppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId);
-
-        if (authService.erInternBruker()) {
-            authService.sjekkSkriveTilgangMedFnr(fnr);
-            oppfolging
-                    .map(OppfolgingEntity::getOppfolgingsEnhet)
-                    .ifPresent((enhet) -> authService.sjekkTilgangTilEnhet(enhet.get()));
-            secureLog.info("Veileder: {} forsøker å avslutte oppfølging for fnr: {}", authService.getInnloggetBrukerIdent(), fnr.get());
-        } else {
-            secureLog.info("Forsøker å avslutte oppfølging for fnr: {} som systembruker", fnr.get());
-        }
-
-        var kanAvslutte = kanAvslutteOppfolging(avregistrering, fnr, oppfolging);
-        if (kanAvslutte instanceof KunneAvsluttes kunneAvsluttesResultat) {
-            var veilederId = avregistrering.getAvsluttetAv().getIdent();
-            var begrunnelse = avregistrering.getBegrunnelse();
-            secureLog.info("Avslutting av oppfølging utført av: {}, begrunnelse: {}, tilstand i Arena for aktorid {}", veilederId, begrunnelse, aktorId);
-            avsluttOppfolgingForBruker(kunneAvsluttesResultat);
-        } else {
-            log.warn("Oppfølging ble ikke avsluttet likevel, avregistreringstype {}: begrunnelse {}",avregistrering.getAvregistreringsType() , ((KunneIkkeAvsluttes) kanAvslutte).getBegrunnelse());
-        }
-        return kanAvslutte;
-    }
-
     @SneakyThrows
     public VeilederTilgang hentVeilederTilgang(Fnr fnr) {
         authService.sjekkLesetilgangMedFnr(fnr);
@@ -305,32 +253,6 @@ public class OppfolgingService {
         boolean kanAvslutte;
         boolean erIserv;
         String begrunnelse;
-    }
-    public static KanAvslutteMedBegrunnelse kanAvslutteOppfolging(
-            AktorId aktorId,
-            AvregistreringsType avregistreringsType,
-            boolean erUnderOppfolging,
-            boolean erIservIArena,
-            boolean harAktiveTiltaksdeltakelser,
-            boolean erDeltakerIUngdomsprogrammet,
-            boolean erArbeidssoeker,
-            boolean harAap,
-            boolean underKvp
-    ) {
-        secureLog.info("Kan oppfolging avsluttes for aktorid {}?, oppfolging.isUnderOppfolging(): {}, erIservIArena(): {}, underKvp(): {}, harAktiveTiltaksdeltakelser(): {}, erDeltakerIUngdomsprogrammet(): {}, erArbeidssoeker(): {}, harAap(): {}",
-                aktorId, erUnderOppfolging, erIservIArena, underKvp, harAktiveTiltaksdeltakelser, erDeltakerIUngdomsprogrammet, erArbeidssoeker, harAap);
-
-        var manuellAvslutning = avregistreringsType.erManuellAvregistrering();
-
-        if (!erUnderOppfolging) return new KanAvslutteMedBegrunnelse(false, erIservIArena, "bruker var ikke under oppfølging");
-        if (!manuellAvslutning && !erIservIArena) return new KanAvslutteMedBegrunnelse(false, erIservIArena, "bruker var ikke inaktivert i Arena ved forsøk på automatisk avslutning");
-        if (underKvp) return new KanAvslutteMedBegrunnelse(false, erIservIArena, "bruker var under kvp");
-        if (harAktiveTiltaksdeltakelser) return new KanAvslutteMedBegrunnelse(false, erIservIArena, "bruker hadde aktive tiltaksdeltakelser");
-        if (erDeltakerIUngdomsprogrammet) return new KanAvslutteMedBegrunnelse(false, erIservIArena, "bruker er deltaker i ungdomsprogrammet");
-        if (erArbeidssoeker) return new KanAvslutteMedBegrunnelse(false, erIservIArena, "bruker er registrert som arbeidssøker");
-        if (harAap) return new KanAvslutteMedBegrunnelse(false, erIservIArena, "bruker har AAP");
-
-        return new KanAvslutteMedBegrunnelse(true, erIservIArena, null);
     }
 
     public void adminForceAvsluttOppfolgingForBruker(AktorId aktorId, String veilederId, String begrunnelse) {
