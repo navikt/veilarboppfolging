@@ -10,7 +10,6 @@ import static java.util.Arrays.asList;
 
 public class ArenaUtils {
 
-    private static final Formidlingsgruppe ARBS =  Formidlingsgruppe.ARBS;
     private static final Formidlingsgruppe ISERV = Formidlingsgruppe.ISERV;
     private static final Formidlingsgruppe IKKE_ARBEIDSSOKER = Formidlingsgruppe.IARBS;
 
