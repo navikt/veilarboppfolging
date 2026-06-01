@@ -34,7 +34,6 @@ public class KafkaConsumerService {
     @Autowired
     public KafkaConsumerService(
             AuthService authService,
-            @Lazy KvpService kvpService,
             @Lazy UtmeldingsService utmeldingsService,
             @Lazy OppfolgingsbrukerEndretIArenaService oppfolgingsbrukerEndretIArenaService,
             AktorOppslagClient aktorOppslagClient,

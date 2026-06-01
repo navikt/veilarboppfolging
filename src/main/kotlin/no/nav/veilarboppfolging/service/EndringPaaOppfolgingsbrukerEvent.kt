@@ -56,10 +56,6 @@ class BleInaktivertMedKanReaktiveres : OppfolgingsbrukerEndretEvent {
     override fun loggMessage(): String = "Bruker ble inaktivert, kan reaktiveres"
 }
 
-class KanIkkeAvsluttes(val begrunnelse: String) : OppfolgingsbrukerEndretEvent {
-    override fun loggMessage(): String = "Bruker kunne ikke avsluttes, første hindring er: $begrunnelse"
-}
-
 class IrrelevantEndring : OppfolgingsbrukerEndretEvent {
     override fun loggMessage(): String = "Irrelevant endring – gjør ingenting"
 }

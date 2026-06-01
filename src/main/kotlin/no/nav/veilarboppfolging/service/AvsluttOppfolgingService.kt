@@ -243,6 +243,9 @@ class AvsluttOppfolgingService(
             return
         }
 
+        // OBS: Avslutter en periode som ikke er siste periode eller er en av flere gjeldende (dårlig data),
+        // Person beholder underoppfolging i oppfolgingstatus, sender bare perioden på oppfolgingsperiode v1
+        // kafka topic og gjør ikke andre opprydninger. Publiserer ikke på siste-oppfolgingsperiode-v3
         val sluttDato = if (erSisteGjeldendePeriode) ZonedDateTime.now() else sisteGjeldendePeriode.startDato
         val avsluttetOppfolgingsperiode = oppfolgingsPeriodeRepository.avsluttOppfolgingsperiode(
             oppfolgingsperiodeUUID,
