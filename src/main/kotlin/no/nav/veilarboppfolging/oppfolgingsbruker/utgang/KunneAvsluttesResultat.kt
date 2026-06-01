@@ -43,9 +43,6 @@ sealed class KunneAvsluttesResultat(val kanAvsluttesInput: KanAvsluttesInput) {
     }
 }
 
-/*
-*
-* */
 sealed interface AvslutningsInput {
     val avregistrering: Avregistrering
 }
