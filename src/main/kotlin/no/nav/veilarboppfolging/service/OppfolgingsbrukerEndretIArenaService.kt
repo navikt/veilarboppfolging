@@ -86,7 +86,7 @@ class OppfolgingsbrukerEndretIArenaService(
                         metricsService.rapporterAutomatiskAvslutningAvOppfolging(true)
                     }
                     is KunneIkkeAvsluttes -> {
-                        // TODO Logl litt her
+                        log.info("ISERV bruker som ikke kunne reaktiveres ble ikke avsluttet likevel: ${kunneAvsluttesResultat.begrunnelse}")
                     }
                 }
             }
