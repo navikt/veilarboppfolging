@@ -37,6 +37,16 @@ public class IservServiceIntegrationTest {
     private OppfolgingService oppfolgingService = mock(OppfolgingService.class);
     private AvsluttOppfolgingService avsluttOppfolgingService = mock(AvsluttOppfolgingService.class);
 
+    private KanAvsluttesInput kunneAvsluttesInput = new KanAvsluttesInput(
+        false,
+            true,
+            false,
+            false,
+            false,
+            false,
+            false
+    );
+
     @Before
     public void setup() {
         JdbcTemplate db = LocalDatabaseSingleton.INSTANCE.getJdbcTemplate();
@@ -45,7 +55,7 @@ public class IservServiceIntegrationTest {
 
         when(oppfolgingService.erUnderOppfolging(any(AktorId.class))).thenReturn(true);
         when(avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(any(Avregistrering.class)))
-                .thenReturn(new KunneAvsluttes(new UtmeldtEtter28Dager(AKTOR_ID), true));
+                .thenReturn(new KunneAvsluttes(new UtmeldtEtter28Dager(AKTOR_ID), true, kunneAvsluttesInput));
         when(authService.getFnrOrThrow(any())).thenReturn(FNR);
 
         utmeldingRepository = new UtmeldingRepository(db);

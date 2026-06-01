@@ -116,11 +116,11 @@ class AvsluttOppfolgingService(
         )
 
         return AvslutningStatusData.builder()
+            .harYtelser(arenaYtelserService.harPagaendeYtelse(fnr))
+            .inaktiveringsDato(inaktiveringsDato)
             .kanAvslutte(kanAvsluttes is KunneAvsluttes)
             .underOppfolging(kanAvsluttes.kanAvsluttesInput.erUnderOppfolging)
-            .harYtelser(arenaYtelserService.harPagaendeYtelse(fnr))
             .underKvp(kanAvsluttes.kanAvsluttesInput.underKvp)
-            .inaktiveringsDato(inaktiveringsDato)
             .erIserv(kanAvsluttes.kanAvsluttesInput.erIservIArena)
             .harAktiveTiltaksdeltakelser(kanAvsluttes.kanAvsluttesInput.harAktiveTiltaksdeltakelser)
             .erDeltakerIUngdomsprogrammet(kanAvsluttes.kanAvsluttesInput.erDeltakerIUngdomsprogrammet)
