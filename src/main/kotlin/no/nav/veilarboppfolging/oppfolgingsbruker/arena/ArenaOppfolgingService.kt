@@ -86,11 +86,11 @@ class ArenaOppfolgingService @Autowired constructor (
 
         val lokaltLagretOppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId)
         val localArenaOppfolging = lokaltLagretOppfolging.flatMap { it.localArenaOppfolging }
+        val oppfolgingsEnhet: EnhetId? = lokaltLagretOppfolging.map { it.oppfolgingsEnhet }.orElse(null)
 
         val oppfolgingsData: OppfolgingsData = when {
             (localArenaOppfolging.isPresent) -> {
                 OppfolgingsData(
-                    localArenaOppfolging.get().oppfolgingsenhet?.get()?.let { EnhetId(it)  },
                     localArenaOppfolging.get().kvalifiseringsgruppe,
                     localArenaOppfolging.get().formidlingsgruppe,
                     localArenaOppfolging.get().hovedmaal)
@@ -102,7 +102,6 @@ class ArenaOppfolgingService @Autowired constructor (
                         return@let it.get()
                     }
                 OppfolgingsData(
-                    veilarbArenaOppfolging.navKontor?.let { EnhetId.of(it) },
                     Kvalifiseringsgruppe.valueOf(veilarbArenaOppfolging.kvalifiseringsgruppekode),
                     Formidlingsgruppe.valueOf(veilarbArenaOppfolging.formidlingsgruppekode),
                     veilarbArenaOppfolging.hovedmaalkode?.let { Hovedmaal.valueOf(it) }
@@ -113,7 +112,7 @@ class ArenaOppfolgingService @Autowired constructor (
         val veilederIdent = if (authService.erInternBruker()) lokaltLagretOppfolging.map { it.veilederId  }.orElse(null) else null
         return GetOppfolginsstatusSuccess(
             OppfolgingEnhetMedVeilederResponse(
-                oppfolgingsenhet = oppfolgingsData.enhetId?.let { hentEnhet(it) } ,
+                oppfolgingsenhet = oppfolgingsEnhet?.let { hentEnhet(it) },
                 veilederId = veilederIdent,
                 formidlingsgruppe = oppfolgingsData.formidlingsgruppe.name,
                 servicegruppe = oppfolgingsData.kvalifiseringsgruppe.name,
@@ -139,7 +138,6 @@ class ArenaOppfolgingService @Autowired constructor (
 }
 
 data class OppfolgingsData(
-    val enhetId: EnhetId?,
     var kvalifiseringsgruppe: Kvalifiseringsgruppe,
     var formidlingsgruppe: Formidlingsgruppe,
     var hovedmaal: Hovedmaal?

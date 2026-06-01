@@ -67,6 +67,7 @@ import no.nav.veilarboppfolging.repository.VeilederTilordningerRepository
 import no.nav.veilarboppfolging.repository.entity.ManuellStatusEntity
 import no.nav.veilarboppfolging.repository.enums.KodeverkBruker
 import no.nav.veilarboppfolging.service.AuthService
+import no.nav.veilarboppfolging.service.AvsluttOppfolgingService
 import no.nav.veilarboppfolging.service.MetricsService
 import no.nav.veilarboppfolging.service.OppfolgingService
 import no.nav.veilarboppfolging.service.StartOppfolgingService
@@ -155,6 +156,9 @@ open class IntegrationTest {
 
     @Autowired
     lateinit var startOppfolgingService: StartOppfolgingService
+
+    @Autowired
+    lateinit var avsluttOppfolgingService: AvsluttOppfolgingService
 
     @Autowired
     lateinit var oppfolgingsPeriodeRepository: OppfolgingsPeriodeRepository
@@ -252,7 +256,6 @@ open class IntegrationTest {
                 Hovedmaal.BEHOLDEA,
                 Kvalifiseringsgruppe.VURDI,
                 formidlingsgruppe,
-                enhet,
                 null,
             ))
     }
@@ -276,7 +279,7 @@ open class IntegrationTest {
     fun hentOppfolgingsperioder(fnr: Fnr) = oppfolgingController.hentOppfolgingsperioder(fnr)
 
     fun avsluttOppfolgingManueltSomVeileder(aktorId: AktorId, veileder: NavIdent = NavIdent("veileder"), begrunnelse: String = "Begrunnelse") {
-        oppfolgingService.avsluttOppfolging(
+        avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(
             ManuellAvregistrering(aktorId, VeilederRegistrant(veileder), begrunnelse),
         )
     }

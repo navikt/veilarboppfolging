@@ -10,8 +10,6 @@ import no.nav.pto_schema.kafka.json.topic.SisteOppfolgingsperiodeV1;
 import no.nav.veilarboppfolging.IntegrationTest;
 import no.nav.veilarboppfolging.controller.request.AktiverArbeidssokerData;
 import no.nav.veilarboppfolging.controller.request.Innsatsgruppe;
-import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.AktiverBrukerManueltService;
-import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
@@ -22,7 +20,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
 import org.springframework.test.context.ActiveProfiles;
 
-import javax.sql.DataSource;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -38,15 +35,6 @@ public class AktiverBrukerServiceKafkaTest extends IntegrationTest {
 
     @Autowired
     EmbeddedKafkaBroker kafkaContainer;
-
-    @Autowired
-    DataSource dataSource;
-
-    @Autowired
-    AktiverBrukerManueltService aktiverBrukerManueltService;
-
-    @Autowired
-    OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
 
     @Autowired
     JdbcTemplate jdbcTemplate;

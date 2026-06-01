@@ -3,64 +3,40 @@ package no.nav.veilarboppfolging.service;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
-import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.Id;
-import no.nav.common.types.identer.NavIdent;
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe;
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe;
 import no.nav.veilarboppfolging.client.digdir_krr.KRRData;
 import no.nav.veilarboppfolging.client.tiltakshistorikk.TiltakshistorikkClient;
-import no.nav.veilarboppfolging.client.ungdomsprogram.UngdomsprogramClient;
-import no.nav.veilarboppfolging.client.arbeidssoekerregisteret.ArbeidssoekerregisteretClient;
-import no.nav.veilarboppfolging.client.aap.AapClient;
-import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolgingTilstand;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsStatus;
 import no.nav.veilarboppfolging.controller.response.UnderOppfolgingDTO;
 import no.nav.veilarboppfolging.controller.response.VeilederTilgang;
-import no.nav.veilarboppfolging.domain.AvslutningStatusData;
 import no.nav.veilarboppfolging.domain.Oppfolging;
 import no.nav.veilarboppfolging.domain.OppfolgingStatusData;
-import no.nav.veilarboppfolging.eventsLogger.BigQueryClient;
-import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant;
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService;
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.LocalArenaOppfolging;
-import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ArenaSyncRegistrering;
-import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering;
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AdminAvregistrering;
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.Avregistrering;
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvregistreringsType;
-import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.hendelser.OppfolgingsAvsluttetHendelseDto;
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.*;
 import no.nav.veilarboppfolging.repository.*;
 import no.nav.veilarboppfolging.repository.entity.*;
 import no.nav.veilarboppfolging.utils.ArenaUtils;
-import no.nav.veilarboppfolging.utils.DtoMappers;
 import no.nav.veilarboppfolging.utils.EnumUtils;
-import no.nav.veilarboppfolging.utils.OppfolgingsperiodeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionTemplate;
 
-import static java.time.ZonedDateTime.now;
 import static java.util.Optional.empty;
 import static java.util.stream.Collectors.toList;
 import static no.nav.veilarboppfolging.utils.ArenaUtils.erIserv;
-import static no.nav.veilarboppfolging.utils.ArenaUtils.kanSettesUnderOppfolging;
-import static no.nav.veilarboppfolging.utils.SecureLog.secureLog;
 
 @Slf4j
 @Service
 public class OppfolgingService {
 
-    private final KafkaProducerService kafkaProducerService;
     private final KvpService kvpService;
     private final ArenaOppfolgingService arenaOppfolgingService;
     private final AuthService authService;
@@ -70,20 +46,13 @@ public class OppfolgingService {
     private final ArbeidsoppfolgingsKontorService arbeidsoppfolgingsKontorService;
 
     private final TiltakshistorikkClient tiltakshistorikkClient;
-    private final UngdomsprogramClient ungdomsprogramClient;
-    private final ArbeidssoekerregisteretClient arbeidssoekerregisteretClient;
-    private final AapClient aapClient;
 
     private final KvpRepository kvpRepository;
     private final MaalRepository maalRepository;
     private final BrukerOppslagFlereOppfolgingAktorRepository brukerOppslagFlereOppfolgingAktorRepository;
-    private final TransactionTemplate transactor;
-    private final ArenaYtelserService arenaYtelserService;
-    private final BigQueryClient bigQueryClient;
 
     @Autowired
     public OppfolgingService(
-            KafkaProducerService kafkaProducerService,
             KvpService kvpService,
             ArenaOppfolgingService arenaOppfolgingService,
             AuthService authService,
@@ -94,16 +63,8 @@ public class OppfolgingService {
             KvpRepository kvpRepository,
             MaalRepository maalRepository,
             BrukerOppslagFlereOppfolgingAktorRepository brukerOppslagFlereOppfolgingAktorRepository,
-            TransactionTemplate transactor,
-            ArenaYtelserService arenaYtelserService,
-            BigQueryClient bigQueryClient,
             ArbeidsoppfolgingsKontorService arbeidsoppfolgingsKontorService,
-            @Value("${app.env.nav-no-url}") String navNoUrl,
-            TiltakshistorikkClient tiltakshistorikkClient,
-            UngdomsprogramClient ungdomsprogramClient,
-            ArbeidssoekerregisteretClient arbeidssoekerregisteretClient,
-            AapClient aapClient) {
-        this.kafkaProducerService = kafkaProducerService;
+            TiltakshistorikkClient tiltakshistorikkClient) {
         this.kvpService = kvpService;
         this.arenaOppfolgingService = arenaOppfolgingService;
         this.authService = authService;
@@ -113,14 +74,8 @@ public class OppfolgingService {
         this.kvpRepository = kvpRepository;
         this.maalRepository = maalRepository;
         this.brukerOppslagFlereOppfolgingAktorRepository = brukerOppslagFlereOppfolgingAktorRepository;
-        this.transactor = transactor;
-        this.arenaYtelserService = arenaYtelserService;
-        this.bigQueryClient = bigQueryClient;
         this.arbeidsoppfolgingsKontorService = arbeidsoppfolgingsKontorService;
         this.tiltakshistorikkClient = tiltakshistorikkClient;
-        this.ungdomsprogramClient = ungdomsprogramClient;
-        this.arbeidssoekerregisteretClient = arbeidssoekerregisteretClient;
-        this.aapClient = aapClient;
     }
 
     @Transactional // TODO: kan denne være read only?
@@ -147,46 +102,6 @@ public class OppfolgingService {
         }
 
         return harFlereAktorIdMedOppfolging;
-    }
-
-    public AvslutningStatusData hentAvslutningstatusForManuellAvslutning(Fnr fnr) {
-        authService.sjekkLesetilgangMedFnr(fnr);
-        return getAvslutningStatus(fnr, AvregistreringsType.ManuellAvregistrering);
-    }
-
-    @SneakyThrows
-    public AvslutningStatusData avsluttOppfolging(Avregistrering avregistrering) {
-        AktorId aktorId = avregistrering.getAktorId();
-        Fnr fnr = authService.getFnrOrThrow(aktorId);
-        ArenaOppfolgingTilstand arenaOppfolgingTilstand = arenaOppfolgingService.hentArenaOppfolgingTilstand(fnr)
-                .orElseThrow(() -> new RuntimeException("Feilet under henting av areana-oppfolgingsstatus (db) med fallback til veilarbarena /oppfolgingsbruker"));
-
-        if (authService.erInternBruker()) {
-            authService.sjekkSkriveTilgangMedFnr(fnr);
-            authService.sjekkTilgangTilEnhet(arenaOppfolgingTilstand.getOppfolgingsenhet());
-            secureLog.info("Veileder: {} forsøker å avslutte oppfølging for fnr: {}", authService.getInnloggetBrukerIdent(), fnr.get());
-        } else {
-            secureLog.info("Forsøker å avslutte oppfølging for fnr: {} som systembruker", fnr.get());
-        }
-
-        boolean erIserv = erIserv(EnumUtils.valueOf(Formidlingsgruppe.class, arenaOppfolgingTilstand.getFormidlingsgruppe()));
-
-        boolean harAktiveTiltaksdeltakelser = harAktiveTiltaksdeltakelser(fnr);
-        boolean erDeltakerIUngdomsprogrammet = erDeltakerIUngdomsprogrammet(fnr);
-        boolean erArbeidssoeker = erArbeidssoeker(fnr);
-        boolean harAap = harAap(fnr);
-        boolean underKvp = kvpService.erUnderKvp(aktorId);
-        KanAvslutteMedBegrunnelse kanAvslutte = kanAvslutteOppfolging(aktorId, avregistrering.getAvregistreringsType(), erUnderOppfolging(aktorId), erIserv, harAktiveTiltaksdeltakelser, erDeltakerIUngdomsprogrammet, erArbeidssoeker, harAap, underKvp);
-        if (kanAvslutte.kanAvslutte) {
-            var veilederId = avregistrering.getAvsluttetAv().getIdent();
-            var begrunnelse = avregistrering.getBegrunnelse();
-            secureLog.info("Avslutting av oppfølging utført av: {}, begrunnelse: {}, tilstand i Arena for aktorid {}: {}", veilederId, begrunnelse, aktorId, arenaOppfolgingTilstand);
-            avsluttOppfolgingForBruker(avregistrering, !erIserv);
-        } else {
-            log.warn("Oppfølging ble ikke avsluttet likevel, avregistreringstype {}: begrunnelse {}",avregistrering.getAvregistreringsType() , kanAvslutte.begrunnelse);
-        }
-
-        return getAvslutningStatus(fnr, avregistrering.getAvregistreringsType());
     }
 
     @SneakyThrows
@@ -287,119 +202,6 @@ public class OppfolgingService {
         return Optional.of(oppfolging);
     }
 
-    private Optional<Kvalifiseringsgruppe> getKvalifiseringsGruppe(OppfolgingsRegistrering oppfolgingsbruker) {
-        if (oppfolgingsbruker instanceof ArenaSyncRegistrering arenasyncoppfolgingsbruker) {
-            return Optional.ofNullable(arenasyncoppfolgingsbruker.getKvalifiseringsgruppe());
-        } else {
-            return Optional.empty();
-        }
-    }
-
-    @Data
-    @AllArgsConstructor
-    public static class KanAvslutteMedBegrunnelse {
-        boolean kanAvslutte;
-        String begrunnelse;
-    }
-    public static KanAvslutteMedBegrunnelse kanAvslutteOppfolging(
-            AktorId aktorId,
-            AvregistreringsType avregistreringsType,
-            boolean erUnderOppfolging,
-            boolean erIservIArena,
-            boolean harAktiveTiltaksdeltakelser,
-            boolean erDeltakerIUngdomsprogrammet,
-            boolean erArbeidssoeker,
-            boolean harAap,
-            boolean underKvp
-    ) {
-        secureLog.info("Kan oppfolging avsluttes for aktorid {}?, oppfolging.isUnderOppfolging(): {}, erIservIArena(): {}, underKvp(): {}, harAktiveTiltaksdeltakelser(): {}, erDeltakerIUngdomsprogrammet(): {}, erArbeidssoeker(): {}, harAap(): {}",
-                aktorId, erUnderOppfolging, erIservIArena, underKvp, harAktiveTiltaksdeltakelser, erDeltakerIUngdomsprogrammet, erArbeidssoeker, harAap);
-
-        var manuellAvslutning = avregistreringsType.erManuellAvregistrering();
-
-        if (!erUnderOppfolging) return new KanAvslutteMedBegrunnelse(false, "bruker var ikke under oppfølging");
-        if (!manuellAvslutning && !erIservIArena) return new KanAvslutteMedBegrunnelse(false, "bruker var ikke inaktivert i Arena ved forsøk på automatisk avslutning");
-        if (underKvp) return new KanAvslutteMedBegrunnelse(false, "bruker var under kvp");
-        if (harAktiveTiltaksdeltakelser) return new KanAvslutteMedBegrunnelse(false, "bruker hadde aktive tiltaksdeltakelser");
-        if (erDeltakerIUngdomsprogrammet) return new KanAvslutteMedBegrunnelse(false, "bruker er deltaker i ungdomsprogrammet");
-        if (erArbeidssoeker) return new KanAvslutteMedBegrunnelse(false, "bruker er registrert som arbeidssøker");
-        if (harAap) return new KanAvslutteMedBegrunnelse(false, "bruker har AAP");
-
-        return new KanAvslutteMedBegrunnelse(true, null);
-    }
-
-    public void adminForceAvsluttOppfolgingForBruker(AktorId aktorId, String veilederId, String begrunnelse) {
-        avsluttOppfolgingForBruker(new AdminAvregistrering(aktorId, new VeilederRegistrant(new NavIdent(veilederId)), begrunnelse, null));
-    }
-
-    private void avsluttOppfolgingForBruker(Avregistrering avregistrering) {
-        avsluttOppfolgingForBruker(avregistrering, null);
-    }
-
-    private void avsluttOppfolgingForBruker(Avregistrering avregistrering, Boolean aktivIArena) {
-        var fnr = authService.getFnrOrThrow(avregistrering.getAktorId());
-        var aktorId = avregistrering.getAktorId();
-        transactor.executeWithoutResult((ignored) -> {
-            oppfolgingsPeriodeRepository.avsluttSistePeriodeOgAvsluttOppfolging(aktorId, avregistrering.getAvsluttetAv().getIdent(), avregistrering.getBegrunnelse());
-
-            var perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId);
-            var sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder);
-
-            log.info("Oppfølgingsperiode avsluttet for bruker - publiserer endringer på oppfølgingsperiode-topics.");
-            kafkaProducerService.publiserOppfolgingsperiode(DtoMappers.tilOppfolgingsperiodeDTO(sistePeriode));
-            kafkaProducerService.publiserVeilederTilordnet(aktorId, null, null);
-            kafkaProducerService.publiserEndringPaNyForVeileder(aktorId, false);
-            kafkaProducerService.publiserEndringPaManuellStatus(aktorId, false);
-            kafkaProducerService.publiserOppfolgingsAvsluttet(OppfolgingsAvsluttetHendelseDto.Companion.of(avregistrering, sistePeriode, fnr));
-            kafkaProducerService.publiserSkjulAoMinSideMicrofrontend(aktorId, fnr);
-            // oppfolgingsperiodeEndretService.oppdaterSisteOppfolgingsperiodeV2MedAvsluttetStatus(sistePeriode); // TODO I en overgangsperiode lytter vi heller på tombstone fra ao-oppfolgingskontor
-
-            bigQueryClient.loggAvsluttOppfolgingsperiode(sistePeriode.getUuid(), avregistrering, aktivIArena);
-        });
-    }
-
-    public void adminAvsluttSpesifikkOppfolgingsperiode(AktorId aktorId, String veilederId, String begrunnelse, String uuid) {
-        if (uuid == null) {
-            log.info("oppfolgingsperiodeUUID er null");
-            return;
-        }
-
-        try {
-            UUID oppfolgingsperiodeUUID = UUID.fromString(uuid);
-            avsluttValgtOppfolgingsperiode(new AdminAvregistrering(aktorId, new VeilederRegistrant(new NavIdent(veilederId)), begrunnelse, oppfolgingsperiodeUUID));
-        } catch (IllegalArgumentException e) {
-            log.warn("Invalid UUID format for oppfolgingsperiodeUUID: {}", uuid, e);
-        }
-    }
-
-    private void avsluttValgtOppfolgingsperiode(AdminAvregistrering avregistrering) {
-        var oppfolgingsperiodeUUID = avregistrering.getOppfolgingsperiodeUUID();
-        var gjeldendePerioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(avregistrering.getAktorId()).stream().filter(p -> p.getSluttDato() == null).toList();
-        var sisteGjeldendePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(gjeldendePerioder);
-        var valgtGjeldendePeriode = gjeldendePerioder.stream().filter(p -> p.getUuid().equals(oppfolgingsperiodeUUID)).findFirst().orElse(null);
-
-        if (valgtGjeldendePeriode == null) {
-            log.warn("Fant ikke oppfølgingsperiode med UUID: {}. (eller den er allerede avsluttet)", oppfolgingsperiodeUUID);
-            return;
-        }
-
-        boolean erSisteGjeldendePeriode = valgtGjeldendePeriode.getUuid().equals(sisteGjeldendePeriode.getUuid());
-        boolean erEnesteGjeldendePeriode = gjeldendePerioder.size() == 1;
-
-        if (erSisteGjeldendePeriode && erEnesteGjeldendePeriode) {
-            log.info("Valgt oppfølgingsperiode er siste og eneste. Avslutter oppfølging.");
-            avsluttOppfolgingForBruker(avregistrering);
-            return;
-        }
-
-        var sluttDato = erSisteGjeldendePeriode ? now() : sisteGjeldendePeriode.getStartDato();
-        var avsluttetOppfolgingsperiode = oppfolgingsPeriodeRepository.avsluttOppfolgingsperiode(oppfolgingsperiodeUUID, avregistrering.getAvsluttetAv().getIdent(), avregistrering.getBegrunnelse(), sluttDato);
-
-        log.info("Oppfølgingsperiode med UUID: {} avsluttet for bruker - publiserer endringer på oppfølgingsperiode-topics.", oppfolgingsperiodeUUID);
-        kafkaProducerService.publiserValgtOppfolgingsperiode(DtoMappers.tilOppfolgingsperiodeDTO(avsluttetOppfolgingsperiode));
-        bigQueryClient.loggAvsluttOppfolgingsperiode(oppfolgingsperiodeUUID, avregistrering, null);
-    }
-
     public boolean erUnderOppfolging(AktorId aktorId) {
         return oppfolgingsStatusRepository.hentOppfolging(aktorId)
                 .map(OppfolgingEntity::isUnderOppfolging)
@@ -408,18 +210,6 @@ public class OppfolgingService {
 
     public boolean harAktiveTiltaksdeltakelser(Fnr fnr) {
         return tiltakshistorikkClient.harAktiveTiltaksdeltakelser(fnr.get());
-    }
-
-    public boolean erDeltakerIUngdomsprogrammet(Fnr fnr) {
-        return ungdomsprogramClient.erDeltakerIUngdomsprogrammet(fnr.get());
-    }
-
-    public boolean erArbeidssoeker(Fnr fnr) {
-        return arbeidssoekerregisteretClient.erArbeidssoeker(fnr.get());
-    }
-
-    public boolean harAap(Fnr fnr) {
-        return aapClient.harAap(fnr.get());
     }
 
     private Optional<OppfolgingEntity> getOppfolgingStatus(Fnr fnr) {
@@ -440,10 +230,6 @@ public class OppfolgingService {
 
         // TODO: Burde kanskje heller feile istedenfor å bruke Optional
         Optional<VeilarbArenaOppfolgingsStatus> maybeArenaOppfolging = arenaOppfolgingService.hentArenaOppfolgingsStatus(fnr);
-
-        boolean kanSettesUnderOppfolging = !oppfolging.isUnderOppfolging() && maybeArenaOppfolging
-                .map(s -> kanSettesUnderOppfolging(EnumUtils.valueOf(Formidlingsgruppe.class, s.getFormidlingsgruppe()), EnumUtils.valueOf(Kvalifiseringsgruppe.class, s.getServicegruppe())))
-                .orElse(false);
 
         boolean harSkrivetilgangTilBruker = harVeilederTilgangTilKontorsperretEnhet(aktorId);
 
@@ -473,13 +259,13 @@ public class OppfolgingService {
                 .setReservasjonKRR(digdirKontaktinfo.isReservert())
                 .setRegistrertKRR(digdirKontaktinfo.isAktiv())
                 .setManuell(erManuell || digdirKontaktinfo.isReservert())
-                .setKanStarteOppfolging(kanSettesUnderOppfolging)
+                .setKanStarteOppfolging(!oppfolging.isUnderOppfolging())
                 .setOppfolgingsperioder(oppfolging.getOppfolgingsperioder())
                 .setHarSkriveTilgang(harSkrivetilgangTilBruker)
                 .setInaktivIArena(erInaktivIArena)
                 .setKanReaktiveres(kanReaktiveres)
+                // Usikker på om dette feltet er i bruk av konsumenter
                 .setErSykmeldtMedArbeidsgiver(erSykmeldtMedArbeidsgiver)
-                .setErIkkeArbeidssokerUtenOppfolging(erSykmeldtMedArbeidsgiver)
                 .setInaktiveringsdato(inaktiveringsDato)
                 .setServicegruppe(maybeArenaOppfolging.map(VeilarbArenaOppfolgingsStatus::getServicegruppe).orElse(null))
                 .setFormidlingsgruppe(maybeArenaOppfolging.map(VeilarbArenaOppfolgingsStatus::getFormidlingsgruppe).orElse(null))
@@ -495,39 +281,6 @@ public class OppfolgingService {
                         .orElseThrow()
                         .getEnhet()
         );
-    }
-
-    private AvslutningStatusData getAvslutningStatus(Fnr fnr, AvregistreringsType avregistreringsType) {
-        AktorId aktorId = authService.getAktorIdOrThrow(fnr);
-
-        Optional<ArenaOppfolgingTilstand> maybeArenaOppfolging = arenaOppfolgingService.hentArenaOppfolgingTilstand(fnr);
-
-        boolean erIserv = maybeArenaOppfolging.map(ao -> erIserv(EnumUtils.valueOf(Formidlingsgruppe.class, ao.getFormidlingsgruppe()))).orElse(false);
-        boolean underOppfolging = getOppfolgingStatusData(fnr).underOppfolging;
-
-        boolean harAktiveTiltaksdeltakelser = harAktiveTiltaksdeltakelser(fnr);
-        boolean erDeltakerIUngdomsprogrammet = erDeltakerIUngdomsprogrammet(fnr);
-        boolean erArbeidssoeker = erArbeidssoeker(fnr);
-        boolean harAap = harAap(fnr);
-        boolean underKvp = kvpService.erUnderKvp(aktorId);
-        boolean kanAvslutte = kanAvslutteOppfolging(aktorId, avregistreringsType, erUnderOppfolging(aktorId), erIserv, harAktiveTiltaksdeltakelser, erDeltakerIUngdomsprogrammet, erArbeidssoeker, harAap, underKvp).kanAvslutte;
-
-        LocalDate inaktiveringsDato = maybeArenaOppfolging
-                .map(ArenaOppfolgingTilstand::getInaktiveringsdato)
-                .orElse(null);
-
-        return AvslutningStatusData.builder()
-                .kanAvslutte(kanAvslutte)
-                .underOppfolging(underOppfolging)
-                .harYtelser(arenaYtelserService.harPagaendeYtelse(fnr))
-                .underKvp(kvpService.erUnderKvp(aktorId))
-                .inaktiveringsDato(inaktiveringsDato)
-                .erIserv(erIserv)
-                .harAktiveTiltaksdeltakelser(harAktiveTiltaksdeltakelser)
-                .erDeltakerIUngdomsprogrammet(erDeltakerIUngdomsprogrammet)
-                .erArbeidssoeker(erArbeidssoeker)
-                .harAap(harAap)
-                .build();
     }
 
     private List<OppfolgingsperiodeEntity> populerKvpPerioder(List<OppfolgingsperiodeEntity> oppfolgingsPerioder, List<KvpPeriodeEntity> kvpPerioder) {

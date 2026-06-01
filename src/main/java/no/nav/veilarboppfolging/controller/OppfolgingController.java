@@ -25,6 +25,7 @@ public class OppfolgingController {
     private final static List<String> ALLOWLIST_V1 = List.of("veilarbvedtaksstotte", "veilarbregistrering", "veilarbdirigent");
 
     private final OppfolgingService oppfolgingService;
+    private final AvsluttOppfolgingService avsluttOppfolgingService;
     private final KvpService kvpService;
     private final AuthService authService;
     private final ManuellStatusService manuellStatusService;
@@ -46,7 +47,7 @@ public class OppfolgingController {
     @GetMapping("/avslutningStatus")
     public AvslutningsStatusDto hentAvslutningStatus(@RequestParam("fnr") Fnr fnr) {
         authService.skalVereInternBruker();
-        return tilDto(oppfolgingService.hentAvslutningstatusForManuellAvslutning(fnr));
+        return tilDto(avsluttOppfolgingService.hentAvslutningstatusForManuellAvslutning(fnr));
     }
 
     // TODO: Ikke returner OppfolgingStatus

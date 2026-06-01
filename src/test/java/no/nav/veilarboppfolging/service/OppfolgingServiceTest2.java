@@ -8,11 +8,7 @@ import no.nav.pto_schema.enums.arena.Formidlingsgruppe;
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe;
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirClient;
 import no.nav.veilarboppfolging.client.tiltakshistorikk.TiltakshistorikkClient;
-import no.nav.veilarboppfolging.client.ungdomsprogram.UngdomsprogramClient;
-import no.nav.veilarboppfolging.client.arbeidssoekerregisteret.ArbeidssoekerregisteretClient;
-import no.nav.veilarboppfolging.client.aap.AapClient;
 import no.nav.veilarboppfolging.domain.Oppfolging;
-import no.nav.veilarboppfolging.eventsLogger.BigQueryClient;
 import no.nav.veilarboppfolging.oppfolgingsbruker.BrukerRegistrant;
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering;
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant;
@@ -66,7 +62,6 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
     private OppfolgingService oppfolgingService;
     private OppfolgingService oppfolgingServiceMock = mock(OppfolgingService.class);
     private StartOppfolgingService startOppfolgingService;
-    private ArenaYtelserService arenaYtelserService = mock(ArenaYtelserService.class);
     private ArbeidsoppfolgingsKontorService arbeidsoppfolgingsKontorService = mock(ArbeidsoppfolgingsKontorService.class);
 
     @Before
@@ -90,18 +85,14 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
                 transactor
         );
 
-        oppfolgingService = new OppfolgingService(
-                mock(KafkaProducerService.class), null,
+        oppfolgingService = new OppfolgingService(null,
                 null, authService,
                 oppfolgingsStatusRepository, oppfolgingsPeriodeRepository,
                 manuellStatusService,
                 new KvpRepository(db, namedParameterJdbcTemplate, transactor), maalRepository,
-                new BrukerOppslagFlereOppfolgingAktorRepository(db), transactor, arenaYtelserService,
-                mock(BigQueryClient.class), arbeidsoppfolgingsKontorService,"https://test.nav.no",
-                mock(TiltakshistorikkClient.class),
-                mock(UngdomsprogramClient.class),
-                mock(ArbeidssoekerregisteretClient.class),
-                mock(AapClient.class)
+                new BrukerOppslagFlereOppfolgingAktorRepository(db),
+                arbeidsoppfolgingsKontorService,
+                mock(TiltakshistorikkClient.class)
             );
 
         startOppfolgingService = new StartOppfolgingService(

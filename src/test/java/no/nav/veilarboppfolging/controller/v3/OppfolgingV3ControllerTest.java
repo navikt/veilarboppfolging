@@ -62,6 +62,8 @@ class OppfolgingV3ControllerTest {
     private ReaktiveringService reaktiveringService;
     @MockitoBean
     private KontaktBrukerService kontaktBrukerService;
+    @MockitoBean
+    private AvsluttOppfolgingService avsluttOppfolgingService;
 
     @BeforeEach
     void setup() throws Exception {
@@ -119,7 +121,7 @@ class OppfolgingV3ControllerTest {
                         .setUnderKvp(false)
         );
 
-        String expectedJson = "{\"fnr\":\"12345678900\",\"aktorId\":\"11122233334445\",\"veilederId\":null,\"reservasjonKRR\":false,\"registrertKRR\":true,\"kanVarsles\":true,\"manuell\":false,\"underOppfolging\":true,\"underKvp\":false,\"oppfolgingUtgang\":null,\"kanStarteOppfolging\":false,\"avslutningStatus\":null,\"oppfolgingsPerioder\":[],\"harSkriveTilgang\":true,\"inaktivIArena\":null,\"kanReaktiveres\":false,\"inaktiveringsdato\":null,\"erSykmeldtMedArbeidsgiver\":false,\"servicegruppe\":\"servicegruppe\",\"formidlingsgruppe\":\"formidlingsgruppe\",\"rettighetsgruppe\":\"rettighetsgruppe\",\"erIkkeArbeidssokerUtenOppfolging\":false}";
+        String expectedJson = "{\"fnr\":\"12345678900\",\"aktorId\":\"11122233334445\",\"veilederId\":null,\"reservasjonKRR\":false,\"registrertKRR\":true,\"kanVarsles\":true,\"manuell\":false,\"underOppfolging\":true,\"underKvp\":false,\"oppfolgingUtgang\":null,\"kanStarteOppfolging\":false,\"avslutningStatus\":null,\"oppfolgingsPerioder\":[],\"harSkriveTilgang\":true,\"inaktivIArena\":null,\"kanReaktiveres\":false,\"inaktiveringsdato\":null,\"erSykmeldtMedArbeidsgiver\":false,\"servicegruppe\":\"servicegruppe\",\"formidlingsgruppe\":\"formidlingsgruppe\",\"rettighetsgruppe\":\"rettighetsgruppe\"}";
 
         mockMvc.perform(post("/api/v3/oppfolging/hent-status")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -131,7 +133,7 @@ class OppfolgingV3ControllerTest {
 
     @Test
     void hentAvslutningStatus_skal_returnere_avslutningstatus() throws Exception {
-        when(oppfolgingService.hentAvslutningstatusForManuellAvslutning(TEST_FNR)).thenReturn(
+        when(avsluttOppfolgingService.hentAvslutningstatusForManuellAvslutning(TEST_FNR)).thenReturn(
                 AvslutningStatusData.builder()
                         .kanAvslutte(true)
                         .underOppfolging(true)

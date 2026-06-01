@@ -27,10 +27,8 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.BrukerRegistrant;
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant;
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService;
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering;
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AdminAvregistrering;
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ArenaIservKanIkkeReaktiveres;
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ManuellAvregistrering;
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.UtmeldtEtter28Dager;
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.*;
+import no.nav.veilarboppfolging.repository.ArbeidsoppfolgingskontorRepository;
 import no.nav.veilarboppfolging.repository.KvpRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
@@ -53,6 +51,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -84,7 +83,9 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     private OppfolgingsStatusRepository oppfolgingsStatusRepository;
     private OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
     private OppfolgingService oppfolgingService;
+    private AvsluttOppfolgingService avsluttOppfolgingService;
     private StartOppfolgingService startOppfolgingService;
+    private ArbeidsoppfolgingskontorRepository arbeidsoppfolgingskontorRepository;
     private BigQueryClient bigQueryClient = mock(BigQueryClient.class);
     private ArbeidsoppfolgingsKontorService arbeidsoppfolgingsKontorService = mock(ArbeidsoppfolgingsKontorService.class);
 
@@ -98,8 +99,24 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         arenaOppfolgingStatus = new VeilarbArenaOppfolgingsStatus();
         oppfolgingsStatusRepository = new OppfolgingsStatusRepository(new NamedParameterJdbcTemplate(db));
         oppfolgingsPeriodeRepository = new OppfolgingsPeriodeRepository(db, transactor);
+        arbeidsoppfolgingskontorRepository = new ArbeidsoppfolgingskontorRepository(new NamedParameterJdbcTemplate(db));
 
-        oppfolgingService = new OppfolgingService(kafkaProducerService,
+        avsluttOppfolgingService = new AvsluttOppfolgingService(
+                authService,
+                oppfolgingsStatusRepository,
+                oppfolgingsPeriodeRepository,
+                arenaOppfolgingService,
+                kafkaProducerService,
+                kvpService,
+                tiltakshistorikkClient,
+                ungdomsprogramClient,
+                aapClient,
+                arbeidssoekerregisteretClient,
+                arenaYtelserService,
+                bigQueryClient,
+                transactor
+        );
+        oppfolgingService = new OppfolgingService(
                 kvpService,
                 arenaOppfolgingService,
                 authService,
@@ -109,16 +126,8 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
                 kvpRepository,
                 null,
                 null,
-                 transactor,
-                arenaYtelserService,
-                bigQueryClient,
                 arbeidsoppfolgingsKontorService,
-                "https://test.nav.no",
-                tiltakshistorikkClient,
-                ungdomsprogramClient,
-                arbeidssoekerregisteretClient,
-                aapClient
-                );
+                tiltakshistorikkClient);
 
         startOppfolgingService = new StartOppfolgingService(
                 manuellStatusService,
@@ -165,7 +174,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         arenaOppfolgingTilstand.setFormidlingsgruppe("ISERV");
 
         reset(kafkaProducerService);
-        oppfolgingService.avsluttOppfolging(new ManuellAvregistrering(aktorId, new VeilederRegistrant(new NavIdent(VEILEDER)), ""));
+        avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(new ManuellAvregistrering(aktorId, new VeilederRegistrant(new NavIdent(VEILEDER)), ""));
 
         verify(kafkaProducerService).publiserOppfolgingsperiode(any(OppfolgingsperiodeDTO.class));
         verify(kafkaProducerService).publiserVeilederTilordnet(aktorId, null, null);
@@ -180,7 +189,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         startOppfolgingForBruker();
         reset(kafkaProducerService);
 
-        oppfolgingService.adminAvsluttSpesifikkOppfolgingsperiode(aktorId, VEILEDER, "en begrunnelse", null);
+        avsluttOppfolgingService.adminAvsluttSpesifikkOppfolgingsperiode(aktorId, VEILEDER, "en begrunnelse", null);
 
         UnderOppfolgingDTO underOppfolgingDTO2 = oppfolgingService.oppfolgingData(fnr);
         Assertions.assertThat(underOppfolgingDTO2.isUnderOppfolging()).isTrue();
@@ -194,7 +203,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         reset(kafkaProducerService);
         var uuidSomIkkeFinnes = "beb16ce1-b2a7-4682-87dc-6bd97f43b9b6";
 
-        oppfolgingService.adminAvsluttSpesifikkOppfolgingsperiode(aktorId, VEILEDER, "en begrunnelse", uuidSomIkkeFinnes);
+        avsluttOppfolgingService.adminAvsluttSpesifikkOppfolgingsperiode(aktorId, VEILEDER, "en begrunnelse", uuidSomIkkeFinnes);
 
         UnderOppfolgingDTO underOppfolgingDTO2 = oppfolgingService.oppfolgingData(fnr);
         Assertions.assertThat(underOppfolgingDTO2.isUnderOppfolging()).isTrue();
@@ -210,7 +219,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         var sistePeriode = perioder.getLast();
         oppfolgingsPeriodeRepository.avsluttOppfolgingsperiode(uuidSomSkalAvsluttes, VEILEDER, "en begrunnelse", sistePeriode.getStartDato());
 
-        oppfolgingService.adminAvsluttSpesifikkOppfolgingsperiode(aktorId, VEILEDER, "en begrunnelse", uuidSomSkalAvsluttes.toString());
+        avsluttOppfolgingService.adminAvsluttSpesifikkOppfolgingsperiode(aktorId, VEILEDER, "en begrunnelse", uuidSomSkalAvsluttes.toString());
 
         UnderOppfolgingDTO underOppfolgingDTO2 = oppfolgingService.oppfolgingData(fnr);
         Assertions.assertThat(underOppfolgingDTO2.isUnderOppfolging()).isTrue();
@@ -226,7 +235,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         Assertions.assertThat(perioder.size()).isEqualTo(1);
         var uuidSomSkalAvsluttes = perioder.getFirst().getUuid();
 
-        oppfolgingService.adminAvsluttSpesifikkOppfolgingsperiode(aktorId, VEILEDER, "en begrunnelse", uuidSomSkalAvsluttes.toString());
+        avsluttOppfolgingService.adminAvsluttSpesifikkOppfolgingsperiode(aktorId, VEILEDER, "en begrunnelse", uuidSomSkalAvsluttes.toString());
 
         UnderOppfolgingDTO underOppfolgingDTO2 = oppfolgingService.oppfolgingData(fnr);
         Assertions.assertThat(underOppfolgingDTO2.isUnderOppfolging()).isFalse();
@@ -249,7 +258,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         Assertions.assertThat(perioder.size()).isEqualTo(2);
         var uuidSomSkalAvsluttes = perioder.getLast().getUuid();
 
-        oppfolgingService.adminAvsluttSpesifikkOppfolgingsperiode(aktorId, VEILEDER, "en begrunnelse", uuidSomSkalAvsluttes.toString());
+        avsluttOppfolgingService.adminAvsluttSpesifikkOppfolgingsperiode(aktorId, VEILEDER, "en begrunnelse", uuidSomSkalAvsluttes.toString());
 
         UnderOppfolgingDTO underOppfolgingDTO2 = oppfolgingService.oppfolgingData(fnr);
         Assertions.assertThat(underOppfolgingDTO2.isUnderOppfolging()).isFalse();
@@ -271,16 +280,18 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
         when(authService.getFnrOrThrow(aktorId)).thenThrow(new IngenGjeldendeIdentException());
         assertThrows(IngenGjeldendeIdentException.class, () -> {
-            oppfolgingService.adminAvsluttSpesifikkOppfolgingsperiode(aktorId, VEILEDER, "en begrunnelse", uuidSomSkalAvsluttes.toString());
+            avsluttOppfolgingService.adminAvsluttSpesifikkOppfolgingsperiode(aktorId, VEILEDER, "en begrunnelse", uuidSomSkalAvsluttes.toString());
         });
     }
 
     @Test(expected = ForbiddenException.class)
     @SneakyThrows
     public void avslutt_oppfolging_uten_skrivetilgang_til_bruker() {
+        startOppfolgingForBruker();
         when(authService.erInternBruker()).thenReturn(true);
         doCallRealMethod().when(authService).sjekkTilgangTilEnhet(any());
-        oppfolgingService.avsluttOppfolging(new ManuellAvregistrering(aktorId, new VeilederRegistrant(new NavIdent(VEILEDER)), BEGRUNNELSE));
+
+        avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(new ManuellAvregistrering(aktorId, new VeilederRegistrant(new NavIdent(VEILEDER)), BEGRUNNELSE));
     }
 
     @Test
@@ -295,7 +306,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         arenaOppfolgingTilstand.setFormidlingsgruppe("ISERV");
 
         reset(kafkaProducerService);
-        oppfolgingService.avsluttOppfolging(new ManuellAvregistrering(aktorId, new VeilederRegistrant(new NavIdent(VEILEDER)), ""));
+        avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(new ManuellAvregistrering(aktorId, new VeilederRegistrant(new NavIdent(VEILEDER)), ""));
 
         verify(kafkaProducerService, never()).publiserOppfolgingsperiode(any(OppfolgingsperiodeDTO.class));
         assertHarGjeldendeOppfolgingsperiode(aktorId);
@@ -313,7 +324,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         arenaOppfolgingTilstand.setFormidlingsgruppe("ISERV");
 
         reset(kafkaProducerService);
-        oppfolgingService.avsluttOppfolging(new ManuellAvregistrering(aktorId, new VeilederRegistrant(new NavIdent(VEILEDER)), ""));
+        avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(new ManuellAvregistrering(aktorId, new VeilederRegistrant(new NavIdent(VEILEDER)), ""));
 
         verify(kafkaProducerService, never()).publiserOppfolgingsperiode(any(OppfolgingsperiodeDTO.class));
         assertHarGjeldendeOppfolgingsperiode(aktorId);
@@ -322,7 +333,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     @Test
     public void hentVeilederTilgang__medEnhetTilgang() {
         when(authService.harTilgangTilEnhet(any())).thenReturn(true);
-        arenaOppfolgingTilstand.setOppfolgingsenhet(ENHET);
+        when(arbeidsoppfolgingsKontorService.hentOppfolgingsEnhetId(fnr)).thenReturn(EnhetId.of(ENHET));
 
         val tilgang = oppfolgingService.hentVeilederTilgang(fnr);
         assertNotNull(tilgang);
@@ -331,7 +342,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
     @Test
     public void hentVeilederTilgang__utenEnhetTilgang() {
-        arenaOppfolgingTilstand.setOppfolgingsenhet(ENHET);
+        when(arbeidsoppfolgingsKontorService.hentOppfolgingsEnhetId(fnr)).thenReturn(EnhetId.of(ENHET));
 
         VeilederTilgang veilederIkkeTilgang = oppfolgingService.hentVeilederTilgang(fnr);
         assertFalse(veilederIkkeTilgang.isTilgangTilBrukersKontor());
@@ -339,7 +350,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
     @Test
     public void hentVeilederTilgang__skal_ikke_ha_tilgang_nar_bruker_ikke_har_enhet() {
-        arenaOppfolgingTilstand.setOppfolgingsenhet(ENHET);
+        when(arbeidsoppfolgingsKontorService.hentOppfolgingsEnhetId(fnr)).thenReturn(EnhetId.of(ENHET));
 
         VeilederTilgang veilederIkkeTilgang = oppfolgingService.hentVeilederTilgang(fnr);
         assertFalse(veilederIkkeTilgang.isTilgangTilBrukersKontor());
@@ -418,7 +429,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     public void kanIkkeAvslutteNarManIkkeErUnderOppfolging() {
         oppfolgingsStatusRepository.opprettOppfolging(aktorId);
 
-        AvslutningStatusData avslutningStatusData = oppfolgingService.hentAvslutningstatusForManuellAvslutning(fnr);
+        AvslutningStatusData avslutningStatusData = avsluttOppfolgingService.hentAvslutningstatusForManuellAvslutning(fnr);
 
         assertFalse(avslutningStatusData.kanAvslutte);
     }
@@ -429,9 +440,11 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         assertUnderOppfolgingLagret(aktorId);
         gittArenaOppfolgingStatus("ARBS", null);
 
-        AvslutningStatusData avslutningStatusData = oppfolgingService.avsluttOppfolging(new ManuellAvregistrering(aktorId, new VeilederRegistrant(new NavIdent(VEILEDER)), ""));
+        KunneAvsluttesResultat avslutningStatusData = avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(
+                new ManuellAvregistrering(aktorId, new VeilederRegistrant(new NavIdent(VEILEDER)), "")
+        );
 
-        assertFalse(avslutningStatusData.underOppfolging);
+        assertInstanceOf(KunneAvsluttes.class, avslutningStatusData);
     }
 
     @Test
@@ -441,9 +454,9 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         gittArenaOppfolgingStatus("ARBS", null);
         var oppfolgingsperiodeId = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId).getFirst().getUuid();
 
-        AvslutningStatusData avslutningStatusData = oppfolgingService.avsluttOppfolging(new AdminAvregistrering(aktorId, new VeilederRegistrant(new NavIdent(VEILEDER)), "", oppfolgingsperiodeId));
+        KunneAvsluttesResultat avslutningStatusData = avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(new AdminAvregistrering(aktorId, new VeilederRegistrant(new NavIdent(VEILEDER)), "", oppfolgingsperiodeId));
 
-        assertFalse(avslutningStatusData.underOppfolging);
+        assertInstanceOf(KunneAvsluttes.class, avslutningStatusData);
     }
 
     @Test
@@ -452,20 +465,20 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         assertUnderOppfolgingLagret(aktorId);
         gittArenaOppfolgingStatus("ARBS", null);
 
-        AvslutningStatusData avslutningStatusData = oppfolgingService.avsluttOppfolging(new UtmeldtEtter28Dager(aktorId));
+        KunneAvsluttesResultat avslutningStatusData = avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(new UtmeldtEtter28Dager(aktorId));
 
-        assertTrue(avslutningStatusData.underOppfolging);
+        assertInstanceOf(KunneIkkeAvsluttes.class, avslutningStatusData);
     }
 
     @Test
     public void kanIkkeAvslutteOmManErAktivIArenaHvisAvslutningEr_ArenaIservKanIkkeReaktiveres() {
         startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.Companion.arbeidssokerRegistrering(fnr, aktorId, new VeilederRegistrant(NAV_IDENT)));
         assertUnderOppfolgingLagret(aktorId);
-        gittArenaOppfolgingStatus("ARBS", null);
+        when(arbeidssoekerregisteretClient.erArbeidssoeker(fnr.get())).thenReturn(true);
 
-        AvslutningStatusData avslutningStatusData = oppfolgingService.avsluttOppfolging(new ArenaIservKanIkkeReaktiveres(aktorId));
+        KunneAvsluttesResultat avslutningStatusData = avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(new ArenaIservKanIkkeReaktiveres(aktorId));
 
-        assertTrue(avslutningStatusData.underOppfolging);
+        assertInstanceOf(KunneIkkeAvsluttes.class, avslutningStatusData);
     }
 
     @Test
@@ -476,7 +489,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
         gittArenaOppfolgingStatus("ISERV", "");
 
-        AvslutningStatusData avslutningStatusData = oppfolgingService.hentAvslutningstatusForManuellAvslutning(fnr);
+        AvslutningStatusData avslutningStatusData = avsluttOppfolgingService.hentAvslutningstatusForManuellAvslutning(fnr);
 
         assertFalse(avslutningStatusData.kanAvslutte);
         assertTrue(avslutningStatusData.harAktiveTiltaksdeltakelser);
@@ -490,7 +503,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
         gittArenaOppfolgingStatus("ISERV", "");
 
-        AvslutningStatusData avslutningStatusData = oppfolgingService.hentAvslutningstatusForManuellAvslutning(fnr);
+        AvslutningStatusData avslutningStatusData = avsluttOppfolgingService.hentAvslutningstatusForManuellAvslutning(fnr);
 
         assertFalse(avslutningStatusData.kanAvslutte);
         assertTrue(avslutningStatusData.erDeltakerIUngdomsprogrammet);
@@ -504,7 +517,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
         gittArenaOppfolgingStatus("ISERV", "");
 
-        AvslutningStatusData avslutningStatusData = oppfolgingService.hentAvslutningstatusForManuellAvslutning(fnr);
+        AvslutningStatusData avslutningStatusData = avsluttOppfolgingService.hentAvslutningstatusForManuellAvslutning(fnr);
 
         assertFalse(avslutningStatusData.kanAvslutte);
         assertTrue(avslutningStatusData.erArbeidssoeker);
@@ -518,7 +531,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
         gittArenaOppfolgingStatus("ISERV", "");
 
-        AvslutningStatusData avslutningStatusData = oppfolgingService.hentAvslutningstatusForManuellAvslutning(fnr);
+        AvslutningStatusData avslutningStatusData = avsluttOppfolgingService.hentAvslutningstatusForManuellAvslutning(fnr);
 
         assertFalse(avslutningStatusData.kanAvslutte);
         assertTrue(avslutningStatusData.harAap);
@@ -532,7 +545,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         gittArenaOppfolgingStatus("ISERV", "");
         when(arenaYtelserService.harPagaendeYtelse(fnr)).thenReturn(true);
 
-        AvslutningStatusData avslutningStatusData = oppfolgingService.hentAvslutningstatusForManuellAvslutning(fnr);
+        AvslutningStatusData avslutningStatusData = avsluttOppfolgingService.hentAvslutningstatusForManuellAvslutning(fnr);
 
         assertTrue(avslutningStatusData.kanAvslutte);
         assertTrue(avslutningStatusData.harYtelser);
@@ -628,6 +641,10 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         arenaOppfolgingTilstand.setFormidlingsgruppe("IARBS");
         oppfolgingsStatusRepository.opprettOppfolging(aktorId);
         startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.Companion.arenaSyncOppfolgingBrukerRegistrering(fnr, aktorId, Formidlingsgruppe.IARBS, Kvalifiseringsgruppe.BATT, EnhetId.of(ENHET)));
+
+        var periode = oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId).orElseThrow();
+        arbeidsoppfolgingskontorRepository.settNavKontor(fnr.get(), aktorId.get(), periode.getUuid(), ENHET);
+
         UnderOppfolgingDTO underOppfolgingDTO = oppfolgingService.oppfolgingData(fnr);
         Assertions.assertThat(underOppfolgingDTO.isUnderOppfolging()).isTrue();
         Assertions.assertThat(underOppfolgingDTO.isErManuell()).isFalse();

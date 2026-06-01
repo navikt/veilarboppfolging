@@ -15,6 +15,7 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant;
 import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
 import no.nav.veilarboppfolging.service.AuthService;
+import no.nav.veilarboppfolging.service.AvsluttOppfolgingService;
 import no.nav.veilarboppfolging.service.OppfolgingService;
 import no.nav.veilarboppfolging.utils.DtoMappers;
 import no.nav.veilarboppfolging.utils.auth.AuthorizeAktorId;
@@ -33,6 +34,7 @@ import static no.nav.veilarboppfolging.utils.DtoMappers.*;
 @RequiredArgsConstructor
 public class OppfolgingV2Controller {
     private final OppfolgingService oppfolgingService;
+    private final AvsluttOppfolgingService avsluttOppfolgingService;
 
     private final AuthService authService;
 
@@ -63,14 +65,14 @@ public class OppfolgingV2Controller {
         var navIdent = request.getVeilederId();
         var aktorId = authService.getAktorIdOrThrow(request.getFnr());
         var avregistrering = new ManuellAvregistrering(aktorId, new VeilederRegistrant(navIdent), request.getBegrunnelse());
-        oppfolgingService.avsluttOppfolging(avregistrering);
+        avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(avregistrering);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @GetMapping("/avslutning-status")
     public AvslutningsStatusDto hentAvslutningStatus(@RequestParam("fnr") Fnr fnr) {
         authService.skalVereInternBruker();
-        return tilDto(oppfolgingService.hentAvslutningstatusForManuellAvslutning(fnr));
+        return tilDto(avsluttOppfolgingService.hentAvslutningstatusForManuellAvslutning(fnr));
     }
 
     @GetMapping("/periode/{uuid}")

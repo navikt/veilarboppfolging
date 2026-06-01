@@ -7,10 +7,7 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.veilarboppfolging.domain.RepubliserOppfolgingsperioderRequest;
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
 import no.nav.veilarboppfolging.repository.VeilederTilordningerRepository;
-import no.nav.veilarboppfolging.service.AuthService;
-import no.nav.veilarboppfolging.service.KafkaRepubliseringService;
-import no.nav.veilarboppfolging.service.ManuellStatusService;
-import no.nav.veilarboppfolging.service.OppfolgingService;
+import no.nav.veilarboppfolging.service.*;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -57,6 +54,9 @@ public class AdminControllerTest {
 
     @MockitoBean
     private OppfolgingService oppfolgingService;
+
+    @MockitoBean
+    private AvsluttOppfolgingService avsluttOppfolgingService;
 
     @MockitoBean
     private AktorOppslagClient aktorOppslagClient;

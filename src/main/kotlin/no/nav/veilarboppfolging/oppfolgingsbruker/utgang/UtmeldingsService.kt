@@ -4,6 +4,7 @@ import no.nav.common.types.identer.AktorId
 import no.nav.veilarboppfolging.eventsLogger.BigQueryClient
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.UtmeldEtter28Cron.AvslutteOppfolgingResultat
 import no.nav.veilarboppfolging.repository.UtmeldingRepository
+import no.nav.veilarboppfolging.service.AvsluttOppfolgingService
 import no.nav.veilarboppfolging.service.MetricsService
 import no.nav.veilarboppfolging.service.OppfolgingService
 import no.nav.veilarboppfolging.service.utmelding.KanskjeIservBruker
@@ -16,6 +17,7 @@ class UtmeldingsService(
     val metricsService: MetricsService,
     val utmeldingRepository: UtmeldingRepository,
     val oppfolgingService: OppfolgingService,
+    val avsluttOppfolgingService: AvsluttOppfolgingService,
     val bigQueryClient: BigQueryClient
 ) {
     private val log = LoggerFactory.getLogger(UtmeldingsService::class.java)
@@ -69,10 +71,10 @@ class UtmeldingsService(
             } else {
                 log.info("Utgang: Forsøker å avslutte oppfølging automatisk grunnet iserv i 28 dager")
                 val avregistrering = UtmeldtEtter28Dager(aktorId)
-                val avslutningStatus = oppfolgingService.avsluttOppfolging(avregistrering)
+                val kanAvslutte = avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(avregistrering)
                 // Hvis kanAvslutte er false, så betyr det at oppfølgingsperioden hos oss ikke ble avsluttet.
                 // Da beholder vi brukeren i utmeldingstabellen, og forsøker igjen senere
-                val oppfolgingFaktiskAvsluttet = avslutningStatus.kanAvslutte
+                val oppfolgingFaktiskAvsluttet = kanAvslutte is KunneAvsluttes
                 if (oppfolgingFaktiskAvsluttet) {
                     slettFraUtmeldingTabell(ScheduledJob_UtAvOppfolgingPga28DagerIserv(aktorId))
                     metricsService.antallBrukereAvsluttetAutomatisk()

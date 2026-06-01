@@ -27,7 +27,6 @@ public class KafkaConsumerService {
 
     private final AuthService authService;
     private final UtmeldingsService utmeldingsService;
-    private final OppfolgingsenhetEndringService oppfolgingsenhetEndringService;
     private final OppfolgingsbrukerEndretIArenaService oppfolgingsbrukerEndretIArenaService;
     private final AktorOppslagClient aktorOppslagClient;
     private final SisteEndringPaaOppfolgingBrukerService sisteEndringPaaOppfolgingBrukerService;
@@ -35,15 +34,12 @@ public class KafkaConsumerService {
     @Autowired
     public KafkaConsumerService(
             AuthService authService,
-            @Lazy KvpService kvpService,
             @Lazy UtmeldingsService utmeldingsService,
-            OppfolgingsenhetEndringService oppfolgingsenhetEndringService,
             @Lazy OppfolgingsbrukerEndretIArenaService oppfolgingsbrukerEndretIArenaService,
             AktorOppslagClient aktorOppslagClient,
             SisteEndringPaaOppfolgingBrukerService sisteEndringPaaOppfolgingBrukerService) {
         this.authService = authService;
         this.utmeldingsService = utmeldingsService;
-        this.oppfolgingsenhetEndringService = oppfolgingsenhetEndringService;
         this.oppfolgingsbrukerEndretIArenaService = oppfolgingsbrukerEndretIArenaService;
         this.aktorOppslagClient = aktorOppslagClient;
         this.sisteEndringPaaOppfolgingBrukerService = sisteEndringPaaOppfolgingBrukerService;
@@ -71,7 +67,6 @@ public class KafkaConsumerService {
             var endring = EndringPaaOppfolgingsBruker.Companion.from(endringPaBruker, aktorId);
             utmeldingsService.oppdaterUtmeldingsStatus(KanskjeIservBruker.Companion.of(endringPaBruker, aktorId));
             // behandleBrukerEndring har ingen praktisk funksjon lenger siden ao-kontor er master for oppfølgingskontoret, men beholdes inntil videre for sikkerhets skyld
-            oppfolgingsenhetEndringService.behandleBrukerEndring(endring);
             oppfolgingsbrukerEndretIArenaService.oppdaterOppfolgingMedStatusFraArena(endring);
             sisteEndringPaaOppfolgingBrukerService.lagreSisteEndring(brukerFnr, endringPaBruker.getSistEndretDato());
         } catch (IngenGjeldendeIdentException e) {
