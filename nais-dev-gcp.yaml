@@ -239,3 +239,10 @@ spec:
         - application: ida
           namespace: traktor
           cluster: prod-fss # Dette er med vilje
+          # dolly stuff
+        - application: testnav-dolly-proxy
+          namespace: dolly
+          cluster: dev-fss
+        - application: testnav-dolly-proxy-trygdeetaten
+          namespace: dolly
+          cluster: dev-fss
