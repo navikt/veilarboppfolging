@@ -11,6 +11,7 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering
 import no.nav.veilarboppfolging.oppfolgingsbruker.toRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.UtmeldingsService
+import no.nav.veilarboppfolging.service.ArbeidssøkerPeriodeAvsluttet
 import no.nav.veilarboppfolging.service.AuthService
 import no.nav.veilarboppfolging.service.KandidatForUtmeldingService
 import no.nav.veilarboppfolging.service.OppfolgingService
@@ -75,7 +76,7 @@ open class ArbeidssøkerperiodeConsumerService(
         } else {
             logger.info("Melding om avsluttet arbeidssøkerperiode, flagger som utmeldingskandidat hvis under oppfølging")
             if (oppfolgingsperioder.any { it.sluttDato == null }) {
-                kandidatForUtmeldingService.lagreKandidatForUtmelding(aktørId)
+                kandidatForUtmeldingService.lagreKandidatForUtmelding(ArbeidssøkerPeriodeAvsluttet(aktørId, fnr))
             }
         }
     }
