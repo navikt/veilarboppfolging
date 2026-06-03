@@ -24,6 +24,9 @@ spec:
     - team: obo
       application: veilarbportefolje
       access: read
+    - team: obo
+      application: veilarbvedtaksstotte
+      access: read
     - team: tilgangsmaskin
       application: populasjonstilgangskontroll
       access: read
