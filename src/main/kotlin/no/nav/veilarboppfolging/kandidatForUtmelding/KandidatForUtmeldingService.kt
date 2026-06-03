@@ -20,8 +20,9 @@ enum class KandidatForUtmeldingHendelseType {
 class ArbeidssøkerPeriodeAvsluttet(
     aktorId: AktorId,
     fnr: Fnr,
-    override val type: KandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET,
-) : KandidatForUtmeldingHendelse(aktorId, fnr)
+): KandidatForUtmeldingHendelse(aktorId, fnr)  {
+    override val type: KandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET
+}
 
 @Service
 class KandidatForUtmeldingService(
@@ -37,7 +38,7 @@ class KandidatForUtmeldingService(
         val avslutningsstatus = avsluttOppfolgingService.hentAvslutningstatusForManuellAvslutning(kandidatForUtmeldingHendelse.fnr)
 
         if (avslutningsstatus.kanAvslutte) {
-            kandidatForUtmeldingRepository.lagreKandidat(kandidatForUtmeldingHendelse.aktorId)
+            kandidatForUtmeldingRepository.lagreKandidat(kandidatForUtmeldingHendelse)
             logger.info("Kandidat ble lagret fordi arbeidssøkerperiode ble avsluttet")
         } else {
             logger.info("Kandidat kunne ikke avsluttes selvom arbeidssøkerperiode ble avsluttet")
