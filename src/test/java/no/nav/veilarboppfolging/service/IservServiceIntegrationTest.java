@@ -59,7 +59,7 @@ public class IservServiceIntegrationTest {
         when(authService.getFnrOrThrow(any())).thenReturn(FNR);
 
         utmeldingRepository = new UtmeldingRepository(db);
-        utmeldingsService = new UtmeldingsService(mock(MetricsService.class), utmeldingRepository, oppfolgingService, avsluttOppfolgingService, mock());
+        utmeldingsService = new UtmeldingsService(mock(MetricsService.class), utmeldingRepository, oppfolgingService, avsluttOppfolgingService, mock(), kandidatForUtmeldingService);
         utmeldEtter28Cron = new UtmeldEtter28Cron(
                 utmeldingsService,
                 utmeldingRepository,

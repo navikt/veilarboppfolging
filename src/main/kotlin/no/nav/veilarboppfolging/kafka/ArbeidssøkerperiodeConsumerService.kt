@@ -72,6 +72,7 @@ open class ArbeidssøkerperiodeConsumerService(
             val registrant =  startetAvType.toStartetAvType().toRegistrant(navIdent, fnr)
 
             startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.arbeidssokerRegistrering(fnr, aktørId, registrant))
+            kandidatForUtmeldingService.fjernKandidatForUtmelding(aktørId)
             utmeldHvisBrukerBleIservEtterArbeidssøkerRegistrering(fnr, arbeidssøkerperiodeStartet, aktørId)
         } else {
             logger.info("Melding om avsluttet arbeidssøkerperiode, flagger som utmeldingskandidat hvis under oppfølging")

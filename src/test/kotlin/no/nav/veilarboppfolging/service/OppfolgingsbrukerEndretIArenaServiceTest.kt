@@ -36,7 +36,13 @@ class OppfolgingsbrukerEndretIArenaServiceTest {
     private val oppfolgingsStatusRepository: OppfolgingsStatusRepository = mock(OppfolgingsStatusRepository::class.java)
 
     val oppfolgingsbrukerEndretIArenaService = OppfolgingsbrukerEndretIArenaService(
-        oppfolgingService, avsluttOppfolgingService, startOppfolgingService, arenaOppfolgingService, metricsService, oppfolgingsStatusRepository
+        oppfolgingService,
+        avsluttOppfolgingService,
+        startOppfolgingService,
+        arenaOppfolgingService,
+        metricsService,
+        oppfolgingsStatusRepository,
+        kandidatForUtmeldingService
     )
 
     val AKTOR_ID = AktorId("0102030405")

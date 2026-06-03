@@ -2,6 +2,7 @@ package no.nav.veilarboppfolging.oppfolgingsbruker.utgang
 
 import no.nav.common.types.identer.AktorId
 import no.nav.veilarboppfolging.eventsLogger.BigQueryClient
+import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.UtmeldEtter28Cron.AvslutteOppfolgingResultat
 import no.nav.veilarboppfolging.repository.UtmeldingRepository
 import no.nav.veilarboppfolging.service.AvsluttOppfolgingService
@@ -18,7 +19,8 @@ class UtmeldingsService(
     val utmeldingRepository: UtmeldingRepository,
     val oppfolgingService: OppfolgingService,
     val avsluttOppfolgingService: AvsluttOppfolgingService,
-    val bigQueryClient: BigQueryClient
+    val bigQueryClient: BigQueryClient,
+    private val kandidatForUtmeldingService: KandidatForUtmeldingService
 ) {
     private val log = LoggerFactory.getLogger(UtmeldingsService::class.java)
 
@@ -72,6 +74,7 @@ class UtmeldingsService(
                 log.info("Utgang: Forsøker å avslutte oppfølging automatisk grunnet iserv i 28 dager")
                 val avregistrering = UtmeldtEtter28Dager(aktorId)
                 val kanAvslutte = avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(avregistrering)
+                kandidatForUtmeldingService.fjernKandidatForUtmelding(avregistrering.aktorId)
                 // Hvis kanAvslutte er false, så betyr det at oppfølgingsperioden hos oss ikke ble avsluttet.
                 // Da beholder vi brukeren i utmeldingstabellen, og forsøker igjen senere
                 val oppfolgingFaktiskAvsluttet = kanAvslutte is KunneAvsluttes
