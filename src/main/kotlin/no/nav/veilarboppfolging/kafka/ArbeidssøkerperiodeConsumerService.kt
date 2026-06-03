@@ -12,6 +12,7 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrerin
 import no.nav.veilarboppfolging.oppfolgingsbruker.toRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.UtmeldingsService
 import no.nav.veilarboppfolging.service.AuthService
+import no.nav.veilarboppfolging.service.KandidatForUtmeldingService
 import no.nav.veilarboppfolging.service.OppfolgingService
 import no.nav.veilarboppfolging.service.StartOppfolgingService
 import no.nav.veilarboppfolging.service.utmelding.IservTrigger
@@ -37,6 +38,7 @@ open class ArbeidssøkerperiodeConsumerService(
             private val authService: AuthService,
             private val arenaOppfolgingService: ArenaOppfolgingService,
             private val utmeldingService: UtmeldingsService,
+            private val kandidatForUtmeldingService: KandidatForUtmeldingService
 ) {
     private val logger = LoggerFactory.getLogger(this::class.java)
 
@@ -73,7 +75,7 @@ open class ArbeidssøkerperiodeConsumerService(
         } else {
             logger.info("Melding om avsluttet arbeidssøkerperiode, flagger som utmeldingskandidat hvis under oppfølging")
             if (oppfolgingsperioder.any { it.sluttDato == null }) {
-
+                kandidatForUtmeldingService.lagreKandidatForUtmelding(aktørId)
             }
         }
     }
