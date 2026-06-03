@@ -9,9 +9,19 @@ import org.springframework.stereotype.Service
 sealed class KandidatForUtmeldingHendelse (
     val aktorId : AktorId,
     val fnr: Fnr,
-)
+) {
+    abstract val type: KandidatForUtmeldingHendelseType
+}
 
-class ArbeidssøkerPeriodeAvsluttet(aktorId: AktorId, fnr: Fnr): KandidatForUtmeldingHendelse(aktorId, fnr)
+enum class KandidatForUtmeldingHendelseType {
+    ARBEIDSSOKERPERIODE_AVSLUTTET
+}
+
+class ArbeidssøkerPeriodeAvsluttet(
+    aktorId: AktorId,
+    fnr: Fnr,
+    override val type: KandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET,
+) : KandidatForUtmeldingHendelse(aktorId, fnr)
 
 @Service
 class KandidatForUtmeldingService(
