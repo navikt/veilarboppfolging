@@ -1,6 +1,5 @@
 package no.nav.veilarboppfolging.kandidatForUtmelding
 
-import no.nav.common.types.identer.AktorId
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Repository
 
@@ -13,6 +12,7 @@ class KandidatForUtmeldingRepository(
         val sql = """
             INSERT INTO kandidat_for_utmelding(aktor_id, hendelse)
             VALUES (:aktorId, :hendelse)
+            ON CONFLICT (aktor_id) DO NOTHING
         """.trimIndent()
         db.update(sql, mapOf(
             "aktorId" to hendelse.aktorId.get(),
