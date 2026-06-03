@@ -44,4 +44,9 @@ class KandidatForUtmeldingService(
             logger.info("Kandidat kunne ikke avsluttes selvom arbeidssøkerperiode ble avsluttet")
         }
     }
+
+    fun fjernKandidatForUtmelding(aktorId: AktorId) {
+        kandidatForUtmeldingRepository.fjernKandidat(aktorId)
+        logger.info("Fjerner kandidat for utmelding")
+    }
 }
