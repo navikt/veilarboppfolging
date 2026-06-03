@@ -52,15 +52,15 @@ open class ArbeidssøkerperiodeConsumerService(
         val fnr = Fnr.of(arbeidssøkerperiode.identitetsnummer.toString())
         val aktørId = authService.getAktorIdOrThrow(fnr)
 
-        val nyestePeriodeStartDato = oppfolgingService.hentOppfolgingsperioder(aktørId)
-            .maxByOrNull { it.startDato }?.startDato
-        if (nyestePeriodeStartDato?.isAfter(arbeidssøkerperiodeStartet) == true) {
-            logger.info("Har allerede registrert oppfølgingsperiode etter startdato for arbeidssøkerperiode")
-            return
-        }
+        val oppfolgingsperioder = oppfolgingService.hentOppfolgingsperioder(aktørId)
 
         val nyPeriode = arbeidssøkerperiode.avsluttet == null
         if (nyPeriode) {
+            val nyestePeriodeStartDato = oppfolgingsperioder.maxByOrNull { it.startDato }?.startDato
+            if (nyestePeriodeStartDato?.isAfter(arbeidssøkerperiodeStartet) == true) {
+                logger.info("Har allerede registrert oppfølgingsperiode etter startdato for arbeidssøkerperiode")
+                return
+            }
             val startetAvType = arbeidssøkerperiode.startet.utfoertAv.type // VEILEDER, SYSTEM, SLUTTBRUKER
             // TODO: Når vi fjerner /aktiverbruker endepunkt bør vi også fjerne innsatsgruppe-feltet på Oppfolgingsbruker
             logger.info("Fått melding om ny arbeidssøkerperiode, starter oppfølging hvis ikke allerede startet")
@@ -71,7 +71,10 @@ open class ArbeidssøkerperiodeConsumerService(
             startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.arbeidssokerRegistrering(fnr, aktørId, registrant))
             utmeldHvisBrukerBleIservEtterArbeidssøkerRegistrering(fnr, arbeidssøkerperiodeStartet, aktørId)
         } else {
-            logger.info("Melding om avsluttet arbeidssøkerperiode, gjør ingenting")
+            logger.info("Melding om avsluttet arbeidssøkerperiode, flagger som utmeldingskandidat hvis under oppfølging")
+            if (oppfolgingsperioder.any { it.sluttDato == null }) {
+
+            }
         }
     }
 
