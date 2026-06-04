@@ -77,6 +77,10 @@ open class ArbeidssøkerperiodeConsumerService(
         } else {
             logger.info("Melding om avsluttet arbeidssøkerperiode, flagger som utmeldingskandidat hvis under oppfølging")
             if (oppfolgingsperioder.any { it.sluttDato == null }) {
+                val avsluttetAv = arbeidssøkerperiode.avsluttet?.utfoertAv?.type?.name //system, bruker, veileder
+                val kilde = arbeidssøkerperiode.avsluttet?.kilde
+                val aarsak = arbeidssøkerperiode.avsluttet?.aarsak
+
                 kandidatForUtmeldingService.lagreKandidatForUtmelding(ArbeidssøkerPeriodeAvsluttet(aktørId, fnr))
             }
         }
