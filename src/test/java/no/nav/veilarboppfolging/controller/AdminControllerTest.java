@@ -5,6 +5,7 @@ import no.nav.common.auth.context.UserRole;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.types.identer.AktorId;
 import no.nav.veilarboppfolging.domain.RepubliserOppfolgingsperioderRequest;
+import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService;
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
 import no.nav.veilarboppfolging.repository.VeilederTilordningerRepository;
 import no.nav.veilarboppfolging.service.*;
@@ -60,6 +61,9 @@ public class AdminControllerTest {
 
     @MockitoBean
     private AktorOppslagClient aktorOppslagClient;
+
+    @MockitoBean
+    private KandidatForUtmeldingService kandidatForUtmeldingService;
 
     @Test
     public void republiserOppfolgingsperioder__should_return_403_if_user_missing() throws Exception {

@@ -40,8 +40,6 @@ class KandidatForUtmeldingFlytTest(
     @Autowired
     val utmeldingRepository: UtmeldingRepository,
     @Autowired
-    val kandidatForUtmeldingRepository: KandidatForUtmeldingRepository,
-    @Autowired
     val utmeldingsService: UtmeldingsService,
     @Autowired
     val oppfolgingsbrukerEndretIArenaService: OppfolgingsbrukerEndretIArenaService,

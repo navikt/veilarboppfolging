@@ -49,6 +49,8 @@ import no.nav.veilarboppfolging.config.EnvironmentProperties
 import no.nav.veilarboppfolging.config.KafkaProperties
 import no.nav.veilarboppfolging.controller.OppfolgingController
 import no.nav.veilarboppfolging.controller.SakController
+import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingRepository
+import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.BrukerRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
@@ -225,6 +227,12 @@ open class IntegrationTest {
 
     @MockitoBean
     lateinit var aapClient: AapClient
+
+    @Autowired
+    lateinit var kandidatForUtmeldingService: KandidatForUtmeldingService
+
+    @Autowired
+    lateinit var kandidatForUtmeldingRepository: KandidatForUtmeldingRepository
 
     @BeforeEach
     fun beforeEach() {

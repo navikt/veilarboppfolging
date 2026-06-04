@@ -18,12 +18,6 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
     private val FNR = Fnr.of("12345678901")
 
     @Autowired
-    lateinit var kandidatForUtmeldingService: KandidatForUtmeldingService
-
-    @Autowired
-    lateinit var kandidatForUtmeldingRepository: KandidatForUtmeldingRepository
-
-    @Autowired
     lateinit var utmeldingsService: UtmeldingsService
 
     @Autowired
