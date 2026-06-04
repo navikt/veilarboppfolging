@@ -33,9 +33,21 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
         mockArbeidssoekerregisteret(FNR, erArbeidssoeker = false)
         mockAap(FNR, harAap = false)
 
-        kandidatForUtmeldingService.lagreKandidatForUtmelding(ArbeidssøkerPeriodeAvsluttet(AKTOR_ID, FNR))
+        kandidatForUtmeldingService.lagreKandidatForUtmelding(
+            ArbeidssøkerPeriodeAvsluttet(
+                AKTOR_ID, FNR, avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER,
+                kilde = "kilde",
+                aarsak = "aarsak",
+            )
+        )
 
-        assertThat(hentKandidatFraDb(AKTOR_ID)).isNotNull()
+        val kandidat = kandidatForUtmeldingRepository.hentKandidat(AKTOR_ID)
+        assertThat(kandidat).isNotNull
+        assertThat(kandidat?.fnr).isEqualTo(FNR)
+        assertThat(kandidat?.aktorId).isEqualTo(AKTOR_ID)
+        assertThat(kandidat?.avsluttetAv).isEqualTo(KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER)
+        assertThat(kandidat?.kilde).isEqualTo("kilde")
+        assertThat(kandidat?.aarsak).isEqualTo("aarsak")
     }
 
     @Test
@@ -47,9 +59,15 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
         mockArbeidssoekerregisteret(FNR, erArbeidssoeker = false)
         mockAap(FNR, harAap = false)
 
-        kandidatForUtmeldingService.lagreKandidatForUtmelding(ArbeidssøkerPeriodeAvsluttet(AKTOR_ID, FNR))
+        kandidatForUtmeldingService.lagreKandidatForUtmelding(
+            ArbeidssøkerPeriodeAvsluttet(
+                AKTOR_ID, FNR, avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER,
+                kilde = "kilde",
+                aarsak = "aarsak",
+            )
+        )
 
-        assertThat(hentKandidatFraDb(AKTOR_ID)).isNull()
+        assertThat(kandidatForUtmeldingRepository.hentKandidat(AKTOR_ID)).isNull()
     }
 
     @Test
@@ -62,28 +80,40 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
         mockArbeidssoekerregisteret(FNR, erArbeidssoeker = true)
         mockAap(FNR, harAap = false)
 
-        kandidatForUtmeldingService.lagreKandidatForUtmelding(ArbeidssøkerPeriodeAvsluttet(AKTOR_ID, FNR))
+        kandidatForUtmeldingService.lagreKandidatForUtmelding(
+            ArbeidssøkerPeriodeAvsluttet(
+                AKTOR_ID, FNR, avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER,
+                kilde = "kilde",
+                aarsak = "aarsak",
+            )
+        )
 
-        assertThat(hentKandidatFraDb(AKTOR_ID)).isNull()
+        assertThat(kandidatForUtmeldingRepository.hentKandidat(AKTOR_ID)).isNull()
     }
 
     @Test
     fun `fjernKandidatForUtmelding fjerner kandidat fra databasen`() {
-        kandidatForUtmeldingRepository.lagreKandidat(ArbeidssøkerPeriodeAvsluttet(AKTOR_ID, FNR))
-        assertThat(hentKandidatFraDb(AKTOR_ID)).isNotNull()
+        kandidatForUtmeldingRepository.lagreKandidat(
+            ArbeidssøkerPeriodeAvsluttet(
+                AKTOR_ID, FNR, avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER,
+                kilde = "kilde",
+                aarsak = "aarsak",
+            )
+        )
+        assertThat(kandidatForUtmeldingRepository.hentKandidat(AKTOR_ID)).isNotNull()
 
         kandidatForUtmeldingService.fjernKandidatForUtmelding(AKTOR_ID)
 
-        assertThat(hentKandidatFraDb(AKTOR_ID)).isNull()
+        assertThat(kandidatForUtmeldingRepository.hentKandidat(AKTOR_ID)).isNull()
     }
 
     @Test
     fun `fjernKandidatForUtmelding feiler ikke når kandidat ikke finnes i databasen`() {
-        assertThat(hentKandidatFraDb(AKTOR_ID)).isNull()
+        assertThat(kandidatForUtmeldingRepository.hentKandidat(AKTOR_ID)).isNull()
 
         kandidatForUtmeldingService.fjernKandidatForUtmelding(AKTOR_ID)
 
-        assertThat(hentKandidatFraDb(AKTOR_ID)).isNull()
+        assertThat(kandidatForUtmeldingRepository.hentKandidat(AKTOR_ID)).isNull()
     }
 
     @Test
@@ -96,21 +126,24 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
         mockArbeidssoekerregisteret(FNR, erArbeidssoeker = false)
         mockAap(FNR, harAap = false)
 
-        utmeldingRepository.insertUtmeldingTabell(OppdateringFraArena_BleIserv(AKTOR_ID, ZonedDateTime.now().minusDays(29)))
-        kandidatForUtmeldingRepository.lagreKandidat(ArbeidssøkerPeriodeAvsluttet(AKTOR_ID, FNR))
-        assertThat(hentKandidatFraDb(AKTOR_ID)).isNotNull()
+        utmeldingRepository.insertUtmeldingTabell(
+            OppdateringFraArena_BleIserv(
+                AKTOR_ID,
+                ZonedDateTime.now().minusDays(29)
+            )
+        )
+        kandidatForUtmeldingRepository.lagreKandidat(
+            ArbeidssøkerPeriodeAvsluttet(
+                AKTOR_ID, FNR, avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER,
+                kilde = "kilde",
+                aarsak = "aarsak",
+            )
+        )
+        assertThat(kandidatForUtmeldingRepository.hentKandidat(AKTOR_ID)).isNotNull()
 
         utmeldingsService.avsluttOppfolgingOgFjernFraUtmeldingsTabell(AKTOR_ID)
 
-        assertThat(hentKandidatFraDb(AKTOR_ID)).isNull()
-    }
-
-    private fun hentKandidatFraDb(aktorId: AktorId): String? {
-        return namedParameterJdbcTemplate.queryForList(
-            "SELECT aktor_id FROM kandidat_for_utmelding WHERE aktor_id = :aktorId",
-            mapOf("aktorId" to aktorId.get()),
-            String::class.java
-        ).firstOrNull()
+        assertThat(kandidatForUtmeldingRepository.hentKandidat(AKTOR_ID)).isNull()
     }
 }
 

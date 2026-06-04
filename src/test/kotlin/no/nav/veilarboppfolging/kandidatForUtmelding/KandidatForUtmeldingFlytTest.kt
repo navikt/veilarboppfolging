@@ -64,12 +64,12 @@ class KandidatForUtmeldingFlytTest(
         mockArbeidssoekerregisteret(Fnr.of(fnr), erArbeidssoeker = false)
         mockAap(Fnr.of(fnr), harAap = false)
 
-        assertThat(hentKandidatFraDb(aktorId)).isNull()
+        assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNull()
 
         val sluttMelding = ConsumerRecord("topic", 0, 0, "dummyKey", arbeidssokerperiode(fnr, periodeAvsluttet = true))
         arbeidssoekerperiodeConsumerService.consumeArbeidssøkerperiode(sluttMelding)
 
-        assertThat(hentKandidatFraDb(aktorId)).isNotNull()
+        assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNotNull()
     }
 
     @Test
@@ -84,13 +84,13 @@ class KandidatForUtmeldingFlytTest(
                 aarsak = "aarsak",
             )
         )
-        assertThat(hentKandidatFraDb(aktorId)).isNotNull()
+        assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNotNull()
 
         val nyPeriode = arbeidssokerperiode(fnr, periodeAvsluttet = false)
         val melding = ConsumerRecord("topic", 0, 0, "dummyKey", nyPeriode)
         arbeidssoekerperiodeConsumerService.consumeArbeidssøkerperiode(melding)
 
-        assertThat(hentKandidatFraDb(aktorId)).isNull()
+        assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNull()
     }
 
     @Test
@@ -113,11 +113,11 @@ class KandidatForUtmeldingFlytTest(
                 aarsak = "aarsak",
             )
         )
-        assertThat(hentKandidatFraDb(aktorId)).isNotNull()
+        assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNotNull()
 
         utmeldingsService.avsluttOppfolgingOgFjernFraUtmeldingsTabell(aktorId)
 
-        assertThat(hentKandidatFraDb(aktorId)).isNull()
+        assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNull()
     }
 
     @Test
@@ -139,7 +139,7 @@ class KandidatForUtmeldingFlytTest(
                 aarsak = "aarsak",
             )
         )
-        assertThat(hentKandidatFraDb(aktorId)).isNotNull()
+        assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNotNull()
         val arenaEndring = EndringPaaOppfolgingsBruker(
             aktorId = aktorId,
             fodselsnummer = fnr,
@@ -154,7 +154,7 @@ class KandidatForUtmeldingFlytTest(
 
         oppfolgingsbrukerEndretIArenaService.oppdaterOppfolgingMedStatusFraArena(arenaEndring)
 
-        assertThat(hentKandidatFraDb(aktorId)).isNull()
+        assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNull()
     }
 
     @Test
@@ -238,14 +238,6 @@ class KandidatForUtmeldingFlytTest(
             }
             avsluttet = slutt
         }
-    }
-
-    private fun hentKandidatFraDb(aktorId: AktorId): String? {
-        return namedParameterJdbcTemplate.queryForList(
-            "SELECT aktor_id FROM kandidat_for_utmelding WHERE aktor_id = :aktorId",
-            mapOf("aktorId" to aktorId.get()),
-            String::class.java
-        ).firstOrNull()
     }
 }
 
