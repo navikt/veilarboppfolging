@@ -9,6 +9,8 @@ import org.springframework.stereotype.Repository
 import java.sql.ResultSet
 import java.time.ZonedDateTime
 import java.util.UUID
+import no.nav.common.types.identer.Fnr
+import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository.Companion.map
 
 @Repository
 class KandidatForUtmeldingRepository(
@@ -17,8 +19,8 @@ class KandidatForUtmeldingRepository(
 
     fun lagreKandidat(hendelse: KandidatForUtmeldingHendelse) {
         val sql = """
-            INSERT INTO kandidat_for_utmelding(aktor_id, hendelse, avsluttet_av, kilde, aarsak)
-            VALUES (:aktorId, :hendelse, :avsluttet_av, :kilde, :aarsak)
+            INSERT INTO kandidat_for_utmelding(aktor_id, hendelse, avsluttet_av, kilde, aarsak, fnr)
+            VALUES (:aktorId, :hendelse, :avsluttet_av, :kilde, :aarsak, :fnr)
             ON CONFLICT (aktor_id) DO NOTHING
         """.trimIndent()
         db.update(sql, mapOf(
@@ -26,7 +28,8 @@ class KandidatForUtmeldingRepository(
             "hendelse" to hendelse.type.name,
             "avsluttet_av" to hendelse.avsluttetAv.name,
             "kilde" to hendelse.kilde,
-            "aarsak" to hendelse.aarsak
+            "aarsak" to hendelse.aarsak,
+            "fnr" to hendelse.fnr.get()
         ))
     }
 
@@ -39,27 +42,24 @@ class KandidatForUtmeldingRepository(
     }
 
     fun hentKandidat(aktorId: AktorId): KandidatForUtmeldingHendelse? {
-
-
-
-        return db.query("""
-            SELECT * FROM SAK WHERE OPPFOLGINGSPERIODE_UUID = :oppfølgingsperiodeUUID
-        """.trimIndent(),
-            mapOf("oppfølgingsperiodeUUID" to oppfølgingsperiodeUUID.toString()),
-            SakEntity::fromResultSet
-        )
+        return db.query(
+            """
+            SELECT * FROM kandidat_for_utmelding WHERE aktor_id = :aktor_id
+            """.trimIndent(),
+            mapOf("aktor_id" to aktorId.get()),
+        ) { rs, _ -> map(rs) }
+            .firstOrNull()
     }
 
-    data class SakEntity(
-        val id: Long,
-        val oppfølgingsperiodeUUID: UUID,
-        val createdAt: ZonedDateTime,
-    ) {
-        companion object {
-            fun fromResultSet(resultSet: ResultSet, row: Int): SakEntity = SakEntity(
-                id = resultSet.getLong("id"),
-                oppfølgingsperiodeUUID = UUID.fromString(resultSet.getString("oppfolgingsperiode_uuid")),
-                createdAt = hentZonedDateTime(resultSet, "created_at"),
+    fun map(resultSet: ResultSet): KandidatForUtmeldingHendelse {
+        val type = KandidatForUtmeldingHendelseType.valueOf(resultSet.getString("hendelse"))
+        return when (type) {
+            KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET -> ArbeidssøkerPeriodeAvsluttet(
+                aktorId = AktorId.of(resultSet.getString("aktor_id")),
+                fnr = Fnr.of(resultSet.getString("fnr")),
+                avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.valueOf(resultSet.getString("avsluttet_av")),
+                kilde = resultSet.getString("kilde"),
+                aarsak = resultSet.getString("aarsak")
             )
         }
     }
