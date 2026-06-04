@@ -10,6 +10,7 @@ import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeDTO;
 import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeMinimalDTO;
 import no.nav.veilarboppfolging.controller.v2.request.AvsluttOppfolgingV2Request;
 import no.nav.veilarboppfolging.controller.v2.response.UnderOppfolgingV2Response;
+import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService;
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ManuellAvregistrering;
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant;
 import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity;
@@ -37,6 +38,7 @@ public class OppfolgingV2Controller {
     private final AvsluttOppfolgingService avsluttOppfolgingService;
 
     private final AuthService authService;
+    private final KandidatForUtmeldingService kandidatForUtmeldingService;
 
     @AuthorizeFnr(allowlist = {"veilarbvedtaksstotte", "veilarbdialog", "veilarbaktivitet", "veilarbregistrering", "veilarbportefolje"})
     @GetMapping(params = "fnr")
@@ -66,6 +68,7 @@ public class OppfolgingV2Controller {
         var aktorId = authService.getAktorIdOrThrow(request.getFnr());
         var avregistrering = new ManuellAvregistrering(aktorId, new VeilederRegistrant(navIdent), request.getBegrunnelse());
         avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(avregistrering);
+        kandidatForUtmeldingService.fjernKandidatForUtmelding(avregistrering.getAktorId());
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 

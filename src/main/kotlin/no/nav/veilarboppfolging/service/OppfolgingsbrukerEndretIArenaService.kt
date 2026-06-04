@@ -3,6 +3,7 @@ package no.nav.veilarboppfolging.service
 import lombok.RequiredArgsConstructor
 import no.nav.common.types.identer.EnhetId
 import no.nav.common.types.identer.Fnr
+import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.EndringPaaOppfolgingsBruker
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.LocalArenaOppfolging
@@ -26,6 +27,7 @@ class OppfolgingsbrukerEndretIArenaService(
     private val arenaOppfolgingService: ArenaOppfolgingService,
     private val metricsService: MetricsService,
     private val oppfolgingsStatusRepository: OppfolgingsStatusRepository,
+    private val kandidatForUtmeldingService: KandidatForUtmeldingService,
 ){
     val log = LoggerFactory.getLogger(this.javaClass)
 
@@ -76,6 +78,7 @@ class OppfolgingsbrukerEndretIArenaService(
             is BleInaktivertUtenKanReaktiveres -> {
                 val avregistrering = ArenaIservKanIkkeReaktiveres(endringOppfolgingsbruker.aktorId)
                 val kunneAvsluttesResultat = avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(avregistrering)
+                kandidatForUtmeldingService.fjernKandidatForUtmelding(endringOppfolgingsbruker.aktorId)
                 when (kunneAvsluttesResultat) {
                     is KunneAvsluttes -> {
                         secureLog.info(

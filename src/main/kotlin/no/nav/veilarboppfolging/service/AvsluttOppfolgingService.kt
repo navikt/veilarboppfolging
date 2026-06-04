@@ -168,7 +168,7 @@ class AvsluttOppfolgingService(
             is ArenaIservKanIkkeReaktiveres -> true
             else -> {
                 arenaOppfolgingService.hentArenaOppfolgingTilstand(fnr)
-                    .orElseThrow { RuntimeException("Feilet under henting av areana-oppfolgingsstatus (db) med fallback til veilarbarena /oppfolgingsbruker") }
+                    .orElseThrow { RuntimeException("Feilet under henting av arena-oppfolgingsstatus (db) med fallback til veilarbarena /oppfolgingsbruker") }
                     .let { EnumUtils.valueOf(Formidlingsgruppe::class.java, it.getFormidlingsgruppe()) }
                     .let { it == Formidlingsgruppe.ISERV }
             }

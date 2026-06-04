@@ -13,6 +13,7 @@ import no.nav.veilarboppfolging.domain.AvsluttOppfolgingsperiodePayload;
 import no.nav.veilarboppfolging.domain.AvsluttResultat;
 import no.nav.veilarboppfolging.domain.RepubliserOppfolgingsperioderRequest;
 import no.nav.veilarboppfolging.domain.AvsluttPayload;
+import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService;
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant;
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AdminAvregistrering;
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
@@ -43,6 +44,7 @@ public class AdminController {
     private final OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
     private final OppfolgingService oppfolgingService;
     private final AvsluttOppfolgingService avsluttOppfolgingService;
+    private final KandidatForUtmeldingService kandidatForUtmeldingService;
 
     @PostMapping("/republiser/oppfolgingsperioder")
     public String republiserOppfolgingsperioder(@RequestBody(required = false) RepubliserOppfolgingsperioderRequest request) {
@@ -109,6 +111,7 @@ public class AdminController {
                                         null
                                 )
                         );
+                        kandidatForUtmeldingService.fjernKandidatForUtmelding(AktorId.of(aktorId));
                         return true;
                     } catch (Exception e) {
                         log.warn("Kunne ikke avslutte oppfølging: {}", e.getMessage());
@@ -136,7 +139,7 @@ public class AdminController {
                     innloggetBruker,
                     oppfolgingsperiodeSomSkalAvsluttes.getBegrunnelse(),
                     oppfolgingsperiodeSomSkalAvsluttes.getOppfolgingsperiodeUuid());
-
+            kandidatForUtmeldingService.fjernKandidatForUtmelding(AktorId.of(oppfolgingsperiodeSomSkalAvsluttes.getAktorId()));
             return true;
         } catch (Exception e) {
             log.warn("Kunne ikke avslutte oppfølgingsperiode: {}", e.getMessage());

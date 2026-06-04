@@ -6,6 +6,7 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe;
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
 import no.nav.veilarboppfolging.LocalDatabaseSingleton;
+import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService;
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.*;
 import no.nav.veilarboppfolging.repository.UtmeldingRepository;
 import no.nav.veilarboppfolging.repository.entity.UtmeldingEntity;
@@ -36,6 +37,7 @@ public class IservServiceIntegrationTest {
     private AuthService authService = mock(AuthService.class);
     private OppfolgingService oppfolgingService = mock(OppfolgingService.class);
     private AvsluttOppfolgingService avsluttOppfolgingService = mock(AvsluttOppfolgingService.class);
+    private KandidatForUtmeldingService kandidatForUtmeldingService = mock(KandidatForUtmeldingService.class);
 
     private KanAvsluttesInput kunneAvsluttesInput = new KanAvsluttesInput(
         false,
@@ -59,7 +61,7 @@ public class IservServiceIntegrationTest {
         when(authService.getFnrOrThrow(any())).thenReturn(FNR);
 
         utmeldingRepository = new UtmeldingRepository(db);
-        utmeldingsService = new UtmeldingsService(mock(MetricsService.class), utmeldingRepository, oppfolgingService, avsluttOppfolgingService, mock());
+        utmeldingsService = new UtmeldingsService(mock(MetricsService.class), utmeldingRepository, oppfolgingService, avsluttOppfolgingService, mock(), kandidatForUtmeldingService);
         utmeldEtter28Cron = new UtmeldEtter28Cron(
                 utmeldingsService,
                 utmeldingRepository,
