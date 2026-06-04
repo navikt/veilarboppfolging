@@ -9,6 +9,8 @@ import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2
 import no.nav.veilarboppfolging.IntegrationTest
 import no.nav.veilarboppfolging.client.pdl.ForenkletFolkeregisterStatus
 import no.nav.veilarboppfolging.client.pdl.FregStatusOgStatsborgerskap
+import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingRepository
+import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.StartetAvType
 import no.nav.veilarboppfolging.oppfolgingsbruker.BrukerRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant
@@ -128,19 +130,6 @@ class ArbeidssøkerperiodeConsumerServiceTest(
         val oppfølgingsperioder = oppfølgingService.hentOppfolgingsperioder(Fnr.of(fnr))
         assertThat(oppfølgingsperioder).hasSize(1)
         assertThat(oppfølgingsperioder.first().startDato).isCloseTo(startAlleredeRegistrertOppfølgingsperiode, within(1, ChronoUnit.SECONDS))
-    }
-
-    @Test
-    fun `Melding om avsluttet arbeidssøkerperiode skal ignoreres`() {
-        val startMelding = ConsumerRecord("topic", 0, 0, "dummyKey", arbeidssøkerperiode(fnr))
-        arbeidssøkerperiodeConsumerService.consumeArbeidssøkerperiode(startMelding)
-        val sluttMelding = ConsumerRecord("topic", 0, 0, "dummyKey", arbeidssøkerperiode(fnr, periodeAvsluttet = true))
-
-        arbeidssøkerperiodeConsumerService.consumeArbeidssøkerperiode(sluttMelding)
-
-        val oppfølgingsperioder = oppfølgingService.hentOppfolgingsperioder(Fnr.of(fnr))
-        assertThat(oppfølgingsperioder).hasSize(1)
-        assertThat(oppfølgingService.erUnderOppfolging(Fnr.of(fnr))).isTrue
     }
 
     @Test
