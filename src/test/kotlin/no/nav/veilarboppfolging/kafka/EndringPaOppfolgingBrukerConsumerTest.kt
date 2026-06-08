@@ -109,7 +109,7 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
         assertEquals(kvalifiseringsgruppe.name, statusEtterEndring.result.servicegruppe)
 
         val result = arenaOppfolgingService.hentArenaOppfolgingTilstand(fnr) as ArenaOppfolgingTilstandOppslagResult.Success
-        val oppfolgingsTilstand = result.arenaOppfolingTilstand
+        val oppfolgingsTilstand = result.arenaOppfolgingTilstand
         assertEquals(formidlingsgruppe.name, oppfolgingsTilstand.formidlingsgruppe)
         assertEquals(kvalifiseringsgruppe.name, oppfolgingsTilstand.servicegruppe)
         assertEquals(kvalifiseringsgruppe.name, oppfolgingsTilstand.servicegruppe)

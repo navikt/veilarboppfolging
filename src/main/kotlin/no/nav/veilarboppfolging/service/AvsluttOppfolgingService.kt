@@ -8,7 +8,6 @@ import no.nav.veilarboppfolging.client.aap.AapClient
 import no.nav.veilarboppfolging.client.arbeidssoekerregisteret.ArbeidssoekerregisteretClient
 import no.nav.veilarboppfolging.client.tiltakshistorikk.TiltakshistorikkClient
 import no.nav.veilarboppfolging.client.ungdomsprogram.UngdomsprogramClient
-import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolgingTilstand
 import no.nav.veilarboppfolging.domain.AvslutningStatusData
 import no.nav.veilarboppfolging.eventsLogger.BigQueryClient
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant
@@ -104,7 +103,7 @@ class AvsluttOppfolgingService(
         val arenaOppfolgingResult = arenaOppfolgingService.hentArenaOppfolgingTilstand(fnr)
         val inaktiveringsDato = when(arenaOppfolgingResult) {
             is ArenaOppfolgingTilstandOppslagResult.Fail, is ArenaOppfolgingTilstandOppslagResult.NotFound -> null
-            is ArenaOppfolgingTilstandOppslagResult.Success -> arenaOppfolgingResult.arenaOppfolingTilstand.inaktiveringsdato
+            is ArenaOppfolgingTilstandOppslagResult.Success -> arenaOppfolgingResult.arenaOppfolgingTilstand.inaktiveringsdato
         }
 
         val oppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId).orElse(null)
@@ -174,7 +173,7 @@ class AvsluttOppfolgingService(
                     is ArenaOppfolgingTilstandOppslagResult.Fail -> throw RuntimeException("Feilet under henting av arena-oppfolgingsstatus (db) med fallback til veilarbarena /oppfolgingsbruker")
                     is ArenaOppfolgingTilstandOppslagResult.NotFound -> true.also { log.info("Finnes ikke Arena-data for bruker, tolker det som ISERV") }
                     is ArenaOppfolgingTilstandOppslagResult.Success -> arenaOppfolingResult
-                        .let { EnumUtils.valueOf(Formidlingsgruppe::class.java, it.arenaOppfolingTilstand.formidlingsgruppe) }
+                        .let { EnumUtils.valueOf(Formidlingsgruppe::class.java, it.arenaOppfolgingTilstand.formidlingsgruppe) }
                         .let { it == Formidlingsgruppe.ISERV }
                 }
             }

@@ -87,8 +87,8 @@ class ArenaOppfolgingService @Autowired constructor(
         return when(arenaOppfolingTilstandResult) {
             is ArenaOppfolgingTilstandOppslagResult.Fail, is ArenaOppfolgingTilstandOppslagResult.NotFound  -> null
             is ArenaOppfolgingTilstandOppslagResult.Success -> {
-                val iservDato = arenaOppfolingTilstandResult.arenaOppfolingTilstand.inaktiveringsdato
-                val formidlingsgruppe = arenaOppfolingTilstandResult.arenaOppfolingTilstand.formidlingsgruppe?.let {
+                val iservDato = arenaOppfolingTilstandResult.arenaOppfolgingTilstand.inaktiveringsdato
+                val formidlingsgruppe = arenaOppfolingTilstandResult.arenaOppfolgingTilstand.formidlingsgruppe?.let {
                     Formidlingsgruppe.valueOf(it)
                 }
                 IservDatoOgFormidlingsGruppe(iservDato, formidlingsgruppe)
@@ -156,7 +156,7 @@ class ArenaOppfolgingService @Autowired constructor(
 }
 
 sealed class ArenaOppfolgingTilstandOppslagResult {
-    class Success(val arenaOppfolingTilstand: ArenaOppfolgingTilstand) : ArenaOppfolgingTilstandOppslagResult()
+    class Success(val arenaOppfolgingTilstand: ArenaOppfolgingTilstand) : ArenaOppfolgingTilstandOppslagResult()
     class NotFound : ArenaOppfolgingTilstandOppslagResult()
     class Fail(val message: String, val reason: Throwable) : ArenaOppfolgingTilstandOppslagResult()
 }
