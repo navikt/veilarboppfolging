@@ -102,9 +102,10 @@ class AvsluttOppfolgingService(
     private fun getAvslutningStatusForManuellAvslutning(fnr: Fnr): AvslutningStatusData {
         val aktorId = authService.getAktorIdOrThrow(fnr)
         val arenaOppfolgingResult = arenaOppfolgingService.hentArenaOppfolgingTilstand(fnr)
-        val inaktiveringsDato = if(arenaOppfolgingResult is ArenaOppfolgingTilstandOppslagResult.Success) {
-            arenaOppfolgingResult.arenaOppfolingTilstand.inaktiveringsdato
-        } else null
+        val inaktiveringsDato = when(arenaOppfolgingResult) {
+            is ArenaOppfolgingTilstandOppslagResult.Fail, is ArenaOppfolgingTilstandOppslagResult.NotFound -> null
+            is ArenaOppfolgingTilstandOppslagResult.Success -> arenaOppfolgingResult.arenaOppfolingTilstand.inaktiveringsdato
+        }
 
         val oppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId).orElse(null)
 
