@@ -87,8 +87,8 @@ public class ClientTestConfig {
     public VeilarbarenaClient veilarbarenaClient() {
         return new VeilarbarenaClient() {
             @Override
-            public Optional<VeilarbArenaOppfolgingsBruker> hentOppfolgingsbruker(Fnr fnr) {
-                return Optional.of(
+            public ArenaOppfolginsBrukerOppslagResult hentOppfolgingsbruker(Fnr fnr) {
+                return new ArenaOppfolginsBrukerOppslagResult.Success(
                         new VeilarbArenaOppfolgingsBruker()
                                 .setFodselsnr(fnr.get())
                 );

@@ -130,7 +130,7 @@ public class VeilarbarenaClientImplTest {
                         .withBody(toJson(arenaOppfolgingsBrukerResponse())))
         );
 
-        VeilarbArenaOppfolgingsBruker arenaOppfolgingsbruker = veilarbarenaClient.hentOppfolgingsbruker(MOCK_FNR).orElseThrow();
+        VeilarbArenaOppfolgingsBruker arenaOppfolgingsbruker = ((ArenaOppfolginsBrukerOppslagResult.Success) veilarbarenaClient.hentOppfolgingsbruker(MOCK_FNR)).getOppfolgingsBruker();
 
         assertThat(arenaOppfolgingsbruker.getFodselsnr()).isEqualTo("1234");
         assertThat(arenaOppfolgingsbruker.getFormidlingsgruppekode()).isEqualTo(MOCK_FORMIDLINGSGRUPPE);
@@ -140,25 +140,27 @@ public class VeilarbarenaClientImplTest {
     }
 
     @Test
-    public void skal_returnere_empty_om_person_ikke_funnet_oppfolgingsbruker() {
+    public void skal_returnere_not_found_om_person_ikke_funnet_oppfolgingsbruker() {
         String apiUrl = "http://localhost:" + wireMockRule.port();
         VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl(apiUrl, apiScope,authServiceMock);
-
         givenThat(post(urlEqualTo("/veilarbarena/api/v4/hent-oppfolgingsbruker")).withRequestBody(equalToJson("{\"fnr\":\""+MOCK_FNR+"\"}"))
                 .willReturn(aResponse().withStatus(204)));
 
-        assertTrue(veilarbarenaClient.hentOppfolgingsbruker(MOCK_FNR).isEmpty());
+        var result = veilarbarenaClient.hentOppfolgingsbruker(MOCK_FNR);
+
+        assertThat(result).isInstanceOf(ArenaOppfolginsBrukerOppslagResult.NotFound.class);
     }
 
     @Test
     public void skal_returnere_empty_om_man_ikke_har_tilgang_oppfolgingsbruker() {
         String apiUrl = "http://localhost:" + wireMockRule.port();
         VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl(apiUrl, apiScope, authServiceMock);
-
         givenThat(post(urlEqualTo("/veilarbarena/api/v4/hent-oppfolgingsbruker")).withRequestBody(equalToJson("{\"fnr\":\""+MOCK_FNR+"\"}"))
                 .willReturn(aResponse().withStatus(403)));
 
-        assertTrue(veilarbarenaClient.hentOppfolgingsbruker(MOCK_FNR).isEmpty());
+        var result = veilarbarenaClient.hentOppfolgingsbruker(MOCK_FNR);
+
+        assertThat(result).isInstanceOf(ArenaOppfolginsBrukerOppslagResult.Fail.class);
     }
 
     @Test
@@ -169,7 +171,9 @@ public class VeilarbarenaClientImplTest {
         givenThat(post(urlEqualTo("/veilarbarena/api/v4/hent-oppfolgingsbruker")).withRequestBody(equalToJson("{\"fnr\":\""+MOCK_FNR+"\"}"))
                 .willReturn(aResponse().withStatus(400)));
 
-        assertTrue(veilarbarenaClient.hentOppfolgingsbruker(MOCK_FNR).isEmpty());
+        var result = veilarbarenaClient.hentOppfolgingsbruker(MOCK_FNR);
+
+        assertThat(result).isInstanceOf(ArenaOppfolginsBrukerOppslagResult.Fail.class);
     }
 
     @Test

@@ -42,6 +42,7 @@ import no.nav.veilarboppfolging.client.pdl.GeografiskTilknytningNr
 import no.nav.veilarboppfolging.client.pdl.PdlFolkeregisterStatusClient
 import no.nav.veilarboppfolging.client.tiltakshistorikk.TiltakshistorikkClient
 import no.nav.veilarboppfolging.client.ungdomsprogram.UngdomsprogramClient
+import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolginsBrukerOppslagResult
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsBruker
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsStatus
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient
@@ -440,7 +441,7 @@ open class IntegrationTest {
         oppfolgingsEnhet: String? = "1234",
         iservFraDato: ZonedDateTime = ZonedDateTime.now()) {
         `when`(veilarbarenaClient.hentOppfolgingsbruker(fnr)).thenReturn(
-            Optional.of(
+            ArenaOppfolginsBrukerOppslagResult.Success(
                 VeilarbArenaOppfolgingsBruker()
                     .setFodselsnr(fnr.get())
                     .setFormidlingsgruppekode(formidlingsgruppe?.name)

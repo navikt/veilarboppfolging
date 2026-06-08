@@ -8,11 +8,11 @@ import no.nav.veilarboppfolging.client.aap.AapClient
 import no.nav.veilarboppfolging.client.arbeidssoekerregisteret.ArbeidssoekerregisteretClient
 import no.nav.veilarboppfolging.client.tiltakshistorikk.TiltakshistorikkClient
 import no.nav.veilarboppfolging.client.ungdomsprogram.UngdomsprogramClient
-import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolgingTilstand
 import no.nav.veilarboppfolging.domain.AvslutningStatusData
 import no.nav.veilarboppfolging.eventsLogger.BigQueryClient
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
+import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingTilstandOppslagResult
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.*
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.KunneAvsluttesResultat.Companion.kanAvsluttes
 import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.hendelser.OppfolgingsAvsluttetHendelseDto.Companion.of
@@ -100,10 +100,11 @@ class AvsluttOppfolgingService(
 
     private fun getAvslutningStatusForManuellAvslutning(fnr: Fnr): AvslutningStatusData {
         val aktorId = authService.getAktorIdOrThrow(fnr)
-        val maybeArenaOppfolging = arenaOppfolgingService.hentArenaOppfolgingTilstand(fnr)
-        val inaktiveringsDato = maybeArenaOppfolging
-            .map { obj -> obj.getInaktiveringsdato() }
-            .orElse(null)
+        val arenaOppfolgingResult = arenaOppfolgingService.hentArenaOppfolgingTilstand(fnr)
+        val inaktiveringsDato = when(arenaOppfolgingResult) {
+            is ArenaOppfolgingTilstandOppslagResult.Fail, is ArenaOppfolgingTilstandOppslagResult.NotFound -> null
+            is ArenaOppfolgingTilstandOppslagResult.Success -> arenaOppfolgingResult.arenaOppfolgingTilstand.inaktiveringsdato
+        }
 
         val oppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId).orElse(null)
 
@@ -167,10 +168,14 @@ class AvsluttOppfolgingService(
         val erIserv = when (avregistrering) {
             is ArenaIservKanIkkeReaktiveres -> true
             else -> {
-                arenaOppfolgingService.hentArenaOppfolgingTilstand(fnr)
-                    .orElseThrow { RuntimeException("Feilet under henting av arena-oppfolgingsstatus (db) med fallback til veilarbarena /oppfolgingsbruker") }
-                    .let { EnumUtils.valueOf(Formidlingsgruppe::class.java, it.getFormidlingsgruppe()) }
-                    .let { it == Formidlingsgruppe.ISERV }
+                val arenaOppfolingResult = arenaOppfolgingService.hentArenaOppfolgingTilstand(fnr)
+                when (arenaOppfolingResult) {
+                    is ArenaOppfolgingTilstandOppslagResult.Fail -> throw RuntimeException("Feilet under henting av arena-oppfolgingsstatus (db) med fallback til veilarbarena /oppfolgingsbruker")
+                    is ArenaOppfolgingTilstandOppslagResult.NotFound -> true.also { log.info("Finnes ikke Arena-data for bruker, tolker det som ISERV") }
+                    is ArenaOppfolgingTilstandOppslagResult.Success -> arenaOppfolingResult
+                        .let { EnumUtils.valueOf(Formidlingsgruppe::class.java, it.arenaOppfolgingTilstand.formidlingsgruppe) }
+                        .let { it == Formidlingsgruppe.ISERV }
+                }
             }
         }
 
