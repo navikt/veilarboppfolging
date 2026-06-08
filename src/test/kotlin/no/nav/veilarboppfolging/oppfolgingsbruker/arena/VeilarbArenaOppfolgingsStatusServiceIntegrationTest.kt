@@ -7,6 +7,7 @@ import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.pto_schema.enums.arena.Hovedmaal
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
 import no.nav.veilarboppfolging.IntegrationTest
+import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolginsBrukerOppslagResult
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsBruker
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.OppfolgingEnhetMedVeilederResponse.Oppfolgingsenhet
@@ -32,7 +33,7 @@ class VeilarbArenaOppfolgingsStatusServiceIntegrationTest: IntegrationTest() {
         setAoKontor(fnr, aktorId, "1010")
         mockNorgEnhetsNavn("1010", "Nav 1010")
         mockInternBrukerAuthOk(UUID.randomUUID(), aktorId, fnr)
-        `when`(veilarbarenaClient.hentOppfolgingsbruker(fnr)).thenReturn(Optional.of(
+        `when`(veilarbarenaClient.hentOppfolgingsbruker(fnr)).thenReturn(ArenaOppfolginsBrukerOppslagResult.Success(
             VeilarbArenaOppfolgingsBruker()
             .setFodselsnr(fnr.get())
             .setNavKontor("1010")
@@ -57,8 +58,7 @@ class VeilarbArenaOppfolgingsStatusServiceIntegrationTest: IntegrationTest() {
     @Test
     fun `getOppfolginsstatus skal ikke kaste exception hvis bruker ikke finnes i arena`() {
         mockInternBrukerAuthOk(UUID.randomUUID(), aktorId, fnr)
-        `when`(veilarbarenaClient.hentOppfolgingsbruker(fnr)).thenReturn(Optional.empty())
+        `when`(veilarbarenaClient.hentOppfolgingsbruker(fnr)).thenReturn(ArenaOppfolginsBrukerOppslagResult.NotFound())
         assert(arenaOppfolgingService.hentArenaOppfolginsstatusMedHovedmaal(fnr) is GetOppfolginsstatusFailure)
     }
-
 }

@@ -12,6 +12,7 @@ import no.nav.pto_schema.enums.arena.Hovedmaal
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
 import no.nav.veilarboppfolging.FantIkkeBrukerIArenaException
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolgingTilstand
+import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolginsBrukerOppslagResult
 import no.nav.veilarboppfolging.client.veilarbarena.RegistrerIArenaResult
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsBruker
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsStatus
@@ -60,6 +61,7 @@ class ArenaOppfolgingService @Autowired constructor (
      *  - ikke [VeilarbArenaOppfolgingsStatus.kanEnkeltReaktiveres]
      *  - ikke [VeilarbArenaOppfolgingsBruker.hovedmaalkode]
      *  */
+    // TODO: Endre returtype
     fun hentArenaOppfolgingTilstand(fnr: Fnr): Optional<ArenaOppfolgingTilstand> {
         val aktorId = aktorOppslagClient.hentAktorId(fnr)
         val oppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId)
@@ -96,10 +98,11 @@ class ArenaOppfolgingService @Autowired constructor (
                     localArenaOppfolging.get().hovedmaal)
             }
             else -> {
+                val oppfolgingsbrukerOppslag = veilarbarenaClient.hentOppfolgingsbruker(fnr)
                 val veilarbArenaOppfolging = veilarbarenaClient.hentOppfolgingsbruker(fnr)
                     .let {
-                        if (it.isEmpty) { return GetOppfolginsstatusFailure(FantIkkeBrukerIArenaException()) }
-                        return@let it.get()
+                        if (oppfolgingsbrukerOppslag !is ArenaOppfolginsBrukerOppslagResult.Success) { return GetOppfolginsstatusFailure(FantIkkeBrukerIArenaException()) }
+                        else oppfolgingsbrukerOppslag.oppfolgingsBruker
                     }
                 OppfolgingsData(
                     Kvalifiseringsgruppe.valueOf(veilarbArenaOppfolging.kvalifiseringsgruppekode),
