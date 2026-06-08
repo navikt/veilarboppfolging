@@ -171,7 +171,7 @@ class AvsluttOppfolgingService(
                 val arenaOppfolingResult = arenaOppfolgingService.hentArenaOppfolgingTilstand(fnr)
                 when (arenaOppfolingResult) {
                     is ArenaOppfolgingTilstandOppslagResult.Fail -> throw RuntimeException("Feilet under henting av arena-oppfolgingsstatus (db) med fallback til veilarbarena /oppfolgingsbruker")
-                    is ArenaOppfolgingTilstandOppslagResult.NotFound -> true
+                    is ArenaOppfolgingTilstandOppslagResult.NotFound -> true.also { log.info("Finnes ikke Arena-data for bruker, tolker det som ISERV") }
                     is ArenaOppfolgingTilstandOppslagResult.Success -> arenaOppfolingResult
                         .let { EnumUtils.valueOf(Formidlingsgruppe::class.java, it.arenaOppfolingTilstand.formidlingsgruppe) }
                         .let { it == Formidlingsgruppe.ISERV }
