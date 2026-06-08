@@ -13,6 +13,7 @@ import no.nav.veilarboppfolging.domain.AvslutningStatusData
 import no.nav.veilarboppfolging.eventsLogger.BigQueryClient
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
+import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingTilstandOppslagResult
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.*
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.KunneAvsluttesResultat.Companion.kanAvsluttes
 import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.hendelser.OppfolgingsAvsluttetHendelseDto.Companion.of
@@ -100,10 +101,10 @@ class AvsluttOppfolgingService(
 
     private fun getAvslutningStatusForManuellAvslutning(fnr: Fnr): AvslutningStatusData {
         val aktorId = authService.getAktorIdOrThrow(fnr)
-        val maybeArenaOppfolging = arenaOppfolgingService.hentArenaOppfolgingTilstand(fnr)
-        val inaktiveringsDato = maybeArenaOppfolging
-            .map { obj -> obj.getInaktiveringsdato() }
-            .orElse(null)
+        val arenaOppfolgingResult = arenaOppfolgingService.hentArenaOppfolgingTilstand(fnr)
+        val inaktiveringsDato = if(arenaOppfolgingResult is ArenaOppfolgingTilstandOppslagResult.Success) {
+            arenaOppfolgingResult.arenaOppfolingTilstand.inaktiveringsdato
+        } else null
 
         val oppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId).orElse(null)
 
@@ -167,10 +168,14 @@ class AvsluttOppfolgingService(
         val erIserv = when (avregistrering) {
             is ArenaIservKanIkkeReaktiveres -> true
             else -> {
-                arenaOppfolgingService.hentArenaOppfolgingTilstand(fnr)
-                    .orElseThrow { RuntimeException("Feilet under henting av arena-oppfolgingsstatus (db) med fallback til veilarbarena /oppfolgingsbruker") }
-                    .let { EnumUtils.valueOf(Formidlingsgruppe::class.java, it.getFormidlingsgruppe()) }
-                    .let { it == Formidlingsgruppe.ISERV }
+                val arenaOppfolingResult = arenaOppfolgingService.hentArenaOppfolgingTilstand(fnr)
+                when (arenaOppfolingResult) {
+                    is ArenaOppfolgingTilstandOppslagResult.Fail -> throw RuntimeException("Feilet under henting av arena-oppfolgingsstatus (db) med fallback til veilarbarena /oppfolgingsbruker")
+                    is ArenaOppfolgingTilstandOppslagResult.NotFound -> true
+                    is ArenaOppfolgingTilstandOppslagResult.Success -> arenaOppfolingResult
+                        .let { EnumUtils.valueOf(Formidlingsgruppe::class.java, it.arenaOppfolingTilstand.formidlingsgruppe) }
+                        .let { it == Formidlingsgruppe.ISERV }
+                }
             }
         }
 

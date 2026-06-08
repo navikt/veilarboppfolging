@@ -13,6 +13,7 @@ import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsStatu
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient
 import no.nav.veilarboppfolging.kafka.TestUtils.oppfølgingsBrukerEndret
 import no.nav.veilarboppfolging.oppfolgingsbruker.SystemRegistrant
+import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingTilstandOppslagResult
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.GetOppfolginsstatusFailure
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.GetOppfolginsstatusSuccess
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ArenaIservKanIkkeReaktiveres
@@ -106,7 +107,8 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
         assertEquals(formidlingsgruppe.name, statusEtterEndring.result.formidlingsgruppe)
         assertEquals(kvalifiseringsgruppe.name, statusEtterEndring.result.servicegruppe)
 
-        val oppfolgingsTilstand = arenaOppfolgingService.hentArenaOppfolgingTilstand(fnr).get()
+        val result = arenaOppfolgingService.hentArenaOppfolgingTilstand(fnr) as ArenaOppfolgingTilstandOppslagResult.Success
+        val oppfolgingsTilstand = result.arenaOppfolingTilstand
         assertEquals(formidlingsgruppe.name, oppfolgingsTilstand.formidlingsgruppe)
         assertEquals(kvalifiseringsgruppe.name, oppfolgingsTilstand.servicegruppe)
         assertEquals(kvalifiseringsgruppe.name, oppfolgingsTilstand.servicegruppe)
@@ -121,7 +123,7 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
         mockEnhetINorg("8989", "Nav enhet")
 
         val oppfolgingFørEndring = arenaOppfolgingService.hentArenaOppfolgingTilstand(fnr)
-        assert(oppfolgingFørEndring.isEmpty) { "Ny bruker skal IKKE ha oppfølgingsstatus" }
+        assert(oppfolgingFørEndring is ArenaOppfolgingTilstandOppslagResult.NotFound) { "Ny bruker skal IKKE ha oppfølgingsstatus" }
         val oppfolgingsperioder = oppfolgingService.hentOppfolgingsperioder(fnr)
         assert(oppfolgingsperioder.isEmpty()) { "Bruker skal ikke ha oppfølgingsperioder" }
 
@@ -163,7 +165,7 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
     @Test
     fun `skal håndtere brukere som mangler oppfølgingsstatus`() {
         val oppfolgingsStatus = arenaOppfolgingService.hentArenaOppfolgingTilstand(fnr)
-        assert(oppfolgingsStatus.isEmpty)
+        assert(oppfolgingsStatus is ArenaOppfolgingTilstandOppslagResult.NotFound)
         val arenaOppfolginsStatus = arenaOppfolgingService.hentArenaOppfolginsstatusMedHovedmaal(fnr)
         assert(arenaOppfolginsStatus is GetOppfolginsstatusFailure)
     }
@@ -179,7 +181,7 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
         assertEquals(0, statusEtterEndring.get().gjeldendeKvpId)
 
         val oppfolgingsTilstand = arenaOppfolgingService.hentArenaOppfolgingTilstand(fnr)
-        assert(oppfolgingsTilstand.isEmpty)
+        assert(oppfolgingsTilstand is ArenaOppfolgingTilstandOppslagResult.NotFound)
 
         val oppfolgingsStatus = arenaOppfolgingService.hentArenaOppfolginsstatusMedHovedmaal(fnr)
         assert(oppfolgingsStatus is GetOppfolginsstatusFailure)
