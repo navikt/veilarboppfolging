@@ -12,6 +12,7 @@ import no.nav.pto_schema.enums.arena.Hovedmaal
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
 import no.nav.veilarboppfolging.FantIkkeBrukerIArenaException
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolgingTilstand
+import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolginsBrukerOppslagResult
 import no.nav.veilarboppfolging.client.veilarbarena.RegistrerIArenaResult
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsBruker
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsStatus
@@ -22,10 +23,11 @@ import no.nav.veilarboppfolging.service.AuthService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
+import kotlin.jvm.optionals.getOrNull
 
 @Slf4j
 @Service
-class ArenaOppfolgingService @Autowired constructor (
+class ArenaOppfolgingService @Autowired constructor(
     // Bruker AktorregisterClient istedenfor authService for å unngå sirkulær avhengighet
     private val aktorOppslagClient: AktorOppslagClient,
     private val veilarbarenaClient: VeilarbarenaClient,
@@ -42,7 +44,7 @@ class ArenaOppfolgingService @Autowired constructor (
 
     fun brukerErIservIArena(fnr: Fnr): Boolean {
         return veilarbarenaClient.getArenaOppfolgingsstatus(fnr)
-            .map {  it.formidlingsgruppe == Formidlingsgruppe.ISERV.name }
+            .map { it.formidlingsgruppe == Formidlingsgruppe.ISERV.name }
             .orElse(false) // Nei hvis bruker ikke finnes i arena eller ikke får svar fra arena
     }
 
@@ -60,24 +62,38 @@ class ArenaOppfolgingService @Autowired constructor (
      *  - ikke [VeilarbArenaOppfolgingsStatus.kanEnkeltReaktiveres]
      *  - ikke [VeilarbArenaOppfolgingsBruker.hovedmaalkode]
      *  */
-    fun hentArenaOppfolgingTilstand(fnr: Fnr): Optional<ArenaOppfolgingTilstand> {
+    fun hentArenaOppfolgingTilstand(fnr: Fnr): ArenaOppfolgingTilstandOppslagResult {
         val aktorId = aktorOppslagClient.hentAktorId(fnr)
         val oppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId)
-        return oppfolging.flatMap { it.localArenaOppfolging }
-            .map { ArenaOppfolgingTilstand.fraLocalArenaOppfolging(it) }
-            .or { // Fallback til synkront endepunkt
-                veilarbarenaClient.hentOppfolgingsbruker(fnr)
-                    .map { ArenaOppfolgingTilstand.fraArenaBruker(it) } // Oppfølgingsbruker endepunkt
-            }
+        val localArenaOppfolging = oppfolging.getOrNull()?.localArenaOppfolging?.getOrNull()
+        if (localArenaOppfolging != null) {
+            return ArenaOppfolgingTilstandOppslagResult.Success(ArenaOppfolgingTilstand.fraLocalArenaOppfolging(localArenaOppfolging))
+        }
+        val result = veilarbarenaClient.hentOppfolgingsbruker(fnr)
+        return when (result) {
+            is ArenaOppfolginsBrukerOppslagResult.Fail -> ArenaOppfolgingTilstandOppslagResult.Fail(
+                "Feil ved henting av oppfolgingsbruker fra arena",
+                result.reason
+            )
+            is ArenaOppfolginsBrukerOppslagResult.NotFound -> ArenaOppfolgingTilstandOppslagResult.NotFound()
+            is ArenaOppfolginsBrukerOppslagResult.Success -> ArenaOppfolgingTilstandOppslagResult.Success(
+                ArenaOppfolgingTilstand.fraArenaBruker(result.oppfolgingsBruker)
+            )
+        }
     }
 
     fun hentIservDatoOgFormidlingsGruppe(fnr: Fnr): IservDatoOgFormidlingsGruppe? {
-        return hentArenaOppfolgingTilstand(fnr)
-            .map { oppfolgingsbruker ->
-                val iservDato = oppfolgingsbruker.inaktiveringsdato
-                val formidlingsgruppe = oppfolgingsbruker.formidlingsgruppe?.let { Formidlingsgruppe.valueOf(it) }
+        val arenaOppfolingTilstandResult = hentArenaOppfolgingTilstand(fnr)
+        return when(arenaOppfolingTilstandResult) {
+            is ArenaOppfolgingTilstandOppslagResult.Fail, is ArenaOppfolgingTilstandOppslagResult.NotFound  -> null
+            is ArenaOppfolgingTilstandOppslagResult.Success -> {
+                val iservDato = arenaOppfolingTilstandResult.arenaOppfolgingTilstand.inaktiveringsdato
+                val formidlingsgruppe = arenaOppfolingTilstandResult.arenaOppfolgingTilstand.formidlingsgruppe?.let {
+                    Formidlingsgruppe.valueOf(it)
+                }
                 IservDatoOgFormidlingsGruppe(iservDato, formidlingsgruppe)
-            }.orElse(null)
+            }
+        }
     }
 
     /* Egentlig ikke oppfolgingsstatus men oppfølgingsbruker men endepunktet heter /oppfolgingsstatus */
@@ -93,14 +109,15 @@ class ArenaOppfolgingService @Autowired constructor (
                 OppfolgingsData(
                     localArenaOppfolging.get().kvalifiseringsgruppe,
                     localArenaOppfolging.get().formidlingsgruppe,
-                    localArenaOppfolging.get().hovedmaal)
+                    localArenaOppfolging.get().hovedmaal
+                )
             }
             else -> {
-                val veilarbArenaOppfolging = veilarbarenaClient.hentOppfolgingsbruker(fnr)
-                    .let {
-                        if (it.isEmpty) { return GetOppfolginsstatusFailure(FantIkkeBrukerIArenaException()) }
-                        return@let it.get()
-                    }
+                val oppfolgingsbrukerOppslag = veilarbarenaClient.hentOppfolgingsbruker(fnr)
+                val veilarbArenaOppfolging = when(oppfolgingsbrukerOppslag) {
+                    is ArenaOppfolginsBrukerOppslagResult.Success -> oppfolgingsbrukerOppslag.oppfolgingsBruker
+                    is ArenaOppfolginsBrukerOppslagResult.NotFound, is ArenaOppfolginsBrukerOppslagResult.Fail -> return GetOppfolginsstatusFailure(FantIkkeBrukerIArenaException())
+                }
                 OppfolgingsData(
                     Kvalifiseringsgruppe.valueOf(veilarbArenaOppfolging.kvalifiseringsgruppekode),
                     Formidlingsgruppe.valueOf(veilarbArenaOppfolging.formidlingsgruppekode),
@@ -109,7 +126,8 @@ class ArenaOppfolgingService @Autowired constructor (
             }
         }
 
-        val veilederIdent = if (authService.erInternBruker()) lokaltLagretOppfolging.map { it.veilederId  }.orElse(null) else null
+        val veilederIdent =
+            if (authService.erInternBruker()) lokaltLagretOppfolging.map { it.veilederId }.orElse(null) else null
         return GetOppfolginsstatusSuccess(
             OppfolgingEnhetMedVeilederResponse(
                 oppfolgingsenhet = oppfolgingsEnhet?.let { hentEnhet(it) },
@@ -135,6 +153,12 @@ class ArenaOppfolgingService @Autowired constructor (
             return Oppfolgingsenhet("", enhetId.get())
         }
     }
+}
+
+sealed class ArenaOppfolgingTilstandOppslagResult {
+    class Success(val arenaOppfolgingTilstand: ArenaOppfolgingTilstand) : ArenaOppfolgingTilstandOppslagResult()
+    class NotFound : ArenaOppfolgingTilstandOppslagResult()
+    class Fail(val message: String, val reason: Throwable) : ArenaOppfolgingTilstandOppslagResult()
 }
 
 data class OppfolgingsData(

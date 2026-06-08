@@ -1,28 +1,9 @@
 package no.nav.veilarboppfolging.kandidatForUtmelding
 
 import no.nav.common.types.identer.AktorId
-import no.nav.common.types.identer.Fnr
 import no.nav.veilarboppfolging.service.AvsluttOppfolgingService
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
-
-sealed class KandidatForUtmeldingHendelse (
-    val aktorId : AktorId,
-    val fnr: Fnr,
-) {
-    abstract val type: KandidatForUtmeldingHendelseType
-}
-
-enum class KandidatForUtmeldingHendelseType {
-    ARBEIDSSOKERPERIODE_AVSLUTTET
-}
-
-class ArbeidssøkerPeriodeAvsluttet(
-    aktorId: AktorId,
-    fnr: Fnr,
-): KandidatForUtmeldingHendelse(aktorId, fnr)  {
-    override val type: KandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET
-}
 
 @Service
 class KandidatForUtmeldingService(

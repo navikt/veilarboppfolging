@@ -26,6 +26,7 @@ import no.nav.veilarboppfolging.kafka.dto.OppfolgingsperiodeDTO;
 import no.nav.veilarboppfolging.oppfolgingsbruker.BrukerRegistrant;
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant;
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService;
+import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingTilstandOppslagResult;
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering;
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.*;
 import no.nav.veilarboppfolging.repository.ArbeidsoppfolgingskontorRepository;
@@ -144,7 +145,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
         when(authService.getAktorIdOrThrow(fnr)).thenReturn(aktorId);
         when(authService.getFnrOrThrow(aktorId)).thenReturn(fnr);
-        when(arenaOppfolgingService.hentArenaOppfolgingTilstand(fnr)).thenReturn(Optional.of(arenaOppfolgingTilstand));
+        when(arenaOppfolgingService.hentArenaOppfolgingTilstand(fnr)).thenReturn(new ArenaOppfolgingTilstandOppslagResult.Success(arenaOppfolgingTilstand));
         when(arenaOppfolgingService.hentArenaOppfolgingsStatus(fnr)).thenReturn(Optional.of(arenaOppfolgingStatus));
         when(arbeidsoppfolgingsKontorService.hentOppfolgingsEnhetId(fnr)).thenReturn(EnhetId.of(ENHET));
         when(manuellStatusService.hentDigdirKontaktinfo(fnr)).thenReturn(new KRRData());

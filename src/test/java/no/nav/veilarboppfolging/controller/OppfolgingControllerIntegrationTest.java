@@ -16,6 +16,7 @@ import no.nav.veilarboppfolging.client.tiltakshistorikk.TiltakshistorikkClient;
 import no.nav.veilarboppfolging.client.ungdomsprogram.UngdomsprogramClient;
 import no.nav.veilarboppfolging.client.arbeidssoekerregisteret.ArbeidssoekerregisteretClient;
 import no.nav.veilarboppfolging.client.aap.AapClient;
+import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolginsBrukerOppslagResult;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsStatus;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsBruker;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
@@ -134,7 +135,7 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
         doReturn(permit).when(poaoTilgangClient).evaluatePolicy(any());
         // ISERV i arena, ingen ytelser i arena, ingen aktive tiltak hos komet.
         when(veilarbarenaClient.getArenaOppfolgingsstatus(FNR)).thenReturn(Optional.of(new VeilarbArenaOppfolgingsStatus().setFormidlingsgruppe("ISERV")));
-        when(veilarbarenaClient.hentOppfolgingsbruker(FNR)).thenReturn(Optional.of(new VeilarbArenaOppfolgingsBruker().setFormidlingsgruppekode("ISERV")));
+        when(veilarbarenaClient.hentOppfolgingsbruker(FNR)).thenReturn(new ArenaOppfolginsBrukerOppslagResult.Success(new VeilarbArenaOppfolgingsBruker().setFormidlingsgruppekode("ISERV")));
         when(arenaYtelserService.harPagaendeYtelse(FNR)).thenReturn(false);
         when(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(FNR.get())).thenReturn(false);
         when(ungdomsprogramClient.erDeltakerIUngdomsprogrammet(FNR.get())).thenReturn(false);
@@ -162,7 +163,7 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
         // Tester ikke tilgang
         doReturn(permit).when(poaoTilgangClient).evaluatePolicy(any());
         // ISERV i arena, ingen ytelser i arena, men aktive tiltak hos komet.
-        when(veilarbarenaClient.hentOppfolgingsbruker(FNR)).thenReturn(Optional.of(new VeilarbArenaOppfolgingsBruker().setFormidlingsgruppekode("ISERV")));
+        when(veilarbarenaClient.hentOppfolgingsbruker(FNR)).thenReturn(new ArenaOppfolginsBrukerOppslagResult.Success(new VeilarbArenaOppfolgingsBruker().setFormidlingsgruppekode("ISERV")));
         when(arenaYtelserService.harPagaendeYtelse(FNR)).thenReturn(false);
         when(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(FNR.get())).thenReturn(true);
 
@@ -184,7 +185,7 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
         // Tester ikke tilgang
         doReturn(permit).when(poaoTilgangClient).evaluatePolicy(any());
         // ISERV i arena, ingen ytelser i arena, ingen aktive tiltak, men deltaker i ungdomsprogrammet.
-        when(veilarbarenaClient.hentOppfolgingsbruker(FNR)).thenReturn(Optional.of(new VeilarbArenaOppfolgingsBruker().setFormidlingsgruppekode("ISERV")));
+        when(veilarbarenaClient.hentOppfolgingsbruker(FNR)).thenReturn(new ArenaOppfolginsBrukerOppslagResult.Success(new VeilarbArenaOppfolgingsBruker().setFormidlingsgruppekode("ISERV")));
         when(arenaYtelserService.harPagaendeYtelse(FNR)).thenReturn(false);
         when(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(FNR.get())).thenReturn(false);
         when(ungdomsprogramClient.erDeltakerIUngdomsprogrammet(FNR.get())).thenReturn(true);
@@ -205,7 +206,7 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
         var startPeriode = startOppfolging();
         ApiResult<Decision> permit = ApiResult.Companion.success(Decision.Permit.INSTANCE);
         doReturn(permit).when(poaoTilgangClient).evaluatePolicy(any());
-        when(veilarbarenaClient.hentOppfolgingsbruker(FNR)).thenReturn(Optional.of(new VeilarbArenaOppfolgingsBruker().setFormidlingsgruppekode("ISERV")));
+        when(veilarbarenaClient.hentOppfolgingsbruker(FNR)).thenReturn(new ArenaOppfolginsBrukerOppslagResult.Success(new VeilarbArenaOppfolgingsBruker().setFormidlingsgruppekode("ISERV")));
         when(arenaYtelserService.harPagaendeYtelse(FNR)).thenReturn(false);
         when(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(FNR.get())).thenReturn(false);
         when(ungdomsprogramClient.erDeltakerIUngdomsprogrammet(FNR.get())).thenReturn(false);
@@ -228,7 +229,7 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
         var startPeriode = startOppfolging();
         ApiResult<Decision> permit = ApiResult.Companion.success(Decision.Permit.INSTANCE);
         doReturn(permit).when(poaoTilgangClient).evaluatePolicy(any());
-        when(veilarbarenaClient.hentOppfolgingsbruker(FNR)).thenReturn(Optional.of(new VeilarbArenaOppfolgingsBruker().setFormidlingsgruppekode("ISERV")));
+        when(veilarbarenaClient.hentOppfolgingsbruker(FNR)).thenReturn(new ArenaOppfolginsBrukerOppslagResult.Success(new VeilarbArenaOppfolgingsBruker().setFormidlingsgruppekode("ISERV")));
         when(arenaYtelserService.harPagaendeYtelse(FNR)).thenReturn(false);
         when(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(FNR.get())).thenReturn(false);
         when(ungdomsprogramClient.erDeltakerIUngdomsprogrammet(FNR.get())).thenReturn(false);

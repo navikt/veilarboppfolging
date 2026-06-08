@@ -43,7 +43,7 @@ class KandidatForUtmeldingFlytTest(
     val utmeldingsService: UtmeldingsService,
     @Autowired
     val oppfolgingsbrukerEndretIArenaService: OppfolgingsbrukerEndretIArenaService,
-): IntegrationTest() {
+) : IntegrationTest() {
 
     private val fnr = "01010198765"
     private val aktorId = AktorId.of("123456789012")
@@ -64,25 +64,33 @@ class KandidatForUtmeldingFlytTest(
         mockArbeidssoekerregisteret(Fnr.of(fnr), erArbeidssoeker = false)
         mockAap(Fnr.of(fnr), harAap = false)
 
-        assertThat(hentKandidatFraDb(aktorId)).isNull()
+        assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNull()
 
         val sluttMelding = ConsumerRecord("topic", 0, 0, "dummyKey", arbeidssokerperiode(fnr, periodeAvsluttet = true))
         arbeidssoekerperiodeConsumerService.consumeArbeidssøkerperiode(sluttMelding)
 
-        assertThat(hentKandidatFraDb(aktorId)).isNotNull()
+        assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNotNull()
     }
 
     @Test
     fun `fjernKandidatForUtmelding blir kalt når ny arbeidssøkerperiode starter`() {
         mockSytemBrukerAuthOk(aktorId, Fnr.of(fnr))
-        kandidatForUtmeldingRepository.lagreKandidat(ArbeidssøkerPeriodeAvsluttet(aktorId, Fnr.of(fnr)))
-        assertThat(hentKandidatFraDb(aktorId)).isNotNull()
+        kandidatForUtmeldingRepository.lagreKandidat(
+            ArbeidssøkerPeriodeAvsluttet(
+                aktorId = aktorId,
+                fnr = Fnr.of(fnr),
+                avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER,
+                kilde = "kilde",
+                aarsak = "aarsak",
+            )
+        )
+        assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNotNull()
 
         val nyPeriode = arbeidssokerperiode(fnr, periodeAvsluttet = false)
         val melding = ConsumerRecord("topic", 0, 0, "dummyKey", nyPeriode)
         arbeidssoekerperiodeConsumerService.consumeArbeidssøkerperiode(melding)
 
-        assertThat(hentKandidatFraDb(aktorId)).isNull()
+        assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNull()
     }
 
     @Test
@@ -96,12 +104,20 @@ class KandidatForUtmeldingFlytTest(
         mockAap(Fnr.of(fnr), harAap = false)
 
         utmeldingRepository.insertUtmeldingTabell(OppdateringFraArena_BleIserv(aktorId, ZonedDateTime.now().minusDays(29)))
-        kandidatForUtmeldingRepository.lagreKandidat(ArbeidssøkerPeriodeAvsluttet(aktorId, Fnr.of(fnr)))
-        assertThat(hentKandidatFraDb(aktorId)).isNotNull()
+        kandidatForUtmeldingRepository.lagreKandidat(
+            ArbeidssøkerPeriodeAvsluttet(
+                aktorId = aktorId,
+                fnr = Fnr.of(fnr),
+                avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER,
+                kilde = "kilde",
+                aarsak = "aarsak",
+            )
+        )
+        assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNotNull()
 
         utmeldingsService.avsluttOppfolgingOgFjernFraUtmeldingsTabell(aktorId)
 
-        assertThat(hentKandidatFraDb(aktorId)).isNull()
+        assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNull()
     }
 
     @Test
@@ -114,8 +130,16 @@ class KandidatForUtmeldingFlytTest(
         mockArbeidssoekerregisteret(Fnr.of(fnr), erArbeidssoeker = false)
         mockAap(Fnr.of(fnr), harAap = false)
         mockVeilarbArenaOppfolgingsStatus(Fnr.of(fnr), kanEnkeltReaktiveres = false)
-        kandidatForUtmeldingRepository.lagreKandidat(ArbeidssøkerPeriodeAvsluttet(aktorId, Fnr.of(fnr)))
-        assertThat(hentKandidatFraDb(aktorId)).isNotNull()
+        kandidatForUtmeldingRepository.lagreKandidat(
+            ArbeidssøkerPeriodeAvsluttet(
+                aktorId = aktorId,
+                fnr = Fnr.of(fnr),
+                avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER,
+                kilde = "kilde",
+                aarsak = "aarsak",
+            )
+        )
+        assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNotNull()
         val arenaEndring = EndringPaaOppfolgingsBruker(
             aktorId = aktorId,
             fodselsnummer = fnr,
@@ -130,7 +154,7 @@ class KandidatForUtmeldingFlytTest(
 
         oppfolgingsbrukerEndretIArenaService.oppdaterOppfolgingMedStatusFraArena(arenaEndring)
 
-        assertThat(hentKandidatFraDb(aktorId)).isNull()
+        assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNull()
     }
 
     @Test
@@ -148,20 +172,48 @@ class KandidatForUtmeldingFlytTest(
         mockArbeidssoekerregisteret(Fnr.of(fnr), erArbeidssoeker = false)
         mockAap(Fnr.of(fnr), harAap = false)
 
-        val nyPeriode = arbeidssokerperiode(fnr, periodeStartet = arbeidsoekerPeriodeStartet.atZone(ZoneId.systemDefault()).toInstant())
-        val oppfolginsBrukerEndretTilISERV = ConsumerRecord("topic", 0, 0, "key", TestUtils.oppfølgingsBrukerEndret(
-            fnr, iservFraDato = ISERV_FRA_DATO, formidlingsgruppe = Formidlingsgruppe.ISERV))
+        val nyPeriode = arbeidssokerperiode(
+            fnr,
+            periodeStartet = arbeidsoekerPeriodeStartet.atZone(ZoneId.systemDefault()).toInstant()
+        )
+        val oppfolginsBrukerEndretTilISERV = ConsumerRecord(
+            "topic", 0, 0, "key", TestUtils.oppfølgingsBrukerEndret(
+                fnr, iservFraDato = ISERV_FRA_DATO, formidlingsgruppe = Formidlingsgruppe.ISERV
+            )
+        )
 
         kafkaConsumerService.consumeEndringPaOppfolgingBruker(oppfolginsBrukerEndretTilISERV)
 
-        val sluttMelding = ConsumerRecord("topic", 0, 0, "dummyKey", arbeidssokerperiode(fnr, periodeAvsluttet = true, periodeStartet = arbeidsoekerPeriodeStartet.atZone(ZoneId.systemDefault()).toInstant()))
-        arbeidssoekerperiodeConsumerService.consumeArbeidssøkerperiode(ConsumerRecord("topic", 0, 0, "dummyKey", nyPeriode))
+        val sluttMelding = ConsumerRecord(
+            "topic",
+            0,
+            0,
+            "dummyKey",
+            arbeidssokerperiode(
+                fnr,
+                periodeAvsluttet = true,
+                periodeStartet = arbeidsoekerPeriodeStartet.atZone(ZoneId.systemDefault()).toInstant()
+            )
+        )
+        arbeidssoekerperiodeConsumerService.consumeArbeidssøkerperiode(
+            ConsumerRecord(
+                "topic",
+                0,
+                0,
+                "dummyKey",
+                nyPeriode
+            )
+        )
         arbeidssoekerperiodeConsumerService.consumeArbeidssøkerperiode(sluttMelding)
 
         assertThat(utmeldingRepository.eksisterendeIservBruker(aktorId).isPresent).isTrue()
     }
 
-    private fun arbeidssokerperiode(fodselsnummer: String, periodeAvsluttet: Boolean = false, periodeStartet: Instant = Instant.now().minusSeconds(1)): Periode {
+    private fun arbeidssokerperiode(
+        fodselsnummer: String,
+        periodeAvsluttet: Boolean = false,
+        periodeStartet: Instant = Instant.now().minusSeconds(1)
+    ): Periode {
         val slutt = if (periodeAvsluttet) {
             MetaData().apply {
                 tidspunkt = Instant.now()
@@ -170,7 +222,9 @@ class KandidatForUtmeldingFlytTest(
                 aarsak = "dummyAarsak"
                 tidspunktFraKilde = TidspunktFraKilde(Instant.now(), AvviksType.FORSINKELSE)
             }
-        } else { null }
+        } else {
+            null
+        }
 
         return Periode().apply {
             id = UUID.randomUUID()
@@ -184,14 +238,6 @@ class KandidatForUtmeldingFlytTest(
             }
             avsluttet = slutt
         }
-    }
-
-    private fun hentKandidatFraDb(aktorId: AktorId): String? {
-        return namedParameterJdbcTemplate.queryForList(
-            "SELECT aktor_id FROM kandidat_for_utmelding WHERE aktor_id = :aktorId",
-            mapOf("aktorId" to aktorId.get()),
-            String::class.java
-        ).firstOrNull()
     }
 }
 
