@@ -9,6 +9,7 @@ import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
 import no.nav.tms.varsel.action.OpprettVarsel
 import no.nav.tms.varsel.action.Varseltype
 import no.nav.veilarboppfolging.IntegrationTest
+import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolginsBrukerOppslagResult
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsStatus
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient
 import no.nav.veilarboppfolging.kafka.TestUtils.oppfølgingsBrukerEndret
@@ -121,7 +122,7 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
         val formidlingsgruppe = Formidlingsgruppe.ISERV
         val kvalifiseringsgruppe = Kvalifiseringsgruppe.VURDU
         mockEnhetINorg("8989", "Nav enhet")
-
+        mockPersonFinnesIkkeIArena()
         val oppfolgingFørEndring = arenaOppfolgingService.hentArenaOppfolgingTilstand(fnr)
         assert(oppfolgingFørEndring is ArenaOppfolgingTilstandOppslagResult.NotFound) { "Ny bruker skal IKKE ha oppfølgingsstatus" }
         val oppfolgingsperioder = oppfolgingService.hentOppfolgingsperioder(fnr)
@@ -164,6 +165,7 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
 
     @Test
     fun `skal håndtere brukere som mangler oppfølgingsstatus`() {
+        mockPersonFinnesIkkeIArena()
         val oppfolgingsStatus = arenaOppfolgingService.hentArenaOppfolgingTilstand(fnr)
         assert(oppfolgingsStatus is ArenaOppfolgingTilstandOppslagResult.NotFound)
         val arenaOppfolginsStatus = arenaOppfolgingService.hentArenaOppfolginsstatusMedHovedmaal(fnr)
@@ -173,7 +175,7 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
     @Test
     fun `skal håndtere brukere som har oppfølging men bare ikke fått status fra arena`() {
         startOppfolgingSomArbeidsoker(aktorId, fnr)
-
+        mockPersonFinnesIkkeIArena()
         val statusEtterEndring = oppfolgingsStatusRepository.hentOppfolging(aktorId)
         assertEquals(true, statusEtterEndring.get().isUnderOppfolging)
         assertTrue(statusEtterEndring.get().localArenaOppfolging.isEmpty)
@@ -203,6 +205,10 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
             .setKanEnkeltReaktiveres(false)
             .setOppfolgingsenhet("8989")
         `when`(veilarbarenaClient.getArenaOppfolgingsstatus(fnr)).thenReturn(Optional.of(arenaOppfolging))
+    }
+
+    private fun mockPersonFinnesIkkeIArena() {
+        `when`(veilarbarenaClient.hentOppfolgingsbruker(fnr)).thenReturn(ArenaOppfolginsBrukerOppslagResult.NotFound())
     }
 
     @Test
