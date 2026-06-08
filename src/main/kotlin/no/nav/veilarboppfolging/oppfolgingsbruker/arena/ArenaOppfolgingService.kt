@@ -111,15 +111,12 @@ class ArenaOppfolgingService @Autowired constructor(
                     localArenaOppfolging.get().hovedmaal
                 )
             }
-
             else -> {
                 val oppfolgingsbrukerOppslag = veilarbarenaClient.hentOppfolgingsbruker(fnr)
-                val veilarbArenaOppfolging = veilarbarenaClient.hentOppfolgingsbruker(fnr)
-                    .let {
-                        if (oppfolgingsbrukerOppslag !is ArenaOppfolginsBrukerOppslagResult.Success) {
-                            return GetOppfolginsstatusFailure(FantIkkeBrukerIArenaException())
-                        } else oppfolgingsbrukerOppslag.oppfolgingsBruker
-                    }
+                val veilarbArenaOppfolging = when(oppfolgingsbrukerOppslag) {
+                    is ArenaOppfolginsBrukerOppslagResult.Success -> oppfolgingsbrukerOppslag.oppfolgingsBruker
+                    is ArenaOppfolginsBrukerOppslagResult.NotFound, is ArenaOppfolginsBrukerOppslagResult.Fail -> return GetOppfolginsstatusFailure(FantIkkeBrukerIArenaException())
+                }
                 OppfolgingsData(
                     Kvalifiseringsgruppe.valueOf(veilarbArenaOppfolging.kvalifiseringsgruppekode),
                     Formidlingsgruppe.valueOf(veilarbArenaOppfolging.formidlingsgruppekode),
