@@ -27,6 +27,11 @@ sealed class RequestResult<T> {
     class Success<T>(val body: Optional<T>): RequestResult<T>()
     class Fail<T>(val message: String, val reason: Throwable): RequestResult<T>()
 }
+sealed interface ArenaOppfolginsBrukerOppslagResult {
+    class Success(val oppfolgingsBruker: VeilarbArenaOppfolgingsBruker): ArenaOppfolginsBrukerOppslagResult
+    class NotFound: ArenaOppfolginsBrukerOppslagResult
+    class Fail(val message: String, val reason: Throwable): ArenaOppfolginsBrukerOppslagResult
+}
 
 @Slf4j
 class VeilarbarenaClientImpl(
@@ -89,17 +94,19 @@ class VeilarbarenaClientImpl(
 
     }
 
-    override fun hentOppfolgingsbruker(fnr: Fnr): Optional<VeilarbArenaOppfolgingsBruker> {
+    override fun hentOppfolgingsbruker(fnr: Fnr): ArenaOppfolginsBrukerOppslagResult {
         val personRequest = PersonRequest(fnr)
         try {
             val response = httpPost(UrlUtils.joinPaths(veilarbarenaUrl, "/veilarbarena/api/v4/hent-oppfolgingsbruker"), personRequest, VeilarbArenaOppfolgingsBruker::class.java)
             return when (response) {
-                is RequestResult.Success -> response.body
-                is RequestResult.Fail -> Optional.empty()
+                is RequestResult.Success ->
+                    if(response.body.isPresent) ArenaOppfolginsBrukerOppslagResult.Success(response.body.get())
+                    else ArenaOppfolginsBrukerOppslagResult.NotFound()
+                is RequestResult.Fail -> ArenaOppfolginsBrukerOppslagResult.Fail(response.message, response.reason)
             }
         } catch (e: Exception) {
             logger.error("Uventet feil ved henting av oppfolgingsbruker fra veilarbarena", e)
-            return Optional.empty()
+            return ArenaOppfolginsBrukerOppslagResult.Fail(e.message ?: "Uventet feil ved henting av oppfolgingsbruker fra veilarbarena", e)
         }
     }
 
