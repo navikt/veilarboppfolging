@@ -282,7 +282,7 @@ class OppfolgingV3Controller(
         private val ALLOWLIST = listOf(
             AllowListApplicationName.INNGAR,
             AllowListApplicationName.INNGAR_EKSTERN,
-            AllowListApplicationName.DOLLY
+            AllowListApplicationName.DOLLY // Åpen i inbound policy kun i dev
         )
     }
 }
