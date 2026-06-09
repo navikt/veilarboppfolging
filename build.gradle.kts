@@ -1,8 +1,8 @@
 val kotlinVersion = "2.3.21"
-val flywayVersion = "12.6.2"
-val commonVersion = "4.2026.05.19_05.29-4b5633c82ec0"
+val flywayVersion = "12.8.1"
+val commonVersion = "4.2026.06.09_07.11-eccd6d131c44"
 val ptoSchemaVersion = "1.2025.09.29_11.36-6e568fa24c23"
-val poaoTilgangVersion = "4.2026.05.11_07.01-54ab6eae4dde"
+val poaoTilgangVersion = "4.2026.06.03_06.17-9fbee8d2bb00"
 val wiremockVersion = "3.13.2"
 val schedlockVersion = "7.7.0"
 val googleCloudLibrariesBomVersion = "26.83.0"
@@ -23,7 +23,7 @@ plugins {
     id("org.springframework.boot") version "4.0.6"
     id("io.spring.dependency-management") version "1.1.7"
     id("jacoco")
-    id("org.sonarqube") version "7.3.0.8198"
+    id("org.sonarqube") version "7.3.1.8318"
 }
 
 group = "no.nav"
