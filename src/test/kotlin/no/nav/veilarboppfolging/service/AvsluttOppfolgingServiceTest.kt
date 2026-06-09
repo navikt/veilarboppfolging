@@ -25,10 +25,10 @@ import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.springframework.transaction.support.TransactionTemplate
 import java.util.*
+import no.nav.veilarboppfolging.repository.ArbeidsoppfolgingskontorRepository
 
 class AvsluttOppfolgingServiceTest {
     private val authService: AuthService = Mockito.mock(AuthService::class.java)
-    private val oppfolgingService: OppfolgingService = Mockito.mock(OppfolgingService::class.java)
     private val startOppfolgingService: StartOppfolgingService = Mockito.mock(StartOppfolgingService::class.java)
     private val arenaOppfolgingService: ArenaOppfolgingService = Mockito.mock(ArenaOppfolgingService::class.java)
     private val kvpService: KvpService = Mockito.mock(KvpService::class.java)
@@ -42,6 +42,7 @@ class AvsluttOppfolgingServiceTest {
     private val arenaYtelserService: ArenaYtelserService = Mockito.mock(ArenaYtelserService::class.java)
     private val bigQueryClient: BigQueryClient = Mockito.mock(BigQueryClient::class.java)
     private val transactionTemplate: TransactionTemplate = Mockito.mock(TransactionTemplate::class.java)
+    private val arbeidsoppfolgingskontorRepository: ArbeidsoppfolgingskontorRepository = Mockito.mock(ArbeidsoppfolgingskontorRepository::class.java)
 
     private fun <T> any(type: Class<T>): T = Mockito.any<T>(type)
 
@@ -54,6 +55,7 @@ class AvsluttOppfolgingServiceTest {
         arenaYtelserService = arenaYtelserService,
         bigQueryClient = bigQueryClient,
         transactor = transactionTemplate,
+        arbeidsoppfolgingskontorRepository = arbeidsoppfolgingskontorRepository,
     )
 
     private fun arenaIservAvregistrering(): ArenaIservKanIkkeReaktiveres {

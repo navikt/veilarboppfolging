@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service
 import java.time.ZonedDateTime
 import java.util.*
 import kotlin.jvm.optionals.getOrElse
+import org.slf4j.LoggerFactory
 
 @Service
 class ArbeidsoppfolgingsKontorEndretService(
@@ -24,6 +25,7 @@ class ArbeidsoppfolgingsKontorEndretService(
     val arbeidsoppfolgingskontorRepository: ArbeidsoppfolgingskontorRepository,
     val kvpService: KvpService,
 ) {
+    val log = LoggerFactory.getLogger(this::class.java)
 
     /**
      * Avsluttet status betyr at kontorId og kontorNavn er nullet ut
@@ -41,12 +43,9 @@ class ArbeidsoppfolgingsKontorEndretService(
     }
 
     fun håndterOppfolgingskontorMelding(aoKontorInternPersonId: Long, melding: OppfolgingskontorMelding?) {
-        // TODO I en overgangsperiode lytter vi heller på tombstone fra ao-oppfolgingskontor
-        // val erMeldingSomKanIgnoreres = melding == null
-        // if (erMeldingSomKanIgnoreres) return
-
         if (melding == null) {
             // Det skal finnes en inter-nperson-ident når kontoret har blitt slettet
+            log.info("Mottatt tombstone fra ao-kontor for key $aoKontorInternPersonId")
             val oppfolgingsperiodeId = oppfolgingsPeriodeRepository.hentSisteOppfolgingsperiodeForAoInternId(aoKontorInternPersonId)
                 .getOrElse { throw RuntimeException("Fant ingen oppfølgingsperioder på aoKontorInternPersonId og kan derfor ikke publisere oppfølging avsluttet eller kontor endret melding på siste-oppfølgingsperiode v2/v3 topic, dette skal aldri skje") }
             val oppfolgingsperiode =
@@ -55,12 +54,18 @@ class ArbeidsoppfolgingsKontorEndretService(
             publiserSisteOppfolgingsperiodeV2MedAvsluttetStatus(oppfolgingsperiode, aoKontorInternPersonId)
             arbeidsoppfolgingskontorRepository.slettNavKontor(oppfolgingsperiode.uuid)
         } else {
+            log.info("Mottatt melding om kontor fra ao-kontor for key $aoKontorInternPersonId")
             val periodeId = melding.oppfolgingsperiodeId
 
             oppfolgingsPeriodeRepository.settInternPersonIdentPåOppfolgingsperiode(aoKontorInternPersonId, periodeId)
 
             val oppfolgingsperiode = oppfolgingsPeriodeRepository.hentOppfolgingsperiode(periodeId.toString())
                     .getOrElse { throw RuntimeException("Ugyldig oppfølgingsperiodeId, noe gikk veldig galt, dette skal aldri skje") }
+
+            if (oppfolgingsperiode.sluttDato != null) {
+                log.warn("Mottatt melding om kontorendring for avsluttet oppfølgingsperiode, oppfolgingsperiodeId=${oppfolgingsperiode.uuid}. Ignorerer meldingen.")
+                return
+            }
 
             kvpService.avsluttKvpVedEnhetBytte(AktorId.of(melding.aktorId), melding.kontorId)
 

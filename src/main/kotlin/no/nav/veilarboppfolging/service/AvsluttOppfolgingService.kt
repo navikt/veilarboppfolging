@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.support.TransactionTemplate
 import java.time.ZonedDateTime
 import java.util.*
+import no.nav.veilarboppfolging.repository.ArbeidsoppfolgingskontorRepository
 
 @Service
 class AvsluttOppfolgingService(
@@ -44,7 +45,8 @@ class AvsluttOppfolgingService(
     val arbeidssoekerregisteretClient: ArbeidssoekerregisteretClient,
     val arenaYtelserService: ArenaYtelserService,
     val bigQueryClient: BigQueryClient,
-    val transactor: TransactionTemplate
+    val transactor: TransactionTemplate,
+    val arbeidsoppfolgingskontorRepository: ArbeidsoppfolgingskontorRepository,
 ) {
 
     val log = LoggerFactory.getLogger(this::class.java)
@@ -147,6 +149,8 @@ class AvsluttOppfolgingService(
             val perioder: List<OppfolgingsperiodeEntity> = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId)
             val sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder)
 
+            arbeidsoppfolgingskontorRepository.slettNavKontor(sistePeriode.uuid)
+
             log.info("Oppfølgingsperiode avsluttet for bruker - publiserer endringer på oppfølgingsperiode-topics.")
             kafkaProducerService.publiserOppfolgingsperiode(DtoMappers.tilOppfolgingsperiodeDTO(sistePeriode))
             kafkaProducerService.publiserVeilederTilordnet(aktorId, null, null)
@@ -156,7 +160,7 @@ class AvsluttOppfolgingService(
             kafkaProducerService.publiserSkjulAoMinSideMicrofrontend(aktorId, fnr)
 
             // oppfolgingsperiodeEndretService.oppdaterSisteOppfolgingsperiodeV2MedAvsluttetStatus(sistePeriode); // TODO I en overgangsperiode lytter vi heller på tombstone fra ao-oppfolgingskontor
-            bigQueryClient.loggAvsluttOppfolgingsperiode(sistePeriode.getUuid(), avregistrering, aktivIArena)
+            bigQueryClient.loggAvsluttOppfolgingsperiode(sistePeriode.uuid, avregistrering, aktivIArena)
         }
     }
 

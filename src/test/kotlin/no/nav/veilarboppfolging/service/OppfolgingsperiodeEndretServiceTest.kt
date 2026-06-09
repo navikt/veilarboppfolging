@@ -113,6 +113,23 @@ class OppfolgingsperiodeEndretServiceTest {
     }
 
     @Test
+    fun `Skal ignorere mottatt melding om oppfolgingskontor hvis oppfølgingsperioden er avsluttet`() {
+        val aktorId = "1111111"
+        val oppfolgingsperiode = oppfolgingsperiode(
+            aktorId = aktorId,
+            oppfolgingsperiodeStart = ZonedDateTime.now().minusDays(10),
+            oppfolgingsperiodeSlutt = ZonedDateTime.now().minusDays(5),
+        )
+        val internAoPersonIdent = 8L
+        whenever(oppfolgingsPeriodeRepository.hentOppfolgingsperiode(oppfolgingsperiode.uuid.toString())).thenReturn(Optional.of(oppfolgingsperiode))
+        val oppfolgingskontorMelding = oppfolgingskontorMelding(aktorId = aktorId, tilordningstype = Tilordningstype.ENDRET_KONTOR, oppfolgingsperiodeId = oppfolgingsperiode.uuid)
+
+        arbeidsoppfolgingsKontorEndretService.håndterOppfolgingskontorMelding(internAoPersonIdent, oppfolgingskontorMelding)
+
+        verify(kafkaProducerService, never()).publiserOppfolgingsperiodeMedKontor(any(), any())
+    }
+
+    @Test
     fun `Skal sende melding med type OPPFOLGING_AVSLUTTET når oppfølgingsperiode avsluttes`() {
         val aktorId = "1111111"
         val fnr = Fnr("01015054321")
