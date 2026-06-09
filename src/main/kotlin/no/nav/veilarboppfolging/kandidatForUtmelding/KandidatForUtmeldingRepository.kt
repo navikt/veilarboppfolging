@@ -10,6 +10,7 @@ import java.sql.ResultSet
 import java.time.ZonedDateTime
 import java.util.UUID
 import no.nav.common.types.identer.Fnr
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvregistreringsType
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository.Companion.map
 
 @Repository
@@ -33,6 +34,20 @@ class KandidatForUtmeldingRepository(
         ))
     }
 
+    fun markerAtOppfolgingBleAvsluttet(aktorId: AktorId, avregistreringsType: AvregistreringsType) {
+        val sql = """
+            UPDATE kandidat_for_utmelding
+            SET avregistrering_type = :avregistrering_type,
+            oppfolging_avsluttet_tidspunkt = :oppfolging_avsluttet_tidspunkt
+            WHERE aktor_id = :aktor_id
+        """.trimIndent()
+        db.update(sql, mapOf(
+            "avregistrering_type" to avregistreringsType.name,
+            "oppfolging_avsluttet_tidspunkt" to ZonedDateTime.now().toOffsetDateTime(),
+            "aktor_id" to aktorId.get(),
+            ))
+    }
+
     fun fjernKandidat(aktorId: AktorId) {
         val sql = """
             DELETE FROM kandidat_for_utmelding
@@ -41,7 +56,7 @@ class KandidatForUtmeldingRepository(
         db.update(sql, mapOf("aktorId" to aktorId.get()))
     }
 
-    fun hentKandidat(aktorId: AktorId): KandidatForUtmeldingHendelse? {
+    fun hentKandidat(aktorId: AktorId): KandidatForUtmelding? {
         return db.query(
             """
             SELECT * FROM kandidat_for_utmelding WHERE aktor_id = :aktor_id
@@ -51,15 +66,18 @@ class KandidatForUtmeldingRepository(
             .firstOrNull()
     }
 
-    fun map(resultSet: ResultSet): KandidatForUtmeldingHendelse {
+    // TODO: Map ut de nye kolonnene
+    fun map(resultSet: ResultSet): KandidatForUtmelding {
         val type = KandidatForUtmeldingHendelseType.valueOf(resultSet.getString("hendelse"))
         return when (type) {
-            KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET -> ArbeidssøkerPeriodeAvsluttet(
+            KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET -> KandidatForUtmelding(
                 aktorId = AktorId.of(resultSet.getString("aktor_id")),
                 fnr = Fnr.of(resultSet.getString("fnr")),
                 avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.valueOf(resultSet.getString("avsluttet_av")),
                 kilde = resultSet.getString("kilde"),
-                aarsak = resultSet.getString("aarsak")
+                aarsak = resultSet.getString("aarsak"),
+                avregistreringsType = resultSet.getString("avregistrering_type")?.let { AvregistreringsType.valueOf(it) },
+                oppfolgingAvsluttetTidspunkt = hentZonedDateTime(resultSet, "oppfolging_avsluttet_tidspunkt"),
             )
         }
     }

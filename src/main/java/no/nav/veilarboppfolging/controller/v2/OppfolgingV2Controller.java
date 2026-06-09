@@ -68,7 +68,7 @@ public class OppfolgingV2Controller {
         var aktorId = authService.getAktorIdOrThrow(request.getFnr());
         var avregistrering = new ManuellAvregistrering(aktorId, new VeilederRegistrant(navIdent), request.getBegrunnelse());
         avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(avregistrering);
-        kandidatForUtmeldingService.fjernKandidatForUtmelding(avregistrering.getAktorId());
+        kandidatForUtmeldingService.markerOppfolgingSomAvsluttet(avregistrering.getAktorId(), avregistrering.getAvregistreringsType());
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 

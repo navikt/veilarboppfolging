@@ -245,6 +245,10 @@ open class IntegrationTest {
         startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(bruker)
     }
 
+    fun startOppfolging(aktorId: AktorId, registrering: OppfolgingsRegistrering) {
+        startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(registrering)
+    }
+
     fun setBrukerUnderOppfolging(aktorId: AktorId, fnr: Fnr) {
         val bruker = OppfolgingsRegistrering.arbeidssokerRegistrering(fnr, aktorId, BrukerRegistrant(fnr))
         oppfolgingsStatusRepository.opprettOppfolging(aktorId)

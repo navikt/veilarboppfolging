@@ -4,13 +4,17 @@ import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.veilarboppfolging.IntegrationTest
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvregistreringsType
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.OppdateringFraArena_BleIserv
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.UtmeldingsService
 import no.nav.veilarboppfolging.repository.UtmeldingRepository
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.fail
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.ZonedDateTime
+import java.time.temporal.ChronoUnit
 
 class KandidatForUtmeldingServiceTest : IntegrationTest() {
 
@@ -117,7 +121,7 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
     }
 
     @Test
-    fun `UtmeldingsService fjerner kandidat fra databasen ved automatisk avslutning etter 28 dager ISERV`() {
+    fun `UtmeldingsService markerer kandidat med oppfølging som avsluttet ved automatisk avslutning etter 28 dager ISERV`() {
         mockSytemBrukerAuthOk(AKTOR_ID, FNR)
         setBrukerUnderOppfolging(AKTOR_ID, FNR)
         setLocalArenaOppfolging(AKTOR_ID, Formidlingsgruppe.ISERV)
@@ -143,7 +147,9 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
 
         utmeldingsService.avsluttOppfolgingOgFjernFraUtmeldingsTabell(AKTOR_ID)
 
-        assertThat(kandidatForUtmeldingRepository.hentKandidat(AKTOR_ID)).isNull()
+        val utmeldingskandidat = kandidatForUtmeldingRepository.hentKandidat(AKTOR_ID)
+        assertThat(utmeldingskandidat?.avregistreringsType).isEqualTo(AvregistreringsType.UtmeldtEtter28Dager)
+        assertThat(utmeldingskandidat?.oppfolgingAvsluttetTidspunkt).isCloseTo(ZonedDateTime.now(), within(1, ChronoUnit.SECONDS))
     }
 }
 

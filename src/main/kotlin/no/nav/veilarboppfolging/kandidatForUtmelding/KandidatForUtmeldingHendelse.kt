@@ -2,6 +2,8 @@ package no.nav.veilarboppfolging.kandidatForUtmelding
 
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvregistreringsType
+import java.time.ZonedDateTime
 
 sealed class KandidatForUtmeldingHendelse (
     val aktorId : AktorId,
@@ -33,3 +35,13 @@ class ArbeidssøkerPeriodeAvsluttet(
 ): KandidatForUtmeldingHendelse(aktorId, fnr, avsluttetAv, kilde, aarsak)  {
     override val type: KandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET
 }
+
+data class KandidatForUtmelding(
+    val aktorId : AktorId,
+    val fnr: Fnr,
+    val avsluttetAv: KandidatForUtmeldingHendelseAvsluttetAv,
+    val kilde: String,
+    val aarsak: String?,
+    val avregistreringsType: AvregistreringsType?,
+    val oppfolgingAvsluttetTidspunkt: ZonedDateTime?
+)
