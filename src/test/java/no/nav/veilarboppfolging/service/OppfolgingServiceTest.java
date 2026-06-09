@@ -115,7 +115,8 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
                 arbeidssoekerregisteretClient,
                 arenaYtelserService,
                 bigQueryClient,
-                transactor
+                transactor,
+                arbeidsoppfolgingskontorRepository
         );
         oppfolgingService = new OppfolgingService(
                 kvpService,
