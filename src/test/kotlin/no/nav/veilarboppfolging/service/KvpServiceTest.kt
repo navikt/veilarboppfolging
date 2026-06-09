@@ -111,7 +111,7 @@ class KvpServiceTest{
     @Test
     fun startKvp() {
         kvpService!!.startKvp(FNR, START_BEGRUNNELSE)
-        verify<KvpRepository?>(kvpRepositoryMock, times(1)).startKvp(
+        verify<KvpRepository?>(kvpRepositoryMock, times(1))!!.startKvp(
             eq(AKTOR_ID),
             eq(ENHET),
             eq(VEILEDER),
