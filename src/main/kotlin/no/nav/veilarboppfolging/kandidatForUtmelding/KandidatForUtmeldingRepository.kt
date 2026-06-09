@@ -66,7 +66,6 @@ class KandidatForUtmeldingRepository(
             .firstOrNull()
     }
 
-    // TODO: Map ut de nye kolonnene
     fun map(resultSet: ResultSet): KandidatForUtmelding {
         val type = KandidatForUtmeldingHendelseType.valueOf(resultSet.getString("hendelse"))
         return when (type) {

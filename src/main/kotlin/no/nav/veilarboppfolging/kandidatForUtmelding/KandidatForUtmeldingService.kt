@@ -33,7 +33,7 @@ class KandidatForUtmeldingService(
     }
 
     /**
-     * Foreløpig sletter vi ikke kandidatene, men lagrer timestamp for når de egentlig skulle slettes.
+     * Foreløpig sletter vi ikke kandidatene, men lagrer timestamp for oppfølging avsluttet og hvorfor oppfølging ble avsluttet.
      * Dette er for å kunne samle data om hvilke kandidater som har blitt tatt ut av oppfølging enten automatisk
      * eller manuelt, og når de ble tatt ut av oppfølging.
      */
