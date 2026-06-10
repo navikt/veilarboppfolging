@@ -31,20 +31,6 @@ class KandidatForUtmeldingRepository(
         ))
     }
 
-    fun markerAtOppfolgingBleAvsluttet(aktorId: AktorId, avregistreringsType: AvregistreringsType) {
-        val sql = """
-            UPDATE kandidat_for_utmelding
-            SET avregistrering_type = :avregistrering_type,
-            oppfolging_avsluttet_tidspunkt = :oppfolging_avsluttet_tidspunkt
-            WHERE aktor_id = :aktor_id
-        """.trimIndent()
-        db.update(sql, mapOf(
-            "avregistrering_type" to avregistreringsType.name,
-            "oppfolging_avsluttet_tidspunkt" to ZonedDateTime.now().toOffsetDateTime(),
-            "aktor_id" to aktorId.get(),
-            ))
-    }
-
     fun fjernKandidat(aktorId: AktorId) {
         val sql = """
             DELETE FROM kandidat_for_utmelding
