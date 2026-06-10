@@ -6,10 +6,10 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvregistreringsType
 import java.time.ZonedDateTime
 import java.util.UUID
 
-sealed class KandidatForUtmeldingHendelse (
+sealed class KandidatForUtmeldingHendelse(
     val aktorId : AktorId,
     val fnr: Fnr,
-    val oppfolgingsperiodeUuid: UUID?, // TODO: Gjør not nullable
+    val oppfolgingsperiodeUuid: UUID,
     val avsluttetAv: KandidatForUtmeldingHendelseAvsluttetAv,
     val kilde: String,
     val aarsak: String?,
@@ -31,7 +31,7 @@ enum class KandidatForUtmeldingHendelseAvsluttetAv {
 class ArbeidssøkerPeriodeAvsluttet(
     aktorId: AktorId,
     fnr: Fnr,
-    oppfolgingsperiodeUuid: UUID?,
+    oppfolgingsperiodeUuid: UUID,
     avsluttetAv: KandidatForUtmeldingHendelseAvsluttetAv,
     kilde: String,
     aarsak: String?

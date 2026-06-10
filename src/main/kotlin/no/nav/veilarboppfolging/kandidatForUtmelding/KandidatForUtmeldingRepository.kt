@@ -55,7 +55,7 @@ class KandidatForUtmeldingRepository(
             KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET -> ArbeidssøkerPeriodeAvsluttet(
                 aktorId = AktorId.of(resultSet.getString("aktor_id")),
                 fnr = Fnr.of(resultSet.getString("fnr")),
-                oppfolgingsperiodeUuid = resultSet.getString("oppfolgingsperiode_uuid")?.let { UUID.fromString(it) },
+                oppfolgingsperiodeUuid = UUID.fromString(resultSet.getString("oppfolgingsperiode_uuid")),
                 avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.valueOf(resultSet.getString("avsluttet_av")),
                 kilde = resultSet.getString("kilde"),
                 aarsak = resultSet.getString("aarsak")
