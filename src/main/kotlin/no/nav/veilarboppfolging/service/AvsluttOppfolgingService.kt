@@ -144,7 +144,8 @@ class AvsluttOppfolgingService(
             oppfolgingsPeriodeRepository.avsluttSistePeriodeOgAvsluttOppfolging(
                 aktorId,
                 avregistrering.avsluttetAv.getIdent(),
-                avregistrering.begrunnelse
+                avregistrering.begrunnelse,
+                avregistrering.getAvregistreringsType()
             )
             val perioder: List<OppfolgingsperiodeEntity> = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId)
             val sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder)
@@ -260,7 +261,8 @@ class AvsluttOppfolgingService(
             oppfolgingsperiodeUUID,
             avregistrering.avsluttetAv.getIdent(),
             avregistrering.begrunnelse,
-            sluttDato
+            sluttDato,
+            avregistrering.getAvregistreringsType(),
         )
 
         log.info(

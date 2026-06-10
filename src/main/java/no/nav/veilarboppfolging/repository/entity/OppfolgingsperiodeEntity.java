@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Value;
 import no.nav.veilarboppfolging.oppfolgingsbruker.StartetAvType;
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelse;
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvregistreringsType;
 
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
@@ -30,4 +31,6 @@ public class OppfolgingsperiodeEntity {
     String startetAv;
     @Nullable
     StartetAvType startetAvType;
+    @Nullable
+    AvregistreringsType avregistreringsType;
 }

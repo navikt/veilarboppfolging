@@ -10,6 +10,7 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelse
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering.Companion.arbeidssokerRegistrering
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvregistreringsType
 import no.nav.veilarboppfolging.test.DbTestUtils
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
@@ -44,7 +45,7 @@ class OppfolgingsPeriodeRepositoryTest {
         oppfolgingsStatusRepository.opprettOppfolging(aktorId)
 
         oppfolgingsPeriodeRepository.start(oppfolgingsbruker)
-        oppfolgingsPeriodeRepository.avsluttSistePeriodeOgAvsluttOppfolging(aktorId, "veileder", "derfor")
+        oppfolgingsPeriodeRepository.avsluttSistePeriodeOgAvsluttOppfolging(aktorId, "veileder", "derfor", AvregistreringsType.AdminAvregistrering)
         oppfolgingsPeriodeRepository.start(oppfolgingsbruker)
         val maybeOppfolgingsperiodeEntity = oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId)
         Assertions.assertFalse(maybeOppfolgingsperiodeEntity.isEmpty())
@@ -65,7 +66,8 @@ class OppfolgingsPeriodeRepositoryTest {
         oppfolgingsStatusRepository.opprettOppfolging(aktorId)
 
         oppfolgingsPeriodeRepository.start(oppfolgingsbruker)
-        oppfolgingsPeriodeRepository.avsluttSistePeriodeOgAvsluttOppfolging(aktorId, "veileder", "derfor")
+        oppfolgingsPeriodeRepository.avsluttSistePeriodeOgAvsluttOppfolging(aktorId, "veileder", "derfor",
+            AvregistreringsType.UtmeldtEtter28Dager)
 
         val maybeOppfolgingsperiodeEntity2 = oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId)
         Assertions.assertTrue(maybeOppfolgingsperiodeEntity2.isEmpty())
@@ -126,7 +128,8 @@ class OppfolgingsPeriodeRepositoryTest {
         val avsluttetBegrunnelse = "derfor"
         oppfolgingsStatusRepository.opprettOppfolging(aktorId)
         oppfolgingsPeriodeRepository.start(oppfolgingsbruker)
-        oppfolgingsPeriodeRepository.avsluttSistePeriodeOgAvsluttOppfolging(aktorId, veilederIdent.get(), avsluttetBegrunnelse)
+        oppfolgingsPeriodeRepository.avsluttSistePeriodeOgAvsluttOppfolging(aktorId, veilederIdent.get(), avsluttetBegrunnelse,
+            AvregistreringsType.ManuellAvregistrering)
 
         val perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId)
 
@@ -138,6 +141,7 @@ class OppfolgingsPeriodeRepositoryTest {
         assertEquals(OppfolgingStartBegrunnelse.ARBEIDSSOKER_REGISTRERING, periode.startetBegrunnelse)
         assertEquals(avsluttetBegrunnelse, periode.begrunnelse) // Avsluttet begrunnelse (fritekst)
         assertEquals(veilederIdent.get(), periode.avsluttetAv) // Avsluttet veileder
+        assertEquals(AvregistreringsType.ManuellAvregistrering, periode.avregistreringsType)
     }
 
     @Test
