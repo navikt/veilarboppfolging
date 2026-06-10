@@ -23,6 +23,7 @@ import no.nav.veilarboppfolging.domain.AvslutningStatusData;
 import no.nav.veilarboppfolging.domain.OppfolgingStatusData;
 import no.nav.veilarboppfolging.eventsLogger.BigQueryClient;
 import no.nav.veilarboppfolging.kafka.dto.OppfolgingsperiodeDTO;
+import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService;
 import no.nav.veilarboppfolging.oppfolgingsbruker.BrukerRegistrant;
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant;
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService;
@@ -89,6 +90,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     private ArbeidsoppfolgingskontorRepository arbeidsoppfolgingskontorRepository;
     private BigQueryClient bigQueryClient = mock(BigQueryClient.class);
     private ArbeidsoppfolgingsKontorService arbeidsoppfolgingsKontorService = mock(ArbeidsoppfolgingsKontorService.class);
+    private KandidatForUtmeldingService kandidatForUtmeldingService = mock(KandidatForUtmeldingService.class);
 
     @Before
     public void setup() {
@@ -136,6 +138,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
                 oppfolgingsStatusRepository,
                 oppfolgingsPeriodeRepository,
                 kafkaProducerService,
+                kandidatForUtmeldingService,
                 bigQueryClient,
                 transactor,
                 "https://test.nav.no"

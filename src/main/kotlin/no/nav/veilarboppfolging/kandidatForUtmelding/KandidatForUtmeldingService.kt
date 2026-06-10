@@ -1,6 +1,7 @@
 package no.nav.veilarboppfolging.kandidatForUtmelding
 
 import no.nav.common.types.identer.AktorId
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvregistreringsType
 import no.nav.veilarboppfolging.service.AvsluttOppfolgingService
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -26,6 +27,11 @@ class KandidatForUtmeldingService(
         }
     }
 
+    /**
+     * Foreløpig sletter vi ikke kandidatene når kandidatene avslutter sin oppfølgingsperiode, kun når de starter ny periode.
+     * Dette er for å kunne samle data om hvilke kandidater som har blitt tatt ut av oppfølging enten automatisk
+     * eller manuelt, og når de ble tatt ut av oppfølging.
+     */
     fun fjernKandidatForUtmelding(aktorId: AktorId) {
         kandidatForUtmeldingRepository.fjernKandidat(aktorId)
         logger.info("Fjerner kandidat for utmelding")

@@ -16,6 +16,7 @@ import no.nav.veilarboppfolging.domain.AvsluttPayload;
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService;
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant;
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AdminAvregistrering;
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvregistreringsType;
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
 import no.nav.veilarboppfolging.repository.VeilederTilordningerRepository;
 import no.nav.veilarboppfolging.repository.entity.ManuellStatusEntity;
@@ -27,7 +28,6 @@ import org.springframework.web.bind.annotation.*;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @Slf4j
 @RestController
@@ -111,7 +111,6 @@ public class AdminController {
                                         null
                                 )
                         );
-                        kandidatForUtmeldingService.fjernKandidatForUtmelding(AktorId.of(aktorId));
                         return true;
                     } catch (Exception e) {
                         log.warn("Kunne ikke avslutte oppfølging: {}", e.getMessage());
@@ -139,7 +138,6 @@ public class AdminController {
                     innloggetBruker,
                     oppfolgingsperiodeSomSkalAvsluttes.getBegrunnelse(),
                     oppfolgingsperiodeSomSkalAvsluttes.getOppfolgingsperiodeUuid());
-            kandidatForUtmeldingService.fjernKandidatForUtmelding(AktorId.of(oppfolgingsperiodeSomSkalAvsluttes.getAktorId()));
             return true;
         } catch (Exception e) {
             log.warn("Kunne ikke avslutte oppfølgingsperiode: {}", e.getMessage());

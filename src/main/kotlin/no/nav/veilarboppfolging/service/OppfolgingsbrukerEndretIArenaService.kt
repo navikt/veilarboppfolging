@@ -78,7 +78,6 @@ class OppfolgingsbrukerEndretIArenaService(
             is BleInaktivertUtenKanReaktiveres -> {
                 val avregistrering = ArenaIservKanIkkeReaktiveres(endringOppfolgingsbruker.aktorId)
                 val kunneAvsluttesResultat = avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(avregistrering)
-                kandidatForUtmeldingService.fjernKandidatForUtmelding(endringOppfolgingsbruker.aktorId)
                 when (kunneAvsluttesResultat) {
                     is KunneAvsluttes -> {
                         secureLog.info(

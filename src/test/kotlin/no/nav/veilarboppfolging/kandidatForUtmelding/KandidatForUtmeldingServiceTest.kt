@@ -4,13 +4,18 @@ import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.veilarboppfolging.IntegrationTest
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvregistreringsType
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.OppdateringFraArena_BleIserv
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.UtmeldingsService
 import no.nav.veilarboppfolging.repository.UtmeldingRepository
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.fail
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.ZonedDateTime
+import java.time.temporal.ChronoUnit
+import java.util.UUID
 
 class KandidatForUtmeldingServiceTest : IntegrationTest() {
 
@@ -32,12 +37,15 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
         mockUngdomsprogram(FNR, erDeltaker = false)
         mockArbeidssoekerregisteret(FNR, erArbeidssoeker = false)
         mockAap(FNR, harAap = false)
+        startOppfolgingSomArbeidsoker(AKTOR_ID, FNR)
+        val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(FNR).get().uuid
 
         kandidatForUtmeldingService.lagreKandidatForUtmelding(
             ArbeidssøkerPeriodeAvsluttet(
                 AKTOR_ID, FNR, avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER,
                 kilde = "kilde",
                 aarsak = "aarsak",
+                oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
             )
         )
 
@@ -64,6 +72,7 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
                 AKTOR_ID, FNR, avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER,
                 kilde = "kilde",
                 aarsak = "aarsak",
+                oppfolgingsperiodeUuid = UUID.randomUUID(),
             )
         )
 
@@ -85,6 +94,7 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
                 AKTOR_ID, FNR, avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER,
                 kilde = "kilde",
                 aarsak = "aarsak",
+                oppfolgingsperiodeUuid = UUID.randomUUID(),
             )
         )
 
@@ -93,11 +103,14 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
 
     @Test
     fun `fjernKandidatForUtmelding fjerner kandidat fra databasen`() {
+        startOppfolgingSomArbeidsoker(AKTOR_ID, FNR)
+        val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(FNR).get().uuid
         kandidatForUtmeldingRepository.lagreKandidat(
             ArbeidssøkerPeriodeAvsluttet(
                 AKTOR_ID, FNR, avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER,
                 kilde = "kilde",
                 aarsak = "aarsak",
+                oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
             )
         )
         assertThat(kandidatForUtmeldingRepository.hentKandidat(AKTOR_ID)).isNotNull()
@@ -112,36 +125,6 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
         assertThat(kandidatForUtmeldingRepository.hentKandidat(AKTOR_ID)).isNull()
 
         kandidatForUtmeldingService.fjernKandidatForUtmelding(AKTOR_ID)
-
-        assertThat(kandidatForUtmeldingRepository.hentKandidat(AKTOR_ID)).isNull()
-    }
-
-    @Test
-    fun `UtmeldingsService fjerner kandidat fra databasen ved automatisk avslutning etter 28 dager ISERV`() {
-        mockSytemBrukerAuthOk(AKTOR_ID, FNR)
-        setBrukerUnderOppfolging(AKTOR_ID, FNR)
-        setLocalArenaOppfolging(AKTOR_ID, Formidlingsgruppe.ISERV)
-        mockTiltakshistorikk(FNR, harAktiveDeltakelser = false)
-        mockUngdomsprogram(FNR, erDeltaker = false)
-        mockArbeidssoekerregisteret(FNR, erArbeidssoeker = false)
-        mockAap(FNR, harAap = false)
-
-        utmeldingRepository.insertUtmeldingTabell(
-            OppdateringFraArena_BleIserv(
-                AKTOR_ID,
-                ZonedDateTime.now().minusDays(29)
-            )
-        )
-        kandidatForUtmeldingRepository.lagreKandidat(
-            ArbeidssøkerPeriodeAvsluttet(
-                AKTOR_ID, FNR, avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER,
-                kilde = "kilde",
-                aarsak = "aarsak",
-            )
-        )
-        assertThat(kandidatForUtmeldingRepository.hentKandidat(AKTOR_ID)).isNotNull()
-
-        utmeldingsService.avsluttOppfolgingOgFjernFraUtmeldingsTabell(AKTOR_ID)
 
         assertThat(kandidatForUtmeldingRepository.hentKandidat(AKTOR_ID)).isNull()
     }

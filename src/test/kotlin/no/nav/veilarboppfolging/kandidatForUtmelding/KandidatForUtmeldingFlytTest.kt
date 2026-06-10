@@ -7,7 +7,9 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.UUID
 import no.nav.common.types.identer.AktorId
+import no.nav.common.types.identer.EnhetId
 import no.nav.common.types.identer.Fnr
+import no.nav.common.types.identer.NavIdent
 import no.nav.paw.arbeidssokerregisteret.api.v1.AvviksType
 import no.nav.paw.arbeidssokerregisteret.api.v1.Bruker
 import no.nav.paw.arbeidssokerregisteret.api.v1.BrukerType
@@ -18,7 +20,10 @@ import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
 import no.nav.veilarboppfolging.IntegrationTest
 import no.nav.veilarboppfolging.kafka.ArbeidssøkerperiodeConsumerService
 import no.nav.veilarboppfolging.kafka.TestUtils
+import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.EndringPaaOppfolgingsBruker
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvregistreringsType
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.OppdateringFraArena_BleIserv
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.UtmeldingsService
 import no.nav.veilarboppfolging.repository.UtmeldingRepository
@@ -26,10 +31,12 @@ import no.nav.veilarboppfolging.service.KafkaConsumerService
 import no.nav.veilarboppfolging.service.OppfolgingsbrukerEndretIArenaService
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
+import java.time.temporal.ChronoUnit
 import no.nav.paw.arbeidssokerregisteret.api.v1.Metadata as MetaData
 
 class KandidatForUtmeldingFlytTest(
@@ -70,91 +77,6 @@ class KandidatForUtmeldingFlytTest(
         arbeidssoekerperiodeConsumerService.consumeArbeidssøkerperiode(sluttMelding)
 
         assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNotNull()
-    }
-
-    @Test
-    fun `fjernKandidatForUtmelding blir kalt når ny arbeidssøkerperiode starter`() {
-        mockSytemBrukerAuthOk(aktorId, Fnr.of(fnr))
-        kandidatForUtmeldingRepository.lagreKandidat(
-            ArbeidssøkerPeriodeAvsluttet(
-                aktorId = aktorId,
-                fnr = Fnr.of(fnr),
-                avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER,
-                kilde = "kilde",
-                aarsak = "aarsak",
-            )
-        )
-        assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNotNull()
-
-        val nyPeriode = arbeidssokerperiode(fnr, periodeAvsluttet = false)
-        val melding = ConsumerRecord("topic", 0, 0, "dummyKey", nyPeriode)
-        arbeidssoekerperiodeConsumerService.consumeArbeidssøkerperiode(melding)
-
-        assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNull()
-    }
-
-    @Test
-    fun `fjernKandidatForUtmelding blir kalt når UtmeldingsService avslutter oppfølging etter 28 dager ISERV`() {
-        mockSytemBrukerAuthOk(aktorId, Fnr.of(fnr))
-        startOppfolgingSomArbeidsoker(aktorId, Fnr.of(fnr))
-        setLocalArenaOppfolging(aktorId, Formidlingsgruppe.ISERV)
-        mockTiltakshistorikk(Fnr.of(fnr), harAktiveDeltakelser = false)
-        mockUngdomsprogram(Fnr.of(fnr), erDeltaker = false)
-        mockArbeidssoekerregisteret(Fnr.of(fnr), erArbeidssoeker = false)
-        mockAap(Fnr.of(fnr), harAap = false)
-
-        utmeldingRepository.insertUtmeldingTabell(OppdateringFraArena_BleIserv(aktorId, ZonedDateTime.now().minusDays(29)))
-        kandidatForUtmeldingRepository.lagreKandidat(
-            ArbeidssøkerPeriodeAvsluttet(
-                aktorId = aktorId,
-                fnr = Fnr.of(fnr),
-                avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER,
-                kilde = "kilde",
-                aarsak = "aarsak",
-            )
-        )
-        assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNotNull()
-
-        utmeldingsService.avsluttOppfolgingOgFjernFraUtmeldingsTabell(aktorId)
-
-        assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNull()
-    }
-
-    @Test
-    fun `fjernKandidatForUtmelding blir kalt når bruker blir inaktiv i Arena uten mulighet for reaktivering`() {
-        mockSytemBrukerAuthOk(aktorId, Fnr.of(fnr))
-        startOppfolgingSomArbeidsoker(aktorId, Fnr.of(fnr))
-        setLocalArenaOppfolging(aktorId, Formidlingsgruppe.ARBS)
-        mockTiltakshistorikk(Fnr.of(fnr), harAktiveDeltakelser = false)
-        mockUngdomsprogram(Fnr.of(fnr), erDeltaker = false)
-        mockArbeidssoekerregisteret(Fnr.of(fnr), erArbeidssoeker = false)
-        mockAap(Fnr.of(fnr), harAap = false)
-        mockVeilarbArenaOppfolgingsStatus(Fnr.of(fnr), kanEnkeltReaktiveres = false)
-        kandidatForUtmeldingRepository.lagreKandidat(
-            ArbeidssøkerPeriodeAvsluttet(
-                aktorId = aktorId,
-                fnr = Fnr.of(fnr),
-                avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER,
-                kilde = "kilde",
-                aarsak = "aarsak",
-            )
-        )
-        assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNotNull()
-        val arenaEndring = EndringPaaOppfolgingsBruker(
-            aktorId = aktorId,
-            fodselsnummer = fnr,
-            formidlingsgruppe = Formidlingsgruppe.ISERV,
-            kvalifiseringsgruppe = Kvalifiseringsgruppe.BATT,
-            oppfolgingsenhet = "1234",
-            iservFraDato = LocalDate.now(),
-            rettighetsgruppe = null,
-            hovedmaal = null,
-            sistEndretDato = ZonedDateTime.now()
-        )
-
-        oppfolgingsbrukerEndretIArenaService.oppdaterOppfolgingMedStatusFraArena(arenaEndring)
-
-        assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNull()
     }
 
     @Test
@@ -207,6 +129,90 @@ class KandidatForUtmeldingFlytTest(
         arbeidssoekerperiodeConsumerService.consumeArbeidssøkerperiode(sluttMelding)
 
         assertThat(utmeldingRepository.eksisterendeIservBruker(aktorId).isPresent).isTrue()
+    }
+
+    @Test
+    fun `Sletter kandidat-for-utmelding når ny oppfølgingsperiode startes manuelt av veileder`() {
+        mockVeilarbArenaOppfolgingsBruker(Fnr.of(fnr), Formidlingsgruppe.ISERV)
+        startOppfolgingSomArbeidsoker(aktorId, Fnr.of(fnr))
+        val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(Fnr.of(fnr)).get().uuid
+        kandidatForUtmeldingRepository.lagreKandidat(ArbeidssøkerPeriodeAvsluttet(
+            aktorId = aktorId,
+            fnr = Fnr.of(fnr),
+            oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
+            avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER,
+            kilde ="kilde",
+            aarsak = "aarsak")
+        )
+        avsluttOppfolgingManueltSomVeileder(aktorId)
+
+        val registrering = OppfolgingsRegistrering.manuellRegistreringVeileder(Fnr.of(fnr), aktorId, VeilederRegistrant(NavIdent("veileder")), null, true)
+        startOppfolging(aktorId, registrering)
+
+        assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNull()
+    }
+
+    @Test
+    fun `Sletter kandidat-for-utmelding når ny oppfølgingsperiode startes manuelt av bruker`() {
+        mockVeilarbArenaOppfolgingsBruker(Fnr.of(fnr), Formidlingsgruppe.ISERV)
+        startOppfolgingSomArbeidsoker(aktorId, Fnr.of(fnr))
+        val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(Fnr.of(fnr)).get().uuid
+        kandidatForUtmeldingRepository.lagreKandidat(ArbeidssøkerPeriodeAvsluttet(
+            aktorId = aktorId,
+            fnr = Fnr.of(fnr),
+            oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
+            avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER,
+            kilde ="kilde",
+            aarsak = "aarsak")
+        )
+        avsluttOppfolgingManueltSomVeileder(aktorId)
+
+        val registrering = OppfolgingsRegistrering.manuellRegistreringBruker(Fnr.of(fnr), aktorId)
+        startOppfolging(aktorId, registrering)
+
+        assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNull()
+    }
+
+    @Test
+    fun `Sletter kandidat-for-utmelding når ny oppfølgingsperiode startes via arbeidssøkerregisteret`() {
+        mockVeilarbArenaOppfolgingsBruker(Fnr.of(fnr), Formidlingsgruppe.ISERV)
+        startOppfolgingSomArbeidsoker(aktorId, Fnr.of(fnr))
+        val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(Fnr.of(fnr)).get().uuid
+        kandidatForUtmeldingRepository.lagreKandidat(ArbeidssøkerPeriodeAvsluttet(
+            aktorId = aktorId,
+            fnr = Fnr.of(fnr),
+            oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
+            avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER,
+            kilde ="kilde",
+            aarsak = "aarsak")
+        )
+        avsluttOppfolgingManueltSomVeileder(aktorId)
+        val registrering = OppfolgingsRegistrering.arbeidssokerRegistrering(Fnr.of(fnr), aktorId, VeilederRegistrant(NavIdent("veileder")))
+        startOppfolging(aktorId, registrering)
+
+        assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNull()
+    }
+
+    @Test
+    fun `Sletter kandidat-for-utmelding når ny oppfølgingsperiode startes via melding fra Arena`() {
+        mockVeilarbArenaOppfolgingsBruker(Fnr.of(fnr), Formidlingsgruppe.ISERV)
+        startOppfolgingSomArbeidsoker(aktorId, Fnr.of(fnr))
+        val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(Fnr.of(fnr)).get().uuid
+        kandidatForUtmeldingRepository.lagreKandidat(ArbeidssøkerPeriodeAvsluttet(
+            aktorId = aktorId,
+            fnr = Fnr.of(fnr),
+            oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
+            avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER,
+            kilde ="kilde",
+            aarsak = "aarsak")
+        )
+        avsluttOppfolgingManueltSomVeileder(aktorId)
+
+        val registrering = OppfolgingsRegistrering.arenaSyncOppfolgingBrukerRegistrering(Fnr.of(fnr), aktorId,
+            Formidlingsgruppe.IARBS, Kvalifiseringsgruppe.VURDU, EnhetId("0318"))
+        startOppfolging(aktorId, registrering)
+
+        assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNull()
     }
 
     private fun arbeidssokerperiode(

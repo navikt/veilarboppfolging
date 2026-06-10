@@ -6,6 +6,7 @@ import no.nav.common.types.identer.Fnr
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
 import no.nav.veilarboppfolging.client.digdir_krr.KRRData
 import no.nav.veilarboppfolging.eventsLogger.BigQueryClient
+import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ArbeidsokerRegistrering
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ArenaSyncRegistrering
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ManuellRegistreringBruker
@@ -32,6 +33,7 @@ open class StartOppfolgingService(
     val oppfolgingsStatusRepository: OppfolgingsStatusRepository,
     val oppfolgingsPeriodeRepository: OppfolgingsPeriodeRepository,
     val kafkaProducerService: KafkaProducerService,
+    val kandidatForUtmeldingService: KandidatForUtmeldingService,
     val bigQueryClient: BigQueryClient,
     val transactor: TransactionTemplate,
     @Value("\${app.env.nav-no-url}")
@@ -66,6 +68,7 @@ open class StartOppfolgingService(
             }
 
             oppfolgingsPeriodeRepository.start(oppfolgingsbruker)
+            kandidatForUtmeldingService.fjernKandidatForUtmelding(aktorId)
 
             val perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId)
             val sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder)
