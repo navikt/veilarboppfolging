@@ -159,7 +159,8 @@ class ReaktiveringServiceTest {
             emptyList(),
             null,
             "defaultVeileder",
-            StartetAvType.VEILEDER
+            StartetAvType.VEILEDER,
+            null
         )
     }
 

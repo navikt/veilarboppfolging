@@ -35,7 +35,7 @@ public class OppfolgingsPeriodeRepository {
     private final TransactionTemplate transactor;
 
     private final static String hentOppfolingsperioderSQL =
-            "SELECT uuid, aktor_id, avslutt_veileder, startdato, sluttdato, avslutt_begrunnelse, start_begrunnelse, startet_av, startet_av_type " +
+            "SELECT uuid, aktor_id, avslutt_veileder, startdato, sluttdato, avslutt_begrunnelse, start_begrunnelse, startet_av, startet_av_type, avregistrering_type " +
                     "FROM OPPFOLGINGSPERIODE ";
 
     @Autowired
