@@ -76,7 +76,8 @@ open class ArbeidssøkerperiodeConsumerService(
             utmeldHvisBrukerBleIservEtterArbeidssøkerRegistrering(fnr, arbeidssøkerperiodeStartet, aktørId)
         } else {
             logger.info("Melding om avsluttet arbeidssøkerperiode, flagger som utmeldingskandidat hvis under oppfølging")
-            if (oppfolgingsperioder.any { it.sluttDato == null }) {
+            val gjeldendePeriode = oppfolgingsperioder.firstOrNull { it.sluttDato == null }
+            if (gjeldendePeriode != null) {
                 val kilde = arbeidssøkerperiode.avsluttet?.kilde?.toString() ?: "arbeidssøkerregisteret"
                 val aarsak = arbeidssøkerperiode.avsluttet?.aarsak?.toString()
                 val avsluttetAv = when(arbeidssøkerperiode.avsluttet?.utfoertAv?.type) {
@@ -85,7 +86,7 @@ open class ArbeidssøkerperiodeConsumerService(
                     BrukerType.SYSTEM -> KandidatForUtmeldingHendelseAvsluttetAv.SYSTEM
                     BrukerType.SLUTTBRUKER -> KandidatForUtmeldingHendelseAvsluttetAv.BRUKER
                 }
-                kandidatForUtmeldingService.lagreKandidatForUtmelding(ArbeidssøkerPeriodeAvsluttet(aktørId, fnr, avsluttetAv = avsluttetAv, kilde = kilde, aarsak = aarsak))
+                kandidatForUtmeldingService.lagreKandidatForUtmelding(ArbeidssøkerPeriodeAvsluttet(aktørId, fnr, avsluttetAv = avsluttetAv, kilde = kilde, aarsak = aarsak, oppfolgingsperiodeUuid = gjeldendePeriode.uuid))
             }
         }
     }

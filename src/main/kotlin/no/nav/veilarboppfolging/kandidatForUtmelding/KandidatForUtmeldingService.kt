@@ -27,18 +27,13 @@ class KandidatForUtmeldingService(
         }
     }
 
-    fun fjernKandidatForUtmelding(aktorId: AktorId) {
-        kandidatForUtmeldingRepository.fjernKandidat(aktorId)
-        logger.info("Fjerner kandidat for utmelding")
-    }
-
     /**
-     * Foreløpig sletter vi ikke kandidatene, men lagrer timestamp for oppfølging avsluttet og hvorfor oppfølging ble avsluttet.
+     * Foreløpig sletter vi ikke kandidatene når kandidatene avslutter sin oppfølgingsperiode, kun når de starter ny periode.
      * Dette er for å kunne samle data om hvilke kandidater som har blitt tatt ut av oppfølging enten automatisk
      * eller manuelt, og når de ble tatt ut av oppfølging.
      */
-    fun markerOppfolgingSomAvsluttet(aktorId: AktorId, avregistreringsType: AvregistreringsType) {
-        kandidatForUtmeldingRepository.markerAtOppfolgingBleAvsluttet(aktorId, avregistreringsType)
-        logger.info("Markerer at kandidat for utmelding")
+    fun fjernKandidatForUtmelding(aktorId: AktorId) {
+        kandidatForUtmeldingRepository.fjernKandidat(aktorId)
+        logger.info("Fjerner kandidat for utmelding")
     }
 }

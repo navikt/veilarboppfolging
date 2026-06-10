@@ -74,7 +74,6 @@ class UtmeldingsService(
                 log.info("Utgang: Forsøker å avslutte oppfølging automatisk grunnet iserv i 28 dager")
                 val avregistrering = UtmeldtEtter28Dager(aktorId)
                 val kanAvslutte = avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(avregistrering)
-                kandidatForUtmeldingService.markerOppfolgingSomAvsluttet(avregistrering.aktorId, avregistrering.getAvregistreringsType())
                 // Hvis kanAvslutte er false, så betyr det at oppfølgingsperioden hos oss ikke ble avsluttet.
                 // Da beholder vi brukeren i utmeldingstabellen, og forsøker igjen senere
                 val oppfolgingFaktiskAvsluttet = kanAvslutte is KunneAvsluttes

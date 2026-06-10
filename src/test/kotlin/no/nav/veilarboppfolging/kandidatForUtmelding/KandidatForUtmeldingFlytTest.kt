@@ -80,95 +80,6 @@ class KandidatForUtmeldingFlytTest(
     }
 
     @Test
-    fun `fjernKandidatForUtmelding blir kalt når ny arbeidssøkerperiode starter`() {
-        mockSytemBrukerAuthOk(aktorId, Fnr.of(fnr))
-        kandidatForUtmeldingRepository.lagreKandidat(
-            ArbeidssøkerPeriodeAvsluttet(
-                aktorId = aktorId,
-                fnr = Fnr.of(fnr),
-                avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER,
-                kilde = "kilde",
-                aarsak = "aarsak",
-            )
-        )
-        assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNotNull()
-
-        val nyPeriode = arbeidssokerperiode(fnr, periodeAvsluttet = false)
-        val melding = ConsumerRecord("topic", 0, 0, "dummyKey", nyPeriode)
-        arbeidssoekerperiodeConsumerService.consumeArbeidssøkerperiode(melding)
-
-        assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNull()
-    }
-
-    @Test
-    fun `kandidat markeres med oppfølging avsluttet når UtmeldingsService avslutter oppfølging etter 28 dager ISERV`() {
-        mockSytemBrukerAuthOk(aktorId, Fnr.of(fnr))
-        startOppfolgingSomArbeidsoker(aktorId, Fnr.of(fnr))
-        setLocalArenaOppfolging(aktorId, Formidlingsgruppe.ISERV)
-        mockTiltakshistorikk(Fnr.of(fnr), harAktiveDeltakelser = false)
-        mockUngdomsprogram(Fnr.of(fnr), erDeltaker = false)
-        mockArbeidssoekerregisteret(Fnr.of(fnr), erArbeidssoeker = false)
-        mockAap(Fnr.of(fnr), harAap = false)
-
-        utmeldingRepository.insertUtmeldingTabell(OppdateringFraArena_BleIserv(aktorId, ZonedDateTime.now().minusDays(29)))
-        kandidatForUtmeldingRepository.lagreKandidat(
-            ArbeidssøkerPeriodeAvsluttet(
-                aktorId = aktorId,
-                fnr = Fnr.of(fnr),
-                avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER,
-                kilde = "kilde",
-                aarsak = "aarsak",
-            )
-        )
-        assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNotNull()
-
-        utmeldingsService.avsluttOppfolgingOgFjernFraUtmeldingsTabell(aktorId)
-
-        val utmeldingskandidat = kandidatForUtmeldingRepository.hentKandidat(aktorId)
-        assertThat(utmeldingskandidat?.avregistreringsType).isEqualTo(AvregistreringsType.UtmeldtEtter28Dager)
-        assertThat(utmeldingskandidat?.oppfolgingAvsluttetTidspunkt).isCloseTo(ZonedDateTime.now(), within(1, ChronoUnit.SECONDS))
-    }
-
-    @Test
-    fun `kandidat markeres med oppfølging avsluttet når bruker blir inaktiv i Arena uten mulighet for reaktivering`() {
-        mockSytemBrukerAuthOk(aktorId, Fnr.of(fnr))
-        startOppfolgingSomArbeidsoker(aktorId, Fnr.of(fnr))
-        setLocalArenaOppfolging(aktorId, Formidlingsgruppe.ARBS)
-        mockTiltakshistorikk(Fnr.of(fnr), harAktiveDeltakelser = false)
-        mockUngdomsprogram(Fnr.of(fnr), erDeltaker = false)
-        mockArbeidssoekerregisteret(Fnr.of(fnr), erArbeidssoeker = false)
-        mockAap(Fnr.of(fnr), harAap = false)
-        mockVeilarbArenaOppfolgingsStatus(Fnr.of(fnr), kanEnkeltReaktiveres = false)
-        kandidatForUtmeldingRepository.lagreKandidat(
-            ArbeidssøkerPeriodeAvsluttet(
-                aktorId = aktorId,
-                fnr = Fnr.of(fnr),
-                avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER,
-                kilde = "kilde",
-                aarsak = "aarsak",
-            )
-        )
-        assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNotNull()
-        val arenaEndring = EndringPaaOppfolgingsBruker(
-            aktorId = aktorId,
-            fodselsnummer = fnr,
-            formidlingsgruppe = Formidlingsgruppe.ISERV,
-            kvalifiseringsgruppe = Kvalifiseringsgruppe.BATT,
-            oppfolgingsenhet = "1234",
-            iservFraDato = LocalDate.now(),
-            rettighetsgruppe = null,
-            hovedmaal = null,
-            sistEndretDato = ZonedDateTime.now()
-        )
-
-        oppfolgingsbrukerEndretIArenaService.oppdaterOppfolgingMedStatusFraArena(arenaEndring)
-
-        val utmeldingskandidat = kandidatForUtmeldingRepository.hentKandidat(aktorId)
-        assertThat(utmeldingskandidat?.avregistreringsType).isEqualTo(AvregistreringsType.ArenaIservKanIkkeReaktiveres)
-        assertThat(utmeldingskandidat?.oppfolgingAvsluttetTidspunkt).isCloseTo(ZonedDateTime.now(), within(1, ChronoUnit.SECONDS))
-    }
-
-    @Test
     fun `lagreKandidatForUtmelding blir kalt når bruker blir ISERV etter arbeidssøkerregistrering`() {
         mockSytemBrukerAuthOk(aktorId, Fnr.of(fnr))
         val arbeidsoekerPeriodeStartet = LocalDateTime.of(2024, 10, 1, 23, 59)
@@ -222,8 +133,18 @@ class KandidatForUtmeldingFlytTest(
 
     @Test
     fun `Sletter kandidat-for-utmelding når ny oppfølgingsperiode startes manuelt av veileder`() {
-        kandidatForUtmeldingRepository.lagreKandidat(ArbeidssøkerPeriodeAvsluttet(aktorId, Fnr.of(fnr),
-            KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER, "kilde", "aarsak"))
+        mockVeilarbArenaOppfolgingsBruker(Fnr.of(fnr), Formidlingsgruppe.ISERV)
+        startOppfolgingSomArbeidsoker(aktorId, Fnr.of(fnr))
+        val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(Fnr.of(fnr)).get().uuid
+        kandidatForUtmeldingRepository.lagreKandidat(ArbeidssøkerPeriodeAvsluttet(
+            aktorId = aktorId,
+            fnr = Fnr.of(fnr),
+            oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
+            avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER,
+            kilde ="kilde",
+            aarsak = "aarsak")
+        )
+        avsluttOppfolgingManueltSomVeileder(aktorId)
 
         val registrering = OppfolgingsRegistrering.manuellRegistreringVeileder(Fnr.of(fnr), aktorId, VeilederRegistrant(NavIdent("veileder")), null, true)
         startOppfolging(aktorId, registrering)
@@ -233,8 +154,18 @@ class KandidatForUtmeldingFlytTest(
 
     @Test
     fun `Sletter kandidat-for-utmelding når ny oppfølgingsperiode startes manuelt av bruker`() {
-        kandidatForUtmeldingRepository.lagreKandidat(ArbeidssøkerPeriodeAvsluttet(aktorId, Fnr.of(fnr),
-            KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER, "kilde", "aarsak"))
+        mockVeilarbArenaOppfolgingsBruker(Fnr.of(fnr), Formidlingsgruppe.ISERV)
+        startOppfolgingSomArbeidsoker(aktorId, Fnr.of(fnr))
+        val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(Fnr.of(fnr)).get().uuid
+        kandidatForUtmeldingRepository.lagreKandidat(ArbeidssøkerPeriodeAvsluttet(
+            aktorId = aktorId,
+            fnr = Fnr.of(fnr),
+            oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
+            avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER,
+            kilde ="kilde",
+            aarsak = "aarsak")
+        )
+        avsluttOppfolgingManueltSomVeileder(aktorId)
 
         val registrering = OppfolgingsRegistrering.manuellRegistreringBruker(Fnr.of(fnr), aktorId)
         startOppfolging(aktorId, registrering)
@@ -244,9 +175,18 @@ class KandidatForUtmeldingFlytTest(
 
     @Test
     fun `Sletter kandidat-for-utmelding når ny oppfølgingsperiode startes via arbeidssøkerregisteret`() {
-        kandidatForUtmeldingRepository.lagreKandidat(ArbeidssøkerPeriodeAvsluttet(aktorId, Fnr.of(fnr),
-            KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER, "kilde", "aarsak"))
-
+        mockVeilarbArenaOppfolgingsBruker(Fnr.of(fnr), Formidlingsgruppe.ISERV)
+        startOppfolgingSomArbeidsoker(aktorId, Fnr.of(fnr))
+        val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(Fnr.of(fnr)).get().uuid
+        kandidatForUtmeldingRepository.lagreKandidat(ArbeidssøkerPeriodeAvsluttet(
+            aktorId = aktorId,
+            fnr = Fnr.of(fnr),
+            oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
+            avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER,
+            kilde ="kilde",
+            aarsak = "aarsak")
+        )
+        avsluttOppfolgingManueltSomVeileder(aktorId)
         val registrering = OppfolgingsRegistrering.arbeidssokerRegistrering(Fnr.of(fnr), aktorId, VeilederRegistrant(NavIdent("veileder")))
         startOppfolging(aktorId, registrering)
 
@@ -255,8 +195,18 @@ class KandidatForUtmeldingFlytTest(
 
     @Test
     fun `Sletter kandidat-for-utmelding når ny oppfølgingsperiode startes via melding fra Arena`() {
-        kandidatForUtmeldingRepository.lagreKandidat(ArbeidssøkerPeriodeAvsluttet(aktorId, Fnr.of(fnr),
-            KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER, "kilde", "aarsak"))
+        mockVeilarbArenaOppfolgingsBruker(Fnr.of(fnr), Formidlingsgruppe.ISERV)
+        startOppfolgingSomArbeidsoker(aktorId, Fnr.of(fnr))
+        val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(Fnr.of(fnr)).get().uuid
+        kandidatForUtmeldingRepository.lagreKandidat(ArbeidssøkerPeriodeAvsluttet(
+            aktorId = aktorId,
+            fnr = Fnr.of(fnr),
+            oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
+            avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER,
+            kilde ="kilde",
+            aarsak = "aarsak")
+        )
+        avsluttOppfolgingManueltSomVeileder(aktorId)
 
         val registrering = OppfolgingsRegistrering.arenaSyncOppfolgingBrukerRegistrering(Fnr.of(fnr), aktorId,
             Formidlingsgruppe.IARBS, Kvalifiseringsgruppe.VURDU, EnhetId("0318"))

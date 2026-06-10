@@ -4,13 +4,15 @@ import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvregistreringsType
 import java.time.ZonedDateTime
+import java.util.UUID
 
 sealed class KandidatForUtmeldingHendelse (
     val aktorId : AktorId,
     val fnr: Fnr,
+    val oppfolgingsperiodeUuid: UUID?, // TODO: Gjør not nullable
     val avsluttetAv: KandidatForUtmeldingHendelseAvsluttetAv,
     val kilde: String,
-    val aarsak: String?
+    val aarsak: String?,
 ) {
     abstract val type: KandidatForUtmeldingHendelseType
 }
@@ -29,19 +31,10 @@ enum class KandidatForUtmeldingHendelseAvsluttetAv {
 class ArbeidssøkerPeriodeAvsluttet(
     aktorId: AktorId,
     fnr: Fnr,
+    oppfolgingsperiodeUuid: UUID?,
     avsluttetAv: KandidatForUtmeldingHendelseAvsluttetAv,
     kilde: String,
     aarsak: String?
-): KandidatForUtmeldingHendelse(aktorId, fnr, avsluttetAv, kilde, aarsak)  {
+): KandidatForUtmeldingHendelse(aktorId, fnr, oppfolgingsperiodeUuid, avsluttetAv, kilde, aarsak)  {
     override val type: KandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET
 }
-
-data class KandidatForUtmelding(
-    val aktorId : AktorId,
-    val fnr: Fnr,
-    val avsluttetAv: KandidatForUtmeldingHendelseAvsluttetAv,
-    val kilde: String,
-    val aarsak: String?,
-    val avregistreringsType: AvregistreringsType?,
-    val oppfolgingAvsluttetTidspunkt: ZonedDateTime?
-)

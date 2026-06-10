@@ -111,7 +111,6 @@ public class AdminController {
                                         null
                                 )
                         );
-                        kandidatForUtmeldingService.markerOppfolgingSomAvsluttet(AktorId.of(aktorId), AvregistreringsType.AdminAvregistrering);
                         return true;
                     } catch (Exception e) {
                         log.warn("Kunne ikke avslutte oppfølging: {}", e.getMessage());
@@ -139,7 +138,6 @@ public class AdminController {
                     innloggetBruker,
                     oppfolgingsperiodeSomSkalAvsluttes.getBegrunnelse(),
                     oppfolgingsperiodeSomSkalAvsluttes.getOppfolgingsperiodeUuid());
-            kandidatForUtmeldingService.markerOppfolgingSomAvsluttet(AktorId.of(oppfolgingsperiodeSomSkalAvsluttes.getAktorId()), AvregistreringsType.AdminAvregistrering);
             return true;
         } catch (Exception e) {
             log.warn("Kunne ikke avslutte oppfølgingsperiode: {}", e.getMessage());
