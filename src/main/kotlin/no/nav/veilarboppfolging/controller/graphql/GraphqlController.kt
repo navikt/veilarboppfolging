@@ -79,11 +79,22 @@ class GraphqlController(
 
     @QueryMapping
     fun utmeldingskandidatTag(@Argument fnr: String? = null): DataFetcherResult<KandidatForUtmeldingTag> {
-        val dataFetchResult = DataFetcherResult.newResult<OppfolgingsEnhetQueryDto>()
         val tilgang = sjekkTilgang(fnr, EksterneHarIkkeTilgang)
         if (tilgang is HarIkkeTilgang) throw ForbiddenException("Ikke tilgang til utmeldingskandidatTag: ${tilgang.message}")
 
+        val eksternBrukerId = fnrFraContext(fnr)
 
+        val dataFetchResult = DataFetcherResult.newResult<KandidatForUtmeldingTag>()
+        val fnr = eksternBrukerId.getFnr()
+        val aktorId = eksternBrukerId.getAktorId()
+
+        val localContext = GraphQLContext.getDefault()
+            .put("fnr", fnr)
+            .put("aktorId", aktorId)
+
+        return kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId).let { tag ->
+            dataFetchResult.localContext(localContext).data(tag).build()
+        }
     }
 
     @QueryMapping
