@@ -88,6 +88,9 @@ class GraphqlController(
     }
 
     @QueryMapping
+    fun utmeldingskandidatTag(@Argument fnr: String? = null): DataFetcherResult<>
+
+    @QueryMapping
     fun oppfolgingsEnhet(@Argument fnr: String? = null): DataFetcherResult<OppfolgingsEnhetQueryDto> {
         val dataFetchResult = DataFetcherResult.newResult<OppfolgingsEnhetQueryDto>()
         val tilgang = sjekkTilgang(fnr, AlleHarTilgang(AuthService.SikkerthetsNivå.Nivå3))

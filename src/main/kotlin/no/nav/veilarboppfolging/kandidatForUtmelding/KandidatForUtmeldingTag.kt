@@ -1,0 +1,11 @@
+package no.nav.veilarboppfolging.kandidatForUtmelding
+
+enum class KandidatForUtmeldingTag {
+    ARBEIDSSOKERPERIODE_AVSLUTTET_BRUKER,
+    ARBEIDSSOKERPERIODE_AVSLUTTET_VEILEDER,
+    ARBEIDSSOKERPERIODE_AVSLUTTET_SYSTEM,
+    ARBEIDSSOKERPERIODE_AVSLUTTET_UKJENT;
+
+    fun mapTag(type: KandidatForUtmeldingHendelseType, avsluttetAv: KandidatForUtmeldingHendelseAvsluttetAv ) = when (this) {}
+}
+
