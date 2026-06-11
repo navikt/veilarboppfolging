@@ -7,6 +7,7 @@ import no.nav.common.types.identer.Fnr
 import no.nav.veilarboppfolging.kafka.OppfolgingskontorMelding
 import no.nav.veilarboppfolging.kafka.Tilordningstype
 import no.nav.veilarboppfolging.oppfolgingsbruker.StartetAvType
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvregistreringsType
 import no.nav.veilarboppfolging.repository.ArbeidsoppfolgingskontorRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity
@@ -162,7 +163,7 @@ class OppfolgingsperiodeEndretServiceTest {
         return ZonedDateTime.parse(this.asString())
     }
 
-    private fun oppfolgingsperiode(aktorId: String, oppfolgingsperiodeStart: ZonedDateTime = ZonedDateTime.now(), oppfolgingsperiodeSlutt: ZonedDateTime? = null): OppfolgingsperiodeEntity {
+    private fun oppfolgingsperiode(aktorId: String, oppfolgingsperiodeStart: ZonedDateTime = ZonedDateTime.now(), oppfolgingsperiodeSlutt: ZonedDateTime? = null, avregistreringsType: AvregistreringsType? = null): OppfolgingsperiodeEntity {
         return OppfolgingsperiodeEntity(
             UUID.randomUUID(),
             aktorId,
@@ -173,7 +174,8 @@ class OppfolgingsperiodeEndretServiceTest {
             emptyList(),
             null,
             "defaultVeileder",
-            StartetAvType.VEILEDER
+            StartetAvType.VEILEDER,
+            avregistreringsType
         )
     }
 

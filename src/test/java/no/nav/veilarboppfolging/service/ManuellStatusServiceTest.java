@@ -6,6 +6,7 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.ForbiddenException;
 import no.nav.veilarboppfolging.client.digdir_krr.KRRData;
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirClient;
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvregistreringsType;
 import no.nav.veilarboppfolging.repository.ManuellStatusRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
@@ -208,7 +209,7 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
         assertTrue(manuellStatusService.erManuell(AKTOR_ID));
 
 
-        oppfolgingsPeriodeRepository.avsluttSistePeriodeOgAvsluttOppfolging(AKTOR_ID, "", "");
+        oppfolgingsPeriodeRepository.avsluttSistePeriodeOgAvsluttOppfolging(AKTOR_ID, "", "", AvregistreringsType.AdminAvregistrering);
         assertFalse(manuellStatusService.erManuell(AKTOR_ID));
     }
 

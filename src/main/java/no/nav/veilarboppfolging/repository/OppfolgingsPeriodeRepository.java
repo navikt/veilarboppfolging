@@ -5,6 +5,7 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.StartetAvType;
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ManuellRegistreringVeileder;
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelse;
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering;
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvregistreringsType;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
 import no.nav.veilarboppfolging.utils.EnumUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +35,7 @@ public class OppfolgingsPeriodeRepository {
     private final TransactionTemplate transactor;
 
     private final static String hentOppfolingsperioderSQL =
-            "SELECT uuid, aktor_id, avslutt_veileder, startdato, sluttdato, avslutt_begrunnelse, start_begrunnelse, startet_av, startet_av_type " +
+            "SELECT uuid, aktor_id, avslutt_veileder, startdato, sluttdato, avslutt_begrunnelse, start_begrunnelse, startet_av, startet_av_type, avregistrering_type " +
                     "FROM OPPFOLGINGSPERIODE ";
 
     @Autowired
@@ -57,14 +58,14 @@ public class OppfolgingsPeriodeRepository {
         });
     }
 
-    public void avsluttSistePeriodeOgAvsluttOppfolging(AktorId aktorId, String veileder, String begrunnelse) {
+    public void avsluttSistePeriodeOgAvsluttOppfolging(AktorId aktorId, String veileder, String begrunnelse, AvregistreringsType avregistreringsType) {
         transactor.executeWithoutResult((ignored) -> {
-            endPeriode(aktorId, veileder, begrunnelse);
+            endPeriode(aktorId, veileder, begrunnelse, avregistreringsType);
             avsluttOppfolging(aktorId);
         });
     }
 
-    public OppfolgingsperiodeEntity avsluttOppfolgingsperiode(UUID uuid, String veileder, String begrunnelse, ZonedDateTime sluttDato) {
+    public OppfolgingsperiodeEntity avsluttOppfolgingsperiode(UUID uuid, String veileder, String begrunnelse, ZonedDateTime sluttDato, AvregistreringsType avregistreringsType) {
         return transactor.execute((ignored) -> {
             Timestamp sluttTimestamp = Timestamp.from(sluttDato.toInstant());
             return db.queryForObject(""" 
@@ -72,7 +73,8 @@ public class OppfolgingsPeriodeRepository {
                             SET avslutt_veileder = ?,
                             avslutt_begrunnelse = ?,
                             sluttDato = ?,
-                            oppdatert = CURRENT_TIMESTAMP
+                            oppdatert = CURRENT_TIMESTAMP,
+                            avregistrering_type = ?
                             WHERE uuid = ?
                             AND sluttDato IS NULL
                             RETURNING *
@@ -81,6 +83,7 @@ public class OppfolgingsPeriodeRepository {
                     veileder,
                     begrunnelse,
                     sluttTimestamp,
+                    avregistreringsType.name(),
                     uuid.toString());
         });
     }
@@ -170,17 +173,19 @@ public class OppfolgingsPeriodeRepository {
                 aktorId.get());
     }
 
-    private void endPeriode(AktorId aktorId, String veileder, String begrunnelse) {
+    private void endPeriode(AktorId aktorId, String veileder, String begrunnelse, AvregistreringsType avregistreringsType) {
         db.update("" +
                         "UPDATE OPPFOLGINGSPERIODE " +
                         "SET avslutt_veileder = ?, " +
                         "avslutt_begrunnelse = ?, " +
                         "sluttDato = CURRENT_TIMESTAMP, " +
-                        "oppdatert = CURRENT_TIMESTAMP " +
+                        "oppdatert = CURRENT_TIMESTAMP, " +
+                        "avregistrering_type = ? " +
                         "WHERE aktor_id = ? " +
                         "AND sluttDato IS NULL",
                 veileder,
                 begrunnelse,
+                avregistreringsType.name(),
                 aktorId.get());
     }
 
@@ -209,6 +214,7 @@ public class OppfolgingsPeriodeRepository {
                 .uuid(UUID.fromString(result.getString("uuid")))
                 .aktorId(result.getString("aktor_id"))
                 .avsluttetAv(result.getString("avslutt_veileder"))
+                .avregistreringsType(EnumUtils.valueOf(AvregistreringsType.class, result.getString("avregistrering_type")))
                 .startDato(hentZonedDateTime(result, "startdato"))
                 .sluttDato(hentZonedDateTime(result, "sluttdato"))
                 .begrunnelse(result.getString("avslutt_begrunnelse"))

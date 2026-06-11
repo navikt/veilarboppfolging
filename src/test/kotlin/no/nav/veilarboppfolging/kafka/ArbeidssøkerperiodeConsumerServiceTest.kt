@@ -244,8 +244,8 @@ class ArbeidssøkerperiodeConsumerServiceTest(
             emptyList(),
             OppfolgingStartBegrunnelse.ARBEIDSSOKER_REGISTRERING,
             "Z123456",
-            StartetAvType.VEILEDER
-
+            StartetAvType.VEILEDER,
+            null,
         )
 
     private fun arbeidssøkerperiode(fødselsnummer: String, periodeAvsluttet: Boolean = false, periodeStartet: Instant = Instant.now().minusSeconds(1)): Periode {

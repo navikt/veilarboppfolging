@@ -13,6 +13,7 @@ import no.nav.veilarboppfolging.client.pdl.FregStatusOgStatsborgerskap
 import no.nav.veilarboppfolging.oppfolgingsbruker.AvsluttetAvType
 import no.nav.veilarboppfolging.oppfolgingsbruker.StartetAvType
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelse
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvregistreringsType
 import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.hendelser.OppfolgingStartetHendelseDto
 import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.hendelser.OppfolgingsAvsluttetHendelseDto
 import org.assertj.core.api.Assertions
@@ -41,7 +42,8 @@ class AktiverBrukerIntegrationTest : IntegrationTest() {
     fun skalHaandtereAtOppfolgingstatusAlleredeFinnes() {
         mockSytemBrukerAuthOk(AKTOR_ID, FNR)
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID)
-        oppfolgingsPeriodeRepository.avsluttSistePeriodeOgAvsluttOppfolging(AKTOR_ID, "veilederid", "begrunnelse")
+        oppfolgingsPeriodeRepository.avsluttSistePeriodeOgAvsluttOppfolging(AKTOR_ID, "veilederid", "begrunnelse",
+            AvregistreringsType.ArenaIservKanIkkeReaktiveres)
         startOppfolgingSomArbeidsoker(AKTOR_ID, FNR)
         val oppfolging = oppfolgingService.hentOppfolging(AKTOR_ID)
         Assertions.assertThat(oppfolging.get().isUnderOppfolging()).isTrue()

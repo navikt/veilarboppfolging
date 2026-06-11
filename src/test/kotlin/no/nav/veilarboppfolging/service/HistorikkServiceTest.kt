@@ -5,6 +5,7 @@ import no.nav.common.types.identer.Fnr
 import no.nav.veilarboppfolging.controller.response.HistorikkHendelse
 import no.nav.veilarboppfolging.oppfolgingsbruker.StartetAvType
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelse
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvregistreringsType
 import no.nav.veilarboppfolging.repository.KvpRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsenhetHistorikkRepository
@@ -428,6 +429,7 @@ class HistorikkServiceTest {
         startetAvType: StartetAvType?,
         avsluttetBegrunnelse: String? = null,
         avsluttetAv: String? = null,
+        avregistreringsType: AvregistreringsType? = null,
     ): OppfolgingsperiodeEntity {
         return OppfolgingsperiodeEntity(
             UUID.randomUUID(),
@@ -439,7 +441,8 @@ class HistorikkServiceTest {
             emptyList(),
             startBegrunnelse,
             startetAv,
-            startetAvType
+            startetAvType,
+            avregistreringsType
         )
     }
 
@@ -454,7 +457,8 @@ class HistorikkServiceTest {
             emptyList(),
             null,
             "defaultVeileder",
-            StartetAvType.VEILEDER
+            StartetAvType.VEILEDER,
+            null,
         )
     }
 

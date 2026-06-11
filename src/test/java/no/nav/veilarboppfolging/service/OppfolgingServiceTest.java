@@ -222,7 +222,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         var perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId).stream().sorted(Comparator.comparing(OppfolgingsperiodeEntity::getStartDato)).toList();
         var uuidSomSkalAvsluttes = perioder.getFirst().getUuid();
         var sistePeriode = perioder.getLast();
-        oppfolgingsPeriodeRepository.avsluttOppfolgingsperiode(uuidSomSkalAvsluttes, VEILEDER, "en begrunnelse", sistePeriode.getStartDato());
+        oppfolgingsPeriodeRepository.avsluttOppfolgingsperiode(uuidSomSkalAvsluttes, VEILEDER, "en begrunnelse", sistePeriode.getStartDato(), AvregistreringsType.AdminAvregistrering);
 
         avsluttOppfolgingService.adminAvsluttSpesifikkOppfolgingsperiode(aktorId, VEILEDER, "en begrunnelse", uuidSomSkalAvsluttes.toString());
 
@@ -256,7 +256,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         startOppfolgingForBruker();
         reset(kafkaProducerService);
 
-        oppfolgingsPeriodeRepository.avsluttSistePeriodeOgAvsluttOppfolging(aktorId, "veilederid", "begrunnelse");
+        oppfolgingsPeriodeRepository.avsluttSistePeriodeOgAvsluttOppfolging(aktorId, "veilederid", "begrunnelse", AvregistreringsType.ArenaIservKanIkkeReaktiveres);
         var oppfolgingsbruker = OppfolgingsRegistrering.Companion.arbeidssokerRegistrering(fnr, aktorId, new VeilederRegistrant(NAV_IDENT));
         oppfolgingsPeriodeRepository.start(oppfolgingsbruker);
         var perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId).stream().sorted(Comparator.comparing(OppfolgingsperiodeEntity::getStartDato)).toList();
