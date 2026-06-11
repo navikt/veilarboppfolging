@@ -132,6 +132,45 @@ class KandidatForUtmeldingFlytTest(
     }
 
     @Test
+    fun `Henter ikke kandidat som har fått avsluttet oppfølgingsperioden`() {
+        mockVeilarbArenaOppfolgingsBruker(Fnr.of(fnr), Formidlingsgruppe.ISERV)
+        startOppfolgingSomArbeidsoker(aktorId, Fnr.of(fnr))
+        val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(Fnr.of(fnr)).get().uuid
+        kandidatForUtmeldingRepository.lagreKandidat(ArbeidssøkerPeriodeAvsluttet(
+            aktorId = aktorId,
+            fnr = Fnr.of(fnr),
+            oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
+            avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER,
+            kilde ="kilde",
+            aarsak = "aarsak")
+        )
+        avsluttOppfolgingManueltSomVeileder(aktorId)
+
+        val kandidat = kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId)
+
+        assertThat(kandidat).isNull()
+    }
+
+    @Test
+    fun `Henter kandidat som har gjeldende oppfølgingsperiode`() {
+        mockVeilarbArenaOppfolgingsBruker(Fnr.of(fnr), Formidlingsgruppe.ISERV)
+        startOppfolgingSomArbeidsoker(aktorId, Fnr.of(fnr))
+        val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(Fnr.of(fnr)).get().uuid
+        kandidatForUtmeldingRepository.lagreKandidat(ArbeidssøkerPeriodeAvsluttet(
+            aktorId = aktorId,
+            fnr = Fnr.of(fnr),
+            oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
+            avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER,
+            kilde ="kilde",
+            aarsak = "aarsak")
+        )
+
+        val kandidat = kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId)
+
+        assertThat(kandidat).isNotNull()
+    }
+
+    @Test
     fun `Sletter kandidat-for-utmelding når ny oppfølgingsperiode startes manuelt av veileder`() {
         mockVeilarbArenaOppfolgingsBruker(Fnr.of(fnr), Formidlingsgruppe.ISERV)
         startOppfolgingSomArbeidsoker(aktorId, Fnr.of(fnr))

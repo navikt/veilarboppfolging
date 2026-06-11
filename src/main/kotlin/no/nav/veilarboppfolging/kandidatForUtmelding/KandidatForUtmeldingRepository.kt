@@ -44,7 +44,7 @@ class KandidatForUtmeldingRepository(
             """
             SELECT kandidat_for_utmelding.* FROM kandidat_for_utmelding 
             INNER JOIN oppfolgingsperiode ON oppfolgingsperiode.uuid = kandidat_for_utmelding.oppfolgingsperiode_uuid
-            WHERE aktor_id = :aktor_id
+            WHERE kandidat_for_utmelding.aktor_id = :aktor_id
             AND oppfolgingsperiode.sluttdato is null
             """.trimIndent(),
             mapOf("aktor_id" to aktorId.get()),
