@@ -16,6 +16,12 @@ type VeilederTilgang {
     harAktiveTiltaksdeltakelserVedFlyttingTilEgetKontor: Boolean
 }
 
+type Utmeldingskandidat {
+    type: String!,
+    avsluttetAv: String!,
+    aarsak: String!
+}
+
 # Svaret på Evaluerering av Policy-en som heter NavAnsattTilgangTilEksternBruker i POAO-Tilgang
 # Kan kjøres på både lese og skrive tilgang (modia-oppfolging vs modia generell) men er foreløpig bare brukt til lesetilgang
 enum TilgangResultat {
