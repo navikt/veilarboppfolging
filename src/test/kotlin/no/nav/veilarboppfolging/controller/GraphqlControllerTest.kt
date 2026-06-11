@@ -689,4 +689,22 @@ class GraphqlControllerTest: IntegrationTest() {
             { "kanStarteOppfolgingEkstern": "ALLEREDE_UNDER_OPPFOLGING" }
         """.trimIndent())
     }
+
+    @Test
+    fun `skal returnere kandidatForUtmeldingTag`() {
+        val (fnr, aktorId) = defaultBruker()
+        val veilederUuid = UUID.randomUUID()
+        mockInternBrukerAuthOk(veilederUuid, aktorId, fnr)
+        mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Permit)
+        val oppfolgingsperiode = hentOppfolgingsperioder(fnr).first { it.sluttDato == null }
+        setBrukerUnderOppfolging(aktorId, fnr)
+        lagreKandidatForUtmelding(aktorId, fnr, oppfolgingsperiode.uuid)
+
+        /* Query is hidden in test/resources/graphl-test :) */
+        val result = tester.documentName("getUnderOppfolging").variable("fnr", fnr.get()).execute()
+        result.errors().verify()
+        result.path("oppfolging").matchesJson("""
+            { "erUnderOppfolging": true }
+        """.trimIndent())
+    }
 }
