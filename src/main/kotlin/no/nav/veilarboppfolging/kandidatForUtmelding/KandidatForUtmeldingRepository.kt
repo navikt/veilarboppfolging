@@ -46,6 +46,14 @@ class KandidatForUtmeldingRepository(
             INNER JOIN oppfolgingsperiode ON oppfolgingsperiode.uuid = kandidat_for_utmelding.oppfolgingsperiode_uuid
             WHERE kandidat_for_utmelding.aktor_id = :aktor_id
             AND oppfolgingsperiode.sluttdato is null
+            AND COALESCE(
+                (
+                    SELECT MAX(reaktivering_tidspunkt)
+                    FROM historikk_for_reaktivering
+                    WHERE oppfolgingsperiode = kandidat_for_utmelding.oppfolgingsperiode_uuid
+                ),
+                '-infinity'
+            ) < kandidat_for_utmelding.opprettet_tidspunkt
             """.trimIndent(),
             mapOf("aktor_id" to aktorId.get()),
         ) { rs, _ -> map(rs) }
