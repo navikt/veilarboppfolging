@@ -30,6 +30,8 @@ class KandidatForUtmeldingService(
      * Foreløpig sletter vi ikke kandidatene når kandidatene avslutter sin oppfølgingsperiode, kun når de starter ny periode.
      * Dette er for å kunne samle data om hvilke kandidater som har blitt tatt ut av oppfølging enten automatisk
      * eller manuelt, og når de ble tatt ut av oppfølging.
+     *
+     * Fjerner ikke kandidater fra tabellen når bruker reaktiveres. Disse filtreres nå bort i hentKandidat spørringen
      */
     fun fjernKandidatForUtmelding(aktorId: AktorId) {
         kandidatForUtmeldingRepository.fjernKandidat(aktorId)
