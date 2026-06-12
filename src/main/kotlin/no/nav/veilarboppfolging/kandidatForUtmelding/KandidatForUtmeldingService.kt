@@ -1,7 +1,6 @@
 package no.nav.veilarboppfolging.kandidatForUtmelding
 
 import no.nav.common.types.identer.AktorId
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvregistreringsType
 import no.nav.veilarboppfolging.service.AvsluttOppfolgingService
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -35,5 +34,9 @@ class KandidatForUtmeldingService(
     fun fjernKandidatForUtmelding(aktorId: AktorId) {
         kandidatForUtmeldingRepository.fjernKandidat(aktorId)
         logger.info("Fjerner kandidat for utmelding")
+    }
+
+    fun hentKandidatForUtmeldingTag(aktorId: AktorId): KandidatForUtmeldingTag? {
+        return kandidatForUtmeldingRepository.hentKandidat(aktorId)?.mapTilTag()
     }
 }

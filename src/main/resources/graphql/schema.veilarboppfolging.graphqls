@@ -5,6 +5,7 @@ type Query {
     oppfolgingsPerioder(fnr: String!): [Oppfolgingsperiode]
     veilederTilgang(fnr: String!): VeilederTilgang
     gjeldendeOppfolgingsperiode: Oppfolgingsperiode
+    utmeldingskandidatTag(fnr: String!): UtmeldingskandidatTag
 }
 
 type VeilederTilgang {
@@ -14,6 +15,13 @@ type VeilederTilgang {
     harVeilederTilgangFlytteBrukerTilEgetKontor: Boolean!
     tilgang: TilgangResultat
     harAktiveTiltaksdeltakelserVedFlyttingTilEgetKontor: Boolean
+}
+
+enum UtmeldingskandidatTag {
+    ARBEIDSSOKERPERIODE_AVSLUTTET_BRUKER,
+    ARBEIDSSOKERPERIODE_AVSLUTTET_VEILEDER,
+    ARBEIDSSOKERPERIODE_AVSLUTTET_SYSTEM,
+    ARBEIDSSOKERPERIODE_AVSLUTTET_UKJENT
 }
 
 # Svaret på Evaluerering av Policy-en som heter NavAnsattTilgangTilEksternBruker i POAO-Tilgang

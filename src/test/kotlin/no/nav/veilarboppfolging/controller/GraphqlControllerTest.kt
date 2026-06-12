@@ -689,4 +689,38 @@ class GraphqlControllerTest: IntegrationTest() {
             { "kanStarteOppfolgingEkstern": "ALLEREDE_UNDER_OPPFOLGING" }
         """.trimIndent())
     }
+
+    @Test
+    fun `skal returnere kandidatForUtmeldingTag`() {
+        val (fnr, aktorId) = defaultBruker()
+        val veilederUuid = UUID.randomUUID()
+        mockInternBrukerAuthOk(veilederUuid, aktorId, fnr)
+        mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Permit)
+        mockVeilarbArenaOppfolgingsBruker(fnr, Formidlingsgruppe.ISERV)
+        setBrukerUnderOppfolging(aktorId, fnr)
+        val oppfolgingsperiode = hentOppfolgingsperioder(fnr).first { it.sluttDato == null }
+        lagreKandidatForUtmelding(aktorId, fnr, oppfolgingsperiode.uuid)
+
+        /* Query is hidden in test/resources/graphl-test :) */
+        val result = tester.documentName("hentKandidatForUtmeldingTag").variable("fnr", fnr.get()).execute()
+        result.errors().verify()
+        result.path("utmeldingskandidatTag").matchesJson("""
+            "ARBEIDSSOKERPERIODE_AVSLUTTET_VEILEDER"
+        """.trimIndent())
+    }
+
+    @Test
+    fun `skal returnere null hvis ikke kandidat for utmelding`() {
+        val (fnr, aktorId) = defaultBruker()
+        val veilederUuid = UUID.randomUUID()
+        mockInternBrukerAuthOk(veilederUuid, aktorId, fnr)
+        mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Permit)
+        mockVeilarbArenaOppfolgingsBruker(fnr, Formidlingsgruppe.ISERV)
+        setBrukerUnderOppfolging(aktorId, fnr)
+
+        /* Query is hidden in test/resources/graphl-test :) */
+        val result = tester.documentName("hentKandidatForUtmeldingTag").variable("fnr", fnr.get()).execute()
+        result.errors().verify()
+        result.path("utmeldingskandidatTag").equals(null)
+    }
 }

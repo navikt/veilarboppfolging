@@ -50,8 +50,11 @@ import no.nav.veilarboppfolging.config.EnvironmentProperties
 import no.nav.veilarboppfolging.config.KafkaProperties
 import no.nav.veilarboppfolging.controller.OppfolgingController
 import no.nav.veilarboppfolging.controller.SakController
+import no.nav.veilarboppfolging.kandidatForUtmelding.ArbeidssøkerPeriodeAvsluttet
+import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingHendelseAvsluttetAv
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingRepository
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService
+import no.nav.veilarboppfolging.oppfolgingsbruker.AvsluttetAvType
 import no.nav.veilarboppfolging.oppfolgingsbruker.BrukerRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
@@ -253,6 +256,18 @@ open class IntegrationTest {
         val bruker = OppfolgingsRegistrering.arbeidssokerRegistrering(fnr, aktorId, BrukerRegistrant(fnr))
         oppfolgingsStatusRepository.opprettOppfolging(aktorId)
         oppfolgingsPeriodeRepository.start(bruker)
+    }
+
+    fun lagreKandidatForUtmelding(aktorId: AktorId, fnr: Fnr, oppfolgingsperiodeUuid: UUID) {
+        val kandidat = ArbeidssøkerPeriodeAvsluttet(
+            aktorId = aktorId,
+            fnr = fnr,
+            oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
+            avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER,
+            kilde = "arbeidssøkerregisteret",
+            aarsak = "Avsluttet av veileder"
+        )
+        kandidatForUtmeldingService.lagreKandidatForUtmelding(kandidat)
     }
 
     fun setTilordnetVeileder(aktorId: AktorId, veilederIdent: NavIdent) {
