@@ -53,7 +53,7 @@ class KandidatForUtmeldingRepository(
                     WHERE oppfolgingsperiode = kandidat_for_utmelding.oppfolgingsperiode_uuid
                 ),
                 '-infinity'
-            ) < kandidat_for_utmelding.opprettet_tidspunkt
+            ) < kandidat_for_utmelding.created_at
             """.trimIndent(),
             mapOf("aktor_id" to aktorId.get()),
         ) { rs, _ -> map(rs) }
