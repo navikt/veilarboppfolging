@@ -2,6 +2,7 @@ package no.nav.veilarboppfolging.config;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -19,7 +20,12 @@ import static no.nav.veilarboppfolging.dbutil.DatabaseMigratorKt.migrateDb;
 @EnableConfigurationProperties({DatabaseConfig.DatasourceProperties.class})
 public class DatabaseConfig {
 
-    private final DatasourceProperties datasourceProperties;
+    private DatasourceProperties datasourceProperties;
+
+    @Autowired
+    public DatabaseConfig(DatasourceProperties datasourceProperties) {
+        this.datasourceProperties = datasourceProperties;
+    }
 
     @Bean
     public DataSource dataSource() {

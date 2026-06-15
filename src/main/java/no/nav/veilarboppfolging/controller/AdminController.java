@@ -20,6 +20,7 @@ import no.nav.veilarboppfolging.repository.entity.ManuellStatusEntity;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
 import no.nav.veilarboppfolging.repository.entity.VeilederTilordningEntity;
 import no.nav.veilarboppfolging.service.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.ZonedDateTime;
@@ -40,6 +41,29 @@ public class AdminController {
     private final OppfolgingService oppfolgingService;
     private final AvsluttOppfolgingService avsluttOppfolgingService;
     private final KandidatForUtmeldingService kandidatForUtmeldingService;
+
+    @Autowired
+    public AdminController(
+            AuthService authService,
+            AuthContextHolder authContextHolder,
+            KafkaRepubliseringService kafkaRepubliseringService,
+            VeilederTilordningerRepository veilederTilordningerRepository,
+            ManuellStatusService manuellStatusService,
+            OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository,
+            OppfolgingService oppfolgingService,
+            AvsluttOppfolgingService avsluttOppfolgingService,
+            KandidatForUtmeldingService kandidatForUtmeldingService
+    ) {
+        this.authService = authService;
+        this.authContextHolder = authContextHolder;
+        this.kafkaRepubliseringService = kafkaRepubliseringService;
+        this.veilederTilordningerRepository = veilederTilordningerRepository;
+        this.manuellStatusService = manuellStatusService;
+        this.oppfolgingsPeriodeRepository = oppfolgingsPeriodeRepository;
+        this.oppfolgingService = oppfolgingService;
+        this.avsluttOppfolgingService = avsluttOppfolgingService;
+        this.kandidatForUtmeldingService = kandidatForUtmeldingService;
+    }
 
     @PostMapping("/republiser/oppfolgingsperioder")
     public String republiserOppfolgingsperioder(@RequestBody(required = false) RepubliserOppfolgingsperioderRequest request) {
