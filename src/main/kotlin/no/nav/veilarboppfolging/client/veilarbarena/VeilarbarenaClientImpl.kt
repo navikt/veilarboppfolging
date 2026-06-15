@@ -1,8 +1,6 @@
 package no.nav.veilarboppfolging.client.veilarbarena
 
 import java.util.Optional
-import lombok.SneakyThrows
-import lombok.extern.slf4j.Slf4j
 import no.nav.common.health.HealthCheckResult
 import no.nav.common.health.HealthCheckUtils
 import no.nav.common.json.JsonUtils
@@ -33,7 +31,6 @@ sealed interface ArenaOppfolginsBrukerOppslagResult {
     class Fail(val message: String, val reason: Throwable): ArenaOppfolginsBrukerOppslagResult
 }
 
-@Slf4j
 class VeilarbarenaClientImpl(
     private val veilarbarenaUrl: String,
     private val veilarbarenaAadTokenScope: String,
@@ -110,7 +107,6 @@ class VeilarbarenaClientImpl(
         }
     }
 
-    @SneakyThrows
     override fun getArenaOppfolgingsstatus(fnr: Fnr): Optional<VeilarbArenaOppfolgingsStatus> {
         val personRequest = PersonRequest(fnr)
         try {

@@ -24,7 +24,7 @@ class OppfolgingsAvsluttetHendelseDto(
                 fnr = fnr.get(),
                 oppfolgingsPeriodeId = periode.uuid,
                 startetTidspunkt = periode.startDato,
-                avsluttetTidspunkt = periode.sluttDato,
+                avsluttetTidspunkt = periode.sluttDato ?: throw RuntimeException("Forsøker å opprette en avsluttetHendelse på periode uten sluttdato"),
                 avsluttetAv = avregistrering.avsluttetAv.getIdent(),
                 avsluttetAvType = avregistrering.avsluttetAv.getType(),
                 avregistreringsType = avregistrering.getAvregistreringsType(),

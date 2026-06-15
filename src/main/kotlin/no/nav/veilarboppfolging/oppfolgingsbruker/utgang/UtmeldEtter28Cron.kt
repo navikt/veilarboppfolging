@@ -1,6 +1,6 @@
 package no.nav.veilarboppfolging.oppfolgingsbruker.utgang
 
-import lombok.extern.slf4j.Slf4j
+
 import no.nav.common.job.JobRunner
 import no.nav.common.job.leader_election.LeaderElectionClient
 import no.nav.common.types.identer.AktorId
@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 
-@Slf4j
+
 @Service
 class UtmeldEtter28Cron(
     private val utmeldingService: UtmeldingsService,

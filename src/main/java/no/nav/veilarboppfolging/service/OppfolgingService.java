@@ -4,7 +4,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
+;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.Id;
@@ -19,7 +19,6 @@ import no.nav.veilarboppfolging.domain.Oppfolging;
 import no.nav.veilarboppfolging.domain.OppfolgingStatusData;
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService;
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.LocalArenaOppfolging;
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.*;
 import no.nav.veilarboppfolging.repository.*;
 import no.nav.veilarboppfolging.repository.entity.*;
 import no.nav.veilarboppfolging.utils.ArenaUtils;
@@ -33,7 +32,7 @@ import static java.util.Optional.empty;
 import static java.util.stream.Collectors.toList;
 import static no.nav.veilarboppfolging.utils.ArenaUtils.erIserv;
 
-@Slf4j
+
 @Service
 public class OppfolgingService {
 

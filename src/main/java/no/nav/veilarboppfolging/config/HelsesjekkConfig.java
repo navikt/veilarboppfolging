@@ -1,6 +1,6 @@
 package no.nav.veilarboppfolging.config;
 
-import lombok.extern.slf4j.Slf4j;
+;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.health.HealthCheck;
 import no.nav.common.health.HealthCheckResult;
@@ -14,7 +14,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import java.util.Arrays;
 import java.util.List;
 
-@Slf4j
+
 @Configuration
 public class HelsesjekkConfig {
 

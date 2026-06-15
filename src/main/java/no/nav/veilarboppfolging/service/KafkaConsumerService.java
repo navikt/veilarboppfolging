@@ -1,7 +1,7 @@
 package no.nav.veilarboppfolging.service;
 
 import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
+;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.client.aktorregister.IngenGjeldendeIdentException;
 import no.nav.common.types.identer.Fnr;
@@ -21,7 +21,7 @@ import java.util.Optional;
 
 import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
 
-@Slf4j
+
 @Service
 public class KafkaConsumerService {
 

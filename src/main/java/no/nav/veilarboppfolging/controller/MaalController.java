@@ -1,6 +1,5 @@
 package no.nav.veilarboppfolging.controller;
 
-import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.controller.response.Maal;
 import no.nav.veilarboppfolging.repository.entity.MaalEntity;
@@ -15,7 +14,6 @@ import static java.util.stream.Collectors.toList;
 import static no.nav.veilarboppfolging.utils.DtoMappers.tilDto;
 
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/api/oppfolging")
 public class MaalController {
 

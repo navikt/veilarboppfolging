@@ -2,7 +2,7 @@ package no.nav.veilarboppfolging.service;
 
 import com.nimbusds.jwt.JWTClaimsSet;
 import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
+;
 import no.nav.common.audit_log.cef.AuthorizationDecision;
 import no.nav.common.audit_log.cef.CefMessage;
 import no.nav.common.audit_log.cef.CefMessageEvent;
@@ -37,7 +37,7 @@ import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 import static no.nav.common.auth.Constants.AAD_NAV_IDENT_CLAIM;
 
-@Slf4j
+
 @Service
 public class AuthService {
 

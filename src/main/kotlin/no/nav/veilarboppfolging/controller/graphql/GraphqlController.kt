@@ -111,7 +111,7 @@ class GraphqlController(
 
     private fun erUnderOppfolging(aktorId: AktorId): Boolean {
         return oppfolgingsStatusRepository.hentOppfolging(aktorId)
-            .map { it.isUnderOppfolging }.orElse(false)
+            .getOrNull()?.underOppfolging ?: false
     }
 
     @QueryMapping
@@ -294,11 +294,11 @@ class GraphqlController(
     fun manuell(brukerStatusDto: BrukerStatusDto, @LocalContextValue aktorId: AktorId): BrukerStatusManuellDto? {
         return manuellService.hentManuellStatus(aktorId)
             .map { BrukerStatusManuellDto(
-                it.isManuell,
+                it.manuell,
                 it.dato.toString(),
-                it?.begrunnelse,
+                it.begrunnelse,
                 it.opprettetAv.toString(),
-                it?.opprettetAvBrukerId
+                it.opprettetAvBrukerId
             ) }
             .getOrNull()
     }
@@ -328,9 +328,9 @@ class GraphqlController(
     fun reservertIKrr(brukerStatusDto: BrukerStatusDto, @LocalContextValue fnr: Fnr): BrukerStatusKrrDto? {
         val result = manuellService.hentDigdirKontaktinfo(fnr)
         return BrukerStatusKrrDto(
-            kanVarsles = result.isKanVarsles,
-            registrertIKrr = result.isAktiv,
-            reservertIKrr = result.isReservert
+            kanVarsles = result.kanVarsles,
+            registrertIKrr = result.aktiv,
+            reservertIKrr = result.reservert
         )
     }
 

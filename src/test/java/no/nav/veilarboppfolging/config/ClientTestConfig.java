@@ -1,6 +1,6 @@
 package no.nav.veilarboppfolging.config;
 
-import lombok.extern.slf4j.Slf4j;
+;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.client.norg2.Enhet;
 import no.nav.common.client.norg2.Norg2Client;
@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-@Slf4j
+
 @Configuration
 public class ClientTestConfig {
 

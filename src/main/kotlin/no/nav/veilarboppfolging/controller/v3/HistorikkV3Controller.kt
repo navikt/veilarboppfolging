@@ -1,6 +1,5 @@
 package no.nav.veilarboppfolging.controller.v3
 
-import lombok.RequiredArgsConstructor
 import no.nav.veilarboppfolging.controller.response.HistorikkHendelse
 import no.nav.veilarboppfolging.controller.v3.request.HistorikkRequest
 import no.nav.veilarboppfolging.service.AuthService
@@ -12,7 +11,6 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/api/v3")
-@RequiredArgsConstructor
 class HistorikkV3Controller(
     private val historikkService: HistorikkService,
     private val authService: AuthService

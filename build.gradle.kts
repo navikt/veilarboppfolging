@@ -19,7 +19,6 @@ plugins {
     val kotlinVersion = "2.3.21"
     kotlin("jvm") version kotlinVersion
     kotlin("plugin.spring") version kotlinVersion
-    kotlin("plugin.lombok") version kotlinVersion
     id("org.springframework.boot") version "4.0.6"
     id("io.spring.dependency-management") version "1.1.7"
     id("jacoco")
@@ -64,9 +63,6 @@ repositories {
 }
 
 dependencies {
-    annotationProcessor("org.projectlombok:lombok:1.18.46")
-    testAnnotationProcessor("org.projectlombok:lombok:1.18.46")
-
     implementation("com.github.ben-manes.caffeine:caffeine")
     implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
     implementation("org.springframework.boot:spring-boot-starter-cache")
@@ -80,7 +76,6 @@ dependencies {
     implementation("io.micrometer:micrometer-observation")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:$springDoc")
     implementation("org.springframework.boot:spring-boot-devtools")
-    implementation("org.projectlombok:lombok:1.18.46")
     implementation("org.springframework.boot:spring-boot-configuration-processor")
     implementation("no.nav.poao-tilgang:client:$poaoTilgangVersion")
     implementation("com.zaxxer:HikariCP")

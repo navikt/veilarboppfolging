@@ -1,13 +1,11 @@
 package no.nav.veilarboppfolging.controller;
 
-import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.BadRequestException;
 import no.nav.veilarboppfolging.NotFoundException;
 import no.nav.veilarboppfolging.controller.request.*;
 import no.nav.veilarboppfolging.controller.response.*;
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvregistreringsType;
 import no.nav.veilarboppfolging.repository.enums.KodeverkBruker;
 import no.nav.veilarboppfolging.service.*;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +17,6 @@ import java.util.stream.Collectors;
 import static no.nav.veilarboppfolging.utils.DtoMappers.*;
 
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/api/oppfolging")
 public class OppfolgingController {
     private final static List<String> ALLOWLIST_V1 = List.of("veilarbvedtaksstotte", "veilarbregistrering", "veilarbdirigent");

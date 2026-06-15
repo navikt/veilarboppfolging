@@ -1,7 +1,5 @@
 package no.nav.veilarboppfolging.controller;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.job.JobRunner;
 import no.nav.common.types.identer.AktorId;
@@ -16,7 +14,6 @@ import no.nav.veilarboppfolging.domain.AvsluttPayload;
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService;
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant;
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AdminAvregistrering;
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvregistreringsType;
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
 import no.nav.veilarboppfolging.repository.VeilederTilordningerRepository;
 import no.nav.veilarboppfolging.repository.entity.ManuellStatusEntity;
@@ -29,10 +26,8 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
-@Slf4j
 @RestController
 @RequestMapping("/api/admin")
-@RequiredArgsConstructor
 public class AdminController {
 
     public static final String POAO_ADMIN = "poao-admin";

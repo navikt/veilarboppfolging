@@ -1,6 +1,5 @@
 package no.nav.veilarboppfolging.controller;
 
-import lombok.RequiredArgsConstructor;
 import no.nav.common.health.selftest.SelfTestChecks;
 import no.nav.common.health.selftest.SelfTestUtils;
 import no.nav.common.health.selftest.SelftTestCheckResult;
@@ -16,7 +15,6 @@ import java.util.List;
 import static no.nav.common.health.selftest.SelfTestUtils.checkAll;
 
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/internal")
 public class InternalController {
 

@@ -1,7 +1,7 @@
 package no.nav.veilarboppfolging.utils;
 
 import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
+;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
@@ -11,7 +11,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.GregorianCalendar;
 
-@Slf4j
+
 public class DateUtils {
 
     @SneakyThrows

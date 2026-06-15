@@ -1,6 +1,6 @@
 package no.nav.veilarboppfolging.utils.auth;
 
-import lombok.extern.slf4j.Slf4j;
+;
 import no.nav.veilarboppfolging.DefaultExceptionHandler;
 import no.nav.veilarboppfolging.InternalServerError;
 import no.nav.veilarboppfolging.VeilarboppfolgingException;
@@ -13,7 +13,7 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-@Slf4j
+
 @Component
 public class AuthorizationInterceptor implements HandlerInterceptor {
     private final AuthorizationAnnotationHandler annotationHandler;

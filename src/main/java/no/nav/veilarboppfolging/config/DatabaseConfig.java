@@ -2,9 +2,6 @@ package no.nav.veilarboppfolging.config;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -20,7 +17,6 @@ import static no.nav.veilarboppfolging.dbutil.DatabaseMigratorKt.migrateDb;
 @Profile("!test")
 @Configuration
 @EnableConfigurationProperties({DatabaseConfig.DatasourceProperties.class})
-@RequiredArgsConstructor
 public class DatabaseConfig {
 
     private final DatasourceProperties datasourceProperties;
@@ -54,8 +50,6 @@ public class DatabaseConfig {
         return new NamedParameterJdbcTemplate(jdbcTemplate);
     }
 
-    @Getter
-    @Setter
     @ConfigurationProperties(prefix = "app.datasource")
     public static class DatasourceProperties {
         String url;

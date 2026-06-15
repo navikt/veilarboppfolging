@@ -1,6 +1,6 @@
 package no.nav.veilarboppfolging.service;
 
-import lombok.extern.slf4j.Slf4j;
+;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.NavIdent;
@@ -22,7 +22,7 @@ import java.util.Optional;
 import static java.lang.String.format;
 import static no.nav.veilarboppfolging.utils.SecureLog.secureLog;
 
-@Slf4j
+
 @Service
 public class VeilederTilordningService {
 

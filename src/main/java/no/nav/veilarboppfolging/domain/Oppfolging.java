@@ -1,15 +1,13 @@
 package no.nav.veilarboppfolging.domain;
 
-import lombok.Data;
-import lombok.experimental.Accessors;
+import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity;
+import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
 import no.nav.veilarboppfolging.repository.entity.*;
 
 import java.util.List;
 
 import static java.util.Collections.emptyList;
 
-@Data
-@Accessors(chain = true)
 public class Oppfolging {
     private String aktorId;
     private String veilederId;

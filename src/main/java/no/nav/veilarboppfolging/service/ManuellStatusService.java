@@ -4,7 +4,7 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+;
 import lombok.val;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
@@ -21,7 +21,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import static no.nav.veilarboppfolging.repository.enums.KodeverkBruker.SYSTEM;
 import static no.nav.veilarboppfolging.utils.SecureLog.secureLog;
 
-@Slf4j
+
 @Service
 @RequiredArgsConstructor
 public class ManuellStatusService {

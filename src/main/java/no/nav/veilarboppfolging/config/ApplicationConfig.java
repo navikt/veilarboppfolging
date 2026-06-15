@@ -2,7 +2,7 @@ package no.nav.veilarboppfolging.config;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import lombok.extern.slf4j.Slf4j;
+;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
 import no.nav.common.audit_log.log.AuditLogger;
@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-@Slf4j
+
 @Configuration
 @EnableScheduling
 @EnableConfigurationProperties({EnvironmentProperties.class})

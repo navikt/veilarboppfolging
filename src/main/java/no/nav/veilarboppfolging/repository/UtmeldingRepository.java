@@ -1,7 +1,7 @@
 package no.nav.veilarboppfolging.repository;
 
 import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
+;
 import no.nav.common.types.identer.AktorId;
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.InsertIUtmelding;
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.UpdateIservDatoUtmelding;
@@ -21,7 +21,7 @@ import java.util.Optional;
 import static no.nav.veilarboppfolging.utils.DbUtils.queryForNullableObject;
 import static no.nav.veilarboppfolging.utils.SecureLog.secureLog;
 
-@Slf4j
+
 @Repository
 public class UtmeldingRepository {
 

@@ -1,16 +1,10 @@
 package no.nav.veilarboppfolging.client.digdir_client
 
-import lombok.Data
-import lombok.experimental.Accessors
-import lombok.extern.slf4j.Slf4j
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirKontaktinfo
 import no.nav.veilarboppfolging.client.digdir_krr.KRRData
-import okio.Okio
 import org.slf4j.LoggerFactory
 import java.util.*
 
-@Data
-@Accessors(chain = true)
 class KrrPersonerResponseDto {
     var personer: MutableMap<String?, DigdirKontaktinfo?>? = null
     var feil: MutableMap<String, String?>? = null

@@ -1,7 +1,7 @@
 package no.nav.veilarboppfolging.client.digdir_krr;
 
 import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
+;
 import no.nav.common.json.JsonUtils;
 import no.nav.common.rest.client.LogRequestInterceptor;
 import no.nav.common.rest.client.RestUtils;
@@ -22,7 +22,7 @@ import static org.springframework.http.HttpHeaders.ACCEPT;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
-@Slf4j
+
 public class DigdirClientImpl implements DigdirClient {
 
 	private final String digdirUrl;

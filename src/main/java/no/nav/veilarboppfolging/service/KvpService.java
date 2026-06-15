@@ -4,7 +4,7 @@ import java.time.ZonedDateTime;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
+;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.Id;
@@ -25,7 +25,7 @@ import static no.nav.veilarboppfolging.repository.enums.KodeverkBruker.NAV;
 import static no.nav.veilarboppfolging.repository.enums.KodeverkBruker.SYSTEM;
 import static no.nav.veilarboppfolging.utils.SecureLog.secureLog;
 
-@Slf4j
+
 @Service
 @RequiredArgsConstructor
 public class KvpService {

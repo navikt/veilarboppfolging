@@ -1,7 +1,7 @@
 package no.nav.veilarboppfolging.service;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+;
 import no.nav.common.types.identer.AktorId;
 import no.nav.veilarboppfolging.kafka.KvpPeriode;
 import no.nav.veilarboppfolging.kafka.dto.OppfolgingsperiodeDTO;
@@ -21,7 +21,7 @@ import java.util.Optional;
 
 import static no.nav.veilarboppfolging.utils.SecureLog.secureLog;
 
-@Slf4j
+
 @Service
 @RequiredArgsConstructor
 public class KafkaRepubliseringService {

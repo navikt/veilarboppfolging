@@ -9,7 +9,6 @@ import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe;
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirClient;
 import no.nav.veilarboppfolging.client.tiltakshistorikk.TiltakshistorikkClient;
 import no.nav.veilarboppfolging.domain.Oppfolging;
-import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService;
 import no.nav.veilarboppfolging.oppfolgingsbruker.BrukerRegistrant;
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering;
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant;
