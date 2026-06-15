@@ -4,6 +4,7 @@ import no.nav.common.health.selftest.SelfTestChecks;
 import no.nav.common.health.selftest.SelfTestUtils;
 import no.nav.common.health.selftest.SelftTestCheckResult;
 import no.nav.common.health.selftest.SelftestHtmlGenerator;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,6 +20,11 @@ import static no.nav.common.health.selftest.SelfTestUtils.checkAll;
 public class InternalController {
 
     private final SelfTestChecks selftestChecks;
+
+    @Autowired
+    public InternalController(SelfTestChecks selftestChecks) {
+        this.selftestChecks = selftestChecks;
+    }
 
     @GetMapping("/selftest")
     public ResponseEntity<String> selftest() {

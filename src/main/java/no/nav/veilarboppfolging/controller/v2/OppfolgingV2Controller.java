@@ -20,6 +20,7 @@ import no.nav.veilarboppfolging.service.OppfolgingService;
 import no.nav.veilarboppfolging.utils.DtoMappers;
 import no.nav.veilarboppfolging.utils.auth.AuthorizeAktorId;
 import no.nav.veilarboppfolging.utils.auth.AuthorizeFnr;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -31,13 +32,20 @@ import static no.nav.veilarboppfolging.utils.DtoMappers.*;
 
 @RestController
 @RequestMapping("/api/v2/oppfolging")
-
 public class OppfolgingV2Controller {
+
     private final OppfolgingService oppfolgingService;
     private final AvsluttOppfolgingService avsluttOppfolgingService;
-
     private final AuthService authService;
     private final KandidatForUtmeldingService kandidatForUtmeldingService;
+
+    @Autowired
+    public OppfolgingV2Controller(OppfolgingService oppfolgingService, AvsluttOppfolgingService avsluttOppfolgingService, AuthService authService, KandidatForUtmeldingService kandidatForUtmeldingService) {
+        this.oppfolgingService = oppfolgingService;
+        this.avsluttOppfolgingService = avsluttOppfolgingService;
+        this.authService = authService;
+        this.kandidatForUtmeldingService = kandidatForUtmeldingService;
+    }
 
     @AuthorizeFnr(allowlist = {"veilarbvedtaksstotte", "veilarbdialog", "veilarbaktivitet", "veilarbregistrering", "veilarbportefolje"})
     @GetMapping(params = "fnr")
@@ -131,7 +139,7 @@ public class OppfolgingV2Controller {
                 .filter(it -> authService.harTilgangTilEnhet(it.getEnhet()))
                 .collect(Collectors.toList());
 
-        return periode.toBuilder().kvpPerioder(kvpPeriodeEntities).build();
+        return periode.oppdaterMedKvpPerioder(kvpPeriodeEntities);
     }
 
 

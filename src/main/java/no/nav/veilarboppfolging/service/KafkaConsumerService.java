@@ -9,6 +9,8 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.UtmeldingsService;
 import no.nav.veilarboppfolging.service.utmelding.KanskjeIservBruker;
 import no.nav.veilarboppfolging.utils.SecureLog;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -28,6 +30,8 @@ public class KafkaConsumerService {
     private final OppfolgingsbrukerEndretIArenaService oppfolgingsbrukerEndretIArenaService;
     private final AktorOppslagClient aktorOppslagClient;
     private final SisteEndringPaaOppfolgingBrukerService sisteEndringPaaOppfolgingBrukerService;
+
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
     public KafkaConsumerService(

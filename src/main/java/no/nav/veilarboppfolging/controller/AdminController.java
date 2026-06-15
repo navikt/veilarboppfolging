@@ -91,7 +91,7 @@ public class AdminController {
         sjekkTilgangTilAdmin();
         return JobRunner.runAsync(
                 "republiser-tilordnet-veileder-gitte-aktorider",
-                () -> kafkaRepubliseringService.republiserTilordnetVeileder(republiserVeilederRequest.aktorIder())
+                () -> kafkaRepubliseringService.republiserTilordnetVeileder(republiserVeilederRequest.getAktorIder())
         );
     }
 

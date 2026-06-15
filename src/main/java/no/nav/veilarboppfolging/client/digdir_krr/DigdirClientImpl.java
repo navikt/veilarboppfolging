@@ -8,6 +8,8 @@ import no.nav.veilarboppfolging.client.digdir_client.KrrPersonerResponseDto;
 import no.nav.veilarboppfolging.config.CacheConfig;
 import no.nav.veilarboppfolging.service.AuthService;
 import okhttp3.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.Cacheable;
 
 import java.util.Optional;
@@ -24,14 +26,12 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 public class DigdirClientImpl implements DigdirClient {
 
 	private final String digdirUrl;
-
 	private final Supplier<String> systemUserTokenProvider;
-
 	private final Supplier<String> userTokenProvider;
-
 	private final AuthService authService;
-
 	private final OkHttpClient client;
+
+	private final Logger log = LoggerFactory.getLogger(this.getClass());
 
 	public DigdirClientImpl(String digdirUrl, Supplier<String> systemUserTokenProvider, Supplier<String> userTokenProvider, AuthService authService) {
 		this.digdirUrl = digdirUrl;

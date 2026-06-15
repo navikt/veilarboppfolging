@@ -8,6 +8,7 @@ import no.nav.veilarboppfolging.repository.entity.MaalEntity;
 import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.service.MaalService;
 import no.nav.veilarboppfolging.utils.DtoMappers;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,10 +22,15 @@ import static no.nav.veilarboppfolging.utils.DtoMappers.tilDto;
 public class MaalV3Controller {
 
 	private final MaalService maalService;
-
 	private final AuthService authService;
 
-	@PostMapping("/hent-maal")
+	@Autowired
+    public MaalV3Controller(MaalService maalService, AuthService authService) {
+        this.maalService = maalService;
+        this.authService = authService;
+    }
+
+    @PostMapping("/hent-maal")
 	public Maal hentMaal(@RequestBody(required = false) MaalForPersonRequest maalForPersonRequest) {
 		Fnr maybeFodselsnummer = maalForPersonRequest == null ? null : maalForPersonRequest.fnr();
 		Fnr fodselsnummer = authService.hentIdentForEksternEllerIntern(maybeFodselsnummer);

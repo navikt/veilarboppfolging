@@ -5,6 +5,7 @@ import no.nav.common.job.JobRunner;
 import no.nav.veilarboppfolging.ForbiddenException;
 import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.service.KafkaRepubliseringService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -17,6 +18,12 @@ public class AdminV2Controller {
     public final static String POAO_ADMIN = "poao-admin";
     private final AuthService authService;
     private final KafkaRepubliseringService kafkaRepubliseringService;
+
+    @Autowired
+    public AdminV2Controller(AuthService authService, KafkaRepubliseringService kafkaRepubliseringService) {
+        this.authService = authService;
+        this.kafkaRepubliseringService = kafkaRepubliseringService;
+    }
 
     @PostMapping("/republiser/oppfolgingsperioder")
     public String republiserOppfolgingsperioder() {
