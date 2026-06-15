@@ -3,8 +3,6 @@ package no.nav.veilarboppfolging.service;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
-import lombok.SneakyThrows;
-;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.Id;
@@ -103,7 +101,7 @@ public class OppfolgingService {
         return harFlereAktorIdMedOppfolging;
     }
 
-    @SneakyThrows
+    
     public VeilederTilgang hentVeilederTilgang(Fnr fnr) {
         authService.sjekkLesetilgangMedFnr(fnr);
         return Optional.ofNullable(arbeidsoppfolgingsKontorService.hentOppfolgingsEnhetId(fnr))
@@ -156,7 +154,7 @@ public class OppfolgingService {
         return oppfolgingsPeriodeRepository.hentOppfolgingsperiode(uuid);
     }
 
-    @SneakyThrows
+    
     public Optional<Oppfolging> hentOppfolging(AktorId aktorId) {
         Optional<OppfolgingEntity> maybeOppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId);
 

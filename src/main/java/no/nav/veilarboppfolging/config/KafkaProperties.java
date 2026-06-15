@@ -3,24 +3,24 @@ package no.nav.veilarboppfolging.config;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "app.kafka")
-public class KafkaProperties {
-    String brokersUrl;
-    String endringPaaOppfolgingBrukerTopic;
-    String endringPaManuellStatusTopic;
-    String veilederTilordnetTopic;
-    String endringPaNyForVeilederTopic;
-    String sisteOppfolgingsperiodeTopic;
-    String sisteOppfolgingsperiodeTopicV2;
-    String sisteOppfolgingsperiodeTopicV3;
-    String oppfolgingsperiodeTopic;
-    String sisteTilordnetVeilederTopic;
-    String endringPaMalAiven;
-    String kvpAvsluttetTopicAiven;
-    String kvpStartetTopicAiven;
-    String kvpPerioderTopicAiven;
-    String arbeidssokerperioderTopicAiven;
-    String minSideAapenMicrofrontendV1;
-    String minSideBrukerVarsel;
-    String oppfolgingshendelseV1;
-    String arbeidsoppfolgingskontortilordningTopic;
-}
+public record KafkaProperties(
+    String brokersUrl,
+    String endringPaaOppfolgingBrukerTopic,
+    String endringPaManuellStatusTopic,
+    String veilederTilordnetTopic,
+    String endringPaNyForVeilederTopic,
+    String sisteOppfolgingsperiodeTopic,
+    String sisteOppfolgingsperiodeTopicV2,
+    String sisteOppfolgingsperiodeTopicV3,
+    String oppfolgingsperiodeTopic,
+    String sisteTilordnetVeilederTopic,
+    String endringPaMalAiven,
+    String kvpAvsluttetTopicAiven,
+    String kvpStartetTopicAiven,
+    String kvpPerioderTopicAiven,
+    String arbeidssokerperioderTopicAiven,
+    String minSideAapenMicrofrontendV1,
+    String minSideBrukerVarsel,
+    String oppfolgingshendelseV1,
+    String arbeidsoppfolgingskontortilordningTopic
+) {}

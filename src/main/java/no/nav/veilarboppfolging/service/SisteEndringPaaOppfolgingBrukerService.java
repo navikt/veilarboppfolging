@@ -1,7 +1,5 @@
 package no.nav.veilarboppfolging.service;
 
-import lombok.RequiredArgsConstructor;
-;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.repository.SisteEndringPaaOppfolgingBrukerRepository;
 import org.springframework.stereotype.Service;
@@ -12,7 +10,7 @@ import java.util.Optional;
 
 
 @Service
-@RequiredArgsConstructor
+
 public class SisteEndringPaaOppfolgingBrukerService {
     public final SisteEndringPaaOppfolgingBrukerRepository sisteEndringPaaOppfolgingBrukerRepository;
 

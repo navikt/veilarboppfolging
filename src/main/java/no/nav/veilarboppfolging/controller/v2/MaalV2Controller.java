@@ -1,6 +1,5 @@
 package no.nav.veilarboppfolging.controller.v2;
 
-import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.controller.response.Maal;
 import no.nav.veilarboppfolging.repository.entity.MaalEntity;
@@ -16,7 +15,7 @@ import static no.nav.veilarboppfolging.utils.DtoMappers.tilDto;
 
 @RestController
 @RequestMapping("/api/v2/maal")
-@RequiredArgsConstructor
+
 public class MaalV2Controller {
 
     private final MaalService maalService;

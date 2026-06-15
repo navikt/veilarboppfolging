@@ -1,6 +1,5 @@
 package no.nav.veilarboppfolging.controller.v2;
 
-import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.BadRequestException;
 import no.nav.veilarboppfolging.client.digdir_krr.KRRData;
@@ -16,7 +15,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v2/manuell")
-@RequiredArgsConstructor
+
 public class ManuellStatusV2Controller {
 
     private final static List<String> ALLOWLIST = List.of("veilarbdialog", "veilarbaktivitet");

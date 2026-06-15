@@ -1,6 +1,5 @@
 package no.nav.veilarboppfolging.controller.v3;
 
-import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.controller.response.Maal;
 import no.nav.veilarboppfolging.controller.v3.request.MaalForPersonRequest;
@@ -18,7 +17,7 @@ import static no.nav.veilarboppfolging.utils.DtoMappers.tilDto;
 
 @RestController
 @RequestMapping("/api/v3")
-@RequiredArgsConstructor
+
 public class MaalV3Controller {
 
 	private final MaalService maalService;

@@ -1,7 +1,5 @@
 package no.nav.veilarboppfolging.service;
 
-import lombok.SneakyThrows;
-import lombok.val;
 import no.nav.common.client.aktorregister.IngenGjeldendeIdentException;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
@@ -290,7 +288,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     }
 
     @Test(expected = ForbiddenException.class)
-    @SneakyThrows
+    
     public void avslutt_oppfolging_uten_skrivetilgang_til_bruker() {
         startOppfolgingForBruker();
         when(authService.erInternBruker()).thenReturn(true);

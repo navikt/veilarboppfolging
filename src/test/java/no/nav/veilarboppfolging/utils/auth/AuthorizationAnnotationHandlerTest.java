@@ -2,7 +2,7 @@ package no.nav.veilarboppfolging.utils.auth;
 
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.PlainJWT;
-import lombok.SneakyThrows;
+
 import no.nav.common.audit_log.log.AuditLogger;
 import no.nav.common.auth.context.AuthContext;
 import no.nav.common.auth.context.AuthContextHolder;
@@ -54,7 +54,7 @@ class AuthorizationAnnotationHandlerTest {
     @Mock
     private PoaoTilgangClient poaoTilgangClient;
 
-    @SneakyThrows
+    
     @Test
     void should_allow_system_user_if_in_allowlist() {
         setupSystemUserAuthOk();
@@ -64,7 +64,7 @@ class AuthorizationAnnotationHandlerTest {
         assertDoesNotThrow(() -> annotationHandler.doAuthorizationCheckIfTagged(method, request));
     }
 
-    @SneakyThrows
+    
     @Test
     void should_not_allow_system_user_if_not_in_allowlist() {
         setupSystemUserNotInAllowList();
@@ -74,7 +74,7 @@ class AuthorizationAnnotationHandlerTest {
         assertThrows(ForbiddenException.class, () -> annotationHandler.doAuthorizationCheckIfTagged(method, request));
     }
 
-    @SneakyThrows
+    
     @Test
     void should_allow_external_user_if_access_self() {
         setUpExternalUserAuthOk();
@@ -84,7 +84,7 @@ class AuthorizationAnnotationHandlerTest {
         assertDoesNotThrow(() -> annotationHandler.doAuthorizationCheckIfTagged(method, request));
     }
 
-    @SneakyThrows
+    
     @Test
     void should_not_allow_external_user_if_access_other() {
         setUpExternalUserAuthOk();
@@ -95,7 +95,7 @@ class AuthorizationAnnotationHandlerTest {
         assertThrows(ForbiddenException.class, () -> annotationHandler.doAuthorizationCheckIfTagged(method, request));
     }
 
-    @SneakyThrows
+    
     @Test
     void should_allow_internal_user_if_access_ok() {
         setupInternalUserAuthOk();
@@ -106,7 +106,7 @@ class AuthorizationAnnotationHandlerTest {
         assertDoesNotThrow(() -> annotationHandler.doAuthorizationCheckIfTagged(method, request));
     }
 
-    @SneakyThrows
+    
     @Test
     void external_user_can_not_query_using_aktorid() {
         setUpExternalUserAuthOk();
@@ -116,7 +116,7 @@ class AuthorizationAnnotationHandlerTest {
         assertThrows(ForbiddenException.class, () -> annotationHandler.doAuthorizationCheckIfTagged(method, request));
     }
 
-    @SneakyThrows
+    
     @Test
     void internal_user_can_query_using_aktorid() {
         setupInternalUserAuthOk();

@@ -45,7 +45,7 @@ class ReaktiveringService(
         val aktorId = authService.getAktorIdOrThrow(fnr)
 
         val oppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId).orElse(null)
-        val erUnderOppfolging = oppfolging?.isUnderOppfolging ?: false
+        val erUnderOppfolging = oppfolging?.underOppfolging ?: false
 
         if (!erUnderOppfolging) return AlleredeUnderoppfolgingError
 

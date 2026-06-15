@@ -1,7 +1,7 @@
 package no.nav.veilarboppfolging.repository;
 
 
-import lombok.SneakyThrows;
+
 import no.nav.common.types.identer.AktorId;
 import no.nav.veilarboppfolging.repository.entity.VeilederTilordningEntity;
 import no.nav.veilarboppfolging.utils.DbUtils;
@@ -58,7 +58,7 @@ public class VeilederTilordningerRepository {
         return db.update(sql, 0, aktorId.get());
     }
 
-    @SneakyThrows
+    
     private static VeilederTilordningEntity map(ResultSet resultSet, int row) {
         return new VeilederTilordningEntity()
                 .setAktorId(resultSet.getString(AKTOR_ID))

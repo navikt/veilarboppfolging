@@ -1,7 +1,6 @@
 package no.nav.veilarboppfolging.controller.v2;
 
 import java.util.List;
-import lombok.RequiredArgsConstructor;
 import no.nav.common.job.JobRunner;
 import no.nav.veilarboppfolging.ForbiddenException;
 import no.nav.veilarboppfolging.service.AuthService;
@@ -12,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v2/admin")
-@RequiredArgsConstructor
+
 public class AdminV2Controller {
 
     public final static String POAO_ADMIN = "poao-admin";

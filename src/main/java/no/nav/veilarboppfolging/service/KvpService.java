@@ -2,9 +2,6 @@ package no.nav.veilarboppfolging.service;
 
 import java.time.ZonedDateTime;
 import java.util.Optional;
-import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
-;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.Id;
@@ -27,7 +24,7 @@ import static no.nav.veilarboppfolging.utils.SecureLog.secureLog;
 
 
 @Service
-@RequiredArgsConstructor
+
 public class KvpService {
 
     private final KafkaProducerService kafkaProducerService;
@@ -44,7 +41,7 @@ public class KvpService {
 
     private final TransactionTemplate transactor;
 
-    @SneakyThrows
+    
     public void startKvp(Fnr fnr, String begrunnelse) {
         AktorId aktorId = authService.getAktorIdOrThrow(fnr);
 
@@ -87,7 +84,7 @@ public class KvpService {
         metricsService.kvpStartet();
     }
 
-    @SneakyThrows
+    
     public void stopKvp(Fnr fnr, String begrunnelse) {
         AktorId aktorId = authService.getAktorIdOrThrow(fnr);
 

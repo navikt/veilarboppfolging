@@ -1,6 +1,5 @@
 package no.nav.veilarboppfolging.service
 
-import lombok.RequiredArgsConstructor
 import no.nav.common.types.identer.EnhetId
 import no.nav.common.types.identer.Fnr
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService
@@ -16,10 +15,9 @@ import no.nav.veilarboppfolging.utils.ArenaUtils
 import no.nav.veilarboppfolging.utils.SecureLog.secureLog
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
-import kotlin.jvm.optionals.getOrElse
+import kotlin.jvm.optionals.getOrNull
 
 @Service
-@RequiredArgsConstructor
 class OppfolgingsbrukerEndretIArenaService(
     private val oppfolgingService: OppfolgingService,
     private val avsluttOppfolgingService: AvsluttOppfolgingService,
@@ -39,7 +37,7 @@ class OppfolgingsbrukerEndretIArenaService(
         val erInaktivIArena = ArenaUtils.erIserv(formidlingsgruppe)
 
         val currentLocalOppfolging = oppfolgingsStatusRepository.hentOppfolging(endringOppfolgingsbruker.aktorId)
-        val erBrukerUnderOppfolgingLokalt = currentLocalOppfolging.map { it.isUnderOppfolging }.getOrElse { false }
+        val erBrukerUnderOppfolgingLokalt = currentLocalOppfolging.getOrNull()?.underOppfolging ?: false
 
         val harIngenOppfolgingLagret = currentLocalOppfolging.isEmpty
         oppfolgingService.oppdaterArenaOppfolgingStatus(

@@ -3,9 +3,6 @@ package no.nav.veilarboppfolging.service;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
-import lombok.RequiredArgsConstructor;
-;
-import lombok.val;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirClient;
@@ -23,7 +20,7 @@ import static no.nav.veilarboppfolging.utils.SecureLog.secureLog;
 
 
 @Service
-@RequiredArgsConstructor
+
 public class ManuellStatusService {
     private final AuthService authService;
     private final ManuellStatusRepository manuellStatusRepository;

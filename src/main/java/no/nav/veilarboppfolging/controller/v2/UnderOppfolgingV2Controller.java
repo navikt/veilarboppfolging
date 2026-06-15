@@ -1,6 +1,5 @@
 package no.nav.veilarboppfolging.controller.v2;
 
-import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.controller.response.UnderOppfolgingDTO;
 import no.nav.veilarboppfolging.controller.v2.request.UnderOppfolgingRequest;
@@ -13,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
  * behovet ikke dekkes av veilarboppfolging på egen hånd, bruk eksisterende OppfolgingRessurs
  */
 @RestController
-@RequiredArgsConstructor
+
 @RequestMapping("/api/v2")
 public class UnderOppfolgingV2Controller {
 

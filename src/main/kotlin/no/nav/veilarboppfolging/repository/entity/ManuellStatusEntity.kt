@@ -11,4 +11,6 @@ data class ManuellStatusEntity(
     val begrunnelse: String?,
     val opprettetAv: KodeverkBruker?,
     val opprettetAvBrukerId: String?,
-)
+) {
+    fun medOppdatertId(nyId: Long) = this.copy(id = nyId)
+}

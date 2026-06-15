@@ -1,6 +1,6 @@
 package no.nav.veilarboppfolging.utils.auth;
 
-;
+
 import no.nav.veilarboppfolging.DefaultExceptionHandler;
 import no.nav.veilarboppfolging.InternalServerError;
 import no.nav.veilarboppfolging.VeilarboppfolgingException;

@@ -1,10 +1,9 @@
 package no.nav.veilarboppfolging.service
 
-import lombok.RequiredArgsConstructor
-import lombok.SneakyThrows
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.veilarboppfolging.controller.response.HistorikkHendelse
+import no.nav.veilarboppfolging.controller.response.HistorikkHendelseType
 import no.nav.veilarboppfolging.oppfolgingsbruker.StartetAvType
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelse
 import no.nav.veilarboppfolging.repository.*
@@ -16,7 +15,6 @@ import java.util.*
 import java.util.function.Supplier
 
 @Service
-@RequiredArgsConstructor
 class HistorikkService(
     private val authService: AuthService,
     private val kvpRepository: KvpRepository,
@@ -34,70 +32,86 @@ class HistorikkService(
             .flatten()
     }
 
-    @SneakyThrows
     private fun harTilgangTilEnhet(kvp: KvpPeriodeEntity): Boolean {
         return authService.harTilgangTilEnhet(kvp.enhet)
     }
 
     private fun tilDTO(veilederTilordningHistorikk: VeilederTilordningHistorikkEntity): HistorikkHendelse {
-        return HistorikkHendelse.builder()
-            .type(HistorikkHendelse.Type.VEILEDER_TILORDNET)
-            .begrunnelse("Brukeren er tildelt veileder " + veilederTilordningHistorikk.veileder)
-            .dato(veilederTilordningHistorikk.sistTilordnet)
-            .opprettetAv(KodeverkBruker.NAV)
-            .opprettetAvBrukerId(veilederTilordningHistorikk.tilordnetAvVeileder)
-            .tildeltVeilederId(veilederTilordningHistorikk.veileder)
-            .build()
+        return HistorikkHendelse(
+            type = HistorikkHendelseType.VEILEDER_TILORDNET,
+            dato = veilederTilordningHistorikk.sistTilordnet,
+            begrunnelse = "Brukeren er tildelt veileder " + veilederTilordningHistorikk.veileder,
+            opprettetAv = KodeverkBruker.NAV,
+            opprettetAvBrukerId = veilederTilordningHistorikk.tilordnetAvVeileder,
+            dialogId = null,
+            enhet = null,
+            tildeltVeilederId = veilederTilordningHistorikk.veileder,
+        )
     }
 
     private fun tilDTO(oppfolgingsenhetEndringData: OppfolgingsenhetEndringEntity): HistorikkHendelse {
         val enhet = oppfolgingsenhetEndringData.enhet
-        return HistorikkHendelse.builder()
-            .type(HistorikkHendelse.Type.OPPFOLGINGSENHET_ENDRET)
-            .enhet(enhet)
-            .begrunnelse("Ny oppfølgingsenhet " + enhet)
-            .dato(oppfolgingsenhetEndringData.endretDato)
-            .opprettetAv(KodeverkBruker.SYSTEM)
-            .build()
+        return HistorikkHendelse(
+            type = HistorikkHendelseType.OPPFOLGINGSENHET_ENDRET,
+            dato = oppfolgingsenhetEndringData.endretDato,
+            begrunnelse = "Ny oppfølgingsenhet " + enhet,
+            opprettetAv = KodeverkBruker.SYSTEM,
+            opprettetAvBrukerId = null,
+            dialogId = null,
+            enhet = enhet,
+            tildeltVeilederId = null,
+        )
     }
 
     private fun tilDTO(historikkData: ManuellStatusEntity): HistorikkHendelse {
-        return HistorikkHendelse.builder()
-            .type(if (historikkData.isManuell) HistorikkHendelse.Type.SATT_TIL_MANUELL else HistorikkHendelse.Type.SATT_TIL_DIGITAL)
-            .begrunnelse(historikkData.begrunnelse)
-            .dato(historikkData.dato)
-            .opprettetAv(historikkData.opprettetAv)
-            .opprettetAvBrukerId(historikkData.opprettetAvBrukerId)
-            .build()
+        return HistorikkHendelse(
+            type = if (historikkData.manuell) HistorikkHendelseType.SATT_TIL_MANUELL else HistorikkHendelseType.SATT_TIL_DIGITAL,
+            dato = historikkData.dato,
+            begrunnelse = historikkData.begrunnelse,
+            opprettetAv = historikkData.opprettetAv,
+            opprettetAvBrukerId = historikkData.opprettetAvBrukerId,
+            dialogId = null,
+            enhet = null,
+            tildeltVeilederId = null,
+        )
     }
 
     private fun tilDTO(reaktiverOppfolgingHendelseEntity: ReaktiverOppfolgingHendelseEntity): HistorikkHendelse {
-        return HistorikkHendelse.builder()
-            .type(HistorikkHendelse.Type.REAKTIVERT_OPPFOLGINGSPERIODE)
-            .begrunnelse("Bruker manuelt reaktivert i Arena av veileder")
-            .dato(reaktiverOppfolgingHendelseEntity.reaktiveringTidspunkt)
-            .opprettetAv(KodeverkBruker.NAV)
-            .opprettetAvBrukerId(reaktiverOppfolgingHendelseEntity.reaktivertAv)
-            .build()
+        return HistorikkHendelse(
+            type = HistorikkHendelseType.REAKTIVERT_OPPFOLGINGSPERIODE,
+            dato = reaktiverOppfolgingHendelseEntity.reaktiveringTidspunkt,
+            begrunnelse = "Bruker manuelt reaktivert i Arena av veileder",
+            opprettetAv = KodeverkBruker.NAV,
+            opprettetAvBrukerId = reaktiverOppfolgingHendelseEntity.reaktivertAv,
+            dialogId = null,
+            enhet = null,
+            tildeltVeilederId = null,
+        )
     }
 
     private fun tilDTO(kvp: KvpPeriodeEntity): List<HistorikkHendelse> {
-        val kvpStart = HistorikkHendelse.builder()
-            .type(HistorikkHendelse.Type.KVP_STARTET)
-            .begrunnelse(kvp.opprettetBegrunnelse)
-            .dato(kvp.opprettetDato)
-            .opprettetAv(kvp.opprettetKodeverkbruker)
-            .opprettetAvBrukerId(kvp.opprettetAv)
-            .build()
+        val kvpStart = HistorikkHendelse(
+            type = HistorikkHendelseType.KVP_STARTET,
+            dato = kvp.opprettetDato,
+            begrunnelse = kvp.opprettetBegrunnelse,
+            opprettetAv = kvp.opprettetKodeverkbruker,
+            opprettetAvBrukerId = kvp.opprettetAv,
+            dialogId = null,
+            enhet = null,
+            tildeltVeilederId = null,
+        )
 
         if (kvp.avsluttetDato != null) {
-            val kvpStopp = HistorikkHendelse.builder()
-                .type(HistorikkHendelse.Type.KVP_STOPPET)
-                .begrunnelse(kvp.avsluttetBegrunnelse)
-                .dato(kvp.avsluttetDato)
-                .opprettetAv(kvp.avsluttetKodeverkbruker)
-                .opprettetAvBrukerId(kvp.avsluttetAv)
-                .build()
+            val kvpStopp = HistorikkHendelse(
+                type = HistorikkHendelseType.KVP_STOPPET,
+                dato = kvp.avsluttetDato,
+                begrunnelse = kvp.avsluttetBegrunnelse,
+                opprettetAv = kvp.avsluttetKodeverkbruker,
+                opprettetAvBrukerId = kvp.avsluttetAv,
+                dialogId = null,
+                enhet = null,
+                tildeltVeilederId = null,
+            )
             return listOf(kvpStart, kvpStopp)
         }
         return listOf(kvpStart)
@@ -120,22 +134,28 @@ class HistorikkService(
     }
 
     private fun tilDTO(periode: OppfolgingsperiodeEntity): List<HistorikkHendelse> {
-        val periodeStart = HistorikkHendelse.builder()
-            .type(HistorikkHendelse.Type.STARTET_OPPFOLGINGSPERIODE)
-            .begrunnelse(getStartetBegrunnelseTekst(periode.startetBegrunnelse, periode.startetAvType))
-            .dato(periode.startDato)
-            .opprettetAv(periode.startetAvType?.toKodeverkBruker())
-            .opprettetAvBrukerId(periode.startetAv)
-            .build()
+        val periodeStart = HistorikkHendelse(
+            type = HistorikkHendelseType.STARTET_OPPFOLGINGSPERIODE,
+            dato = periode.startDato,
+            begrunnelse = getStartetBegrunnelseTekst(periode.startetBegrunnelse, periode.startetAvType),
+            opprettetAv = periode.startetAvType?.toKodeverkBruker(),
+            opprettetAvBrukerId = periode.startetAv,
+            dialogId = null,
+            enhet = null,
+            tildeltVeilederId = null,
+        )
 
         if (periode.sluttDato != null) {
-            val periodeStopp = HistorikkHendelse.builder()
-                .type(HistorikkHendelse.Type.AVSLUTTET_OPPFOLGINGSPERIODE)
-                .begrunnelse(periode.begrunnelse)
-                .dato(periode.sluttDato)
-                .opprettetAv(if (periode.avsluttetAv != null) KodeverkBruker.NAV else KodeverkBruker.SYSTEM)
-                .opprettetAvBrukerId(periode.avsluttetAv)
-                .build()
+            val periodeStopp = HistorikkHendelse(
+                type = HistorikkHendelseType.AVSLUTTET_OPPFOLGINGSPERIODE,
+                dato = periode.sluttDato,
+                begrunnelse = periode.begrunnelse,
+                opprettetAv = if (periode.avsluttetAv != null) KodeverkBruker.NAV else KodeverkBruker.SYSTEM,
+                opprettetAvBrukerId = periode.avsluttetAv,
+                dialogId = null,
+                enhet = null,
+                tildeltVeilederId = null,
+            )
             return listOf(periodeStart, periodeStopp)
         }
         return listOf(periodeStart)

@@ -1,6 +1,5 @@
 package no.nav.veilarboppfolging.controller.v3;
 
-import lombok.RequiredArgsConstructor;
 import no.nav.veilarboppfolging.controller.v2.response.HentVeilederV2Response;
 import no.nav.veilarboppfolging.controller.v3.request.VeilederRequest;
 import no.nav.veilarboppfolging.service.AuthService;
@@ -11,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v3")
-@RequiredArgsConstructor
+
 public class VeilederV3Controller {
 
     private final VeilederTilordningService veilederTilordningService;

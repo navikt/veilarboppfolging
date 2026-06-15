@@ -1,12 +1,8 @@
 package no.nav.veilarboppfolging.repository.entity;
 
-import lombok.Data;
-import lombok.experimental.Accessors;
 
 import java.time.ZonedDateTime;
 
-@Data
-@Accessors(chain = true)
 public class MaalEntity {
     private long id;
     private String aktorId;
@@ -21,5 +17,4 @@ public class MaalEntity {
     public boolean erEndretAvBruker() {
         return endretAv != null && endretAv.equals(aktorId);
     }
-
 }

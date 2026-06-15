@@ -1,7 +1,5 @@
 package no.nav.veilarboppfolging.client.digdir_krr;
 
-import lombok.SneakyThrows;
-;
 import no.nav.common.json.JsonUtils;
 import no.nav.common.rest.client.LogRequestInterceptor;
 import no.nav.common.rest.client.RestUtils;
@@ -57,7 +55,7 @@ public class DigdirClientImpl implements DigdirClient {
 	}
 
 	@Cacheable(CacheConfig.DIGDIR_KONTAKTINFO_CACHE_NAME)
-	@SneakyThrows
+	
 	@Override
 	public Optional<KRRData> hentKontaktInfo(Fnr fnr) {
 		var json = JsonUtils.toJson(new KrrPersonerDto(fnr.get()));

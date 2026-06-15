@@ -1,6 +1,5 @@
 package no.nav.veilarboppfolging.utils.auth;
 
-import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.ForbiddenException;
@@ -14,7 +13,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-@RequiredArgsConstructor
 public class AuthorizationAnnotationHandler {
 
     private final AuthService authService;

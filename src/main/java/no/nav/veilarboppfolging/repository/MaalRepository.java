@@ -1,6 +1,5 @@
 package no.nav.veilarboppfolging.repository;
 
-import lombok.SneakyThrows;
 import no.nav.common.types.identer.AktorId;
 import no.nav.veilarboppfolging.repository.entity.MaalEntity;
 import no.nav.veilarboppfolging.utils.DbUtils;
@@ -66,7 +65,7 @@ public class MaalRepository {
         );
     }
 
-    @SneakyThrows
+    
     private static MaalEntity mapMaalEntity(ResultSet result, int row) {
         return new MaalEntity()
                 .setId(result.getLong("id"))

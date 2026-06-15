@@ -1,8 +1,6 @@
 package no.nav.veilarboppfolging.service;
 
 import com.nimbusds.jwt.JWTClaimsSet;
-import lombok.SneakyThrows;
-;
 import no.nav.common.audit_log.cef.AuthorizationDecision;
 import no.nav.common.audit_log.cef.CefMessage;
 import no.nav.common.audit_log.cef.CefMessageEvent;
@@ -327,7 +325,7 @@ public class AuthService {
         sjekkAtApplikasjonErIAllowList(List.of(allowlist));
     }
 
-    @SneakyThrows
+    
     public void sjekkAtApplikasjonErIAllowList(List<String> allowlist) {
         String appname = hentApplikasjonFraContext();
         if (allowlist.contains(appname) || appname.equals("veilarboppfolging")) {
@@ -440,7 +438,7 @@ public class AuthService {
                 && navIdentClaim.isPresent();
     }
 
-    @SneakyThrows
+    
     private Optional<NavIdent> getNavIdentClaimHvisTilgjengelig() {
         if (erInternBruker()) {
             return Optional.ofNullable(authContextHolder.requireIdTokenClaims().getStringClaim(AAD_NAV_IDENT_CLAIM))

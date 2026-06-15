@@ -181,7 +181,7 @@ class KvpServiceTest{
         verify(kafkaProducerService, times(1)).publiserKvpPeriode(
             KvpPeriode
                 .start(AKTOR_ID, ENHET, VEILEDER, kvpStartTidspunkt, START_BEGRUNNELSE)
-                .avslutt(VEILEDER, any(), STOP_BEGRUNNELSE)
+                .tilAvsluttetKvpPeriode(VEILEDER, any(), STOP_BEGRUNNELSE)
         )
     }
 

@@ -1,6 +1,6 @@
 package no.nav.veilarboppfolging.repository;
 
-import lombok.SneakyThrows;
+
 import no.nav.common.types.identer.AktorId;
 import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity;
 import no.nav.veilarboppfolging.repository.enums.KodeverkBruker;
@@ -162,7 +162,7 @@ public class KvpRepository {
         );
     }
 
-    @SneakyThrows
+    
     protected static KvpPeriodeEntity mapTilKvp(ResultSet rs, int row) {
         return KvpPeriodeEntity.builder()
                 .kvpId(rs.getLong("kvp_id"))

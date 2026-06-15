@@ -1,6 +1,5 @@
 package no.nav.veilarboppfolging.repository;
 
-;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.utils.DbUtils;
 import org.springframework.beans.factory.annotation.Autowired;

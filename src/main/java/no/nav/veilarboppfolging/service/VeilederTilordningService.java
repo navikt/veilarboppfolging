@@ -1,6 +1,6 @@
 package no.nav.veilarboppfolging.service;
 
-;
+
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.NavIdent;

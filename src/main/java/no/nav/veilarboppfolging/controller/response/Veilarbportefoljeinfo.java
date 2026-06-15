@@ -1,14 +1,13 @@
 package no.nav.veilarboppfolging.controller.response;
 
-import lombok.Data;
-import lombok.experimental.Accessors;
+
+
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.NavIdent;
 
 import java.time.ZonedDateTime;
 
-@Data
-@Accessors(chain = true)
+
 public class Veilarbportefoljeinfo {
     private AktorId aktorId;
 

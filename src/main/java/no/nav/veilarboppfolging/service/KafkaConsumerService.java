@@ -1,7 +1,5 @@
 package no.nav.veilarboppfolging.service;
 
-import lombok.SneakyThrows;
-;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.client.aktorregister.IngenGjeldendeIdentException;
 import no.nav.common.types.identer.Fnr;
@@ -45,7 +43,7 @@ public class KafkaConsumerService {
         this.sisteEndringPaaOppfolgingBrukerService = sisteEndringPaaOppfolgingBrukerService;
     }
 
-    @SneakyThrows
+    
     public void consumeEndringPaOppfolgingBruker(ConsumerRecord<String, EndringPaaOppfoelgingsBrukerV2> kafkaMelding) {
         EndringPaaOppfoelgingsBrukerV2 endringPaBruker = kafkaMelding.value();
 

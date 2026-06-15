@@ -1,7 +1,5 @@
 package no.nav.veilarboppfolging.domain;
 
-import lombok.Data;
-import lombok.experimental.Accessors;
 import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
 
@@ -13,8 +11,7 @@ import java.util.Objects;
 
 import static java.util.Comparator.naturalOrder;
 
-@Data
-@Accessors(chain = true)
+
 public class OppfolgingStatusData {
     public String fnr;
     public String aktorId;

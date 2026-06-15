@@ -18,7 +18,7 @@ fun resolveEndringPaaOppfolgingsbrukerEvent(
 
     val erInaktivIArena = Formidlingsgruppe.ISERV == endringPaaOppfolgingsBruker.formidlingsgruppe
     val varInaktivIArena = nåværendeOppfolgingsstatus?.localArenaOppfolging?.orElse(null)?.formidlingsgruppe == Formidlingsgruppe.ISERV
-    val erUnderOppfolging = nåværendeOppfolgingsstatus?.isUnderOppfolging ?: false
+    val erUnderOppfolging = nåværendeOppfolgingsstatus?.underOppfolging ?: false
 
     if (erInaktivIArena && varInaktivIArena) return IrrelevantEndring()
 

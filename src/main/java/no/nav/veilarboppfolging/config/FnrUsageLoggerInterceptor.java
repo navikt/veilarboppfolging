@@ -2,7 +2,6 @@ package no.nav.veilarboppfolging.config;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-;
 import no.nav.common.utils.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;

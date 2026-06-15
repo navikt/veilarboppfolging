@@ -1,7 +1,5 @@
 package no.nav.veilarboppfolging.service;
 
-import lombok.RequiredArgsConstructor;
-;
 import no.nav.common.types.identer.AktorId;
 import no.nav.veilarboppfolging.kafka.KvpPeriode;
 import no.nav.veilarboppfolging.kafka.dto.OppfolgingsperiodeDTO;
@@ -23,7 +21,7 @@ import static no.nav.veilarboppfolging.utils.SecureLog.secureLog;
 
 
 @Service
-@RequiredArgsConstructor
+
 public class KafkaRepubliseringService {
 
     private final static int OPPFOLGINGSPERIODE_PAGE_SIZE = 1000;
@@ -109,7 +107,7 @@ public class KafkaRepubliseringService {
         kafkaProducerService.publiserKvpPeriode(startetKvpPeriode);
 
         if (kvpPeriodeEntity.getAvsluttetDato() != null) {
-            KvpPeriode avsluttetKvpPeriode = startetKvpPeriode.avslutt(
+            KvpPeriode avsluttetKvpPeriode = startetKvpPeriode.tilAvsluttetKvpPeriode(
                     kvpPeriodeEntity.getAvsluttetAv(),
                     kvpPeriodeEntity.getAvsluttetDato(),
                     kvpPeriodeEntity.getAvsluttetBegrunnelse()

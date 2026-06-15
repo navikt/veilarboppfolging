@@ -1,6 +1,5 @@
 package no.nav.veilarboppfolging.repository;
 
-import lombok.SneakyThrows;
 import no.nav.common.types.identer.AktorId;
 import no.nav.veilarboppfolging.repository.entity.ManuellStatusEntity;
 import no.nav.veilarboppfolging.repository.enums.KodeverkBruker;
@@ -11,6 +10,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
@@ -38,9 +38,9 @@ public class ManuellStatusRepository {
 
     public void create(ManuellStatusEntity manuellStatus) {
         transactor.executeWithoutResult((ignored) -> {
-            manuellStatus.setId(DbUtils.nesteFraSekvens(db,"status_seq"));
-            insert(manuellStatus);
-            setActive(manuellStatus);
+            var nyManuellStatus = manuellStatus.medOppdatertId(DbUtils.nesteFraSekvens(db,"status_seq"));
+            insert(nyManuellStatus);
+            setActive(nyManuellStatus);
         });
     }
 
@@ -57,16 +57,17 @@ public class ManuellStatusRepository {
         );
     }
 
-    @SneakyThrows
-    public static ManuellStatusEntity map(ResultSet result, int row) {
-        return new ManuellStatusEntity()
-                .setId(result.getLong("id"))
-                .setAktorId(result.getString("aktor_id"))
-                .setManuell(result.getBoolean("manuell"))
-                .setDato(hentZonedDateTime(result, "opprettet_dato"))
-                .setBegrunnelse(result.getString("begrunnelse"))
-                .setOpprettetAv(valueOfOptional(KodeverkBruker.class, result.getString("opprettet_av")).orElse(null))
-                .setOpprettetAvBrukerId(result.getString("opprettet_av_brukerid"));
+
+    public static ManuellStatusEntity map(ResultSet result, int row) throws SQLException {
+        return new ManuellStatusEntity(
+            result.getLong("id"),
+            result.getString("aktor_id"),
+            result.getBoolean("manuell"),
+            hentZonedDateTime(result, "opprettet_dato"),
+            result.getString("begrunnelse"),
+            valueOfOptional(KodeverkBruker.class, result.getString("opprettet_av")).orElse(null),
+            result.getString("opprettet_av_brukerid")
+        );
     }
 
     private void insert(ManuellStatusEntity manuellStatus) {
@@ -82,7 +83,7 @@ public class ManuellStatusRepository {
                         "VALUES(?, ?, ?, ?, ?, ?, ?)",
                 manuellStatus.getId(),
                 manuellStatus.getAktorId(),
-                toInt(manuellStatus.isManuell()),
+                toInt(manuellStatus.getManuell()),
                 manuellStatus.getDato() != null ? Timestamp.from(manuellStatus.getDato().toInstant()) : null, // TODO: En test viser at det kan være null, er det virkelig ønskelig?
                 manuellStatus.getBegrunnelse(),
                 getName(manuellStatus.getOpprettetAv()),

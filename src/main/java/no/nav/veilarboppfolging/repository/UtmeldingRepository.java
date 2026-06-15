@@ -1,7 +1,5 @@
 package no.nav.veilarboppfolging.repository;
 
-import lombok.SneakyThrows;
-;
 import no.nav.common.types.identer.AktorId;
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.InsertIUtmelding;
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.UpdateIservDatoUtmelding;
@@ -37,7 +35,7 @@ public class UtmeldingRepository {
         return queryForNullableObject(() -> db.queryForObject(sql, UtmeldingRepository::mapper, aktorId.get()));
     }
 
-    @SneakyThrows
+    
     public void updateUtmeldingTabell(UpdateIservDatoUtmelding oppdaterIservDatoHendelse) {
         String sql = "UPDATE UTMELDING SET iserv_fra_dato = ?, oppdatert_dato = CURRENT_TIMESTAMP WHERE aktor_id = ?";
         Timestamp nyIservFraDato = Timestamp.from(oppdaterIservDatoHendelse.getIservFraDato().toInstant());

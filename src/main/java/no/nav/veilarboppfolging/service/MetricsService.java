@@ -3,7 +3,6 @@ package no.nav.veilarboppfolging.service;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.binder.MeterBinder;
-;
 import no.nav.common.metrics.Event;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.veilarboppfolging.repository.KafkaProducerMetricRepository;

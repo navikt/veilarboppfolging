@@ -1,6 +1,6 @@
 package no.nav.veilarboppfolging.test;
 
-import lombok.SneakyThrows;
+
 
 import java.net.URL;
 import java.nio.file.Files;
@@ -10,14 +10,14 @@ import java.util.concurrent.TimeUnit;
 
 public class TestUtils {
 
-    @SneakyThrows
+    
     public static String readTestResourceFile(String fileName) {
         URL fileUrl = TestUtils.class.getClassLoader().getResource(fileName);
         Path resPath = Paths.get(fileUrl.toURI());
         return Files.readString(resPath);
     }
 
-    @SneakyThrows
+    
     public static void verifiserAsynkront(long timeout, TimeUnit unit, Runnable verifiser) {
         long timeoutMillis = unit.toMillis(timeout);
         boolean prosessert = false;

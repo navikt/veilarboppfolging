@@ -1,6 +1,5 @@
 package no.nav.veilarboppfolging.controller;
 
-import lombok.RequiredArgsConstructor;
 import no.nav.common.metrics.Event;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.types.identer.Fnr;
@@ -18,7 +17,7 @@ import static java.lang.String.valueOf;
  * Ressursen ble opprettet for å dekke behov fra Ditt Nav.
  */
 @RestController
-@RequiredArgsConstructor
+
 @RequestMapping("/api/niva3")
 public class OppfolgingNiva3Controller {
 

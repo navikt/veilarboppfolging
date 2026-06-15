@@ -1,14 +1,13 @@
 package no.nav.veilarboppfolging.controller.response;
 
-import lombok.Data;
-import lombok.experimental.Accessors;
+
+
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
 
-@Data
-@Accessors(chain = true)
+
 public class OppfolgingStatus {
     public String fnr;
     public String aktorId;

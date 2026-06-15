@@ -26,6 +26,7 @@ import org.springframework.dao.DuplicateKeyException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.support.TransactionTemplate
 import java.util.*
+import kotlin.jvm.optionals.getOrNull
 
 @Service
 open class StartOppfolgingService(
@@ -49,8 +50,7 @@ open class StartOppfolgingService(
         transactor.executeWithoutResult { _ ->
             val maybeOppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId)
             val erUnderOppfolging = maybeOppfolging
-                .map { obj: OppfolgingEntity? -> obj!!.isUnderOppfolging }
-                .orElse(false)
+                .getOrNull()?.underOppfolging ?: false
 
             if (erUnderOppfolging) return@executeWithoutResult
             if (maybeOppfolging.isEmpty) {
@@ -99,7 +99,7 @@ open class StartOppfolgingService(
 
     private fun publiserMinSideBeskjedHvisIkkeReservert(kontaktinfo: KRRData, aktorId: AktorId, fnr: Fnr) {
         when {
-            kontaktinfo.isReservert -> manuellStatusService.settBrukerTilManuellGrunnetReservertIKRR(aktorId)
+            kontaktinfo.reservert -> manuellStatusService.settBrukerTilManuellGrunnetReservertIKRR(aktorId)
             else -> {
                 kafkaProducerService.publiserMinSideBeskjed(
                     fnr,

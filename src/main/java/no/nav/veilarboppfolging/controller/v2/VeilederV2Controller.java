@@ -1,6 +1,5 @@
 package no.nav.veilarboppfolging.controller.v2;
 
-import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.controller.request.VeilederTilordning;
@@ -15,7 +14,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v2/veileder")
-@RequiredArgsConstructor
+
 public class VeilederV2Controller {
 
     private final VeilederTilordningService veilederTilordningService;

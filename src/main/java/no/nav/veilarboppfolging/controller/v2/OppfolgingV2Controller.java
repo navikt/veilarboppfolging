@@ -1,6 +1,5 @@
 package no.nav.veilarboppfolging.controller.v2;
 
-import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.BadRequestException;
@@ -32,7 +31,7 @@ import static no.nav.veilarboppfolging.utils.DtoMappers.*;
 
 @RestController
 @RequestMapping("/api/v2/oppfolging")
-@RequiredArgsConstructor
+
 public class OppfolgingV2Controller {
     private final OppfolgingService oppfolgingService;
     private final AvsluttOppfolgingService avsluttOppfolgingService;

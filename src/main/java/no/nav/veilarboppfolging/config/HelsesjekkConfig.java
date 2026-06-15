@@ -1,6 +1,6 @@
 package no.nav.veilarboppfolging.config;
 
-;
+
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.health.HealthCheck;
 import no.nav.common.health.HealthCheckResult;

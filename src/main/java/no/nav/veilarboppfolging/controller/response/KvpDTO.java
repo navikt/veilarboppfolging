@@ -1,12 +1,11 @@
 package no.nav.veilarboppfolging.controller.response;
 
-import lombok.Data;
-import lombok.experimental.Accessors;
+
+
 
 import java.time.ZonedDateTime;
 
-@Data
-@Accessors(chain = true)
+
 public class KvpDTO implements Comparable<KvpDTO> {
     private long kvpId;
     private long serial;

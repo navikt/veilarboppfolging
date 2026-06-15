@@ -1,8 +1,5 @@
 package no.nav.veilarboppfolging.utils;
 
-import lombok.SneakyThrows;
-;
-
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
@@ -14,7 +11,7 @@ import java.util.GregorianCalendar;
 
 public class DateUtils {
 
-    @SneakyThrows
+    
     public static XMLGregorianCalendar now() {
         DatatypeFactory factory = DatatypeFactory.newInstance();
         GregorianCalendar calendar = new GregorianCalendar();
