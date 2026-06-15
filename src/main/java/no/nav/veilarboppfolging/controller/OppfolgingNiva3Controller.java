@@ -6,6 +6,7 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.controller.response.UnderOppfolgingNiva3DTO;
 import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.service.OppfolgingService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -22,20 +23,23 @@ import static java.lang.String.valueOf;
 public class OppfolgingNiva3Controller {
 
     private final OppfolgingService oppfolgingService;
-
     private final MetricsClient metricsClient;
-
     private final AuthService authService;
+
+    @Autowired
+    public OppfolgingNiva3Controller(OppfolgingService oppfolgingService, MetricsClient metricsClient, AuthService authService) {
+        this.oppfolgingService = oppfolgingService;
+        this.metricsClient = metricsClient;
+        this.authService = authService;
+    }
 
     @GetMapping("/underoppfolging")
     public UnderOppfolgingNiva3DTO underOppfolgingNiva3() {
         Fnr fnr = Fnr.of(authService.getInnloggetBrukerIdent());
 
-        UnderOppfolgingNiva3DTO underOppfolgingNiva3DTO = new UnderOppfolgingNiva3DTO()
-                .setUnderOppfolging(oppfolgingService.erUnderOppfolgingNiva3(fnr));
-
+        UnderOppfolgingNiva3DTO underOppfolgingNiva3DTO = new UnderOppfolgingNiva3DTO(oppfolgingService.erUnderOppfolgingNiva3(fnr));
         Event event = new Event("request.niva3.underoppfolging");
-        event.addTagToReport("underoppfolging", valueOf(underOppfolgingNiva3DTO.isUnderOppfolging()));
+        event.addTagToReport("underoppfolging", valueOf(underOppfolgingNiva3DTO.getUnderOppfolging()));
         metricsClient.report(event);
 
         return underOppfolgingNiva3DTO;

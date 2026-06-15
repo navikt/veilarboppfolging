@@ -21,13 +21,13 @@ class OppfolgingStatus(
     val oppfolgingsPerioder: List<OppfolgingPeriodeDTO>,
     val harSkriveTilgang: Boolean?,
     val inaktivIArena: Boolean?,
-    val kanReaktiveres: Boolean,
+    val kanReaktiveres: Boolean?,
     var inaktiveringsdato: LocalDate? = null,
     /*
     * Får treff i "mulighetsrommet", "arbopp", "arbopp-new"
     * */
-    val erSykmeldtMedArbeidsgiver: Boolean,
-    val servicegruppe: String,
-    val formidlingsgruppe: String,
-    val rettighetsgruppe: String,
+    val erSykmeldtMedArbeidsgiver: Boolean?,
+    val servicegruppe: String?,
+    val formidlingsgruppe: String?,
+    val rettighetsgruppe: String?,
 )

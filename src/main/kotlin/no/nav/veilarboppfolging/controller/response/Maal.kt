@@ -4,7 +4,7 @@ import java.time.ZonedDateTime
 
 
 data class Maal(
-    val mal: String,
+    val mal: String?,
     val endretAv: String?,
-    val dato: ZonedDateTime,
+    val dato: ZonedDateTime?,
 )

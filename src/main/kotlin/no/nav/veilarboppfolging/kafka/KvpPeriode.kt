@@ -6,7 +6,7 @@ import java.time.ZonedDateTime
 data class KvpPeriode(
     val event: KvpPeriodeEventType,
     val aktorId: String,
-    val enhetId: String,
+    val enhetId: String?,
     val startet: KvpStartet,
     val avsluttet: KvpAvsluttet?
 ) {

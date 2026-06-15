@@ -27,6 +27,14 @@ public class DtoMappers {
         );
     }
 
+    public static Maal tilDto(Optional<MaalEntity> malData) {
+        return new Maal(
+                malData.map(MaalEntity::getMal).orElse(null),
+                malData.map(MaalEntity::getEndretAv).orElse(null),
+                malData.map(MaalEntity::getDato).orElse(null)
+        );
+    }
+
     /**
      * Given a Kvp object, return its DTO representation. All fields are included.
      */
@@ -62,27 +70,27 @@ public class DtoMappers {
 
     public static OppfolgingStatus tilDto(OppfolgingStatusData oppfolgingStatusData, boolean erInternBruker) {
         return new OppfolgingStatus(
-                oppfolgingStatusData.fnr,
-                oppfolgingStatusData.aktorId,
-                erInternBruker ? oppfolgingStatusData.veilederId : null,
-                oppfolgingStatusData.reservasjonKRR,
-                oppfolgingStatusData.registrertKRR,
-                oppfolgingStatusData.kanVarsles,
-                oppfolgingStatusData.manuell,
-                oppfolgingStatusData.underOppfolging,
-                oppfolgingStatusData.underKvp,
+                oppfolgingStatusData.getFnr(),
+                oppfolgingStatusData.getAktorId(),
+                erInternBruker ? oppfolgingStatusData.getVeilederId() : null,
+                oppfolgingStatusData.getReservasjonKRR(),
+                oppfolgingStatusData.getRegistrertKRR(),
+                oppfolgingStatusData.getKanVarsles(),
+                oppfolgingStatusData.getManuell(),
+                oppfolgingStatusData.getUnderOppfolging(),
+                oppfolgingStatusData.getUnderKvp(),
                 oppfolgingStatusData.getOppfolgingUtgang(),
-                erInternBruker ? oppfolgingStatusData.kanStarteOppfolging : null,
+                erInternBruker ? oppfolgingStatusData.getKanStarteOppfolging() : null,
                 null,
-                oppfolgingStatusData.oppfolgingsperioder.stream().map(o -> tilOppfolgingPeriodeDTO(o, erInternBruker)).collect(toList()),
-                erInternBruker ? oppfolgingStatusData.harSkriveTilgang : null,
-                erInternBruker ? oppfolgingStatusData.inaktivIArena : null,
-                oppfolgingStatusData.kanReaktiveres,
-                oppfolgingStatusData.inaktiveringsdato,
-                oppfolgingStatusData.erSykmeldtMedArbeidsgiver,
-                oppfolgingStatusData.servicegruppe,
-                oppfolgingStatusData.formidlingsgruppe,
-                oppfolgingStatusData.rettighetsgruppe
+                oppfolgingStatusData.getOppfolgingsperioder().stream().map(o -> tilOppfolgingPeriodeDTO(o, erInternBruker)).collect(toList()),
+                erInternBruker ? oppfolgingStatusData.getHarSkriveTilgang() : null,
+                erInternBruker ? oppfolgingStatusData.getInaktivIArena() : null,
+                oppfolgingStatusData.getKanReaktiveres(),
+                oppfolgingStatusData.getInaktiveringsdato(),
+                oppfolgingStatusData.getErSykmeldtMedArbeidsgiver(),
+                oppfolgingStatusData.getServicegruppe(),
+                oppfolgingStatusData.getFormidlingsgruppe(),
+                oppfolgingStatusData.getRettighetsgruppe()
         );
     }
 

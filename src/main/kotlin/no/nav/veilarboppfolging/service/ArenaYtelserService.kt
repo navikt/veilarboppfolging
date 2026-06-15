@@ -25,8 +25,18 @@ class ArenaYtelserService(val veilarbarenaClient: VeilarbarenaClient,
 
     open fun hentYtelser(fnr: Fnr): YtelserResponse {
         val response = veilarbarenaClient.getArenaYtelser(fnr).orElseGet { throw Error("Finner ingen ytelser") }
-        return YtelserResponse().withYtelser(
-            response.ytelser.map {
+        return YtelserResponse(
+            vedtaksliste = response.vedtak.map {
+                VedtakDto(
+                    vedtakstype = it.type,
+                    status = it.status,
+                    aktivitetsfase = it.aktivitetsfase,
+                    rettighetsgruppe = it.rettighetsgruppe,
+                    fradato = it.fraDato.tilEgenDatoType(),
+                    tildato = it.tilDato.tilEgenDatoType(),
+                )
+            },
+            ytelser = response.ytelser.map {
                 YtelseskontraktDto(
                     status = it.status,
                     ytelsestype = it.type,
@@ -34,18 +44,8 @@ class ArenaYtelserService(val veilarbarenaClient: VeilarbarenaClient,
                     datoFra = it.fraDato.tilEgenDatoType(),
                     datoTil = it.tilDato.tilEgenDatoType(),
                 )
-            }).withVedtaksliste(
-                response.vedtak.map {
-                    VedtakDto(
-                        vedtakstype = it.type,
-                        status = it.status,
-                        aktivitetsfase = it.aktivitetsfase,
-                        rettighetsgruppe = it.rettighetsgruppe,
-                        fradato = it.fraDato.tilEgenDatoType(),
-                        tildato = it.tilDato.tilEgenDatoType(),
-                    )
-                }
-            )
+            }
+        )
     }
 
 

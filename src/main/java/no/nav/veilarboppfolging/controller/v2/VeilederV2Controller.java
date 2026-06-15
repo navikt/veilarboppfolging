@@ -7,6 +7,7 @@ import no.nav.veilarboppfolging.controller.response.TilordneVeilederResponse;
 import no.nav.veilarboppfolging.controller.v2.response.HentVeilederV2Response;
 import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.service.VeilederTilordningService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,12 +15,16 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v2/veileder")
-
 public class VeilederV2Controller {
 
     private final VeilederTilordningService veilederTilordningService;
-
     private final AuthService authService;
+
+    @Autowired
+    public VeilederV2Controller(VeilederTilordningService veilederTilordningService, AuthService authService) {
+        this.veilederTilordningService = veilederTilordningService;
+        this.authService = authService;
+    }
 
     @GetMapping(params = "fnr")
     public ResponseEntity<HentVeilederV2Response> hentVeileder(@RequestParam("fnr") Fnr fnr) {

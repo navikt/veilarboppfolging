@@ -2,6 +2,7 @@ package no.nav.veilarboppfolging.service;
 
 import java.time.ZonedDateTime;
 import java.util.Optional;
+
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.Id;
@@ -13,6 +14,9 @@ import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
 import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity;
 import no.nav.veilarboppfolging.repository.enums.KodeverkBruker;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -24,24 +28,29 @@ import static no.nav.veilarboppfolging.utils.SecureLog.secureLog;
 
 
 @Service
-
 public class KvpService {
 
     private final KafkaProducerService kafkaProducerService;
-
     private final MetricsService metricsService;
-
     private final KvpRepository kvpRepository;
-
     private final ArbeidsoppfolgingsKontorService arbeidsoppfolgingsKontorService;
-
     private final OppfolgingsStatusRepository oppfolgingsStatusRepository;
-
     private final AuthService authService;
-
     private final TransactionTemplate transactor;
 
-    
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
+
+    @Autowired
+    public KvpService(KafkaProducerService kafkaProducerService, MetricsService metricsService, KvpRepository kvpRepository, ArbeidsoppfolgingsKontorService arbeidsoppfolgingsKontorService, OppfolgingsStatusRepository oppfolgingsStatusRepository, AuthService authService, TransactionTemplate transactor) {
+        this.kafkaProducerService = kafkaProducerService;
+        this.metricsService = metricsService;
+        this.kvpRepository = kvpRepository;
+        this.arbeidsoppfolgingsKontorService = arbeidsoppfolgingsKontorService;
+        this.oppfolgingsStatusRepository = oppfolgingsStatusRepository;
+        this.authService = authService;
+        this.transactor = transactor;
+    }
+
     public void startKvp(Fnr fnr, String begrunnelse) {
         AktorId aktorId = authService.getAktorIdOrThrow(fnr);
 
@@ -49,7 +58,7 @@ public class KvpService {
 
         Optional<OppfolgingEntity> maybeOppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId);
 
-        if (maybeOppfolging.isEmpty() || !maybeOppfolging.get().isUnderOppfolging()) {
+        if (maybeOppfolging.isEmpty() || !maybeOppfolging.get().getUnderOppfolging()) {
             throw new BadRequestException("Bruker må være under oppfølging for å starte KVP");
         }
 
@@ -75,7 +84,7 @@ public class KvpService {
             kvpRepository.startKvp(aktorId, enhet, veilederId, begrunnelse, startDato);
             kafkaProducerService.publiserKvpStartet(aktorId, enhet, veilederId, begrunnelse, startDato);
 
-            KvpPeriode kvpPeriode = KvpPeriode.start(aktorId, enhet, veilederId, startDato, begrunnelse);
+            KvpPeriode kvpPeriode = KvpPeriode.Companion.start(aktorId, enhet, veilederId, startDato, begrunnelse);
             kafkaProducerService.publiserKvpPeriode(kvpPeriode);
 
             secureLog.info("KVP startet for bruker med aktorId {} på enhet {} av veileder {}", aktorId, enhet, veilederId);
@@ -130,8 +139,8 @@ public class KvpService {
 
             var kvpPeriodeEntity = kvpRepository.hentKvpPeriode(gjeldendeKvpId).get();
             var kvpPeriode = KvpPeriode
-                    .start(aktorId, kvpPeriodeEntity.getEnhet(), kvpPeriodeEntity.getOpprettetAv(), kvpPeriodeEntity.getOpprettetDato(), kvpPeriodeEntity.getOpprettetBegrunnelse())
-                    .avslutt(avsluttetAv, sluttDato, begrunnelse);
+                    .Companion.start(aktorId, kvpPeriodeEntity.getEnhet(), kvpPeriodeEntity.getOpprettetAv(), kvpPeriodeEntity.getOpprettetDato(), kvpPeriodeEntity.getOpprettetBegrunnelse())
+                    .tilAvsluttetKvpPeriode(avsluttetAv, sluttDato, begrunnelse);
             kafkaProducerService.publiserKvpPeriode(kvpPeriode);
 
             secureLog.info("KVP avsluttet for bruker med aktorId {} av {}", aktorId, avsluttetAv);

@@ -12,6 +12,9 @@ import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
 import no.nav.veilarboppfolging.repository.entity.ManuellStatusEntity;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity;
 import no.nav.veilarboppfolging.repository.enums.KodeverkBruker;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -31,6 +34,20 @@ public class ManuellStatusService {
     private final KafkaProducerService kafkaProducerService;
     private final TransactionTemplate transactor;
 
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
+
+    @Autowired
+    public ManuellStatusService(AuthService authService, ManuellStatusRepository manuellStatusRepository, ArbeidsoppfolgingsKontorService arbeidsoppfolgingsKontorService, OppfolgingService oppfolgingService, OppfolgingsStatusRepository oppfolgingsStatusRepository, DigdirClient digdirClient, KafkaProducerService kafkaProducerService, TransactionTemplate transactor) {
+        this.authService = authService;
+        this.manuellStatusRepository = manuellStatusRepository;
+        this.arbeidsoppfolgingsKontorService = arbeidsoppfolgingsKontorService;
+        this.oppfolgingService = oppfolgingService;
+        this.oppfolgingsStatusRepository = oppfolgingsStatusRepository;
+        this.digdirClient = digdirClient;
+        this.kafkaProducerService = kafkaProducerService;
+        this.transactor = transactor;
+    }
+
     public Optional<ManuellStatusEntity> hentManuellStatus(AktorId aktorId) {
         Long manuellStatusId = oppfolgingsStatusRepository.hentOppfolging(aktorId)
                 .map(OppfolgingEntity::getGjeldendeManuellStatusId)
@@ -45,7 +62,7 @@ public class ManuellStatusService {
 
     public boolean erManuell(AktorId aktorId) {
         return hentManuellStatus(aktorId)
-                .map(ManuellStatusEntity::isManuell)
+                .map(ManuellStatusEntity::getManuell)
                 .orElse(false);
     }
 
@@ -76,7 +93,7 @@ public class ManuellStatusService {
 
         KRRData digdirKontaktinfo = hentDigdirKontaktinfo(fnr);
 
-        if (digdirKontaktinfo.isReservert()) {
+        if (digdirKontaktinfo.reservert()) {
             settBrukerTilManuellGrunnetReservertIKRR(aktorId);
         }
     }
@@ -88,12 +105,15 @@ public class ManuellStatusService {
             return;
         }
 
-        var manuellStatus = new ManuellStatusEntity()
-                .setAktorId(aktorId.get())
-                .setManuell(true)
-                .setDato(ZonedDateTime.now())
-                .setBegrunnelse("Brukeren er reservert i Kontakt- og reservasjonsregisteret")
-                .setOpprettetAv(SYSTEM);
+        var manuellStatus = new ManuellStatusEntity(
+                null,
+                aktorId.get(),
+                true,
+                ZonedDateTime.now(),
+                "Brukeren er reservert i Kontakt- og reservasjonsregisteret",
+                SYSTEM,
+                null
+        );
 
         secureLog.info("Bruker er reservert i KRR, setter bruker aktorId={} til manuell", aktorId);
         oppdaterManuellStatus(aktorId, manuellStatus);
@@ -106,12 +126,16 @@ public class ManuellStatusService {
             return;
         }
 
-        var manuellStatus = new ManuellStatusEntity()
-                .setAktorId(aktorId.get())
-                .setManuell(false)
-                .setDato(ZonedDateTime.now())
-                .setBegrunnelse("Brukeren er ikke lenger reservert i Kontakt- og reservasjonsregisteret")
-                .setOpprettetAv(SYSTEM);
+        var manuellStatus = new ManuellStatusEntity(
+                null,
+                aktorId.get(),
+                false,
+                ZonedDateTime.now(),
+                "Brukeren er ikke lenger reservert i Kontakt- og reservasjonsregisteret",
+                SYSTEM,
+                null
+
+        );
 
         secureLog.info("Bruker er ikke lenger reservert i KRR, setter bruker aktorId={} til digital", aktorId);
         oppdaterManuellStatus(aktorId, manuellStatus);
@@ -135,16 +159,18 @@ public class ManuellStatusService {
 
         boolean erUnderOppfolging = oppfolgingService.erUnderOppfolging(aktorId);
         boolean gjeldendeErManuell = erManuell(aktorId);
-        boolean reservertIKrr = kontaktinfo.isReservert();
+        boolean reservertIKrr = kontaktinfo.reservert();
 
         if (erUnderOppfolging && (gjeldendeErManuell != manuell) && (!reservertIKrr || manuell)) {
-            val nyStatus = new ManuellStatusEntity()
-                    .setAktorId(aktorId.get())
-                    .setManuell(manuell)
-                    .setDato(ZonedDateTime.now())
-                    .setBegrunnelse(begrunnelse)
-                    .setOpprettetAv(opprettetAv)
-                    .setOpprettetAvBrukerId(opprettetAvBrukerId);
+            var nyStatus = new ManuellStatusEntity(
+                    null,
+                    aktorId.get(),
+                    manuell,
+                    ZonedDateTime.now(),
+                    begrunnelse,
+                    opprettetAv,
+                    opprettetAvBrukerId
+            );
 
             oppdaterManuellStatus(aktorId, nyStatus);
         }
@@ -152,16 +178,18 @@ public class ManuellStatusService {
 
     public KRRData hentDigdirKontaktinfo(Fnr fnr) {
         return digdirClient.hentKontaktInfo(fnr)
-                .orElseGet(() -> new KRRData()
-                        .withPersonident(fnr.get())
-                        .withAktiv(false)
-                        .withKanVarsles(false)
-                        .withReservert(false));
+                .orElseGet(() -> new KRRData(
+                        false,
+                        fnr.get(),
+                        false,
+                        false
+                ));
     }
+
     private void oppdaterManuellStatus(AktorId aktorId, ManuellStatusEntity manuellStatus) {
         transactor.executeWithoutResult((ignored) -> {
             manuellStatusRepository.create(manuellStatus);
-            kafkaProducerService.publiserEndringPaManuellStatus(aktorId, manuellStatus.isManuell());
+            kafkaProducerService.publiserEndringPaManuellStatus(aktorId, manuellStatus.getManuell());
         });
     }
 

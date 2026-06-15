@@ -12,6 +12,9 @@ import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
 import no.nav.veilarboppfolging.repository.entity.VeilederTilordningEntity;
 import no.nav.veilarboppfolging.utils.DtoMappers;
 import no.nav.veilarboppfolging.utils.OppfolgingsperiodeUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -28,14 +31,21 @@ public class KafkaRepubliseringService {
     private final static int KVPPERIODE_PAGE_SIZE = 1000;
 
     private final OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
-
     private final OppfolgingsStatusRepository oppfolgingsStatusRepository;
-
     private final VeilederTilordningerRepository veilederTilordningerRepository;
-
     private final KvpRepository kvpRepository;
-
     private final KafkaProducerService kafkaProducerService;
+
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
+
+    @Autowired
+    public KafkaRepubliseringService(OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository, OppfolgingsStatusRepository oppfolgingsStatusRepository, VeilederTilordningerRepository veilederTilordningerRepository, KvpRepository kvpRepository, KafkaProducerService kafkaProducerService) {
+        this.oppfolgingsPeriodeRepository = oppfolgingsPeriodeRepository;
+        this.oppfolgingsStatusRepository = oppfolgingsStatusRepository;
+        this.veilederTilordningerRepository = veilederTilordningerRepository;
+        this.kvpRepository = kvpRepository;
+        this.kafkaProducerService = kafkaProducerService;
+    }
 
     public void republiserOppfolgingsperioder() {
         int currentOffset = 0;
@@ -97,7 +107,7 @@ public class KafkaRepubliseringService {
     }
 
     private void republiserKvpPeriode(KvpPeriodeEntity kvpPeriodeEntity) {
-        KvpPeriode startetKvpPeriode = KvpPeriode.start(
+        KvpPeriode startetKvpPeriode = KvpPeriode.Companion.start(
                 AktorId.of(kvpPeriodeEntity.getAktorId()),
                 kvpPeriodeEntity.getEnhet(),
                 kvpPeriodeEntity.getOpprettetAv(),

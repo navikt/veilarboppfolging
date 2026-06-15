@@ -20,6 +20,8 @@ import no.nav.veilarboppfolging.repository.entity.ManuellStatusEntity;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
 import no.nav.veilarboppfolging.repository.entity.VeilederTilordningEntity;
 import no.nav.veilarboppfolging.service.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -41,6 +43,8 @@ public class AdminController {
     private final OppfolgingService oppfolgingService;
     private final AvsluttOppfolgingService avsluttOppfolgingService;
     private final KandidatForUtmeldingService kandidatForUtmeldingService;
+
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
     public AdminController(
@@ -101,15 +105,18 @@ public class AdminController {
     public Veilarbportefoljeinfo hentVeilarbportefoljeinfo(@RequestParam AktorId aktorId) {
         authService.skalVereSystemBruker();
         Optional<VeilederTilordningEntity> tilordningEntity = veilederTilordningerRepository.hentTilordnetVeileder(aktorId);
-        boolean erManuell = manuellStatusService.hentManuellStatus(aktorId).map(ManuellStatusEntity::isManuell).orElse(false);
+        boolean erManuell = manuellStatusService.hentManuellStatus(aktorId).map(ManuellStatusEntity::getManuell).orElse(false);
         ZonedDateTime startDato = oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId).map(OppfolgingsperiodeEntity::getStartDato).orElse(null);
 
-        return new Veilarbportefoljeinfo().setVeilederId(tilordningEntity.map(VeilederTilordningEntity::getVeilederId).map(NavIdent::of).orElse(null))
-                .setErUnderOppfolging(tilordningEntity.map(VeilederTilordningEntity::isOppfolging).orElse(false))
-                .setNyForVeileder(tilordningEntity.map(VeilederTilordningEntity::isNyForVeileder).orElse(false))
-                .setTilordnetTidspunkt(tilordningEntity.map(VeilederTilordningEntity::getSistTilordnet).orElse(null))
-                .setErManuell(erManuell)
-                .setStartDato(startDato);
+        return new Veilarbportefoljeinfo(
+                aktorId,
+                tilordningEntity.map(VeilederTilordningEntity::getVeilederId).map(NavIdent::of).orElse(null),
+                tilordningEntity.map(VeilederTilordningEntity::getOppfolging).orElse(false),
+                tilordningEntity.map(VeilederTilordningEntity::getNyForVeileder).orElse(false),
+                erManuell,
+                startDato,
+                tilordningEntity.map(VeilederTilordningEntity::getSistTilordnet).orElse(null)
+        );
     }
 
     @PostMapping("/avsluttBrukere")
@@ -118,7 +125,7 @@ public class AdminController {
         var innloggetBruker = authService.getInnloggetVeilederIdent();
         log.info("Skal avslutte oppfølging for {} brukere", brukereSomSkalAvsluttes.aktorIds.size());
 
-        var resultat = brukereSomSkalAvsluttes.getAktorIds()
+        var resultat = brukereSomSkalAvsluttes.aktorIds
                 .stream()
                 .map(aktorId -> {
                     try {
@@ -126,7 +133,7 @@ public class AdminController {
                                 new AdminAvregistrering(
                                         AktorId.of(aktorId),
                                         new VeilederRegistrant(new NavIdent(innloggetBruker)),
-                                        brukereSomSkalAvsluttes.getBegrunnelse(),
+                                        brukereSomSkalAvsluttes.begrunnelse,
                                         null
                                 )
                         );

@@ -4,6 +4,7 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.controller.response.UnderOppfolgingDTO;
 import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.service.OppfolgingService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -19,8 +20,13 @@ import org.springframework.web.bind.annotation.RestController;
 public class UnderOppfolgingController {
 
     private final OppfolgingService oppfolgingService;
-
     private final AuthService authService;
+
+    @Autowired
+    public UnderOppfolgingController(OppfolgingService oppfolgingService, AuthService authService) {
+        this.oppfolgingService = oppfolgingService;
+        this.authService = authService;
+    }
 
     @GetMapping
     public UnderOppfolgingDTO underOppfolging(@RequestParam(value = "fnr", required = false) Fnr fnr) {
@@ -28,5 +34,4 @@ public class UnderOppfolgingController {
         Fnr fodselsnummer = authService.hentIdentForEksternEllerIntern(fnr);
         return oppfolgingService.oppfolgingData(fodselsnummer);
     }
-
 }

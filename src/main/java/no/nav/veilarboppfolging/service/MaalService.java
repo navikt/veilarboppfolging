@@ -58,7 +58,7 @@ public class MaalService {
         this.transactor = transactor;
     }
 
-    public MaalEntity hentMal(Fnr fnr) {
+    public Optional<MaalEntity> hentMal(Fnr fnr) {
         AktorId aktorId = authService.getAktorIdOrThrow(fnr);
         authService.sjekkLesetilgangMedFnr(fnr);
 
@@ -73,7 +73,7 @@ public class MaalService {
         }
 
         if (maybeGjeldendeMaal.isEmpty()) {
-            return new MaalEntity();
+            return Optional.empty();
         }
 
         MaalEntity gjeldendeMaal = maybeGjeldendeMaal.get();
@@ -81,10 +81,10 @@ public class MaalService {
         List<KvpPeriodeEntity> kvpList = kvpRepository.hentKvpHistorikk(aktorId);
 
         if (!KvpUtils.sjekkTilgangGittKvp(authService, kvpList, gjeldendeMaal::getDato)) {
-            return new MaalEntity();
+            return Optional.empty();
         }
 
-        return gjeldendeMaal;
+        return Optional.of(gjeldendeMaal);
     }
 
     public List<MaalEntity> hentMaalList(Fnr fnr) {
@@ -104,11 +104,13 @@ public class MaalService {
         Optional<KvpPeriodeEntity> maybeKvpPeriode = kvpRepository.hentKvpPeriode(kvpRepository.gjeldendeKvp(aktorId));
         maybeKvpPeriode.ifPresent(this::sjekkKvpEnhetTilgang);
 
-        MaalEntity malData = new MaalEntity()
-                .setAktorId(aktorId.get())
-                .setMal(mal)
-                .setEndretAv(StringUtils.of(endretAvVeileder).orElse(aktorId.get()))
-                .setDato(ZonedDateTime.now());
+        MaalEntity malData = new MaalEntity(
+                null,
+                aktorId.get(),
+                mal,
+                StringUtils.of(endretAvVeileder).orElse(aktorId.get()),
+                ZonedDateTime.now()
+        );
 
         transactor.executeWithoutResult((ignored) -> {
             maalRepository.opprett(malData);

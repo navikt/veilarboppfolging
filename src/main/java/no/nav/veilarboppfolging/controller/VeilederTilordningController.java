@@ -4,6 +4,7 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.controller.request.VeilederTilordning;
 import no.nav.veilarboppfolging.controller.response.TilordneVeilederResponse;
 import no.nav.veilarboppfolging.service.VeilederTilordningService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,6 +16,11 @@ import java.util.List;
 public class VeilederTilordningController {
 
     private final VeilederTilordningService veilederTilordningService;
+
+    @Autowired
+    public VeilederTilordningController(VeilederTilordningService veilederTilordningService) {
+        this.veilederTilordningService = veilederTilordningService;
+    }
 
     @PostMapping("/tilordneveileder")
     public TilordneVeilederResponse tilordneVeiledere(@RequestBody List<VeilederTilordning> tilordninger) {

@@ -4,7 +4,7 @@ import java.time.ZonedDateTime
 
 
 data class MaalEntity(
-    val id: Long,
+    val id: Long?,
     val aktorId: String,
     val mal: String,
     val endretAv: String?,

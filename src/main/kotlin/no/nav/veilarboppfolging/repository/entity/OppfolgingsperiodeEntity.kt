@@ -21,4 +21,6 @@ data class OppfolgingsperiodeEntity(
     val startetAv: String? = null,
     val startetAvType: StartetAvType? = null,
     val avregistreringsType: AvregistreringsType? = null,
-)
+) {
+    fun oppdaterMedKvpPerioder(nyeKvpPerioder: List<KvpPeriodeEntity>) = this.copy(kvpPerioder = nyeKvpPerioder)
+}
