@@ -210,18 +210,18 @@ public class OppfolgingsPeriodeRepository {
     private static OppfolgingsperiodeEntity mapTilOppfolgingsperiode(ResultSet result, int row) throws SQLException {
         var startetAvTypeString = result.getString("startet_av_type");
         var startetAvType = startetAvTypeString != null ? EnumUtils.valueOf(StartetAvType.class, startetAvTypeString) : null;
-        return OppfolgingsperiodeEntity.builder()
-                .uuid(UUID.fromString(result.getString("uuid")))
-                .aktorId(result.getString("aktor_id"))
-                .avsluttetAv(result.getString("avslutt_veileder"))
-                .avregistreringsType(EnumUtils.valueOf(AvregistreringsType.class, result.getString("avregistrering_type")))
-                .startDato(hentZonedDateTime(result, "startdato"))
-                .sluttDato(hentZonedDateTime(result, "sluttdato"))
-                .begrunnelse(result.getString("avslutt_begrunnelse"))
-                .startetAvType(startetAvType)
-                .startetAv(result.getString("startet_av"))
-                .startetBegrunnelse(EnumUtils.valueOf(OppfolgingStartBegrunnelse.class, result.getString("start_begrunnelse")))
-                .build();
+        return new OppfolgingsperiodeEntity(
+                UUID.fromString(result.getString("uuid")),
+                result.getString("aktor_id"),
+                result.getString("avslutt_veileder"),
+                hentZonedDateTime(result, "startdato"),
+                hentZonedDateTime(result, "sluttdato"),
+                result.getString("avslutt_begrunnelse"),
+                List.of(),
+                EnumUtils.valueOf(OppfolgingStartBegrunnelse.class, result.getString("start_begrunnelse")),
+                result.getString("startet_av"),
+                startetAvType,
+                EnumUtils.valueOf(AvregistreringsType.class, result.getString("avregistrering_type"))
+        );
     }
-
 }

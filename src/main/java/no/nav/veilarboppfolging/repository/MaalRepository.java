@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
@@ -44,9 +45,9 @@ public class MaalRepository {
 
     public void opprett(MaalEntity maal) {
         transactor.executeWithoutResult((ignored) -> {
-            maal.setId(DbUtils.nesteFraSekvens(db, "MAL_SEQ"));
-            insert(maal);
-            setActive(maal);
+            var maalMedNyId = maal.oppdaterMedNyId(DbUtils.nesteFraSekvens(db, "MAL_SEQ"));
+            insert(maalMedNyId);
+            setActive(maalMedNyId);
         });
     }
 
@@ -66,13 +67,13 @@ public class MaalRepository {
     }
 
     
-    private static MaalEntity mapMaalEntity(ResultSet result, int row) {
-        return new MaalEntity()
-                .setId(result.getLong("id"))
-                .setAktorId(result.getString("aktor_id"))
-                .setMal(result.getString("mal"))
-                .setEndretAv(result.getString("endret_av"))
-                .setDato(hentZonedDateTime(result, "dato"));
+    private static MaalEntity mapMaalEntity(ResultSet result, int row) throws SQLException {
+        return new MaalEntity(
+            result.getLong("id"),
+            result.getString("aktor_id"),
+            result.getString("mal"),
+            result.getString("endret_av"),
+            hentZonedDateTime(result, "dato")
+        );
     }
-
 }

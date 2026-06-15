@@ -19,7 +19,11 @@ import static no.nav.common.rest.filter.LogRequestFilter.NAV_CONSUMER_ID_HEADER_
 
 public class AuthInfoFilter implements Filter {
 
-    private final MeterRegistry meterRegistry;
+    private MeterRegistry meterRegistry;
+
+    public AuthInfoFilter(MeterRegistry meterRegistry) {
+        this.meterRegistry = meterRegistry;
+    }
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse response, FilterChain chain) throws ServletException, IOException {

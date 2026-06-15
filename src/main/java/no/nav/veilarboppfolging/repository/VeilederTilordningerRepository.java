@@ -10,6 +10,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Optional;
 
 import static java.lang.String.format;
@@ -59,13 +60,14 @@ public class VeilederTilordningerRepository {
     }
 
     
-    private static VeilederTilordningEntity map(ResultSet resultSet, int row) {
-        return new VeilederTilordningEntity()
-                .setAktorId(resultSet.getString(AKTOR_ID))
-                .setOppfolging(resultSet.getBoolean(UNDER_OPPFOLGING))
-                .setVeilederId(resultSet.getString(VEILEDER))
-                .setNyForVeileder(resultSet.getBoolean(NY_FOR_VEILEDER))
-                .setSistTilordnet(DbUtils.hentZonedDateTime(resultSet, SIST_TILORDNET))
-                .setSistOppdatert(DbUtils.hentZonedDateTime(resultSet, OPPDATERT));
+    private static VeilederTilordningEntity map(ResultSet resultSet, int row) throws SQLException {
+        return new VeilederTilordningEntity(
+            resultSet.getString(AKTOR_ID),
+            resultSet.getString(VEILEDER),
+            resultSet.getBoolean(UNDER_OPPFOLGING),
+            resultSet.getBoolean(NY_FOR_VEILEDER),
+            DbUtils.hentZonedDateTime(resultSet, SIST_TILORDNET),
+            DbUtils.hentZonedDateTime(resultSet, OPPDATERT)
+        );
     }
 }

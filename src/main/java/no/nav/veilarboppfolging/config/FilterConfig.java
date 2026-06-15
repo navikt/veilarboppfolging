@@ -24,15 +24,15 @@ public class FilterConfig {
 
     private OidcAuthenticatorConfig tokenxAuthConfig(EnvironmentProperties properties) {
         return new OidcAuthenticatorConfig()
-                .withDiscoveryUrl(properties.getTokenxDiscoveryUrl())
-                .withClientId(properties.getTokenxClientId())
+                .withDiscoveryUrl(properties.tokenxDiscoveryUrl())
+                .withClientId(properties.tokenxClientId())
                 .withUserRole(UserRole.EKSTERN);
     }
 
     private OidcAuthenticatorConfig naisAzureAdConfig(EnvironmentProperties properties) {
         return new OidcAuthenticatorConfig()
-                .withDiscoveryUrl(properties.getNaisAadDiscoveryUrl())
-                .withClientId(properties.getNaisAadClientId())
+                .withDiscoveryUrl(properties.naisAadDiscoveryUrl())
+                .withClientId(properties.naisAadClientId())
                 .withUserRoleResolver(new AzureAdUserRoleResolver());
     }
 

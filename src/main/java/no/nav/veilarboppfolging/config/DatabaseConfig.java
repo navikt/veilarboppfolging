@@ -56,5 +56,4 @@ public class DatabaseConfig {
         String username;
         String password;
     }
-
 }

@@ -7,6 +7,8 @@ import no.nav.common.health.HealthCheckResult;
 import no.nav.common.health.selftest.SelfTestCheck;
 import no.nav.common.health.selftest.SelfTestChecks;
 import no.nav.common.health.selftest.SelfTestMeterBinder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -17,6 +19,8 @@ import java.util.List;
 
 @Configuration
 public class HelsesjekkConfig {
+
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     @Bean
     public SelfTestChecks selfTestChecks(JdbcTemplate jdbcTemplate,

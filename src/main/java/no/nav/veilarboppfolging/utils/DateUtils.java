@@ -1,5 +1,8 @@
 package no.nav.veilarboppfolging.utils;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
@@ -11,6 +14,7 @@ import java.util.GregorianCalendar;
 
 public class DateUtils {
 
+    private Logger log = LoggerFactory.getLogger(this.getClass());
     
     public static XMLGregorianCalendar now() {
         DatatypeFactory factory = DatatypeFactory.newInstance();

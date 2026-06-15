@@ -20,10 +20,11 @@ import static java.util.stream.Collectors.toList;
 public class DtoMappers {
 
     public static Maal tilDto(MaalEntity malData) {
-        return new Maal()
-                .setMal(malData.getMal())
-                .setEndretAv(malData.getEndretAvFormattert())
-                .setDato(malData.getDato());
+        return new Maal(
+            malData.getMal(),
+            malData.getEndretAvFormattert(),
+            malData.getDato()
+        );
     }
 
     /**

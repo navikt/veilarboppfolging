@@ -53,40 +53,40 @@ public class ClientConfig {
 
     @Bean
     public Norg2Client norg2Client(EnvironmentProperties properties) {
-        return new CachedNorg2Client(new NorgHttp2Client(properties.getNorg2Url()));
+        return new CachedNorg2Client(new NorgHttp2Client(properties.norg2Url()));
     }
 
     @Bean
     public DigdirClient digdirClient(EnvironmentProperties properties, ErrorMappedAzureAdMachineToMachineTokenClient tokenClient, AuthService authService) {
-		return new DigdirClientImpl(properties.getDigdirKrrProxyUrl(),
-				() -> tokenClient.createMachineToMachineToken(properties.getDigdirKrrProxyScope()),
-				() -> authService.getAadOboTokenForTjeneste(properties.getDigdirKrrProxyScope()),
+		return new DigdirClientImpl(properties.digdirKrrProxyUrl(),
+				() -> tokenClient.createMachineToMachineToken(properties.digdirKrrProxyScope()),
+				() -> authService.getAadOboTokenForTjeneste(properties.digdirKrrProxyScope()),
 				authService
 		);
     }
 
     @Bean
     public TiltakshistorikkClient tiltakshistorikkClient(EnvironmentProperties properties, ErrorMappedAzureAdMachineToMachineTokenClient tokenClient) {
-        return new TiltakshistorikkClient(properties.getTiltakshistorikkUrl(),
-                () -> tokenClient.createMachineToMachineToken(properties.getTiltakshistorikkScope()),
+        return new TiltakshistorikkClient(properties.tiltakshistorikkUrl(),
+                () -> tokenClient.createMachineToMachineToken(properties.tiltakshistorikkScope()),
                 RestClient.baseClient()
         );
     }
 
     @Bean
     public OppgaveClient oppgaveClient(EnvironmentProperties properties, ErrorMappedAzureAdMachineToMachineTokenClient tokenClient) {
-        return new OppgaveClient(properties.getOppgaveUrl(),
-                () -> tokenClient.createMachineToMachineToken(properties.getOppgaveScope()),
+        return new OppgaveClient(properties.oppgaveUrl(),
+                () -> tokenClient.createMachineToMachineToken(properties.oppgaveScope()),
                 RestClient.baseClient()
         );
     }
 
     @Bean
     public UngdomsprogramClient ungdomsprogramClient(EnvironmentProperties properties, ErrorMappedAzureAdMachineToMachineTokenClient tokenClient, AuthService authService) {
-        Supplier<String> tokenSupplier = () -> authService.erInternBruker() ? authService.getAadOboTokenForTjeneste(properties.getUngdomsprogramScope())
-                : tokenClient.createMachineToMachineToken(properties.getUngdomsprogramScope());
+        Supplier<String> tokenSupplier = () -> authService.erInternBruker() ? authService.getAadOboTokenForTjeneste(properties.ungdomsprogramScope())
+                : tokenClient.createMachineToMachineToken(properties.ungdomsprogramScope());
 
-        return new UngdomsprogramClient(properties.getUngdomsprogramUrl(),
+        return new UngdomsprogramClient(properties.ungdomsprogramUrl(),
                 tokenSupplier,
                 RestClient.baseClient()
         );
@@ -94,10 +94,10 @@ public class ClientConfig {
 
     @Bean
     public ArbeidssoekerregisteretClient arbeidssoekerregisteretClient(EnvironmentProperties properties, ErrorMappedAzureAdMachineToMachineTokenClient tokenClient, AuthService authService) {
-        Supplier<String> tokenSupplier = () -> authService.erInternBruker() ? authService.getAadOboTokenForTjeneste(properties.getArbeidssoekerregisteretScope())
-                : tokenClient.createMachineToMachineToken(properties.getArbeidssoekerregisteretScope());
+        Supplier<String> tokenSupplier = () -> authService.erInternBruker() ? authService.getAadOboTokenForTjeneste(properties.arbeidssoekerregisteretScope())
+                : tokenClient.createMachineToMachineToken(properties.arbeidssoekerregisteretScope());
 
-        return new ArbeidssoekerregisteretClient(properties.getArbeidssoekerregisteretUrl(),
+        return new ArbeidssoekerregisteretClient(properties.arbeidssoekerregisteretUrl(),
                 tokenSupplier,
                 RestClient.baseClient()
         );
@@ -105,10 +105,10 @@ public class ClientConfig {
 
     @Bean
     public AapClient aapClient(EnvironmentProperties properties, ErrorMappedAzureAdMachineToMachineTokenClient tokenClient, AuthService authService) {
-        Supplier<String> tokenSupplier = () -> authService.erInternBruker() ? authService.getAadOboTokenForTjeneste(properties.getAapScope())
-                : tokenClient.createMachineToMachineToken(properties.getAapScope());
+        Supplier<String> tokenSupplier = () -> authService.erInternBruker() ? authService.getAadOboTokenForTjeneste(properties.aapScope())
+                : tokenClient.createMachineToMachineToken(properties.aapScope());
 
-        return new AapClient(properties.getAapUrl(),
+        return new AapClient(properties.aapUrl(),
                 tokenSupplier,
                 RestClient.baseClient()
         );

@@ -3,7 +3,7 @@ package no.nav.veilarboppfolging.repository.entity
 import no.nav.veilarboppfolging.repository.enums.KodeverkBruker
 import java.time.ZonedDateTime
 
-class KvpPeriodeEntity(
+data class KvpPeriodeEntity(
     val kvpId: Long,
     val serial: Long,
     val aktorId: String,

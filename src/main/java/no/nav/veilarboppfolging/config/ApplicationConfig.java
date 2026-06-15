@@ -101,8 +101,8 @@ public class ApplicationConfig {
 	public PoaoTilgangClient poaoTilgangClient(EnvironmentProperties properties, ErrorMappedAzureAdMachineToMachineTokenClient tokenClient) {
 		return new PoaoTilgangCachedClient(
 				new PoaoTilgangHttpClient(
-						properties.getPoaoTilgangUrl(),
-						() -> tokenClient.createMachineToMachineToken(properties.getPoaoTilgangScope()),
+						properties.poaoTilgangUrl(),
+						() -> tokenClient.createMachineToMachineToken(properties.poaoTilgangScope()),
 						RestClient.baseClient()
 				),
 				policyInputToDecisionCache,

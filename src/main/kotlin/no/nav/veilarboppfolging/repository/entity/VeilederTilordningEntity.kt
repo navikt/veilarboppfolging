@@ -2,7 +2,7 @@ package no.nav.veilarboppfolging.repository.entity
 
 import java.time.ZonedDateTime
 
-class VeilederTilordningEntity(
+data class VeilederTilordningEntity(
     val aktorId: String,
     val veilederId: String,
     val oppfolging: Boolean,

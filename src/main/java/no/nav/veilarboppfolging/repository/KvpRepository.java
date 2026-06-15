@@ -13,6 +13,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -161,25 +162,24 @@ public class KvpRepository {
                         aktorId.get())
         );
     }
-
     
-    protected static KvpPeriodeEntity mapTilKvp(ResultSet rs, int row) {
-        return KvpPeriodeEntity.builder()
-                .kvpId(rs.getLong("kvp_id"))
-                .serial(rs.getLong("serial"))
-                .aktorId(rs.getString("aktor_id"))
-                .enhet(rs.getString("enhet"))
-                .opprettetAv(rs.getString("opprettet_av"))
-                .opprettetDato(hentZonedDateTime(rs, "opprettet_dato"))
-                .opprettetBegrunnelse(rs.getString("opprettet_begrunnelse"))
-                .opprettetKodeverkbruker(valueOfOptional(KodeverkBruker.class,
-                        rs.getString("opprettet_kodeverkbruker")).orElse(null))
-                .avsluttetAv(rs.getString("avsluttet_av"))
-                .avsluttetDato(hentZonedDateTime(rs, "avsluttet_dato"))
-                .avsluttetBegrunnelse(rs.getString("avsluttet_begrunnelse"))
-                .avsluttetKodeverkbruker(valueOfOptional(KodeverkBruker.class,
-                        rs.getString("avsluttet_kodeverkbruker")).orElse(null))
-                .build();
+    protected static KvpPeriodeEntity mapTilKvp(ResultSet rs, int row) throws SQLException {
+        return new KvpPeriodeEntity(
+                rs.getLong("kvp_id"),
+                rs.getLong("serial"),
+                rs.getString("aktor_id"),
+                rs.getString("enhet"),
+                rs.getString("opprettet_av"),
+                hentZonedDateTime(rs, "opprettet_dato"),
+                rs.getString("opprettet_begrunnelse"),
+                valueOfOptional(KodeverkBruker.class,
+                        rs.getString("opprettet_kodeverkbruker")).orElse(null),
+                rs.getString("avsluttet_av"),
+                hentZonedDateTime(rs, "avsluttet_dato"),
+                rs.getString("avsluttet_begrunnelse"),
+                valueOfOptional(KodeverkBruker.class,
+                        rs.getString("avsluttet_kodeverkbruker")).orElse(null)
+        );
     }
 
 }

@@ -20,6 +20,8 @@ import no.nav.veilarboppfolging.config.EnvironmentProperties;
 import no.nav.veilarboppfolging.tokenClient.ErrorMappedAzureAdMachineToMachineTokenClient;
 import no.nav.veilarboppfolging.tokenClient.ErrorMappedAzureAdOnBehalfOfTokenClient;
 import no.nav.veilarboppfolging.utils.DownstreamApi;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -29,7 +31,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
@@ -52,6 +53,8 @@ public class AuthService {
     private final EnvironmentProperties environmentProperties;
 
     private final PoaoTilgangClient poaoTilgangClient;
+
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
     public AuthService(AuthContextHolder authContextHolder, AktorOppslagClient aktorOppslagClient, ErrorMappedAzureAdOnBehalfOfTokenClient aadOboTokenClient, ErrorMappedAzureAdMachineToMachineTokenClient machineToMachineTokenClient, EnvironmentProperties environmentProperties, AuditLogger auditLogger, PoaoTilgangClient poaoTilgangClient) {
@@ -433,13 +436,13 @@ public class AuthService {
     private boolean erAadOboToken() {
         Optional<String> navIdentClaim = authContextHolder.getIdTokenClaims()
                 .flatMap(claims -> authContextHolder.getStringClaim(claims, "NAVident"));
-        return authContextHolder.getIdTokenClaims().map(JWTClaimsSet::getIssuer).filter(environmentProperties.getNaisAadIssuer()::equals).isPresent()
+        return authContextHolder.getIdTokenClaims().map(JWTClaimsSet::getIssuer).filter(environmentProperties.naisAadIssuer()::equals).isPresent()
                 && authContextHolder.getIdTokenClaims().map(x -> x.getClaim("oid")).isPresent()
                 && navIdentClaim.isPresent();
     }
 
     
-    private Optional<NavIdent> getNavIdentClaimHvisTilgjengelig() {
+    private Optional<NavIdent> getNavIdentClaimHvisTilgjengelig() throws ParseException {
         if (erInternBruker()) {
             return Optional.ofNullable(authContextHolder.requireIdTokenClaims().getStringClaim(AAD_NAV_IDENT_CLAIM))
                     .filter(IdentUtils::erGydligNavIdent)

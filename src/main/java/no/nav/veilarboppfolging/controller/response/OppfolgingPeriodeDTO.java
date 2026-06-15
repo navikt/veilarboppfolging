@@ -1,21 +1,15 @@
 package no.nav.veilarboppfolging.controller.response;
 
-
-
-
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 
-
-public class OppfolgingPeriodeDTO {
-
-    public UUID uuid;
-    public String aktorId;
-    public String veileder;
-    public ZonedDateTime startDato;
-    public ZonedDateTime sluttDato;
-    public String begrunnelse;
-    public List<KvpPeriodeDTO> kvpPerioder;
-
-}
+public record OppfolgingPeriodeDTO(
+    UUID uuid,
+    String aktorId,
+    String veileder,
+    ZonedDateTime startDato,
+    ZonedDateTime sluttDato,
+    String begrunnelse,
+    List<KvpPeriodeDTO> kvpPerioder
+){}
