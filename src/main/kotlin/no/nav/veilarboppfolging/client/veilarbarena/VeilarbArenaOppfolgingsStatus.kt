@@ -8,10 +8,10 @@ import java.time.LocalDate
  * @see VeilarbArenaOppfolgingsBruker
  */
 data class VeilarbArenaOppfolgingsStatus(
-    val rettighetsgruppe: String,
-    val formidlingsgruppe: String,
-    val servicegruppe: String,
-    val oppfolgingsenhet: String,
+    val rettighetsgruppe: String?,
+    val formidlingsgruppe: String?,
+    val servicegruppe: String?,
+    val oppfolgingsenhet: String?,
     val inaktiveringsdato: LocalDate? = null,
     val kanEnkeltReaktiveres: Boolean? = null,
 )
