@@ -216,7 +216,7 @@ class OppfolgingV3Controller(
             authService.hentInnloggetPersonIdent()?.let {  Fnr.of(it) }
                 ?: throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Kan ikke hente innlogget personident")
         } else {
-            authService.skalVereInternBruker()
+            authService.skalVereInternEllerSystemBruker()
             startOppfolging.fnr ?: throw ResponseStatusException(HttpStatus.BAD_REQUEST, "fnr er påkrevd for interne brukere")
         }
         authService.sjekkAtApplikasjonErIAllowList(ALLOWLIST)
@@ -225,7 +225,7 @@ class OppfolgingV3Controller(
             is RegistrerIArenaSuccess -> {
                 when (arenaResponse.arenaResultat.kode) {
                     ArenaRegistreringResultat.FNR_FINNES_IKKE, ArenaRegistreringResultat.KAN_REAKTIVERES_FORENKLET, ArenaRegistreringResultat.UKJENT_FEIL -> {
-                        logger.error("Feil ved registrering av bruker i Arena", arenaResponse.arenaResultat.resultat)
+                        logger.error("Feil ved registrering av bruker i Arena: {}", arenaResponse.arenaResultat.resultat)
                         return ResponseEntity(arenaResponse.arenaResultat, HttpStatus.CONFLICT)
                     }
                     else -> {
@@ -273,7 +273,7 @@ class OppfolgingV3Controller(
 
         val kvpPeriodeEntities = periode
             .kvpPerioder
-            .filter { it -> authService.harTilgangTilEnhet(it.enhet) }
+            .filter { authService.harTilgangTilEnhet(it.enhet) }
 
         return periode.toBuilder().kvpPerioder(kvpPeriodeEntities).build()
     }
