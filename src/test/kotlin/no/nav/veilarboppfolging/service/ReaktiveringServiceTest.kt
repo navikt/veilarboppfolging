@@ -4,6 +4,7 @@ import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.veilarboppfolging.LocalDatabaseSingleton
 import no.nav.veilarboppfolging.client.veilarbarena.*
+import no.nav.veilarboppfolging.kafka.TestUtils
 import no.nav.veilarboppfolging.oppfolgingsbruker.StartetAvType
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
@@ -64,7 +65,7 @@ class ReaktiveringServiceTest {
         Mockito.`when`(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID)
         Mockito.`when`(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID))
             .thenReturn(
-                Optional.of(OppfolgingEntity().setUnderOppfolging(true))
+                Optional.of(TestUtils.oppfølgingEntity(aktorId = AKTOR_ID.get(), underOppfolging = true))
             )
 
         Mockito.`when`(arenaOppfolgingService.registrerIkkeArbeidssoker(FNR)).thenReturn(
@@ -96,7 +97,7 @@ class ReaktiveringServiceTest {
         Mockito.`when`(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID)
         Mockito.`when`(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID))
             .thenReturn(
-                Optional.of(OppfolgingEntity().setUnderOppfolging(false))
+                Optional.of(TestUtils.oppfølgingEntity(aktorId = AKTOR_ID.get(), underOppfolging = false))
             )
 
         val resultat = reaktiveringService.reaktiverBrukerIArena(FNR)
@@ -130,7 +131,7 @@ class ReaktiveringServiceTest {
         Mockito.`when`(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID)
         Mockito.`when`(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID))
             .thenReturn(
-                Optional.of(OppfolgingEntity().setUnderOppfolging(true))
+                Optional.of(TestUtils.oppfølgingEntity(aktorId = AKTOR_ID.get(), underOppfolging = true))
             )
 
         Mockito.`when`(arenaOppfolgingService.registrerIkkeArbeidssoker(FNR)).thenReturn(

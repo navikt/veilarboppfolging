@@ -12,6 +12,7 @@ import no.nav.veilarboppfolging.ForbiddenException
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsBruker
 import no.nav.veilarboppfolging.kafka.KvpPeriode
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
+import no.nav.veilarboppfolging.oppfolgingsbruker.arena.LocalArenaOppfolging
 import no.nav.veilarboppfolging.repository.KvpRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
 import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity
@@ -63,11 +64,8 @@ class KvpServiceTest{
     @Before
     fun initialize() {
         `when`(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID)).thenReturn(
-            Optional.of(OppfolgingEntity().setUnderOppfolging(true))
+            Optional.of(OppfolgingEntity(underOppfolging = true, aktorId = AKTOR_ID.get(), veilederId = null, gjeldendeKvpId = null, gjeldendeMaalId = 0, gjeldendeManuellStatusId = null, localArenaOppfolging = Optional<LocalArenaOppfolging>.empty(), oppfolgingsEnhet = null))
         )
-
-        val veilarbArenaOppfolgingsBruker = VeilarbArenaOppfolgingsBruker()
-        veilarbArenaOppfolgingsBruker.setNavKontor(ENHET)
         `when`<EnhetId?>(arbeidsoppfolgingsKontorService.hentOppfolgingsEnhetId(FNR))
             .thenReturn(EnhetId.of(ENHET))
 
@@ -85,8 +83,8 @@ class KvpServiceTest{
     @Test
     fun start_kvp_uten_oppfolging_er_ulovlig_handling() {
         `when`(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID)).thenReturn(
-            Optional.of(OppfolgingEntity().setUnderOppfolging(false))
-        )
+            Optional.of(OppfolgingEntity(null, null, false, null, null, null, null, Optional.empty<LocalArenaOppfolging>())
+        ))
 
         try {
             kvpService!!.startKvp(FNR, START_BEGRUNNELSE)
@@ -123,7 +121,7 @@ class KvpServiceTest{
     @Test(expected = BadRequestException::class)
     fun startKvp_feiler_dersom_bruker_allerede_er_under_kvp() {
         `when`(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID)).thenReturn(
-            Optional.of(OppfolgingEntity().setUnderOppfolging(true).setGjeldendeKvpId(2))
+            Optional.of(OppfolgingEntity(underOppfolging = true, aktorId = AKTOR_ID.get(), veilederId = null, gjeldendeKvpId = 2, gjeldendeMaalId = 0, gjeldendeManuellStatusId = null, localArenaOppfolging = Optional<LocalArenaOppfolging>.empty(), oppfolgingsEnhet = null))
         )
 
         AuthContextHolderThreadLocal.instance().withContext(
@@ -135,17 +133,14 @@ class KvpServiceTest{
 
     fun gittBrukerErUnderOppfolging(kvpId: Long) {
         `when`(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID)).thenReturn(
-            Optional.of(OppfolgingEntity().setUnderOppfolging(true).setGjeldendeKvpId(kvpId))
+            Optional.of(OppfolgingEntity(underOppfolging = true, aktorId = AKTOR_ID.get(), veilederId = null, gjeldendeKvpId = kvpId, gjeldendeMaalId = 0, gjeldendeManuellStatusId = null, localArenaOppfolging = Optional<LocalArenaOppfolging>.empty(), oppfolgingsEnhet = null))
         )
     }
 
     fun gittBrukerHarAktivKvp(kvpId: Long, kvpStartTidspunkt: ZonedDateTime, enhetId: String) {
         `when`(kvpRepositoryMock.hentKvpPeriode(kvpId)).thenReturn(
             Optional.of(
-                KvpPeriodeEntity.builder()
-                    .aktorId(AKTOR_ID.get())
-                    .opprettetDato(kvpStartTidspunkt)
-                    .build()
+                KvpPeriodeEntity(null, null, AKTOR_ID.get(), null, null, kvpStartTidspunkt, null, null)
             )
         )
         val kvpPeriodeEntity = mock<KvpPeriodeEntity>()

@@ -295,7 +295,7 @@ class ArbeidssøkerperiodeConsumerServiceTest(
             periode.uuid.toString(),
             periode.aktorId,
             Timestamp.from(periode.startDato.toInstant()),
-            periode.startetBegrunnelse.name,
+            periode.startetBegrunnelse?.name,
             periode.startetAv,
             periode.startetAvType?.name
         )

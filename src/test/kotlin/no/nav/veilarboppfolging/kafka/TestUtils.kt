@@ -49,15 +49,16 @@ object TestUtils {
         veilederId: String = "A111111",
         underOppfolging: Boolean = true,
         localArenaOppfølging: LocalArenaOppfolging = localArenaOppfolging()
-    ) =
-        OppfolgingEntity()
-            .setAktorId(aktorId)
-            .setVeilederId(veilederId)
-            .setUnderOppfolging(underOppfolging)
-            .setGjeldendeManuellStatusId(1)
-            .setGjeldendeMaalId(1)
-            .setGjeldendeKvpId(0)
-            .setLocalArenaOppfolging(Optional.of(localArenaOppfølging))
+    ) = OppfolgingEntity(
+            aktorId = aktorId,
+            veilederId = veilederId,
+            underOppfolging = underOppfolging,
+            gjeldendeManuellStatusId = 1L,
+            gjeldendeMaalId = 1L,
+            gjeldendeKvpId = 0L,
+            localArenaOppfolging = Optional.of(localArenaOppfølging),
+            oppfolgingsEnhet = null
+        )
 
     fun localArenaOppfolging(kvalifiseringsgruppe: Kvalifiseringsgruppe = Kvalifiseringsgruppe.IVURD, formidlingsgruppe: Formidlingsgruppe = Formidlingsgruppe.ARBS) =
         LocalArenaOppfolging(

@@ -34,12 +34,22 @@ class VeilarbArenaOppfolgingsStatusServiceIntegrationTest: IntegrationTest() {
         mockNorgEnhetsNavn("1010", "Nav 1010")
         mockInternBrukerAuthOk(UUID.randomUUID(), aktorId, fnr)
         `when`(veilarbarenaClient.hentOppfolgingsbruker(fnr)).thenReturn(ArenaOppfolginsBrukerOppslagResult.Success(
-            VeilarbArenaOppfolgingsBruker()
-            .setFodselsnr(fnr.get())
-            .setNavKontor("1010")
-            .setFormidlingsgruppekode("ARBS")
-            .setKvalifiseringsgruppekode("VURDU")
-            .setHovedmaalkode("SKAFFEA")
+            VeilarbArenaOppfolgingsBruker(
+                fnr.get(),
+                "ARBS",
+                null,
+                "1010",
+                "VURDU",
+                null,
+                "SKAFFEA",
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null
+            )
         ))
 
         val hentarenaResult = arenaOppfolgingService.hentArenaOppfolginsstatusMedHovedmaal(fnr)

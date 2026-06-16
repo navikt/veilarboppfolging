@@ -1,6 +1,6 @@
 package no.nav.veilarboppfolging.config;
 
-;
+
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.client.norg2.Enhet;
 import no.nav.common.client.norg2.Norg2Client;

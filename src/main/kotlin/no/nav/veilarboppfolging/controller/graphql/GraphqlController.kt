@@ -312,8 +312,10 @@ class GraphqlController(
     @SchemaMapping(typeName = "BrukerStatusDto", field = "kontorSperre")
     fun kontorSperre(brukerStatusDto: BrukerStatusDto, @LocalContextValue aktorId: AktorId): KontorSperre? {
         return kvpRepository.hentGjeldendeKvpPeriode(aktorId)
-            .map { it.enhet }.getOrNull()
-            ?.let { KontorSperre(it) }
+            .let {
+                if (it.isEmpty()) null
+                else it.get().enhet?.let { KontorSperre(it) }
+            }
     }
 
     @SchemaMapping(typeName = "BrukerStatusDto", field = "veilederTilordning")

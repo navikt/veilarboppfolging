@@ -71,23 +71,23 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
         meldingFraVeilarbArenaPåBrukerMedStatus(fnr = fnr, formidlingsgruppe = Formidlingsgruppe.IARBS, kvalifiseringsgruppe = Kvalifiseringsgruppe.VURDU)
         val oppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId)
         assert(oppfolging.isPresent) { "Oppfolgingsstatus fra arena var null" }
-        assertTrue(oppfolging.get().isUnderOppfolging)
+        assertTrue(oppfolging.get().underOppfolging)
     }
 
     @Test
     fun `Skal ikke starte oppfølging når bruker ble avsluttet manuelt og fortsatt er sykmeldt uten arbeidsgiver`() {
         meldingFraVeilarbArenaPåBrukerMedStatus(fnr = fnr, formidlingsgruppe = Formidlingsgruppe.IARBS, kvalifiseringsgruppe = Kvalifiseringsgruppe.VURDU)
         val oppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId)
-        assertTrue(oppfolging.get().isUnderOppfolging)
+        assertTrue(oppfolging.get().underOppfolging)
         oppfolgingsPeriodeRepository.avsluttSistePeriodeOgAvsluttOppfolging(aktorId, "A111111", "begrunnelse",
             AvregistreringsType.ManuellAvregistrering)
         val avsluttetOppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId)
-        assertFalse(avsluttetOppfolging.get().isUnderOppfolging)
+        assertFalse(avsluttetOppfolging.get().underOppfolging)
 
         meldingFraVeilarbArenaPåBrukerMedStatus(fnr = fnr, formidlingsgruppe = Formidlingsgruppe.IARBS, kvalifiseringsgruppe = Kvalifiseringsgruppe.VURDU)
 
         val oppfolgingEtterMeldingMedSammeStatus = oppfolgingsStatusRepository.hentOppfolging(aktorId)
-        assertFalse(oppfolgingEtterMeldingMedSammeStatus.get().isUnderOppfolging)
+        assertFalse(oppfolgingEtterMeldingMedSammeStatus.get().underOppfolging)
     }
 
     @Test
@@ -179,7 +179,7 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
         startOppfolgingSomArbeidsoker(aktorId, fnr)
         mockPersonFinnesIkkeIArena()
         val statusEtterEndring = oppfolgingsStatusRepository.hentOppfolging(aktorId)
-        assertEquals(true, statusEtterEndring.get().isUnderOppfolging)
+        assertEquals(true, statusEtterEndring.get().underOppfolging)
         assertTrue(statusEtterEndring.get().localArenaOppfolging.isEmpty)
         assertEquals(null, statusEtterEndring.get().veilederId)
         assertEquals(0, statusEtterEndring.get().gjeldendeKvpId)
@@ -192,20 +192,24 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
     }
 
     private fun arena_sier_KAN_reaktiveres() {
-        val arenaOppfolging = VeilarbArenaOppfolgingsStatus()
-            .setServicegruppe("VURDU")
-            .setFormidlingsgruppe("ISERV")
-            .setKanEnkeltReaktiveres(true)
-            .setOppfolgingsenhet("8989")
+        val arenaOppfolging = VeilarbArenaOppfolgingsStatus(
+            null,
+            "ISERV",
+            "VURDU",
+            "8989",
+        )
         `when`(veilarbarenaClient.getArenaOppfolgingsstatus(fnr)).thenReturn(Optional.of(arenaOppfolging))
     }
 
     private fun arena_sier_kan_IKKE_reaktiveres() {
-        val arenaOppfolging = VeilarbArenaOppfolgingsStatus()
-            .setServicegruppe("VURDU")
-            .setFormidlingsgruppe("ISERV")
-            .setKanEnkeltReaktiveres(false)
-            .setOppfolgingsenhet("8989")
+        val arenaOppfolging = VeilarbArenaOppfolgingsStatus(
+            null,
+            "ISERV",
+            "VURDU",
+            "8989",
+            null,
+            false
+        )
         `when`(veilarbarenaClient.getArenaOppfolgingsstatus(fnr)).thenReturn(Optional.of(arenaOppfolging))
     }
 
@@ -230,7 +234,7 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
 
         val localStatus1 = oppfolgingsStatusRepository.hentOppfolging(aktorId)
         assert(localStatus1.isPresent) { "Oppfolgingsstatus fra arena var null" }
-        assertFalse(localStatus1.get().isUnderOppfolging, "Skulle ikke vært under oppfølging")
+        assertFalse(localStatus1.get().underOppfolging, "Skulle ikke vært under oppfølging")
         meldingFraVeilarbArenaPåBrukerMedStatus(
             fnr = fnr,
             enhetId = "8989",
@@ -240,7 +244,7 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
         )
         oppfolgingsStatusRepository.hentOppfolging(aktorId).let { nesteStatus ->
             assert(nesteStatus.isPresent) { "Oppfolgingsstatus fra arena var null" }
-            assertFalse(nesteStatus.get().isUnderOppfolging, "Vi skal ikke reagere på 14a vedtak i arena lenger")
+            assertFalse(nesteStatus.get().underOppfolging, "Vi skal ikke reagere på 14a vedtak i arena lenger")
         }
     }
 
@@ -256,7 +260,7 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
         startOppfolgingSomArbeidsoker(aktorId, fnr)
         val localStatus2 = oppfolgingsStatusRepository.hentOppfolging(aktorId)
         assert(localStatus2.isPresent) { "Oppfolgingsstatus fra arena var null" }
-        assertTrue(localStatus2.get().isUnderOppfolging, "Skulle vært under oppfølging")
+        assertTrue(localStatus2.get().underOppfolging, "Skulle vært under oppfølging")
 
         val opprettVarsel: OpprettVarsel = readOneJsonStringMessageFromTopic("min-side.aapen-brukervarsel-v1", kafkaConsumer)
         assertThat(opprettVarsel.ident).isEqualTo(fnr.get())
@@ -329,7 +333,7 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
 
         val statusEtterEndring = oppfolgingsStatusRepository.hentOppfolging(aktorId)
         assert(statusEtterEndring.isPresent)
-        assertThat(statusEtterEndring.get().isUnderOppfolging).isTrue()
+        assertThat(statusEtterEndring.get().underOppfolging).isTrue()
     }
 
     @Test
@@ -362,7 +366,7 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
         assertEquals(periode.size, 1)
         assertEquals(periode.first().avsluttetAv, SystemRegistrant.SYSTEM_REGISTRANT_NAME)
         assertEquals(periode.first().begrunnelse, ArenaIservKanIkkeReaktiveres.BEGRUNNELSE)
-        assertThat(statusEtterEndring.get().isUnderOppfolging).isFalse()
+        assertThat(statusEtterEndring.get().underOppfolging).isFalse()
     }
 
     private fun erSystemBruker() {

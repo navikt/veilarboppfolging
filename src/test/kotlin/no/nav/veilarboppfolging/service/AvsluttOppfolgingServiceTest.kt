@@ -64,9 +64,16 @@ class AvsluttOppfolgingServiceTest {
 
     private fun brukerErUnderOppfolgingLokalt() {
         `when`(oppfolgingsStatusRepository.hentOppfolging(TEST_AKTOR_ID))
-            .thenReturn(Optional.of(OppfolgingEntity()
-                .setLocalArenaOppfolging(Optional.empty())
-                .setUnderOppfolging(true)))
+            .thenReturn(Optional.of(OppfolgingEntity(
+                null,
+                null,
+                true,
+                null,
+                null,
+                null,
+                null,
+                Optional.empty()
+            )))
     }
     private fun kanReaktiveres() {
         `when`(arenaOppfolgingService.kanEnkeltReaktiveres(TEST_FNR)).thenReturn(

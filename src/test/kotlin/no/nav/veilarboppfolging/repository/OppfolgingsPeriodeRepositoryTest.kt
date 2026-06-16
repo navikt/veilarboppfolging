@@ -50,9 +50,9 @@ class OppfolgingsPeriodeRepositoryTest {
         val maybeOppfolgingsperiodeEntity = oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId)
         Assertions.assertFalse(maybeOppfolgingsperiodeEntity.isEmpty())
         val oppfolgingsperiodeEntity = maybeOppfolgingsperiodeEntity.get()
-        Assertions.assertEquals(aktorId.get(), oppfolgingsperiodeEntity.getAktorId())
-        Assertions.assertNull(oppfolgingsperiodeEntity.getSluttDato())
-        Assertions.assertNotNull(oppfolgingsperiodeEntity.getStartDato())
+        Assertions.assertEquals(aktorId.get(), oppfolgingsperiodeEntity.aktorId)
+        Assertions.assertNull(oppfolgingsperiodeEntity.sluttDato)
+        Assertions.assertNotNull(oppfolgingsperiodeEntity.startDato)
     }
 
     @Test

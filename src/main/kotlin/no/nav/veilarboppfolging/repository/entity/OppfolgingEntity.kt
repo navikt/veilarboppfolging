@@ -11,7 +11,7 @@ import java.util.*
  * [no.nav.veilarboppfolging.domain.Oppfolging] and related methods.
  */
 data class OppfolgingEntity(
-    val aktorId: String,
+    val aktorId: String?,
     val veilederId: String?,
     val underOppfolging: Boolean,
     val gjeldendeManuellStatusId: Long?,

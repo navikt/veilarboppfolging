@@ -5,6 +5,7 @@ import no.nav.common.types.identer.Fnr
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.pto_schema.enums.arena.Hovedmaal
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
+import no.nav.veilarboppfolging.kafka.TestUtils
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.EndringPaaOppfolgingsBruker
@@ -146,15 +147,14 @@ class OppfolgingsbrukerEndretIArenaServiceTest {
     private fun oppfolgingStatus(underOppfolging: Boolean, iservFraDato: LocalDate? = null) {
         `when`(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID)).thenReturn(
             Optional.of(
-                OppfolgingEntity().setUnderOppfolging(underOppfolging)
-                    .setLocalArenaOppfolging(Optional.of(
-                        LocalArenaOppfolging(
-                            Hovedmaal.BEHOLDEA,
-                            Kvalifiseringsgruppe.BATT,
-                            if (iservFraDato != null) Formidlingsgruppe.ISERV else Formidlingsgruppe.IARBS,
-                             iservFraDato,
-                        )
-                    ))
+                TestUtils.oppfølgingEntity(aktorId = AKTOR_ID.get(), underOppfolging = underOppfolging, localArenaOppfølging =
+                    LocalArenaOppfolging(
+                        Hovedmaal.BEHOLDEA,
+                        Kvalifiseringsgruppe.BATT,
+                        if (iservFraDato != null) Formidlingsgruppe.ISERV else Formidlingsgruppe.IARBS,
+                        iservFraDato,
+                    )
+                )
             )
         )
     }
