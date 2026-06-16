@@ -16,8 +16,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.time.ZonedDateTime;
 import java.util.List;
 
-import static no.nav.veilarboppfolging.controller.response.HistorikkHendelse.Type.OPPFOLGINGSENHET_ENDRET;
-import static no.nav.veilarboppfolging.controller.response.HistorikkHendelse.Type.VEILEDER_TILORDNET;
+import static no.nav.veilarboppfolging.controller.response.HistorikkHendelseType.OPPFOLGINGSENHET_ENDRET;
+import static no.nav.veilarboppfolging.controller.response.HistorikkHendelseType.VEILEDER_TILORDNET;
 import static no.nav.veilarboppfolging.test.TestData.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;

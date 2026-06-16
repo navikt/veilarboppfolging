@@ -9,10 +9,13 @@ import no.nav.pto_schema.enums.arena.Rettighetsgruppe
 import no.nav.pto_schema.enums.arena.SikkerhetstiltakType
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.LocalArenaOppfolging
+import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity
 import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity
+import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity
 import java.time.LocalDate
 import java.time.ZonedDateTime
 import java.util.Optional
+import java.util.UUID
 
 object TestUtils {
 
@@ -48,7 +51,7 @@ object TestUtils {
         aktorId: String,
         veilederId: String = "A111111",
         underOppfolging: Boolean = true,
-        localArenaOppfølging: LocalArenaOppfolging = localArenaOppfolging()
+        localArenaOppfølging: LocalArenaOppfolging = localArenaOppfolging(),
     ) = OppfolgingEntity(
             aktorId = aktorId,
             veilederId = veilederId,
@@ -59,6 +62,15 @@ object TestUtils {
             localArenaOppfolging = Optional.of(localArenaOppfølging),
             oppfolgingsEnhet = null
         )
+
+    fun oppfølgingPeriodeEntity(
+        kvpPerioder: List<KvpPeriodeEntity>? = listOf(),
+    ) = OppfolgingsperiodeEntity(
+        uuid = UUID.randomUUID(),
+        aktorId = "11111111111",
+        startDato = ZonedDateTime.now(),
+        kvpPerioder = kvpPerioder,
+    )
 
     fun localArenaOppfolging(kvalifiseringsgruppe: Kvalifiseringsgruppe = Kvalifiseringsgruppe.IVURD, formidlingsgruppe: Formidlingsgruppe = Formidlingsgruppe.ARBS) =
         LocalArenaOppfolging(

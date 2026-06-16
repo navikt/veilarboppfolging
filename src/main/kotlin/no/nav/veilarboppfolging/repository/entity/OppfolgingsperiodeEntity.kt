@@ -16,7 +16,7 @@ data class OppfolgingsperiodeEntity(
     val startDato: ZonedDateTime,
     val sluttDato: ZonedDateTime? = null,
     val begrunnelse: String? = null,
-    val kvpPerioder: List<KvpPeriodeEntity>,
+    val kvpPerioder: List<KvpPeriodeEntity>?,
     val startetBegrunnelse: OppfolgingStartBegrunnelse? = null,
     val startetAv: String? = null,
     val startetAvType: StartetAvType? = null,
