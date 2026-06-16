@@ -262,7 +262,7 @@ class OppfolgingV3Controller(
     }
 
     private fun filtrerKvpPerioder(periode: OppfolgingsperiodeEntity): OppfolgingsperiodeEntity {
-        if (!authService.erInternBruker() || periode.kvpPerioder.isEmpty()) {
+        if (!authService.erInternBruker() || periode.kvpPerioder?.isEmpty() ?: true) {
             return periode
         }
 
