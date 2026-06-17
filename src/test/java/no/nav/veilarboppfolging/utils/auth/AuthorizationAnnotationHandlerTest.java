@@ -56,7 +56,7 @@ class AuthorizationAnnotationHandlerTest {
 
     
     @Test
-    void should_allow_system_user_if_in_allowlist() {
+    void should_allow_system_user_if_in_allowlist() throws NoSuchMethodException {
         setupSystemUserAuthOk();
         Method method = OppfolgingV2Controller.class.getMethod("hentGjeldendePeriode", Fnr.class);
         MockHttpServletRequest request = new MockHttpServletRequest();
@@ -66,7 +66,7 @@ class AuthorizationAnnotationHandlerTest {
 
     
     @Test
-    void should_not_allow_system_user_if_not_in_allowlist() {
+    void should_not_allow_system_user_if_not_in_allowlist() throws NoSuchMethodException {
         setupSystemUserNotInAllowList();
         Method method = OppfolgingV2Controller.class.getMethod("hentGjeldendePeriode", Fnr.class);
         MockHttpServletRequest request = new MockHttpServletRequest();
@@ -76,7 +76,7 @@ class AuthorizationAnnotationHandlerTest {
 
     
     @Test
-    void should_allow_external_user_if_access_self() {
+    void should_allow_external_user_if_access_self() throws NoSuchMethodException {
         setUpExternalUserAuthOk();
         Method method = OppfolgingV2Controller.class.getMethod("hentGjeldendePeriode", Fnr.class);
         MockHttpServletRequest request = new MockHttpServletRequest();
@@ -86,7 +86,7 @@ class AuthorizationAnnotationHandlerTest {
 
     
     @Test
-    void should_not_allow_external_user_if_access_other() {
+    void should_not_allow_external_user_if_access_other() throws NoSuchMethodException {
         setUpExternalUserAuthOk();
         Method method = OppfolgingV2Controller.class.getMethod("hentGjeldendePeriode", Fnr.class);
         MockHttpServletRequest request = new MockHttpServletRequest();
@@ -97,7 +97,7 @@ class AuthorizationAnnotationHandlerTest {
 
     
     @Test
-    void should_allow_internal_user_if_access_ok() {
+    void should_allow_internal_user_if_access_ok() throws NoSuchMethodException {
         setupInternalUserAuthOk();
 
         Method method = OppfolgingV2Controller.class.getMethod("hentGjeldendePeriode", Fnr.class);
@@ -108,7 +108,7 @@ class AuthorizationAnnotationHandlerTest {
 
     
     @Test
-    void external_user_can_not_query_using_aktorid() {
+    void external_user_can_not_query_using_aktorid() throws NoSuchMethodException {
         setUpExternalUserAuthOk();
         Method method = OppfolgingV2Controller.class.getMethod("hentOppfolgingsperioder", AktorId.class);
         MockHttpServletRequest request = new MockHttpServletRequest();
@@ -118,7 +118,7 @@ class AuthorizationAnnotationHandlerTest {
 
     
     @Test
-    void internal_user_can_query_using_aktorid() {
+    void internal_user_can_query_using_aktorid() throws NoSuchMethodException {
         setupInternalUserAuthOk();
         when(aktorOppslagClient.hentFnr(TEST_AKTOR_ID_3)).thenReturn(TEST_FNR_2);
 

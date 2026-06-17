@@ -6,15 +6,18 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class DigdirKontaktinfoTest {
 
+    private DigdirKontaktinfo kontaktinfo(boolean aktiv, boolean kanVarsles, boolean reservert, String personident) {
+        return new DigdirKontaktinfo(
+                personident, aktiv, kanVarsles, reservert,
+                null, null, null, null, null, null, null, null
+        );
+    }
+
     @Test
     public void kan_ikke_varsles_men_aktiv_settes_riktig() {
         var kanVarsles = false;
         var reservert = false;
-        assertEquals(new DigdirKontaktinfo()
-            .setAktiv(true)
-            .setReservert(reservert)
-            .setKanVarsles(kanVarsles)
-            .setPersonident("1234567890")
+        assertEquals(kontaktinfo(true, kanVarsles, reservert, "1234567890")
         .toKrrData(), new KRRData(
             true,
             "1234567890",
@@ -27,11 +30,7 @@ public class DigdirKontaktinfoTest {
     public void skal_sette_reserver_hvis_reservert() {
         var kanVarsles = true;
         var reservert = false;
-        assertEquals(new DigdirKontaktinfo()
-                .setAktiv(true)
-                .setReservert(reservert)
-                .setKanVarsles(kanVarsles)
-                .setPersonident("1234567890")
+        assertEquals(kontaktinfo(true, kanVarsles, reservert, "1234567890")
                 .toKrrData(), new KRRData(
                 true,
                 "1234567890",
@@ -44,11 +43,7 @@ public class DigdirKontaktinfoTest {
     public void ikke_aktiv_skal_vere_ikke_aktiv() {
         var kanVarsles = false;
         var reservert = false;
-        assertEquals(new DigdirKontaktinfo()
-                .setAktiv(false)
-                .setReservert(reservert)
-                .setKanVarsles(kanVarsles)
-                .setPersonident("1234567890")
+        assertEquals(kontaktinfo(false, kanVarsles, reservert, "1234567890")
                 .toKrrData(), new KRRData(
                 false,
                 "1234567890",

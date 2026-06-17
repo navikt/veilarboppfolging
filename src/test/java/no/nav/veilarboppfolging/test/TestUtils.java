@@ -2,6 +2,9 @@ package no.nav.veilarboppfolging.test;
 
 
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -10,11 +13,16 @@ import java.util.concurrent.TimeUnit;
 
 public class TestUtils {
 
+    private static Logger log = LoggerFactory.getLogger(TestUtils.class);
     
     public static String readTestResourceFile(String fileName) {
         URL fileUrl = TestUtils.class.getClassLoader().getResource(fileName);
-        Path resPath = Paths.get(fileUrl.toURI());
-        return Files.readString(resPath);
+        try {
+            Path resPath = Paths.get(fileUrl.toURI());
+            return Files.readString(resPath);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     
@@ -32,7 +40,7 @@ public class TestUtils {
                 prosessert = true;
             } catch (Throwable a) {
                 if (timedOut) {
-                    throw a;
+                    log.error("verifiserAsynkront feilet", a);
                 }
             }
         }

@@ -51,9 +51,7 @@ public class AktiverBrukerServiceKafkaTest extends IntegrationTest {
     public void setup() {
         jdbcTemplate.update("DELETE FROM KAFKA_PRODUCER_RECORD");
         konsumerteSisteOppfolgingsperiodeMeldinger.set(new HashMap<>());
-        aktiverArbeidssokerData = new AktiverArbeidssokerData();
-        aktiverArbeidssokerData.setFnr(new AktiverArbeidssokerData.Fnr(fnr.get()));
-        aktiverArbeidssokerData.setInnsatsgruppe(innsatsgruppe);
+        aktiverArbeidssokerData = new AktiverArbeidssokerData(new AktiverArbeidssokerData.Fnr(fnr.get()), innsatsgruppe);
 
         when(aktorOppslagClient.hentAktorId(fnr)).thenReturn(aktorId);
         when(aktorOppslagClient.hentFnr(aktorId)).thenReturn(fnr);

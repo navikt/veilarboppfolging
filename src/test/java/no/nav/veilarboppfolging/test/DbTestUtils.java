@@ -77,6 +77,8 @@ public class DbTestUtils {
         try (Statement statement = dataSource.getConnection().createStatement()) {
             String sql = TestUtils.readTestResourceFile(resourceFile);
             statement.execute(sql);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 }

@@ -42,9 +42,9 @@ public class DigdirClientImplTest {
 		);
 
 		KRRData kontaktinfo = digdirClient.hentKontaktInfo(TEST_FNR).orElseThrow();
-		assertEquals(kontaktinfo.getPersonident(), TEST_FNR.get());
-		assertFalse(kontaktinfo.isKanVarsles());
-		assertTrue(kontaktinfo.isReservert());
+		assertEquals(kontaktinfo.personident(), TEST_FNR.get());
+		assertFalse(kontaktinfo.kanVarsles());
+		assertTrue(kontaktinfo.reservert());
 	}
 
 	@Test

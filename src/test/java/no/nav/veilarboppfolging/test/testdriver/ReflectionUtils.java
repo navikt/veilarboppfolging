@@ -8,7 +8,11 @@ public class ReflectionUtils {
 
     
     public static Method getMethod(Class<?> proxyClass, String methodName, Class<?>... args) {
-        return proxyClass.getMethod(methodName,args);
+        try {
+            return proxyClass.getMethod(methodName,args);
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }
