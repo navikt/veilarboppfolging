@@ -14,6 +14,7 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.AktiverBrukerManueltSe
 import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
 import no.nav.veilarboppfolging.service.*;
+import no.nav.veilarboppfolging.test.TestUtils;
 import no.nav.veilarboppfolging.utils.auth.AuthorizationInterceptor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -101,25 +102,11 @@ class OppfolgingV3ControllerTest {
         when(authService.erInternBruker()).thenReturn(true);
         when(authService.hentIdentForEksternEllerIntern(TEST_FNR)).thenReturn(TEST_FNR);
         when(oppfolgingService.hentOppfolgingsStatus(TEST_FNR)).thenReturn(
-                new OppfolgingStatusData()
-                        .setFnr(TEST_FNR.get())
-                        .setAktorId(TEST_AKTOR_ID.get())
-                        .setUnderOppfolging(true)
-                        .setManuell(false)
-                        .setReservasjonKRR(false)
-                        .setRegistrertKRR(true)
-                        .setOppfolgingsperioder(Collections.emptyList())
-                        .setKanReaktiveres(false)
-                        .setInaktiveringsdato(null)
-                        .setErIkkeArbeidssokerUtenOppfolging(false)
-                        .setErSykmeldtMedArbeidsgiver(false)
-                        .setHarSkriveTilgang(true)
-                        .setServicegruppe("servicegruppe")
-                        .setFormidlingsgruppe("formidlingsgruppe")
-                        .setRettighetsgruppe("rettighetsgruppe")
-                        .setKanVarsles(true)
-                        .setUnderKvp(false)
-        );
+                new OppfolgingStatusData(TEST_FNR.get(), TEST_AKTOR_ID.get(), null, false, true,
+                        false, true, false, false, true,
+                        Collections.emptyList(), Collections.emptyList(), true, false, false, null,
+        false, "servicegruppe", "formidlingsgruppe", "rettighetsgruppe", null
+                ));
 
         String expectedJson = "{\"fnr\":\"12345678900\",\"aktorId\":\"11122233334445\",\"veilederId\":null,\"reservasjonKRR\":false,\"registrertKRR\":true,\"kanVarsles\":true,\"manuell\":false,\"underOppfolging\":true,\"underKvp\":false,\"oppfolgingUtgang\":null,\"kanStarteOppfolging\":false,\"avslutningStatus\":null,\"oppfolgingsPerioder\":[],\"harSkriveTilgang\":true,\"inaktivIArena\":null,\"kanReaktiveres\":false,\"inaktiveringsdato\":null,\"erSykmeldtMedArbeidsgiver\":false,\"servicegruppe\":\"servicegruppe\",\"formidlingsgruppe\":\"formidlingsgruppe\",\"rettighetsgruppe\":\"rettighetsgruppe\"}";
 
@@ -134,18 +121,7 @@ class OppfolgingV3ControllerTest {
     @Test
     void hentAvslutningStatus_skal_returnere_avslutningstatus() throws Exception {
         when(avsluttOppfolgingService.hentAvslutningstatusForManuellAvslutning(TEST_FNR)).thenReturn(
-                AvslutningStatusData.builder()
-                        .kanAvslutte(true)
-                        .underOppfolging(true)
-                        .harYtelser(false)
-                        .underKvp(false)
-                        .inaktiveringsDato(LocalDate.parse("2023-01-01"))
-                        .erIserv(false)
-                        .harAktiveTiltaksdeltakelser(false)
-                        .erDeltakerIUngdomsprogrammet(false)
-                        .erArbeidssoeker(false)
-                        .harAap(false)
-                        .build()
+                new AvslutningStatusData(true, true, false, false, LocalDate.parse("2023-01-01"), false, false, false, false, false)
         );
 
         String expectedJson = "{\"kanAvslutte\":true,\"underOppfolging\":true,\"harYtelser\":false,\"underKvp\":false,\"inaktiveringsDato\":\"2023-01-01\",\"erIserv\":false,\"harAktiveTiltaksdeltakelser\":false,\"erDeltakerIUngdomsprogrammet\":false,\"erArbeidssoeker\":false,\"harAap\":false}";
@@ -166,14 +142,10 @@ class OppfolgingV3ControllerTest {
         OppfolgingRequest oppfolgingRequest = new OppfolgingRequest(fnr);
         ZonedDateTime startDato = ZonedDateTime.of(2021, 8, 27, 13, 44, 26, 356299000, ZoneId.of("Europe/Paris"));
         UUID uuid = UUID.fromString("e3e7f94b-d08d-464b-bdf5-e219207e915f");
-        OppfolgingsperiodeEntity gjeldendePeriode = OppfolgingsperiodeEntity.builder()
-                .aktorId("test1")
-                .startDato(startDato)
-                .sluttDato(null)
-                .avsluttetAv("test")
-                .uuid(uuid)
-                .kvpPerioder(List.of(KvpPeriodeEntity.builder().aktorId("test2").build()))
-                .build();
+        OppfolgingsperiodeEntity gjeldendePeriode = new OppfolgingsperiodeEntity(
+                uuid, "aktorId", "avsluttetAv", startDato, null, "begrunnelse", Collections.emptyList(), null,
+                null, null, null
+        );
 
         when(oppfolgingService.hentGjeldendeOppfolgingsperiode(fnr)).thenReturn(Optional.of(gjeldendePeriode));
 
@@ -204,24 +176,34 @@ class OppfolgingV3ControllerTest {
         when(authService.getAktorIdOrThrow(TEST_FNR)).thenReturn(TEST_AKTOR_ID);
         when(oppfolgingService.hentOppfolgingsperioder(TEST_AKTOR_ID)).thenReturn(
                 List.of(
-                        OppfolgingsperiodeEntity.builder()
-                                .aktorId(TEST_AKTOR_ID.get())
-                                .avsluttetAv(TEST_NAV_IDENT.get())
-                                .begrunnelse("En begrunnelse")
-                                .uuid(UUID.fromString("375faf4d-20b0-4a9d-bb44-a582de54fb58"))
-                                .startDato(ZonedDateTime.parse("2023-04-06T16:00:00+01:00[Europe/Oslo]"))
-                                .sluttDato(null)
-                                .kvpPerioder(Collections.emptyList())
-                                .build(),
-                        OppfolgingsperiodeEntity.builder()
-                                .aktorId(TEST_AKTOR_ID.get())
-                                .avsluttetAv(TEST_NAV_IDENT.get())
-                                .begrunnelse("En begrunnelse")
-                                .uuid(UUID.fromString("76c69158-f1e8-4c53-897c-656583638a8d"))
-                                .startDato(ZonedDateTime.parse("2022-01-06T16:00:00+01:00[Europe/Oslo]"))
-                                .sluttDato(ZonedDateTime.parse("2022-06-06T16:00:00+01:00[Europe/Oslo]"))
-                                .kvpPerioder(Collections.emptyList())
-                                .build()
+                        new OppfolgingsperiodeEntity(
+                                UUID.fromString("375faf4d-20b0-4a9d-bb44-a582de54fb58"),
+                                TEST_AKTOR_ID.get(),
+                                TEST_NAV_IDENT.get(),
+                                ZonedDateTime.parse("2023-04-06T16:00:00+01:00[Europe/Oslo]"),
+                                null,
+                                "En begrunnelse",
+                                Collections.emptyList(),
+                                null,
+                                null,
+                                null,
+                                null
+
+                        ),
+                        new OppfolgingsperiodeEntity(
+                                UUID.fromString("76c69158-f1e8-4c53-897c-656583638a8d"),
+                                TEST_AKTOR_ID.get(),
+                                TEST_NAV_IDENT.get(),
+                                ZonedDateTime.parse("2022-01-06T16:00:00+01:00[Europe/Oslo]"),
+                                ZonedDateTime.parse("2022-06-06T16:00:00+01:00[Europe/Oslo]"),
+                                "En begrunnelse",
+                                Collections.emptyList(),
+                                null,
+                                null,
+                                null,
+                                null
+
+                        )
                 )
         );
 

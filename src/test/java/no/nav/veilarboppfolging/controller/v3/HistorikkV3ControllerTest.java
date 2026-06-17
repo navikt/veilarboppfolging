@@ -39,20 +39,26 @@ public class HistorikkV3ControllerTest {
     public void hentInnstillingsHistorikk_skal_returnere_historikk_hendelse_liste() throws Exception {
 
         when(historikkService.hentInstillingsHistorikk(any())).thenReturn(List.of(
-                HistorikkHendelse.builder()
-                        .type(VEILEDER_TILORDNET)
-                        .begrunnelse("Brukeren er tildelt veileder " + TEST_NAV_IDENT.get())
-                        .dato(ZonedDateTime.parse("2022-11-03T10:00:00+01:00"))
-                        .opprettetAv(KodeverkBruker.NAV)
-                        .opprettetAvBrukerId(TEST_NAV_IDENT.get())
-                        .build(),
-                HistorikkHendelse.builder()
-                        .type(OPPFOLGINGSENHET_ENDRET)
-                        .enhet(TEST_ENHET_ID.get())
-                        .begrunnelse("Ny oppfølgingsenhet " + TEST_ENHET_ID.get())
-                        .dato(ZonedDateTime.parse("2022-07-01T13:00:00+01:00"))
-                        .opprettetAv(KodeverkBruker.SYSTEM)
-                        .build()
+                new HistorikkHendelse(
+                        VEILEDER_TILORDNET,
+                        ZonedDateTime.parse("2022-11-03T10:00:00+01:00"),
+                        "Brukeren er tildelt veileder " + TEST_NAV_IDENT.get(),
+                        KodeverkBruker.NAV,
+                        TEST_NAV_IDENT.get(),
+                        null,
+                        null,
+                        null
+                ),
+                new HistorikkHendelse(
+                        OPPFOLGINGSENHET_ENDRET,
+                        ZonedDateTime.parse("2022-07-01T13:00:00+01:00"),
+                        "Ny oppfølgingsenhet " + TEST_ENHET_ID.get(),
+                        KodeverkBruker.SYSTEM,
+                        null,
+                        null,
+                        TEST_ENHET_ID.get(),
+                        null
+                )
         ));
 
         String expectedJson = "[{\"type\":\"VEILEDER_TILORDNET\",\"begrunnelse\":\"Brukeren er tildelt veileder Z112233\",\"dato\":\"2022-11-03T10:00:00+01:00\",\"opprettetAv\":\"NAV\",\"opprettetAvBrukerId\":\"Z112233\"},{\"type\":\"OPPFOLGINGSENHET_ENDRET\",\"begrunnelse\":\"Ny oppfølgingsenhet 0123\",\"dato\":\"2022-07-01T13:00:00+01:00\",\"opprettetAv\":\"SYSTEM\"}]";

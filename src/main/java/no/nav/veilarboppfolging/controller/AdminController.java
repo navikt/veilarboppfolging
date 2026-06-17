@@ -73,8 +73,8 @@ public class AdminController {
     public String republiserOppfolgingsperioder(@RequestBody(required = false) RepubliserOppfolgingsperioderRequest request) {
         sjekkTilgangTilAdmin();
 
-        if (request != null && request.aktorId != null) {
-            return JobRunner.runAsync("republiser-oppfolgingsperioder-for-bruker", () -> kafkaRepubliseringService.republiserOppfolgingsperiodeForBruker(request.aktorId));
+        if (request != null && request.getAktorId() != null) {
+            return JobRunner.runAsync("republiser-oppfolgingsperioder-for-bruker", () -> kafkaRepubliseringService.republiserOppfolgingsperiodeForBruker(request.getAktorId()));
         }
 
         return JobRunner.runAsync("republiser-oppfolgingsperioder", kafkaRepubliseringService::republiserOppfolgingsperioder);

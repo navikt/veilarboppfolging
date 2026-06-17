@@ -101,12 +101,12 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
         doReturn(permit).when(poaoTilgangClient).evaluatePolicy(policyInput);
 
         var forstePeriode = perioder.get(0);
-        var uuid = forstePeriode.uuid;
+        var uuid = forstePeriode.getUuid();
         var periode = oppfolgingController.hentOppfolgingsPeriode(uuid.toString());
 
         Assertions.assertEquals(uuid, periode.getUuid());
-        Assertions.assertNotNull(forstePeriode.startDato);
-        Assertions.assertEquals(forstePeriode.startDato, periode.getStartDato());
+        Assertions.assertNotNull(forstePeriode.getStartDato());
+        Assertions.assertEquals(forstePeriode.getStartDato(), periode.getStartDato());
     }
 
     @Test
@@ -117,7 +117,7 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
         Assertions.assertEquals(1, perioder.size());
 
         var forstePeriode = perioder.get(0);
-        var uuid = forstePeriode.uuid.toString();
+        var uuid = forstePeriode.getUuid().toString();
 
         var policyInput = new NavAnsattTilgangTilEksternBrukerPolicyInput(veilederUUID, TilgangType.LESE, FNR.get());
         ApiResult<Decision> deny = ApiResult.Companion.success(new Decision.Deny("Nei", "Fordi"));
@@ -134,8 +134,8 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
         // Tester ikke tilgang
         doReturn(permit).when(poaoTilgangClient).evaluatePolicy(any());
         // ISERV i arena, ingen ytelser i arena, ingen aktive tiltak hos komet.
-        when(veilarbarenaClient.getArenaOppfolgingsstatus(FNR)).thenReturn(Optional.of(new VeilarbArenaOppfolgingsStatus().setFormidlingsgruppe("ISERV")));
-        when(veilarbarenaClient.hentOppfolgingsbruker(FNR)).thenReturn(new ArenaOppfolginsBrukerOppslagResult.Success(new VeilarbArenaOppfolgingsBruker().setFormidlingsgruppekode("ISERV")));
+        when(veilarbarenaClient.getArenaOppfolgingsstatus(FNR)).thenReturn(Optional.of(new VeilarbArenaOppfolgingsStatus(null, null, "ISERV", null, null, null)));
+        when(veilarbarenaClient.hentOppfolgingsbruker(FNR)).thenReturn(new ArenaOppfolginsBrukerOppslagResult.Success(lagArenaBruker("ISERV")));
         when(arenaYtelserService.harPagaendeYtelse(FNR)).thenReturn(false);
         when(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(FNR.get())).thenReturn(false);
         when(ungdomsprogramClient.erDeltakerIUngdomsprogrammet(FNR.get())).thenReturn(false);
@@ -144,10 +144,7 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
         assertTrue(avslutningStatus.getKanAvslutte());
         var navIdent = new NavIdent("Z151515");
         var begrunnelse = "Har fått jobb";
-        var dto = new AvsluttOppfolgingV2Request();
-        dto.setBegrunnelse(begrunnelse);
-        dto.setVeilederId(navIdent);
-        dto.setFnr(FNR);
+        var dto = new AvsluttOppfolgingV2Request(navIdent, begrunnelse, FNR);
         oppfolgingV2Controller.avsluttOppfolging(dto);
         var perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(AKTOR_ID);
         assertEquals(1, perioder.size());
@@ -163,17 +160,16 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
         // Tester ikke tilgang
         doReturn(permit).when(poaoTilgangClient).evaluatePolicy(any());
         // ISERV i arena, ingen ytelser i arena, men aktive tiltak hos komet.
-        when(veilarbarenaClient.hentOppfolgingsbruker(FNR)).thenReturn(new ArenaOppfolginsBrukerOppslagResult.Success(new VeilarbArenaOppfolgingsBruker().setFormidlingsgruppekode("ISERV")));
+        when(veilarbarenaClient.hentOppfolgingsbruker(FNR)).thenReturn(
+                new ArenaOppfolginsBrukerOppslagResult.Success(lagArenaBruker("ISERV"))
+        );
         when(arenaYtelserService.harPagaendeYtelse(FNR)).thenReturn(false);
         when(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(FNR.get())).thenReturn(true);
 
-        var dto = new AvsluttOppfolgingV2Request();
-        dto.setBegrunnelse("Begrunnelse");
-        dto.setVeilederId(new NavIdent("Z151515"));
-        dto.setFnr(FNR);
+        var dto = new AvsluttOppfolgingV2Request(new NavIdent("Z151515"), "Begrunnelse", FNR);
         var avslutningStatus = oppfolgingV2Controller.avsluttOppfolging(dto);
         assertEquals(avslutningStatus.getStatusCode(), HttpStatusCode.valueOf(204));
-        OppfolgingPeriodeMinimalDTO periode = oppfolgingController.hentOppfolgingsPeriode(startPeriode.get(0).uuid.toString());
+        OppfolgingPeriodeMinimalDTO periode = oppfolgingController.hentOppfolgingsPeriode(startPeriode.get(0).getUuid().toString());
         assertNull(periode.getSluttDato());
     }
 
@@ -185,18 +181,15 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
         // Tester ikke tilgang
         doReturn(permit).when(poaoTilgangClient).evaluatePolicy(any());
         // ISERV i arena, ingen ytelser i arena, ingen aktive tiltak, men deltaker i ungdomsprogrammet.
-        when(veilarbarenaClient.hentOppfolgingsbruker(FNR)).thenReturn(new ArenaOppfolginsBrukerOppslagResult.Success(new VeilarbArenaOppfolgingsBruker().setFormidlingsgruppekode("ISERV")));
+        when(veilarbarenaClient.hentOppfolgingsbruker(FNR)).thenReturn(new ArenaOppfolginsBrukerOppslagResult.Success(lagArenaBruker("ISERV")));
         when(arenaYtelserService.harPagaendeYtelse(FNR)).thenReturn(false);
         when(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(FNR.get())).thenReturn(false);
         when(ungdomsprogramClient.erDeltakerIUngdomsprogrammet(FNR.get())).thenReturn(true);
 
-        var dto = new AvsluttOppfolgingV2Request();
-        dto.setBegrunnelse("Begrunnelse");
-        dto.setVeilederId(new NavIdent("Z151515"));
-        dto.setFnr(FNR);
+        var dto = new AvsluttOppfolgingV2Request(new NavIdent("Z151515"), "Begrunnelse", FNR);
         var avslutningStatus = oppfolgingV2Controller.avsluttOppfolging(dto);
         assertEquals(avslutningStatus.getStatusCode(), HttpStatusCode.valueOf(204));
-        OppfolgingPeriodeMinimalDTO periode = oppfolgingController.hentOppfolgingsPeriode(startPeriode.get(0).uuid.toString());
+        OppfolgingPeriodeMinimalDTO periode = oppfolgingController.hentOppfolgingsPeriode(startPeriode.get(0).getUuid().toString());
         assertNull(periode.getSluttDato());
     }
 
@@ -206,20 +199,17 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
         var startPeriode = startOppfolging();
         ApiResult<Decision> permit = ApiResult.Companion.success(Decision.Permit.INSTANCE);
         doReturn(permit).when(poaoTilgangClient).evaluatePolicy(any());
-        when(veilarbarenaClient.hentOppfolgingsbruker(FNR)).thenReturn(new ArenaOppfolginsBrukerOppslagResult.Success(new VeilarbArenaOppfolgingsBruker().setFormidlingsgruppekode("ISERV")));
+        when(veilarbarenaClient.hentOppfolgingsbruker(FNR)).thenReturn(new ArenaOppfolginsBrukerOppslagResult.Success(lagArenaBruker("ISERV")));
         when(arenaYtelserService.harPagaendeYtelse(FNR)).thenReturn(false);
         when(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(FNR.get())).thenReturn(false);
         when(ungdomsprogramClient.erDeltakerIUngdomsprogrammet(FNR.get())).thenReturn(false);
         when(arbeidssoekerregisteretClient.erArbeidssoeker(FNR.get())).thenReturn(true);
 
-        var dto = new AvsluttOppfolgingV2Request();
-        dto.setBegrunnelse("Begrunnelse");
-        dto.setVeilederId(new NavIdent("Z151515"));
-        dto.setFnr(FNR);
+        var dto = new AvsluttOppfolgingV2Request(new NavIdent("Z151515"), "Begrunnelse", FNR);
         var avslutningStatus = oppfolgingV2Controller.avsluttOppfolging(dto);
-        
+
         assertEquals(avslutningStatus.getStatusCode(), HttpStatusCode.valueOf(204));
-        OppfolgingPeriodeMinimalDTO periode = oppfolgingController.hentOppfolgingsPeriode(startPeriode.get(0).uuid.toString());
+        OppfolgingPeriodeMinimalDTO periode = oppfolgingController.hentOppfolgingsPeriode(startPeriode.get(0).getUuid().toString());
         assertNull(periode.getSluttDato());
     }
 
@@ -229,22 +219,26 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
         var startPeriode = startOppfolging();
         ApiResult<Decision> permit = ApiResult.Companion.success(Decision.Permit.INSTANCE);
         doReturn(permit).when(poaoTilgangClient).evaluatePolicy(any());
-        when(veilarbarenaClient.hentOppfolgingsbruker(FNR)).thenReturn(new ArenaOppfolginsBrukerOppslagResult.Success(new VeilarbArenaOppfolgingsBruker().setFormidlingsgruppekode("ISERV")));
+        when(veilarbarenaClient.hentOppfolgingsbruker(FNR)).thenReturn(new ArenaOppfolginsBrukerOppslagResult.Success(lagArenaBruker("ISERV")));
         when(arenaYtelserService.harPagaendeYtelse(FNR)).thenReturn(false);
         when(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(FNR.get())).thenReturn(false);
         when(ungdomsprogramClient.erDeltakerIUngdomsprogrammet(FNR.get())).thenReturn(false);
         when(arbeidssoekerregisteretClient.erArbeidssoeker(FNR.get())).thenReturn(false);
         when(aapClient.harAap(FNR.get())).thenReturn(true);
 
-        var dto = new AvsluttOppfolgingV2Request();
-        dto.setBegrunnelse("Begrunnelse");
-        dto.setVeilederId(new NavIdent("Z151515"));
-        dto.setFnr(FNR);
+        var dto = new AvsluttOppfolgingV2Request(new NavIdent("Z151515"), "Begrunnelse", FNR);
         var avslutningStatus = oppfolgingV2Controller.avsluttOppfolging(dto);
 
         assertEquals(avslutningStatus.getStatusCode(), HttpStatusCode.valueOf(204));
-        OppfolgingPeriodeMinimalDTO periode = oppfolgingController.hentOppfolgingsPeriode(startPeriode.get(0).uuid.toString());
+        OppfolgingPeriodeMinimalDTO periode = oppfolgingController.hentOppfolgingsPeriode(startPeriode.get(0).getUuid().toString());
         assertNull(periode.getSluttDato());
+    }
+
+    private VeilarbArenaOppfolgingsBruker lagArenaBruker(String formidlingsgruppekode) {
+        return new VeilarbArenaOppfolgingsBruker(
+                FNR.get(), formidlingsgruppekode, null, null, null, null,
+                null, null, null, null, null, null, null, null
+        );
     }
 
     private List<OppfolgingPeriodeDTO> startOppfolging() {

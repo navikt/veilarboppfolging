@@ -54,14 +54,9 @@ class OppfolgingV2ControllerTest {
         when(authorizationInterceptor.preHandle(any(), any(), any())).thenReturn(true);
         ZonedDateTime startDato = ZonedDateTime.of(2021, 8, 27, 13, 44, 26, 356299000, ZoneId.of("Europe/Paris"));
         UUID uuid = UUID.fromString("e3e7f94b-d08d-464b-bdf5-e219207e915f");
-        OppfolgingsperiodeEntity gjeldendePeriode = OppfolgingsperiodeEntity.builder()
-                .aktorId("test1")
-                .startDato(startDato)
-                .sluttDato(null)
-                .avsluttetAv("test")
-                .uuid(uuid)
-                .kvpPerioder(List.of(KvpPeriodeEntity.builder().aktorId("test2").build()))
-                .build();
+        OppfolgingsperiodeEntity gjeldendePeriode = new OppfolgingsperiodeEntity(
+                uuid, "aktorId",  "avsluttetAv", startDato, null, null, List.of(), null, null, null, null
+        );
 
         Fnr fnr = Fnr.of("1234");
         when(oppfolgingService.hentGjeldendeOppfolgingsperiode(fnr)).thenReturn(Optional.of(gjeldendePeriode));

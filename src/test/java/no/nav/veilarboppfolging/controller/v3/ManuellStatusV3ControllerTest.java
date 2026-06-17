@@ -48,7 +48,7 @@ public class ManuellStatusV3ControllerTest {
     public void manuell_hent_status_skal_returnere_riktig() throws Exception {
         when(manuellStatusService.erManuell((Fnr) any())).thenReturn(true);
         String expJson = "{\"erUnderManuellOppfolging\":true}, \"krrStatus\":{\"kanVarsles\":true, \"erReservert\":false}";
-        when(manuellStatusService.hentDigdirKontaktinfo(manuellStatusRequest.fnr())).thenReturn(new KRRData().withReservert(false).withKanVarsles(true));
+        when(manuellStatusService.hentDigdirKontaktinfo(manuellStatusRequest.fnr())).thenReturn(new KRRData(true, TEST_FNR.get(), true, false));
 
         mockMvc.perform(post("/api/v3/manuell/hent-status")
                 .contentType(MediaType.APPLICATION_JSON)

@@ -248,7 +248,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
         startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.Companion.arbeidssokerRegistrering(FNR, AKTOR_ID, new VeilederRegistrant(NAV_IDENT)));
         Oppfolging uthentetOppfolging = hentOppfolging(AKTOR_ID).get();
         assertThat(uthentetOppfolging.getAktorId(), equalTo(AKTOR_ID.get()));
-        assertThat(uthentetOppfolging.isUnderOppfolging(), is(true));
+        assertThat(uthentetOppfolging.getUnderOppfolging(), is(true));
         assertThat(uthentetOppfolging.getOppfolgingsperioder().size(), is(1));
     }
 
@@ -260,23 +260,20 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
         String maal = "Mål";
         settVeileder(veilederId, AKTOR_ID);
         manuellStatusRepository.create(
-                new ManuellStatusEntity()
-                        .setAktorId(AKTOR_ID.get())
-                        .setManuell(true)
-                        .setDato(ZonedDateTime.now())
-                        .setBegrunnelse("Test")
-                        .setOpprettetAv(KodeverkBruker.SYSTEM));
+                new ManuellStatusEntity(
+                        null, AKTOR_ID.get(), true, ZonedDateTime.now(),
+                        "Test", KodeverkBruker.SYSTEM, null));
 
-        maalRepository.opprett(new MaalEntity().setAktorId(AKTOR_ID.get()).setMal(maal).setEndretAv("bruker").setDato(ZonedDateTime.now()));
+        maalRepository.opprett(new MaalEntity(null, AKTOR_ID.get(), maal, "bruker", ZonedDateTime.now()));
         Oppfolging oppfolging = hentOppfolging(AKTOR_ID).get();
-        assertThat(oppfolging.isUnderOppfolging(), is(true));
+        assertThat(oppfolging.getUnderOppfolging(), is(true));
         assertThat(oppfolging.getVeilederId(), equalTo(veilederId));
-        assertThat(oppfolging.getGjeldendeManuellStatus().isManuell(), is(true));
+        assertThat(oppfolging.getGjeldendeManuellStatus().getManuell(), is(true));
         assertThat(oppfolging.getGjeldendeMal().getMal(), equalTo(maal));
 
         oppfolgingsPeriodeRepository.avsluttSistePeriodeOgAvsluttOppfolging(AKTOR_ID, veilederId, "Funnet arbeid", AvregistreringsType.ManuellAvregistrering);
         Oppfolging avsluttetOppfolging = hentOppfolging(AKTOR_ID).get();
-        assertThat(avsluttetOppfolging.isUnderOppfolging(), is(false));
+        assertThat(avsluttetOppfolging.getUnderOppfolging(), is(false));
         assertThat(avsluttetOppfolging.getVeilederId(), nullValue());
         assertThat(avsluttetOppfolging.getGjeldendeManuellStatus(), nullValue());
         assertThat(avsluttetOppfolging.getGjeldendeMal(), nullValue());
@@ -339,12 +336,12 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
     }
 
     private Oppfolging gittOppfolgingForAktor(AktorId aktorId, Fnr fnr) {
-        Oppfolging oppfolging = oppfolgingService.hentOppfolging(aktorId)
-                .orElseGet(() -> oppfolgingsStatusRepository.opprettOppfolging(aktorId));
+        if (oppfolgingService.hentOppfolging(aktorId).isEmpty()) {
+            oppfolgingsStatusRepository.opprettOppfolging(aktorId);
+        }
 
         startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.Companion.arbeidssokerRegistrering(fnr, aktorId, new BrukerRegistrant(fnr)));
-        oppfolging.setUnderOppfolging(true);
-        return oppfolging;
+        return oppfolgingService.hentOppfolging(aktorId).orElseThrow();
     }
 
     private void sjekkAtOppfolgingMangler(Optional<Oppfolging> oppfolging) {
@@ -356,11 +353,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
     }
 
     private void opprettMal(AktorId aktorId, String mal) {
-        MaalEntity input = new MaalEntity()
-                .setAktorId(aktorId.get())
-                .setMal(mal)
-                .setEndretAv(aktorId.get())
-                .setDato(ZonedDateTime.now());
+        MaalEntity input = new MaalEntity(null, aktorId.get(), mal, aktorId.get(), ZonedDateTime.now());
 
         maalRepository.opprett(input);
     }

@@ -41,7 +41,7 @@ class UnderOppfolgingV2ControllerTest {
         Fnr fnr = Fnr.of("1234");
         UnderOppfolgingRequest underOppfolgingRequest = new UnderOppfolgingRequest(fnr);
         UnderOppfolgingV2Response response = new UnderOppfolgingV2Response(true);
-        when(oppfolgingService.erUnderOppfolging(fnr)).thenReturn(response.isErUnderOppfolging());
+        when(oppfolgingService.erUnderOppfolging(fnr)).thenReturn(response.getErUnderOppfolging());
         mockMvc.perform(post("/api/v2/hent-underOppfolging")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(JsonUtils.toJson(underOppfolgingRequest))

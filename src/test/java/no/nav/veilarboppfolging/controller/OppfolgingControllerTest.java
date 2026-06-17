@@ -2,6 +2,7 @@ package no.nav.veilarboppfolging.controller;
 
 import no.nav.common.json.JsonUtils;
 import no.nav.common.types.identer.Fnr;
+import no.nav.veilarboppfolging.kafka.TestUtils;
 import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
 import no.nav.veilarboppfolging.service.*;
@@ -15,6 +16,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static no.nav.veilarboppfolging.utils.DtoMappers.tilOppfolgingPeriodeDTO;
@@ -56,14 +58,20 @@ class OppfolgingControllerTest {
 
         List<OppfolgingsperiodeEntity> perioder = new ArrayList<>();
         perioder.add(
-                OppfolgingsperiodeEntity.builder()
-                        .aktorId("test1")
-                        .begrunnelse("begrunnelse")
-                        .startDato(ZonedDateTime.now())
-                        .sluttDato(ZonedDateTime.now().plusDays(1))
-                        .avsluttetAv("test")
-                        .kvpPerioder(List.of(KvpPeriodeEntity.builder().aktorId("test2").build()))
-                        .build()
+                new OppfolgingsperiodeEntity(
+                        UUID.randomUUID(),
+                        "aktorId",
+                        "avsluttetAv",
+                        ZonedDateTime.now(),
+                        ZonedDateTime.now().plusDays(1),
+                        "begrunnelse",
+                        List.of(),
+                        null,
+                        null,
+                        null,
+                        null
+
+                )
         );
 
         String expectedJson = JsonUtils.toJson(

@@ -14,6 +14,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static no.nav.veilarboppfolging.test.TestData.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -38,10 +39,7 @@ public class MaalV2ControllerTest {
     public void hentMaal_skal_returnere_maal() throws Exception {
         when(authService.hentIdentForEksternEllerIntern(any())).thenReturn(TEST_FNR);
         when(maalService.hentMal(any())).thenReturn(
-                new MaalEntity()
-                        .setMal("Mitt mål")
-                        .setEndretAv(TEST_NAV_IDENT.get())
-                        .setDato(ZonedDateTime.parse("2022-11-03T10:00:00+01:00"))
+                Optional.of(new MaalEntity(null, "aktorId", "Mitt mål", TEST_NAV_IDENT.get(), ZonedDateTime.parse("2022-11-03T10:00:00+01:00")))
         );
 
         String expectedJson = "{\"mal\":\"Mitt mål\",\"endretAv\":\"VEILEDER\",\"dato\":\"2022-11-03T10:00:00+01:00\"}";
@@ -56,15 +54,8 @@ public class MaalV2ControllerTest {
         when(authService.hentIdentForEksternEllerIntern(any())).thenReturn(TEST_FNR);
         when(maalService.hentMaalList(any())).thenReturn(
                 List.of(
-                        new MaalEntity()
-                                .setMal("Mitt mål")
-                                .setEndretAv(TEST_NAV_IDENT.get())
-                                .setDato(ZonedDateTime.parse("2022-11-03T10:00:00+01:00")),
-                        new MaalEntity()
-                                .setAktorId(TEST_AKTOR_ID.get())
-                                .setMal("Mitt andre mål")
-                                .setEndretAv(TEST_AKTOR_ID.get())
-                                .setDato(ZonedDateTime.parse("2023-08-03T14:00:00+01:00"))
+                        new MaalEntity(null, "aktorId", "Mitt mål", TEST_NAV_IDENT.get(), ZonedDateTime.parse("2022-11-03T10:00:00+01:00")),
+                        new MaalEntity(null, "aktorId", "Mitt andre mål", TEST_AKTOR_ID.get(), ZonedDateTime.parse("2023-08-03T14:00:00+01:00"))
                 )
         );
 
@@ -77,16 +68,8 @@ public class MaalV2ControllerTest {
 
     @Test
     public void oppdaterMaal_skal_returnere_oppdatert_maal() throws Exception {
-        MaalEntity oppdatertMaal = new MaalEntity()
-                .setAktorId(TEST_AKTOR_ID.get())
-                .setMal("Oppdatert mål")
-                .setEndretAv(TEST_AKTOR_ID.get())
-                .setDato(ZonedDateTime.parse("2023-09-12T08:00:00+01:00"));
-
-        Maal maal = new Maal()
-                .setMal("Oppdatert mål")
-                .setEndretAv(TEST_AKTOR_ID.get())
-                .setDato(ZonedDateTime.parse("2023-09-12T08:00:00+01:00"));
+        MaalEntity oppdatertMaal = new MaalEntity(null, TEST_AKTOR_ID.get(), "Oppdatert mål", TEST_AKTOR_ID.get(), ZonedDateTime.parse("2023-09-12T08:00:00+01:00"));
+        Maal maal = new Maal("Oppdatert mål", TEST_AKTOR_ID.get(), ZonedDateTime.parse("2023-09-12T08:00:00+01:00"));
 
         when(authService.hentIdentForEksternEllerIntern(any())).thenReturn(TEST_FNR);
         when(maalService.oppdaterMaal(any(), any(), any())).thenReturn(oppdatertMaal);
