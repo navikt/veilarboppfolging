@@ -17,5 +17,5 @@ data class MaalEntity(
         return endretAv != null && endretAv == aktorId
     }
 
-    fun oppdaterMedNyId(nyId: Long): MaalEntity = this.copy(id = nyId)
+    fun kopierOgSettNyId(nyId: Long): MaalEntity = this.copy(id = nyId)
 }

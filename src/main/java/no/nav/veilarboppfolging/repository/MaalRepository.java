@@ -45,7 +45,7 @@ public class MaalRepository {
 
     public void opprett(MaalEntity maal) {
         transactor.executeWithoutResult((ignored) -> {
-            var maalMedNyId = maal.oppdaterMedNyId(DbUtils.nesteFraSekvens(db, "MAL_SEQ"));
+            var maalMedNyId = maal.kopierOgSettNyId(DbUtils.nesteFraSekvens(db, "MAL_SEQ"));
             insert(maalMedNyId);
             setActive(maalMedNyId);
         });

@@ -41,7 +41,12 @@ public class ManuellStatusRepositoryTest extends IsolatedDatabaseTest {
         var maybeManuellStatus = manuellStatusRepository.hentManuellStatus(oppfolging.getGjeldendeManuellStatusId());
 
         assertTrue(maybeManuellStatus.isPresent());
-        assertEquals(manuellStatus, maybeManuellStatus.get());
+        assertEquals(manuellStatus.getManuell(), maybeManuellStatus.get().getManuell());
+        assertEquals(manuellStatus.getDato(), maybeManuellStatus.get().getDato());
+        assertEquals(manuellStatus.getAktorId(), maybeManuellStatus.get().getAktorId());
+        assertEquals(manuellStatus.getBegrunnelse(), maybeManuellStatus.get().getBegrunnelse());
+        assertEquals(manuellStatus.getOpprettetAv(), maybeManuellStatus.get().getOpprettetAv());
+        assertEquals(manuellStatus.getOpprettetAvBrukerId(), maybeManuellStatus.get().getOpprettetAvBrukerId());
     }
 
     @Test

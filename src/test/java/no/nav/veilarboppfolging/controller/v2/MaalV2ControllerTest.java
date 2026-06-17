@@ -54,8 +54,8 @@ public class MaalV2ControllerTest {
         when(authService.hentIdentForEksternEllerIntern(any())).thenReturn(TEST_FNR);
         when(maalService.hentMaalList(any())).thenReturn(
                 List.of(
-                        new MaalEntity(null, "aktorId", "Mitt mål", TEST_NAV_IDENT.get(), ZonedDateTime.parse("2022-11-03T10:00:00+01:00")),
-                        new MaalEntity(null, "aktorId", "Mitt andre mål", TEST_AKTOR_ID.get(), ZonedDateTime.parse("2023-08-03T14:00:00+01:00"))
+                        new MaalEntity(null, TEST_AKTOR_ID.get(), "Mitt mål", TEST_NAV_IDENT.get(), ZonedDateTime.parse("2022-11-03T10:00:00+01:00")),
+                        new MaalEntity(null, TEST_AKTOR_ID.get(), "Mitt andre mål", TEST_AKTOR_ID.get(), ZonedDateTime.parse("2023-08-03T14:00:00+01:00"))
                 )
         );
 
