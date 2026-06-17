@@ -110,9 +110,9 @@ public class VeilederTilordningServiceTest {
         List<VeilederTilordning> tilordninger = new ArrayList<>();
 
         VeilederTilordning harTilgang1 = tilordning("AKTOERID1", "FNR1", "FRAVEILEDER1", "TILVEILEDER1");
-        VeilederTilordning harIkkeTilgang1 = tilordning("AKTOERID2", "FNR2", "FRAVEILEDER2", "TILVEILEDER2");
-        VeilederTilordning harTilgang2 = tilordning("AKTOERID3", "FNR3", "FRAVEILEDER3", "TILVEILEDER3");
-        VeilederTilordning harIkkeTilgang2 = tilordning("AKTOERID4", "FNR4", "FRAVEILEDER4", "TILVEILEDER4");
+        VeilederTilordning harIkkeTilgang1 = tilordning("AKTOERID2", fnr2.get(), "FRAVEILEDER2", "TILVEILEDER2");
+        VeilederTilordning harTilgang2 = tilordning(aktorId3.get(), fnr3.get(), "FRAVEILEDER3", "TILVEILEDER3");
+        VeilederTilordning harIkkeTilgang2 = tilordning(aktorId4.get(), fnr4.get(), "FRAVEILEDER4", "TILVEILEDER4");
 
         tilordninger.add(harTilgang1);
         tilordninger.add(harIkkeTilgang1);
@@ -139,16 +139,16 @@ public class VeilederTilordningServiceTest {
     @Test
     public void responsSkalInneholdeBrukereSomHarFeilFraVeileder() {
         List<VeilederTilordning> tilordninger = new ArrayList<>();
-        VeilederTilordning kanTilordne1 = tilordning("AKTOERID1", "FNR1", "FRAVEILEDER1", "TILVEILEDER1");
-        VeilederTilordning kanIkkeTilordne1 = tilordning("AKTOERID2", "FNR2", "FRAVEILEDER2", "TILVEILEDER2");
-        VeilederTilordning kanTilordne2 = tilordning("AKTOERID3", "FNR3", "FRAVEILEDER3", "TILVEILEDER3");
-        VeilederTilordning kanIkkeTilordne2 = tilordning("AKTOERID4", "FNR4", "FRAVEILEDER4", "TILVEILEDER4");
+        VeilederTilordning kanTilordne1 = tilordning(aktorId1.get(), fnr1.get(), "FRAVEILEDER1", "TILVEILEDER1");
+        VeilederTilordning kanIkkeTilordne1 = tilordning(aktorId2.get(), fnr2.get(), "FRAVEILEDER2", "TILVEILEDER2");
+        VeilederTilordning kanTilordne2 = tilordning(aktorId3.get(), fnr3.get(), "FRAVEILEDER3", "TILVEILEDER3");
+        VeilederTilordning kanIkkeTilordne2 = tilordning(aktorId4.get(), fnr4.get(), "FRAVEILEDER4", "TILVEILEDER4");
 
         tilordninger.add(kanTilordne1);
         tilordninger.add(kanIkkeTilordne1);
         tilordninger.add(kanTilordne2);
         tilordninger.add(kanIkkeTilordne2);
-
+         
         when(authService.getAktorIdOrThrow(fnr1)).thenReturn(aktorId1);
         when(veilederTilordningerRepository.hentTilordningForAktoer(aktorId1))
                 .thenReturn("FRAVEILEDER1");
@@ -179,9 +179,9 @@ public class VeilederTilordningServiceTest {
         List<VeilederTilordning> tilordninger = new ArrayList<>();
 
         VeilederTilordning tilordningOK1 = tilordning("AKTOERID1", "FNR1", "FRAVEILEDER1", "TILVEILEDER1");
-        VeilederTilordning tilordningOK2 = tilordning("AKTOERID4", "FNR4", "FRAVEILEDER4", "TILVEILEDER4");
-        VeilederTilordning tilordningERROR1 = tilordning("AKTOERID2", "FNR2", "FRAVEILEDER2", "TILVEILEDER2");
-        VeilederTilordning tilordningERROR2 = tilordning("AKTOERID3", "FNR3", "FRAVEILEDER3", "TILVEILEDER3");
+        VeilederTilordning tilordningOK2 = tilordning(aktorId4.get(), fnr4.get(), "FRAVEILEDER4", "TILVEILEDER4");
+        VeilederTilordning tilordningERROR1 = tilordning("AKTOERID2", fnr2.get(), "FRAVEILEDER2", "TILVEILEDER2");
+        VeilederTilordning tilordningERROR2 = tilordning(aktorId3.get(), fnr3.get(), "FRAVEILEDER3", "TILVEILEDER3");
 
         tilordninger.add(tilordningOK1);
         tilordninger.add(tilordningERROR1);
@@ -211,9 +211,9 @@ public class VeilederTilordningServiceTest {
         List<VeilederTilordning> tilordninger = new ArrayList<>();
 
         VeilederTilordning tilordningOK1 = tilordning("AKTOERID1", "FNR1", "FRAVEILEDER1", "TILVEILEDER1");
-        VeilederTilordning tilordningERROR1 = tilordning("AKTOERID2", "FNR2", "FRAVEILEDER2", "TILVEILEDER2");
-        VeilederTilordning tilordningOK2 = tilordning("AKTOERID3", "FNR3", "FRAVEILEDER3", "TILVEILEDER3");
-        VeilederTilordning tilordningERROR2 = tilordning("AKTOERID4", "FNR4", "FRAVEILEDER4", "TILVEILEDER4");
+        VeilederTilordning tilordningERROR1 = tilordning("AKTOERID2", fnr2.get(), "FRAVEILEDER2", "TILVEILEDER2");
+        VeilederTilordning tilordningOK2 = tilordning(aktorId3.get(), fnr3.get(), "FRAVEILEDER3", "TILVEILEDER3");
+        VeilederTilordning tilordningERROR2 = tilordning(aktorId4.get(), fnr4.get(), "FRAVEILEDER4", "TILVEILEDER4");
 
         tilordninger.add(tilordningOK1);
         tilordninger.add(tilordningERROR1);
@@ -246,9 +246,9 @@ public class VeilederTilordningServiceTest {
         List<VeilederTilordning> tilordninger = new ArrayList<>();
 
         VeilederTilordning tilordningOK1 = tilordning("AKTOERID1", "FNR1", "FRAVEILEDER1", "TILVEILEDER1");
-        VeilederTilordning tilordningOK2 = tilordning("AKTOERID4", "FNR4", "FRAVEILEDER4", "TILVEILEDER4");
-        VeilederTilordning tilordningERROR1 = tilordning("AKTOERID2", "FNR2", "FRAVEILEDER2", "TILVEILEDER2");
-        VeilederTilordning tilordningERROR2 = tilordning("AKTOERID3", "FNR3", "FRAVEILEDER3", "TILVEILEDER3");
+        VeilederTilordning tilordningOK2 = tilordning(aktorId4.get(), fnr4.get(), "FRAVEILEDER4", "TILVEILEDER4");
+        VeilederTilordning tilordningERROR1 = tilordning("AKTOERID2", fnr2.get(), "FRAVEILEDER2", "TILVEILEDER2");
+        VeilederTilordning tilordningERROR2 = tilordning(aktorId3.get(), fnr3.get(), "FRAVEILEDER3", "TILVEILEDER3");
 
         tilordninger.add(tilordningOK1);
         tilordninger.add(tilordningERROR1);
@@ -274,7 +274,7 @@ public class VeilederTilordningServiceTest {
         List<VeilederTilordning> tilordninger = new ArrayList<>();
 
         VeilederTilordning tilordningERROR1 = tilordning("AKTOERID1", "FNR1", "FRAVEILEDER1", "TILVEILEDER1");
-        VeilederTilordning tilordningERROR2 = tilordning("AKTOERID2", "FNR2", "FRAVEILEDER2", "TILVEILEDER2");
+        VeilederTilordning tilordningERROR2 = tilordning("AKTOERID2", fnr2.get(), "FRAVEILEDER2", "TILVEILEDER2");
 
         tilordninger.add(tilordningERROR1);
         tilordninger.add(tilordningERROR2);
@@ -293,7 +293,7 @@ public class VeilederTilordningServiceTest {
     @Test
     public void toOppdateringerSkalIkkeGaaIBeinaPaaHverandre() throws ExecutionException, InterruptedException {
         VeilederTilordning tilordningOKBruker1 = tilordning("AKTOERID1", "FNR1", "FRAVEILEDER1", "TILVEILEDER1");
-        VeilederTilordning tilordningERRORBruker2 = tilordning("AKTOERID2", "FNR2", "FRAVEILEDER2", "TILVEILEDER2");
+        VeilederTilordning tilordningERRORBruker2 = tilordning("AKTOERID2", fnr2.get(), "FRAVEILEDER2", "TILVEILEDER2");
 
         when(authService.getAktorIdOrThrow(fnr1)).thenReturn(aktorId1);
 
@@ -333,7 +333,7 @@ public class VeilederTilordningServiceTest {
     }
 
     private VeilederTilordning tilordning(String aktorId, String brukerFnr, String fraVeilederId, String tilVeilederId) {
-        return tilordning(brukerFnr, aktorId, "innloggetVeileder", fraVeilederId, tilVeilederId);
+        return tilordning(aktorId, brukerFnr, "innloggetVeileder", fraVeilederId, tilVeilederId);
     }
 
     @Test
