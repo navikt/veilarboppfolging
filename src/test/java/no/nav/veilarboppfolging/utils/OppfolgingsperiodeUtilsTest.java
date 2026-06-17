@@ -22,7 +22,7 @@ public class OppfolgingsperiodeUtilsTest {
                 startDato,
                 sluttDato,
                 null,
-                null,
+                List.of(),
                 null,
                 null,
                 null,

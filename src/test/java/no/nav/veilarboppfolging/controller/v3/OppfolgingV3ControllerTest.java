@@ -104,7 +104,7 @@ class OppfolgingV3ControllerTest {
         when(oppfolgingService.hentOppfolgingsStatus(TEST_FNR)).thenReturn(
                 new OppfolgingStatusData(TEST_FNR.get(), TEST_AKTOR_ID.get(), null, false, true,
                         false, true, false, false, true,
-                        Collections.emptyList(), Collections.emptyList(), true, false, false, null,
+                        Collections.emptyList(), Collections.emptyList(), true, null, false, null,
         false, "servicegruppe", "formidlingsgruppe", "rettighetsgruppe", null
                 ));
 
@@ -227,6 +227,10 @@ class OppfolgingV3ControllerTest {
 
     @Test
     void settTilDigital_skal_returnere_tom_respons() throws Exception {
+        when(authService.getInnloggetBrukerIdent()).thenReturn("12345678900");
+        when(authService.erInternBruker()).thenReturn(true);
+        when(authService.erEksternBruker()).thenReturn(false);
+
         mockMvc.perform(post("/api/v3/oppfolging/settDigital")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"fnr\":\"12345678900\"}")

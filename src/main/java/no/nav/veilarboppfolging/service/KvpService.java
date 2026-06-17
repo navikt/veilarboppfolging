@@ -71,7 +71,8 @@ public class KvpService {
             throw new ForbiddenException("Har ikke tilgang til enhet");
         }
 
-        if (maybeOppfolging.get().getGjeldendeKvpId() != 0) {
+        var gjeldendeKvpId = maybeOppfolging.map(OppfolgingEntity::getGjeldendeKvpId).orElse(null);
+        if (gjeldendeKvpId != null && gjeldendeKvpId != 0) {
             secureLog.warn(format("Aktøren er allerede under en KVP-periode. AktorId: %s", aktorId));
             throw new BadRequestException("Aktøren er allerede under en KVP-periode");
         }

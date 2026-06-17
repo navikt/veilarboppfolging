@@ -29,7 +29,7 @@ public class OppfolgingStatusDataTest {
     private OppfolgingsperiodeEntity tilPeriode(ZonedDateTime sluttDato) {
         return new OppfolgingsperiodeEntity(
                 UUID.randomUUID(), "aktorId", null, ZonedDateTime.now(), sluttDato,
-                null, null, null, null, null, null
+                null, List.of(), null, null, null, null
         );
     }
 

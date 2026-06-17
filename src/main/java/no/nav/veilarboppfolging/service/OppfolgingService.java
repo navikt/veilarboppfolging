@@ -169,8 +169,9 @@ public class OppfolgingService {
         Optional<KvpPeriodeEntity> maybeKvpPeriode = empty();
 
         AtomicReference<KvpPeriodeEntity> gjeldendeKvpPeriode = new AtomicReference<>();
-        if (oppfolgingEntity.getGjeldendeKvpId() != 0) {
-            maybeKvpPeriode = kvpRepository.hentKvpPeriode(oppfolgingEntity.getGjeldendeKvpId());
+        var gjeldendeKvpId = oppfolgingEntity.getGjeldendeKvpId();
+        if (gjeldendeKvpId != null && gjeldendeKvpId != 0 ) {
+            maybeKvpPeriode = kvpRepository.hentKvpPeriode(gjeldendeKvpId);
             maybeKvpPeriode.ifPresentOrElse((kvpPeriode) -> {
                 if (authService.harTilgangTilEnhet(kvpPeriode.getEnhet())) {
                     gjeldendeKvpPeriode.set(kvpPeriode);

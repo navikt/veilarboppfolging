@@ -27,6 +27,7 @@ import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchers.eq
 import org.mockito.InjectMocks
 import org.mockito.Mock
+import org.mockito.Mockito
 import org.mockito.Mockito.doAnswer
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.times
@@ -140,7 +141,7 @@ class KvpServiceTest{
     fun gittBrukerHarAktivKvp(kvpId: Long, kvpStartTidspunkt: ZonedDateTime, enhetId: String) {
         `when`(kvpRepositoryMock.hentKvpPeriode(kvpId)).thenReturn(
             Optional.of(
-                KvpPeriodeEntity(null, null, AKTOR_ID.get(), enhetId, null, kvpStartTidspunkt, null, null)
+                KvpPeriodeEntity(null, null, AKTOR_ID.get(), enhetId, VEILEDER, kvpStartTidspunkt, null, null)
             )
         )
         val kvpPeriodeEntity = mock<KvpPeriodeEntity>()
@@ -175,7 +176,7 @@ class KvpServiceTest{
         verify(kafkaProducerService, times(1)).publiserKvpPeriode(
             KvpPeriode
                 .start(AKTOR_ID, ENHET, VEILEDER, kvpStartTidspunkt, START_BEGRUNNELSE)
-                .tilAvsluttetKvpPeriode(VEILEDER, any(), STOP_BEGRUNNELSE)
+                .tilAvsluttetKvpPeriode(VEILEDER, any(ZonedDateTime::class.java), STOP_BEGRUNNELSE)
         )
     }
 
@@ -238,4 +239,6 @@ class KvpServiceTest{
         private const val STOP_BEGRUNNELSE = "STOP_BEGRUNNELSE"
         private const val VEILEDER = "1234"
     }
+
+    private fun <T> any(type: Class<T>): T = Mockito.any<T>(type)
 }
