@@ -321,9 +321,8 @@ class GraphqlController(
     @SchemaMapping(typeName = "BrukerStatusDto", field = "veilederTilordning")
     fun veilederTilordning(brukerStatusDto: BrukerStatusDto, @LocalContextValue aktorId: AktorId): VeilederTilordningDto? {
         return veilederTilordningerRepository.hentTilordnetVeileder(aktorId)
-            .map { it.veilederId }
             .getOrNull()
-            ?.let { VeilederTilordningDto(it) }
+            ?.veilederId?.let { VeilederTilordningDto(it) }
     }
 
     @SchemaMapping(typeName = "BrukerStatusDto", field = "krr")
