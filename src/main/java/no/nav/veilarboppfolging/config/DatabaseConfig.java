@@ -57,9 +57,9 @@ public class DatabaseConfig {
     }
 
     @ConfigurationProperties(prefix = "app.datasource")
-    public static class DatasourceProperties {
-        String url;
-        String username;
-        String password;
-    }
+    public record DatasourceProperties(
+        String url,
+        String username,
+        String password
+    ){}
 }
