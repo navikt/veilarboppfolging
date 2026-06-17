@@ -14,7 +14,6 @@ import no.nav.veilarboppfolging.repository.entity.VeilederTilordningEntity;
 import java.util.Collections;
 import java.util.Optional;
 
-import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 
 public class DtoMappers {
@@ -28,11 +27,11 @@ public class DtoMappers {
     }
 
     public static Maal tilDto(Optional<MaalEntity> malData) {
-        return new Maal(
-                malData.map(MaalEntity::getMal).orElse(null),
-                malData.map(MaalEntity::getEndretAv).orElse(null),
-                malData.map(MaalEntity::getDato).orElse(null)
-        );
+        if (malData.isPresent()) {
+            return tilDto(malData.get());
+        } else {
+            return new Maal(null, null, null);
+        }
     }
 
     /**
