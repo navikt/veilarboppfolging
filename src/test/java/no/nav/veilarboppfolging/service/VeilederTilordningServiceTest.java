@@ -82,24 +82,28 @@ public class VeilederTilordningServiceTest {
 
     @Test
     public void skalKunneTildeleDersomOppgittVeilederErLikReellVeileder() {
+        when(authService.getInnloggetVeilederIdent()).thenReturn("B1");
         VeilederTilordning v = new VeilederTilordning("FNR1", "", "", "A1", "B1");
         assertTrue(kanTilordneVeileder("A1", v));
     }
 
     @Test
     public void skalTildeleVeilederOmEksisterendeErNull() {
+        when(authService.getInnloggetVeilederIdent()).thenReturn("A1");
         VeilederTilordning v = new VeilederTilordning("FNR1", "", "", null, "A1");
         assertTrue(kanTilordneVeileder(null, v));
     }
 
     @Test
     public void skalIkkeTildeleVeilederOmEksisterendeErUlikFraVeileder() {
+        when(authService.getInnloggetVeilederIdent()).thenReturn("A1");
         VeilederTilordning v = new VeilederTilordning("FNR1", "", "", "B1", "A1");
         assertFalse(kanTilordneVeileder("C1", v));
     }
 
     @Test
     public void skalIkkeTildeleVeilederOmEksisterendeErLikTilVeileder() {
+        when(authService.getInnloggetVeilederIdent()).thenReturn("C1");
         VeilederTilordning v = new VeilederTilordning("FNR1", "", "", "C1", "C1");
         assertFalse(kanTilordneVeileder("C1", v));
     }
