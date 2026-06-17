@@ -11,6 +11,7 @@ import no.nav.veilarboppfolging.BadRequestException
 import no.nav.veilarboppfolging.ForbiddenException
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsBruker
 import no.nav.veilarboppfolging.kafka.KvpPeriode
+import no.nav.veilarboppfolging.kafka.KvpPeriodeEventType
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.LocalArenaOppfolging
 import no.nav.veilarboppfolging.repository.KvpRepository
@@ -18,10 +19,13 @@ import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
 import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity
 import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity
 import no.nav.veilarboppfolging.repository.enums.KodeverkBruker
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.within
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchers.eq
@@ -34,8 +38,10 @@ import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.junit.MockitoJUnitRunner
+import org.mockito.kotlin.argumentCaptor
 import org.springframework.transaction.support.TransactionTemplate
 import java.time.ZonedDateTime
+import java.time.temporal.ChronoUnit
 import java.util.Optional
 import java.util.function.Consumer
 
@@ -173,11 +179,16 @@ class KvpServiceTest{
             any()
         )
         verify(authService, times(1)).harTilgangTilEnhet(ENHET)
-        verify(kafkaProducerService, times(1)).publiserKvpPeriode(
-            KvpPeriode
-                .start(AKTOR_ID, ENHET, VEILEDER, kvpStartTidspunkt, START_BEGRUNNELSE)
-                .tilAvsluttetKvpPeriode(VEILEDER, any(ZonedDateTime::class.java), STOP_BEGRUNNELSE)
-        )
+
+        val captor = argumentCaptor<KvpPeriode>()
+        verify(kafkaProducerService, times(1)).publiserKvpPeriode(captor.capture())
+        val publisert = captor.firstValue
+        assertThat(publisert.event).isEqualTo(KvpPeriodeEventType.AVSLUTTET)
+        assertThat(publisert.aktorId).isEqualTo(AKTOR_ID.get())
+        assertThat(publisert.avsluttet?.avsluttetAv).isEqualTo(VEILEDER)
+        assertThat(publisert.avsluttet?.avsluttetBegrunnelse).isEqualTo(STOP_BEGRUNNELSE)
+        assertThat(publisert.avsluttet?.avsluttetDato)
+            .isCloseTo(ZonedDateTime.now(), within(2, ChronoUnit.SECONDS))
     }
 
     @Test
