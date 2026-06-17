@@ -5,7 +5,7 @@ import java.util.*
 
 data class OppfolgingPeriodeDTO(
     val uuid: UUID,
-    val aktorId: String,
+    val aktorId: String?,
     val veileder: String?,
     val startDato: ZonedDateTime,
     val sluttDato: ZonedDateTime?,
