@@ -13,9 +13,7 @@ import kotlin.jvm.optionals.getOrNull
 private const val AKTIV_YTELSE_STATUS: String = "Aktiv"
 
 @Component
-class ArenaYtelserService(val veilarbarenaClient: VeilarbarenaClient,
-                          private val startOppfolgingService: StartOppfolgingService
-) {
+class ArenaYtelserService(val veilarbarenaClient: VeilarbarenaClient) {
 
     open fun harPagaendeYtelse(fnr: Fnr): Boolean {
         return veilarbarenaClient.getArenaYtelser(fnr)
