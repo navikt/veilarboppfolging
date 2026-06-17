@@ -21,6 +21,7 @@ import no.nav.veilarboppfolging.domain.AvslutningStatusData;
 import no.nav.veilarboppfolging.domain.OppfolgingStatusData;
 import no.nav.veilarboppfolging.eventsLogger.BigQueryClient;
 import no.nav.veilarboppfolging.kafka.dto.OppfolgingsperiodeDTO;
+import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingRepository;
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService;
 import no.nav.veilarboppfolging.oppfolgingsbruker.BrukerRegistrant;
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant;
@@ -89,6 +90,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     private BigQueryClient bigQueryClient = mock(BigQueryClient.class);
     private ArbeidsoppfolgingsKontorService arbeidsoppfolgingsKontorService = mock(ArbeidsoppfolgingsKontorService.class);
     private KandidatForUtmeldingService kandidatForUtmeldingService = mock(KandidatForUtmeldingService.class);
+    private KandidatForUtmeldingRepository kandidatForUtmeldingRepository;
 
     @Before
     public void setup() {
@@ -101,6 +103,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         oppfolgingsStatusRepository = new OppfolgingsStatusRepository(new NamedParameterJdbcTemplate(db));
         oppfolgingsPeriodeRepository = new OppfolgingsPeriodeRepository(db, transactor);
         arbeidsoppfolgingskontorRepository = new ArbeidsoppfolgingskontorRepository(new NamedParameterJdbcTemplate(db));
+        kandidatForUtmeldingRepository = new KandidatForUtmeldingRepository(new NamedParameterJdbcTemplate(db));
 
         avsluttOppfolgingService = new AvsluttOppfolgingService(
                 authService,
@@ -116,7 +119,8 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
                 arenaYtelserService,
                 bigQueryClient,
                 transactor,
-                arbeidsoppfolgingskontorRepository
+                arbeidsoppfolgingskontorRepository,
+                kandidatForUtmeldingRepository
         );
         oppfolgingService = new OppfolgingService(
                 kvpService,

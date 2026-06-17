@@ -30,6 +30,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.support.TransactionTemplate
 import java.time.ZonedDateTime
 import java.util.*
+import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingRepository
 import no.nav.veilarboppfolging.repository.ArbeidsoppfolgingskontorRepository
 
 @Service
@@ -48,6 +49,7 @@ class AvsluttOppfolgingService(
     val bigQueryClient: BigQueryClient,
     val transactor: TransactionTemplate,
     val arbeidsoppfolgingskontorRepository: ArbeidsoppfolgingskontorRepository,
+    val kandidatForUtmeldingRepository: KandidatForUtmeldingRepository
 ) {
 
     val log = LoggerFactory.getLogger(this::class.java)
@@ -152,6 +154,7 @@ class AvsluttOppfolgingService(
             val sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder)
 
             arbeidsoppfolgingskontorRepository.slettNavKontor(sistePeriode.uuid)
+            kandidatForUtmeldingRepository.fjernKandidat(aktorId)
 
             log.info("Oppfølgingsperiode avsluttet for bruker - publiserer endringer på oppfølgingsperiode-topics.")
             kafkaProducerService.publiserOppfolgingsperiode(DtoMappers.tilOppfolgingsperiodeDTO(sistePeriode))

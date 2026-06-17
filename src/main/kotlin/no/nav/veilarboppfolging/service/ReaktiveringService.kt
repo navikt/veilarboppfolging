@@ -4,6 +4,7 @@ import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.common.types.identer.NavIdent
 import no.nav.veilarboppfolging.client.veilarbarena.*
+import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingRepository
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
@@ -24,6 +25,7 @@ class ReaktiveringService(
     val arenaOppfolgingService: ArenaOppfolgingService,
     val reaktiveringRepository: ReaktiveringRepository,
     val oppfolgingsPeriodeRepository: OppfolgingsPeriodeRepository,
+    val kandidatForUtmeldingRepository: KandidatForUtmeldingRepository,
     private val transactor: TransactionTemplate,
 ) {
     private val logger: Logger = LoggerFactory.getLogger(ReaktiveringService::class.java)
@@ -60,7 +62,7 @@ class ReaktiveringService(
                     val arenaKode = arenaResponse.arenaResultat.kode
                     when (arenaKode) {
                         in listOf(ArenaRegistreringResultat.FNR_FINNES_IKKE, ArenaRegistreringResultat.KAN_REAKTIVERES_FORENKLET, ArenaRegistreringResultat.UKJENT_FEIL) -> {
-                            logger.error("Feil ved registrering av bruker i Arena", arenaResponse.arenaResultat.resultat)
+                            logger.error("Feil ved registrering av bruker i Arena: {}", arenaResponse.arenaResultat.resultat)
                             return@execute FeilFraArenaError(arenaKode)
                         }
                         else -> {
@@ -72,6 +74,7 @@ class ReaktiveringService(
                                     veilederIdent = navIdent.get(),
                                 )
                             )
+                            kandidatForUtmeldingRepository.fjernKandidat(aktorId)
                             return@execute ReaktiveringSuccess(arenaKode)
                         }
                     }

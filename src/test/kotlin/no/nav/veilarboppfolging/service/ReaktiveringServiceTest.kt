@@ -29,6 +29,7 @@ import org.springframework.transaction.support.TransactionCallback
 import org.springframework.transaction.support.TransactionTemplate
 import java.time.ZonedDateTime
 import java.util.*
+import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingRepository
 
 @RunWith(MockitoJUnitRunner::class)
 class ReaktiveringServiceTest {
@@ -37,6 +38,7 @@ class ReaktiveringServiceTest {
     private var oppfolgingsStatusRepository = mock(OppfolgingsStatusRepository::class.java)
     private var arenaOppfolgingService = mock(ArenaOppfolgingService::class.java)
     private var oppfolgingsPeriodeRepository = mock(OppfolgingsPeriodeRepository::class.java)
+    private var kandidatForUtmeldingRepository = mock(KandidatForUtmeldingRepository::class.java)
     private var transactor = mock(TransactionTemplate::class.java)
     private val reaktiveringService = ReaktiveringService(
         authService,
@@ -44,6 +46,7 @@ class ReaktiveringServiceTest {
         arenaOppfolgingService,
         reaktiveringRepository,
         oppfolgingsPeriodeRepository,
+        kandidatForUtmeldingRepository,
         transactor
     )
 

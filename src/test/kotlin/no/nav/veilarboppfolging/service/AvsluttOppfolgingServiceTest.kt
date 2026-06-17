@@ -25,6 +25,7 @@ import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.springframework.transaction.support.TransactionTemplate
 import java.util.*
+import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingRepository
 import no.nav.veilarboppfolging.repository.ArbeidsoppfolgingskontorRepository
 
 class AvsluttOppfolgingServiceTest {
@@ -43,6 +44,7 @@ class AvsluttOppfolgingServiceTest {
     private val bigQueryClient: BigQueryClient = Mockito.mock(BigQueryClient::class.java)
     private val transactionTemplate: TransactionTemplate = Mockito.mock(TransactionTemplate::class.java)
     private val arbeidsoppfolgingskontorRepository: ArbeidsoppfolgingskontorRepository = Mockito.mock(ArbeidsoppfolgingskontorRepository::class.java)
+    private val kandidatForUtmeldingRepository: KandidatForUtmeldingRepository = Mockito.mock(KandidatForUtmeldingRepository::class.java)
 
     private fun <T> any(type: Class<T>): T = Mockito.any<T>(type)
 
@@ -56,6 +58,7 @@ class AvsluttOppfolgingServiceTest {
         bigQueryClient = bigQueryClient,
         transactor = transactionTemplate,
         arbeidsoppfolgingskontorRepository = arbeidsoppfolgingskontorRepository,
+        kandidatForUtmeldingRepository = kandidatForUtmeldingRepository,
     )
 
     private fun arenaIservAvregistrering(): ArenaIservKanIkkeReaktiveres {
