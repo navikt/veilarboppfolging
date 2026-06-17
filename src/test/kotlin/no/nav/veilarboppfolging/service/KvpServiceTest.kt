@@ -140,11 +140,10 @@ class KvpServiceTest{
     fun gittBrukerHarAktivKvp(kvpId: Long, kvpStartTidspunkt: ZonedDateTime, enhetId: String) {
         `when`(kvpRepositoryMock.hentKvpPeriode(kvpId)).thenReturn(
             Optional.of(
-                KvpPeriodeEntity(null, null, AKTOR_ID.get(), null, null, kvpStartTidspunkt, null, null)
+                KvpPeriodeEntity(null, null, AKTOR_ID.get(), enhetId, null, kvpStartTidspunkt, null, null)
             )
         )
         val kvpPeriodeEntity = mock<KvpPeriodeEntity>()
-        `when`(kvpPeriodeEntity.enhet).thenReturn(enhetId)
         `when`(kvpRepositoryMock.hentGjeldendeKvpPeriode(AKTOR_ID)).thenReturn(Optional.of(
             kvpPeriodeEntity
         ))

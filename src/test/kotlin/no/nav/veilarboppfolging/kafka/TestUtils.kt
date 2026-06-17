@@ -63,15 +63,6 @@ object TestUtils {
             oppfolgingsEnhet = null
         )
 
-    fun oppfølgingPeriodeEntity(
-        kvpPerioder: List<KvpPeriodeEntity>? = listOf(),
-    ) = OppfolgingsperiodeEntity(
-        uuid = UUID.randomUUID(),
-        aktorId = "11111111111",
-        startDato = ZonedDateTime.now(),
-        kvpPerioder = kvpPerioder,
-    )
-
     fun localArenaOppfolging(kvalifiseringsgruppe: Kvalifiseringsgruppe = Kvalifiseringsgruppe.IVURD, formidlingsgruppe: Formidlingsgruppe = Formidlingsgruppe.ARBS) =
         LocalArenaOppfolging(
             hovedmaal = Hovedmaal.BEHOLDEA,

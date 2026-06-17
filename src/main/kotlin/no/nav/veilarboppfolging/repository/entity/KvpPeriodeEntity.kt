@@ -7,7 +7,7 @@ data class KvpPeriodeEntity(
     val kvpId: Long?,
     val serial: Long?,
     val aktorId: String,
-    val enhet: String?,
+    val enhet: String,
     val opprettetAv: String?,
     val opprettetDato: ZonedDateTime,
     val opprettetBegrunnelse: String? = null,
