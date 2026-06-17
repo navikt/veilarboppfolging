@@ -4,8 +4,8 @@ import no.nav.veilarboppfolging.controller.response.Veileder
 
 data class VeilederTilordning(
     val brukerFnr: String,
-    val aktoerId: String,
-    val innloggetVeilederId: String,
+    val aktoerId: String?,
+    val innloggetVeilederId: String?,
     val fraVeilederId: String?,
     val tilVeilederId: String
 ) {
