@@ -79,7 +79,7 @@ public class DtoMappers {
                 oppfolgingStatusData.getUnderOppfolging(),
                 oppfolgingStatusData.getUnderKvp(),
                 oppfolgingStatusData.getOppfolgingUtgang(),
-                erInternBruker ? oppfolgingStatusData.getKanStarteOppfolging() : true,
+                erInternBruker ? oppfolgingStatusData.getKanStarteOppfolging() : null,
                 null,
                 oppfolgingStatusData.getOppfolgingsperioder().stream().map(o -> tilOppfolgingPeriodeDTO(o, erInternBruker)).collect(toList()),
                 erInternBruker ? oppfolgingStatusData.getHarSkriveTilgang() : null,
