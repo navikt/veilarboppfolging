@@ -52,6 +52,8 @@ open class StartOppfolgingService(
             val erUnderOppfolging = maybeOppfolging
                 .getOrNull()?.underOppfolging ?: false
 
+            kandidatForUtmeldingService.fjernKandidatForUtmelding(aktorId)
+            
             if (erUnderOppfolging) return@executeWithoutResult
             if (maybeOppfolging.isEmpty) {
                 // Siden det blir gjort mange kall samtidig til flere noder kan det oppstå en race condition
@@ -68,7 +70,6 @@ open class StartOppfolgingService(
             }
 
             oppfolgingsPeriodeRepository.start(oppfolgingsbruker)
-            kandidatForUtmeldingService.fjernKandidatForUtmelding(aktorId)
 
             val perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId)
             val sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder)
