@@ -294,14 +294,15 @@ open class IntegrationTest {
     }
 
     fun setManuellStatus(aktorId: AktorId) {
-        manuellStatusRepository.create(ManuellStatusEntity()
-            .setAktorId(aktorId.get())
-            .setManuell(true)
-            .setBegrunnelse("Fordi")
-            .setDato(ZonedDateTime.now())
-            .setOpprettetAv(KodeverkBruker.NAV)
-            .setOpprettetAvBrukerId("A112211")
-        )
+        manuellStatusRepository.create(ManuellStatusEntity(
+            null,
+            aktorId.get(),
+            true,
+            ZonedDateTime.now(),
+            "Fordi",
+            KodeverkBruker.NAV,
+            "A112211"
+        ))
     }
 
     fun hentOppfolgingsperioder(fnr: Fnr) = oppfolgingController.hentOppfolgingsperioder(fnr)
@@ -442,15 +443,15 @@ open class IntegrationTest {
     fun mockVeilarbArenaOppfolgingsStatus(fnr: Fnr, formidlingsgruppe: Formidlingsgruppe? = Formidlingsgruppe.ARBS, kanEnkeltReaktiveres: Boolean? = false, serviceGruppe: String? = "IVURD", oppfolgingsEnhet: String? = "1234", inaktiveringsDato: LocalDate? = null) {
         `when`(veilarbarenaClient.getArenaOppfolgingsstatus(fnr)).thenReturn(
             Optional.of(
-                VeilarbArenaOppfolgingsStatus()
-                    .setRettighetsgruppe(null)
-                    .setFormidlingsgruppe(formidlingsgruppe?.name)
-                    .setServicegruppe(serviceGruppe)
-                    .setOppfolgingsenhet(oppfolgingsEnhet)
-                    .setInaktiveringsdato(inaktiveringsDato)
-                    .setKanEnkeltReaktiveres(kanEnkeltReaktiveres)
+                VeilarbArenaOppfolgingsStatus(
+                    null,
+                    formidlingsgruppe?.name,
+                    serviceGruppe,
+                    oppfolgingsEnhet,
+                    inaktiveringsDato,
+                    kanEnkeltReaktiveres
                 )
-            )
+            ))
     }
 
     fun mockVeilarbArenaOppfolgingsBruker(
@@ -461,13 +462,22 @@ open class IntegrationTest {
         iservFraDato: ZonedDateTime = ZonedDateTime.now()) {
         `when`(veilarbarenaClient.hentOppfolgingsbruker(fnr)).thenReturn(
             ArenaOppfolginsBrukerOppslagResult.Success(
-                VeilarbArenaOppfolgingsBruker()
-                    .setFodselsnr(fnr.get())
-                    .setFormidlingsgruppekode(formidlingsgruppe?.name)
-                    .setHovedmaalkode("BEHOLDEA")
-                    .setIservFraDato(iservFraDato)
-                    .setKvalifiseringsgruppekode(kvalifiseringsgruppe.name)
-                    .setNavKontor(oppfolgingsEnhet)
+                VeilarbArenaOppfolgingsBruker(
+                    fnr.get(),
+                    formidlingsgruppe?.name,
+                    iservFraDato,
+                    oppfolgingsEnhet,
+                    kvalifiseringsgruppe.name,
+                    null,
+                    "BEHOLDEA",
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                )
             )
         )
     }

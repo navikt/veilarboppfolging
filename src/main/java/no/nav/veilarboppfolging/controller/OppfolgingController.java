@@ -1,15 +1,14 @@
 package no.nav.veilarboppfolging.controller;
 
-import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.BadRequestException;
 import no.nav.veilarboppfolging.NotFoundException;
 import no.nav.veilarboppfolging.controller.request.*;
 import no.nav.veilarboppfolging.controller.response.*;
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvregistreringsType;
 import no.nav.veilarboppfolging.repository.enums.KodeverkBruker;
 import no.nav.veilarboppfolging.service.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,7 +18,6 @@ import java.util.stream.Collectors;
 import static no.nav.veilarboppfolging.utils.DtoMappers.*;
 
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/api/oppfolging")
 public class OppfolgingController {
     private final static List<String> ALLOWLIST_V1 = List.of("veilarbvedtaksstotte", "veilarbregistrering", "veilarbdirigent");
@@ -30,12 +28,22 @@ public class OppfolgingController {
     private final AuthService authService;
     private final ManuellStatusService manuellStatusService;
 
+    @Autowired
+    public OppfolgingController(OppfolgingService oppfolgingService, AvsluttOppfolgingService avsluttOppfolgingService, KvpService kvpService, AuthService authService, ManuellStatusService manuellStatusService) {
+        this.oppfolgingService = oppfolgingService;
+        this.avsluttOppfolgingService = avsluttOppfolgingService;
+        this.kvpService = kvpService;
+        this.authService = authService;
+        this.manuellStatusService = manuellStatusService;
+    }
+
     @GetMapping("/me")
     public Bruker hentBrukerInfo() {
-        return new Bruker()
-                .setId(authService.getInnloggetBrukerIdent())
-                .setErVeileder(authService.erInternBruker())
-                .setErBruker(authService.erEksternBruker());
+        return new Bruker(
+                authService.getInnloggetBrukerIdent(),
+                authService.erInternBruker(),
+                authService.erEksternBruker()
+        );
     }
 
     @GetMapping
@@ -56,7 +64,7 @@ public class OppfolgingController {
         authService.skalVereInternBruker();
 
         manuellStatusService.oppdaterManuellStatus(
-                fnr, true, dto.begrunnelse,
+                fnr, true, dto.getBegrunnelse(),
                 KodeverkBruker.NAV, authService.getInnloggetVeilederIdent()
         );
 
@@ -81,7 +89,7 @@ public class OppfolgingController {
         }
 
         manuellStatusService.oppdaterManuellStatus(
-                fodselsnummer, false, dto.begrunnelse,
+                fodselsnummer, false, dto.getBegrunnelse(),
                 KodeverkBruker.NAV, hentBrukerInfo().getId()
         );
 

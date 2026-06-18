@@ -6,7 +6,6 @@ import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.pto_schema.enums.arena.Hovedmaal
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
 import no.nav.veilarboppfolging.dbutil.toInt
-import no.nav.veilarboppfolging.domain.Oppfolging
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.LocalArenaOppfolging
 import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity
 import no.nav.veilarboppfolging.utils.DbUtils
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Repository
 import java.sql.ResultSet
 import java.sql.SQLException
 import java.util.Optional
-import java.util.function.Supplier
 
 @Repository
 class OppfolgingsStatusRepository(private val db: NamedParameterJdbcTemplate) {
@@ -61,7 +59,7 @@ class OppfolgingsStatusRepository(private val db: NamedParameterJdbcTemplate) {
         logger.info(rows.toString())
     }
 
-    fun opprettOppfolging(aktorId: AktorId): Oppfolging {
+    fun opprettOppfolging(aktorId: AktorId) {
         val params = mapOf(
             "aktorId" to aktorId.get(),
             "underOppfolging" to toInt(false)
@@ -73,7 +71,7 @@ class OppfolgingsStatusRepository(private val db: NamedParameterJdbcTemplate) {
         )
 
         // FIXME: return the actual database object.
-        return Oppfolging().setAktorId(aktorId.get()).setUnderOppfolging(false)
+//        return Oppfolging().setAktorId(aktorId.get()).setUnderOppfolging(false)
     }
 
     fun hentUnikeBrukerePage(offset: Int, pageSize: Int): MutableList<AktorId> {
@@ -110,15 +108,16 @@ class OppfolgingsStatusRepository(private val db: NamedParameterJdbcTemplate) {
                 iservFraDato = DbUtils.hentZonedDateTime(rs, "iserv_fra_dato")?.toLocalDate()
             ) else null
 
-            return OppfolgingEntity()
-                .setOppfolgingsEnhet(rs.getStringOrNull("kontor_id")?.let { EnhetId(it) })
-                .setAktorId(rs.getString(AKTOR_ID))
-                .setGjeldendeManuellStatusId(rs.getLong(GJELDENDE_MANUELL_STATUS))
-                .setGjeldendeMaalId(rs.getLong(GJELDENDE_MAL))
-                .setGjeldendeKvpId(rs.getLong("gjeldende_kvp"))
-                .setVeilederId(rs.getString(VEILEDER))
-                .setUnderOppfolging(rs.getBoolean(UNDER_OPPFOLGING))
-                .setLocalArenaOppfolging(Optional.ofNullable(localArenaOppfolging))
+            return OppfolgingEntity(
+                aktorId = rs.getString(AKTOR_ID),
+                veilederId = rs.getString(VEILEDER),
+                underOppfolging = rs.getBoolean(UNDER_OPPFOLGING),
+                gjeldendeManuellStatusId = rs.getLong(GJELDENDE_MANUELL_STATUS),
+                gjeldendeMaalId = rs.getLong(GJELDENDE_MAL),
+                gjeldendeKvpId = rs.getLong("gjeldende_kvp"),
+                oppfolgingsEnhet = rs.getStringOrNull("kontor_id")?.let { EnhetId(it) },
+                localArenaOppfolging = Optional.ofNullable(localArenaOppfolging),
+            )
         }
     }
 }

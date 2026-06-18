@@ -64,7 +64,7 @@ public class KafkaTestConfig {
                         .withLogging()
                         .withStoreOnFailure(consumerRepository)
                         .withConsumerConfig(
-                                kafkaProperties.getEndringPaaOppfolgingBrukerTopic(),
+                                kafkaProperties.endringPaaOppfolgingBrukerTopic(),
                                 Deserializers.stringDeserializer(),
                                 Deserializers.jsonDeserializer(EndringPaaOppfoelgingsBrukerV2.class),
                                 kafkaConsumerService::consumeEndringPaOppfolgingBruker

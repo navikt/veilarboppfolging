@@ -111,12 +111,13 @@ public class VeilarbarenaClientImplTest {
     }
 
     private VeilarbArenaOppfolgingsStatus arenaOppfolgingResponse() {
-        return new VeilarbArenaOppfolgingsStatus()
-                .setFormidlingsgruppe(MOCK_FORMIDLINGSGRUPPE)
-                .setServicegruppe(MOCK_SERVICEGRUPPE)
-                .setOppfolgingsenhet(MOCK_ENHET_ID)
-                .setKanEnkeltReaktiveres(MOCK_KAN_ENKELT_REAKTIVERES)
-                .setRettighetsgruppe(MOCK_RETTIGHETSGRUPPE);
+        return new VeilarbArenaOppfolgingsStatus(
+                MOCK_RETTIGHETSGRUPPE,
+                MOCK_FORMIDLINGSGRUPPE,
+                MOCK_SERVICEGRUPPE,
+                MOCK_ENHET_ID,
+                null,
+                MOCK_KAN_ENKELT_REAKTIVERES);
     }
     @Test
     public void skalMappeTilOppfolgingsbrukerV2() {
@@ -132,11 +133,11 @@ public class VeilarbarenaClientImplTest {
 
         VeilarbArenaOppfolgingsBruker arenaOppfolgingsbruker = ((ArenaOppfolginsBrukerOppslagResult.Success) veilarbarenaClient.hentOppfolgingsbruker(MOCK_FNR)).getOppfolgingsBruker();
 
-        assertThat(arenaOppfolgingsbruker.getFodselsnr()).isEqualTo("1234");
-        assertThat(arenaOppfolgingsbruker.getFormidlingsgruppekode()).isEqualTo(MOCK_FORMIDLINGSGRUPPE);
-        assertThat(arenaOppfolgingsbruker.getRettighetsgruppekode()).isEqualTo(MOCK_RETTIGHETSGRUPPE);
-        assertThat(arenaOppfolgingsbruker.getNavKontor()).isEqualTo(MOCK_ENHET_ID);
-        assertThat(arenaOppfolgingsbruker.getHovedmaalkode()).isEqualTo(MOCK_HOVEDMAAL);
+        assertThat(arenaOppfolgingsbruker.fodselsnr()).isEqualTo("1234");
+        assertThat(arenaOppfolgingsbruker.formidlingsgruppekode()).isEqualTo(MOCK_FORMIDLINGSGRUPPE);
+        assertThat(arenaOppfolgingsbruker.rettighetsgruppekode()).isEqualTo(MOCK_RETTIGHETSGRUPPE);
+        assertThat(arenaOppfolgingsbruker.navKontor()).isEqualTo(MOCK_ENHET_ID);
+        assertThat(arenaOppfolgingsbruker.hovedmaalkode()).isEqualTo(MOCK_HOVEDMAAL);
     }
 
     @Test
@@ -225,13 +226,21 @@ public class VeilarbarenaClientImplTest {
     }
 
     private VeilarbArenaOppfolgingsBruker arenaOppfolgingsBrukerResponse() {
-        return new VeilarbArenaOppfolgingsBruker()
-                .setFodselsnr("1234")
-                .setFormidlingsgruppekode(MOCK_FORMIDLINGSGRUPPE)
-                .setKvalifiseringsgruppekode(MOCK_KVALIFISERINGSGRUPPE)
-                .setRettighetsgruppekode(MOCK_RETTIGHETSGRUPPE)
-                .setNavKontor(MOCK_ENHET_ID)
-                .setHovedmaalkode(MOCK_HOVEDMAAL);
+        return new VeilarbArenaOppfolgingsBruker(
+                "1234",
+                MOCK_FORMIDLINGSGRUPPE,
+                null,
+                MOCK_ENHET_ID,
+                MOCK_KVALIFISERINGSGRUPPE,
+                MOCK_RETTIGHETSGRUPPE,
+                MOCK_HOVEDMAAL,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null);
     }
 }
 

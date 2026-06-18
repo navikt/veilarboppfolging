@@ -8,6 +8,7 @@ import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktDto
 import no.nav.veilarboppfolging.controller.response.YtelserResponse
 import org.springframework.stereotype.Component
 import java.time.LocalDate
+import kotlin.jvm.optionals.getOrNull
 
 private const val AKTIV_YTELSE_STATUS: String = "Aktiv"
 
@@ -16,35 +17,38 @@ class ArenaYtelserService(val veilarbarenaClient: VeilarbarenaClient) {
 
     open fun harPagaendeYtelse(fnr: Fnr): Boolean {
         return veilarbarenaClient.getArenaYtelser(fnr)
-            .map { response -> response.ytelser.any { it.status == AKTIV_YTELSE_STATUS } }
-            .orElse(false)
+            .getOrNull()?.ytelser?.any { it.status == AKTIV_YTELSE_STATUS }
+            ?: false
     }
 
     open fun hentYtelser(fnr: Fnr): YtelserResponse {
         val response = veilarbarenaClient.getArenaYtelser(fnr).orElseGet { throw Error("Finner ingen ytelser") }
-        return YtelserResponse().withYtelser(
-            response.ytelser.map {
-                YtelseskontraktDto()
-                    .withStatus(it.status)
-                    .withYtelsestype(it.type)
-                    .withDatoMottatt(it.motattDato)
-                    .withDatoFra(it.fraDato)
-                    .withDatoTil(it.tilDato)
-            }).withVedtaksliste(
-                response.vedtak.map {
-                    VedtakDto()
-                        .setStatus(it.status)
-                        .setFradato(it.fraDato.tilEgenDatoType())
-                        .setTildato(it.tilDato.tilEgenDatoType())
-                        .setVedtakstype(it.type)
-                        .setAktivitetsfase(it.aktivitetsfase)
-                        .setRettighetsgruppe(it.rettighetsgruppe)
-                }
-            )
+        return YtelserResponse(
+            vedtaksliste = response.vedtak.map {
+                VedtakDto(
+                    vedtakstype = it.type,
+                    status = it.status,
+                    aktivitetsfase = it.aktivitetsfase,
+                    rettighetsgruppe = it.rettighetsgruppe,
+                    fradato = it.fraDato.tilEgenDatoType(),
+                    tildato = it.tilDato.tilEgenDatoType(),
+                )
+            },
+            ytelser = response.ytelser.map {
+                YtelseskontraktDto(
+                    status = it.status,
+                    ytelsestype = it.type,
+                    datoMottatt = it.motattDato.tilEgenDatoType(),
+                    datoFra = it.fraDato.tilEgenDatoType(),
+                    datoTil = it.tilDato.tilEgenDatoType(),
+                )
+            }
+        )
     }
 
 
-    private fun LocalDate.tilEgenDatoType(): Dato {
+    private fun LocalDate?.tilEgenDatoType(): Dato? {
+        if (this == null) return null
         return Dato(this.year, this.monthValue, this.dayOfMonth)
     }
 }

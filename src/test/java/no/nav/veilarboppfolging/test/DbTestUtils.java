@@ -1,6 +1,6 @@
 package no.nav.veilarboppfolging.test;
 
-import lombok.SneakyThrows;
+
 import no.nav.veilarboppfolging.LocalDatabaseSingleton;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
@@ -72,11 +72,13 @@ public class DbTestUtils {
         db.execute("TRUNCATE TABLE " + tableName + " CASCADE");
     }
 
-    @SneakyThrows
+    
     public static void runScript(DataSource dataSource, String resourceFile) {
         try (Statement statement = dataSource.getConnection().createStatement()) {
             String sql = TestUtils.readTestResourceFile(resourceFile);
             statement.execute(sql);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 }

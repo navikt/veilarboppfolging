@@ -1,6 +1,5 @@
 package no.nav.veilarboppfolging.controller.v2;
 
-import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.BadRequestException;
 import no.nav.veilarboppfolging.client.digdir_krr.KRRData;
@@ -10,28 +9,32 @@ import no.nav.veilarboppfolging.controller.v2.response.ManuellV2Response;
 import no.nav.veilarboppfolging.repository.enums.KodeverkBruker;
 import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.service.ManuellStatusService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/v2/manuell")
-@RequiredArgsConstructor
+
 public class ManuellStatusV2Controller {
 
     private final static List<String> ALLOWLIST = List.of("veilarbdialog", "veilarbaktivitet");
 
     private final AuthService authService;
-
     private final ManuellStatusService manuellStatusService;
+
+    @Autowired
+    public ManuellStatusV2Controller(AuthService authService, ManuellStatusService manuellStatusService) {
+        this.authService = authService;
+        this.manuellStatusService = manuellStatusService;
+    }
 
     @GetMapping
     @Deprecated(forRemoval = true)
     public ManuellV2Response hentErUnderManuellOppfolging(@RequestParam("fnr") Fnr fnr) {
         authService.sjekkLesetilgangMedFnr(fnr);
-
         boolean erManuell = manuellStatusService.erManuell(fnr);
-
         return new ManuellV2Response(erManuell);
     }
 
@@ -52,9 +55,7 @@ public class ManuellStatusV2Controller {
 
         return new ManuellStatusV2Response(
                 erManuell,
-                new ManuellStatusV2Response.KrrStatus(
-                        kontaktinfo.isKanVarsles(), kontaktinfo.isReservert()
-                )
+                new ManuellStatusV2Response.KrrStatus(kontaktinfo.kanVarsles(), kontaktinfo.reservert())
         );
     }
 
@@ -76,7 +77,7 @@ public class ManuellStatusV2Controller {
         authService.skalVereInternBruker();
 
         manuellStatusService.oppdaterManuellStatus(
-                fnr, true, dto.begrunnelse,
+                fnr, true, dto.getBegrunnelse(),
                 KodeverkBruker.NAV, authService.getInnloggetVeilederIdent()
         );
     }
@@ -100,7 +101,7 @@ public class ManuellStatusV2Controller {
         }
 
         manuellStatusService.oppdaterManuellStatus(
-                fodselsnummer, false, dto.begrunnelse,
+                fodselsnummer, false, dto.getBegrunnelse(),
                 KodeverkBruker.NAV, authService.getInnloggetBrukerIdent()
         );
     }

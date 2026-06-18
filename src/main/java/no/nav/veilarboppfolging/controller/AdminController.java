@@ -1,7 +1,5 @@
 package no.nav.veilarboppfolging.controller;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.job.JobRunner;
 import no.nav.common.types.identer.AktorId;
@@ -16,23 +14,23 @@ import no.nav.veilarboppfolging.domain.AvsluttPayload;
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService;
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant;
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AdminAvregistrering;
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvregistreringsType;
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
 import no.nav.veilarboppfolging.repository.VeilederTilordningerRepository;
 import no.nav.veilarboppfolging.repository.entity.ManuellStatusEntity;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
 import no.nav.veilarboppfolging.repository.entity.VeilederTilordningEntity;
 import no.nav.veilarboppfolging.service.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
-@Slf4j
 @RestController
 @RequestMapping("/api/admin")
-@RequiredArgsConstructor
 public class AdminController {
 
     public static final String POAO_ADMIN = "poao-admin";
@@ -46,12 +44,37 @@ public class AdminController {
     private final AvsluttOppfolgingService avsluttOppfolgingService;
     private final KandidatForUtmeldingService kandidatForUtmeldingService;
 
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
+
+    @Autowired
+    public AdminController(
+            AuthService authService,
+            AuthContextHolder authContextHolder,
+            KafkaRepubliseringService kafkaRepubliseringService,
+            VeilederTilordningerRepository veilederTilordningerRepository,
+            ManuellStatusService manuellStatusService,
+            OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository,
+            OppfolgingService oppfolgingService,
+            AvsluttOppfolgingService avsluttOppfolgingService,
+            KandidatForUtmeldingService kandidatForUtmeldingService
+    ) {
+        this.authService = authService;
+        this.authContextHolder = authContextHolder;
+        this.kafkaRepubliseringService = kafkaRepubliseringService;
+        this.veilederTilordningerRepository = veilederTilordningerRepository;
+        this.manuellStatusService = manuellStatusService;
+        this.oppfolgingsPeriodeRepository = oppfolgingsPeriodeRepository;
+        this.oppfolgingService = oppfolgingService;
+        this.avsluttOppfolgingService = avsluttOppfolgingService;
+        this.kandidatForUtmeldingService = kandidatForUtmeldingService;
+    }
+
     @PostMapping("/republiser/oppfolgingsperioder")
     public String republiserOppfolgingsperioder(@RequestBody(required = false) RepubliserOppfolgingsperioderRequest request) {
         sjekkTilgangTilAdmin();
 
-        if (request != null && request.aktorId != null) {
-            return JobRunner.runAsync("republiser-oppfolgingsperioder-for-bruker", () -> kafkaRepubliseringService.republiserOppfolgingsperiodeForBruker(request.aktorId));
+        if (request != null && request.getAktorId() != null) {
+            return JobRunner.runAsync("republiser-oppfolgingsperioder-for-bruker", () -> kafkaRepubliseringService.republiserOppfolgingsperiodeForBruker(request.getAktorId()));
         }
 
         return JobRunner.runAsync("republiser-oppfolgingsperioder", kafkaRepubliseringService::republiserOppfolgingsperioder);
@@ -68,7 +91,7 @@ public class AdminController {
         sjekkTilgangTilAdmin();
         return JobRunner.runAsync(
                 "republiser-tilordnet-veileder-gitte-aktorider",
-                () -> kafkaRepubliseringService.republiserTilordnetVeileder(republiserVeilederRequest.aktorIder())
+                () -> kafkaRepubliseringService.republiserTilordnetVeileder(republiserVeilederRequest.getAktorIder())
         );
     }
 
@@ -82,15 +105,18 @@ public class AdminController {
     public Veilarbportefoljeinfo hentVeilarbportefoljeinfo(@RequestParam AktorId aktorId) {
         authService.skalVereSystemBruker();
         Optional<VeilederTilordningEntity> tilordningEntity = veilederTilordningerRepository.hentTilordnetVeileder(aktorId);
-        boolean erManuell = manuellStatusService.hentManuellStatus(aktorId).map(ManuellStatusEntity::isManuell).orElse(false);
+        boolean erManuell = manuellStatusService.hentManuellStatus(aktorId).map(ManuellStatusEntity::getManuell).orElse(false);
         ZonedDateTime startDato = oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId).map(OppfolgingsperiodeEntity::getStartDato).orElse(null);
 
-        return new Veilarbportefoljeinfo().setVeilederId(tilordningEntity.map(VeilederTilordningEntity::getVeilederId).map(NavIdent::of).orElse(null))
-                .setErUnderOppfolging(tilordningEntity.map(VeilederTilordningEntity::isOppfolging).orElse(false))
-                .setNyForVeileder(tilordningEntity.map(VeilederTilordningEntity::isNyForVeileder).orElse(false))
-                .setTilordnetTidspunkt(tilordningEntity.map(VeilederTilordningEntity::getSistTilordnet).orElse(null))
-                .setErManuell(erManuell)
-                .setStartDato(startDato);
+        return new Veilarbportefoljeinfo(
+                aktorId,
+                tilordningEntity.map(VeilederTilordningEntity::getVeilederId).map(NavIdent::of).orElse(null),
+                tilordningEntity.map(VeilederTilordningEntity::getOppfolging).orElse(false),
+                tilordningEntity.map(VeilederTilordningEntity::getNyForVeileder).orElse(false),
+                erManuell,
+                startDato,
+                tilordningEntity.map(VeilederTilordningEntity::getSistTilordnet).orElse(null)
+        );
     }
 
     @PostMapping("/avsluttBrukere")
@@ -99,7 +125,7 @@ public class AdminController {
         var innloggetBruker = authService.getInnloggetVeilederIdent();
         log.info("Skal avslutte oppfølging for {} brukere", brukereSomSkalAvsluttes.aktorIds.size());
 
-        var resultat = brukereSomSkalAvsluttes.getAktorIds()
+        var resultat = brukereSomSkalAvsluttes.aktorIds
                 .stream()
                 .map(aktorId -> {
                     try {
@@ -107,7 +133,7 @@ public class AdminController {
                                 new AdminAvregistrering(
                                         AktorId.of(aktorId),
                                         new VeilederRegistrant(new NavIdent(innloggetBruker)),
-                                        brukereSomSkalAvsluttes.getBegrunnelse(),
+                                        brukereSomSkalAvsluttes.begrunnelse,
                                         null
                                 )
                         );

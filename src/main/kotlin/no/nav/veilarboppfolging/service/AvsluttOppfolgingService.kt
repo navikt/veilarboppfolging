@@ -13,6 +13,7 @@ import no.nav.veilarboppfolging.eventsLogger.BigQueryClient
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingTilstandOppslagResult
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.AktiverBrukerManueltService
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.*
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.KunneAvsluttesResultat.Companion.kanAvsluttes
 import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.hendelser.OppfolgingsAvsluttetHendelseDto.Companion.of
@@ -61,7 +62,7 @@ class AvsluttOppfolgingService(
 
         if (authService.erInternBruker()) {
             authService.sjekkSkriveTilgangMedFnr(fnr)
-            oppfolging?.getOppfolgingsEnhet()
+            oppfolging?.oppfolgingsEnhet
                 ?.let { enhet -> authService.sjekkTilgangTilEnhet(enhet.get()) }
             secureLog.info(
                 "Veileder: {} forsøker å avslutte oppfølging for fnr: {}",
@@ -120,18 +121,18 @@ class AvsluttOppfolgingService(
             ), fnr, oppfolging
         )
 
-        return AvslutningStatusData.builder()
-            .harYtelser(arenaYtelserService.harPagaendeYtelse(fnr))
-            .inaktiveringsDato(inaktiveringsDato)
-            .kanAvslutte(kanAvsluttes is KunneAvsluttes)
-            .underOppfolging(kanAvsluttes.kanAvsluttesInput.erUnderOppfolging)
-            .underKvp(kanAvsluttes.kanAvsluttesInput.underKvp)
-            .erIserv(kanAvsluttes.kanAvsluttesInput.erIservIArena)
-            .harAktiveTiltaksdeltakelser(kanAvsluttes.kanAvsluttesInput.harAktiveTiltaksdeltakelser)
-            .erDeltakerIUngdomsprogrammet(kanAvsluttes.kanAvsluttesInput.erDeltakerIUngdomsprogrammet)
-            .erArbeidssoeker(kanAvsluttes.kanAvsluttesInput.erArbeidssoeker)
-            .harAap(kanAvsluttes.kanAvsluttesInput.harAap)
-            .build()
+        return AvslutningStatusData(
+            harYtelser = arenaYtelserService.harPagaendeYtelse(fnr),
+            inaktiveringsDato = inaktiveringsDato,
+            kanAvslutte = kanAvsluttes is KunneAvsluttes,
+            underOppfolging = kanAvsluttes.kanAvsluttesInput.erUnderOppfolging,
+            underKvp = kanAvsluttes.kanAvsluttesInput.underKvp,
+            erIserv = kanAvsluttes.kanAvsluttesInput.erIservIArena,
+            harAktiveTiltaksdeltakelser = kanAvsluttes.kanAvsluttesInput.harAktiveTiltaksdeltakelser,
+            erDeltakerIUngdomsprogrammet = kanAvsluttes.kanAvsluttesInput.erDeltakerIUngdomsprogrammet,
+            erArbeidssoeker = kanAvsluttes.kanAvsluttesInput.erArbeidssoeker,
+            harAap = kanAvsluttes.kanAvsluttesInput.harAap,
+        )
     }
 
     private fun avsluttOppfolgingForBruker(kanAvsluttesResultat: AvslutningsInput) {
@@ -195,7 +196,7 @@ class AvsluttOppfolgingService(
         return kanAvsluttes(
             avregistrering,
             KanAvsluttesInput(
-                erUnderOppfolging = oppfolging?.isUnderOppfolging ?: false,
+                erUnderOppfolging = oppfolging?.underOppfolging ?: false,
                 erIservIArena = erIserv,
                 harAktiveTiltaksdeltakelser = harAktiveTiltaksdeltakelser,
                 erDeltakerIUngdomsprogrammet = erDeltakerIUngdomsprogrammet,

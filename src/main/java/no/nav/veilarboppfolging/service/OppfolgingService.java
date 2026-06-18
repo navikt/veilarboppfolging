@@ -3,8 +3,8 @@ package no.nav.veilarboppfolging.service;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
-import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
+import java.util.concurrent.atomic.AtomicReference;
+
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.Id;
@@ -19,11 +19,12 @@ import no.nav.veilarboppfolging.domain.Oppfolging;
 import no.nav.veilarboppfolging.domain.OppfolgingStatusData;
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService;
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.LocalArenaOppfolging;
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.*;
 import no.nav.veilarboppfolging.repository.*;
 import no.nav.veilarboppfolging.repository.entity.*;
 import no.nav.veilarboppfolging.utils.ArenaUtils;
 import no.nav.veilarboppfolging.utils.EnumUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -33,7 +34,7 @@ import static java.util.Optional.empty;
 import static java.util.stream.Collectors.toList;
 import static no.nav.veilarboppfolging.utils.ArenaUtils.erIserv;
 
-@Slf4j
+
 @Service
 public class OppfolgingService {
 
@@ -44,12 +45,12 @@ public class OppfolgingService {
     private final OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
     private final ManuellStatusService manuellStatusService;
     private final ArbeidsoppfolgingsKontorService arbeidsoppfolgingsKontorService;
-
     private final TiltakshistorikkClient tiltakshistorikkClient;
-
     private final KvpRepository kvpRepository;
     private final MaalRepository maalRepository;
     private final BrukerOppslagFlereOppfolgingAktorRepository brukerOppslagFlereOppfolgingAktorRepository;
+
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
     public OppfolgingService(
@@ -104,7 +105,7 @@ public class OppfolgingService {
         return harFlereAktorIdMedOppfolging;
     }
 
-    @SneakyThrows
+    
     public VeilederTilgang hentVeilederTilgang(Fnr fnr) {
         authService.sjekkLesetilgangMedFnr(fnr);
         return Optional.ofNullable(arbeidsoppfolgingsKontorService.hentOppfolgingsEnhetId(fnr))
@@ -130,14 +131,12 @@ public class OppfolgingService {
 
         return getOppfolgingStatus(fnr)
                 .map(oppfolgingsstatus -> {
-                    boolean isUnderOppfolging = oppfolgingsstatus.isUnderOppfolging();
+                    boolean isUnderOppfolging = oppfolgingsstatus.getUnderOppfolging();
                     boolean erManuell = manuellStatusService.erManuell(aktorId);
 
-                    return new UnderOppfolgingDTO()
-                            .setUnderOppfolging(isUnderOppfolging)
-                            .setErManuell(isUnderOppfolging && erManuell);
+                    return new UnderOppfolgingDTO(isUnderOppfolging, isUnderOppfolging && erManuell);
                 })
-                .orElse(new UnderOppfolgingDTO().setUnderOppfolging(false).setErManuell(false));
+                .orElse(new UnderOppfolgingDTO(false, false));
     }
 
     public boolean erUnderOppfolgingNiva3(Fnr fnr) {
@@ -157,7 +156,7 @@ public class OppfolgingService {
         return oppfolgingsPeriodeRepository.hentOppfolgingsperiode(uuid);
     }
 
-    @SneakyThrows
+    
     public Optional<Oppfolging> hentOppfolging(AktorId aktorId) {
         Optional<OppfolgingEntity> maybeOppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId);
 
@@ -167,44 +166,49 @@ public class OppfolgingService {
 
         OppfolgingEntity oppfolgingEntity = maybeOppfolging.get();
 
-        Oppfolging oppfolging = new Oppfolging()
-                .setAktorId(oppfolgingEntity.getAktorId())
-                .setVeilederId(oppfolgingEntity.getVeilederId())
-                .setUnderOppfolging(oppfolgingEntity.isUnderOppfolging());
-
         Optional<KvpPeriodeEntity> maybeKvpPeriode = empty();
 
-        if (oppfolgingEntity.getGjeldendeKvpId() != 0) {
-            maybeKvpPeriode = kvpRepository.hentKvpPeriode(oppfolgingEntity.getGjeldendeKvpId());
-
+        AtomicReference<KvpPeriodeEntity> gjeldendeKvpPeriode = new AtomicReference<>();
+        var gjeldendeKvpId = oppfolgingEntity.getGjeldendeKvpId();
+        if (gjeldendeKvpId != null && gjeldendeKvpId != 0 ) {
+            maybeKvpPeriode = kvpRepository.hentKvpPeriode(gjeldendeKvpId);
             maybeKvpPeriode.ifPresentOrElse((kvpPeriode) -> {
                 if (authService.harTilgangTilEnhet(kvpPeriode.getEnhet())) {
-                    oppfolging.setGjeldendeKvp(kvpPeriode);
+                    gjeldendeKvpPeriode.set(kvpPeriode);
                 }
             }, () -> log.error("Fant ikke KVP periode for id " + oppfolgingEntity.getGjeldendeKvpId()));
         }
 
+        AtomicReference<MaalEntity> maalEntity = new AtomicReference<>();
         if (oppfolgingEntity.getGjeldendeMaalId() != 0) {
             Optional<MaalEntity> maybeMaal = maalRepository.hentMaal(oppfolgingEntity.getGjeldendeMaalId());
-
             maybeMaal.ifPresentOrElse(
-                    oppfolging::setGjeldendeMal,
+                    eksisterendeMaalEntity -> maalEntity.set(eksisterendeMaalEntity),
                     () -> log.error("Fant ikke maal for id " + oppfolgingEntity.getGjeldendeMaalId())
-            );
+                    );
         }
 
         Optional<ManuellStatusEntity> manuellStatus = manuellStatusService.hentManuellStatus(aktorId);
-        manuellStatus.ifPresent(oppfolging::setGjeldendeManuellStatus);
 
         List<KvpPeriodeEntity> kvpPerioder = kvpRepository.hentKvpHistorikk(aktorId);
-        oppfolging.setOppfolgingsperioder(populerKvpPerioder(oppfolgingsPeriodeRepository.hentOppfolgingsperioder(AktorId.of(oppfolgingEntity.getAktorId())), kvpPerioder));
+        var oppfolgingsperioder = populerKvpPerioder(oppfolgingsPeriodeRepository.hentOppfolgingsperioder(AktorId.of(oppfolgingEntity.getAktorId())), kvpPerioder);
+
+        Oppfolging oppfolging = new Oppfolging(
+                oppfolgingEntity.getAktorId(),
+                oppfolgingEntity.getVeilederId(),
+                oppfolgingEntity.getUnderOppfolging(),
+                manuellStatus.orElse(null),
+                maalEntity.get(),
+                oppfolgingsperioder,
+                gjeldendeKvpPeriode.get()
+        );
 
         return Optional.of(oppfolging);
     }
 
     public boolean erUnderOppfolging(AktorId aktorId) {
         return oppfolgingsStatusRepository.hentOppfolging(aktorId)
-                .map(OppfolgingEntity::isUnderOppfolging)
+                .map(OppfolgingEntity::getUnderOppfolging)
                 .orElse(false);
     }
 
@@ -221,8 +225,8 @@ public class OppfolgingService {
     private OppfolgingStatusData getOppfolgingStatusData(Fnr fnr) {
         AktorId aktorId = authService.getAktorIdOrThrow(fnr);
 
-        Oppfolging oppfolging = hentOppfolging(aktorId)
-                .orElse(new Oppfolging().setAktorId(aktorId.get()).setUnderOppfolging(false));
+        Optional<Oppfolging> maybeOppfolging = hentOppfolging(aktorId);
+//                .orElse(new Oppfolging().setAktorId(aktorId.get()).setUnderOppfolging(false));
 
         boolean erManuell = manuellStatusService.erManuell(aktorId);
 
@@ -239,7 +243,7 @@ public class OppfolgingService {
                 .flatMap((it) -> Optional.ofNullable(it.getKanEnkeltReaktiveres()));
 
         Boolean kanReaktiveres = maybeKanEnkeltReaktiveres
-                .map(kr -> oppfolging.isUnderOppfolging() && kr)
+                .map(kr -> maybeOppfolging.map(Oppfolging::getUnderOppfolging).orElse(false) && kr)
                 .orElse(null);
 
         Boolean erSykmeldtMedArbeidsgiver = maybeArenaOppfolging
@@ -250,27 +254,29 @@ public class OppfolgingService {
                 .map(VeilarbArenaOppfolgingsStatus::getInaktiveringsdato)
                 .orElse(null);
 
-        return new OppfolgingStatusData()
-                .setFnr(fnr.get())
-                .setAktorId(oppfolging.getAktorId())
-                .setVeilederId(oppfolging.getVeilederId())
-                .setUnderOppfolging(oppfolging.isUnderOppfolging())
-                .setUnderKvp(oppfolging.getGjeldendeKvp() != null)
-                .setReservasjonKRR(digdirKontaktinfo.isReservert())
-                .setRegistrertKRR(digdirKontaktinfo.isAktiv())
-                .setManuell(erManuell || digdirKontaktinfo.isReservert())
-                .setKanStarteOppfolging(!oppfolging.isUnderOppfolging())
-                .setOppfolgingsperioder(oppfolging.getOppfolgingsperioder())
-                .setHarSkriveTilgang(harSkrivetilgangTilBruker)
-                .setInaktivIArena(erInaktivIArena)
-                .setKanReaktiveres(kanReaktiveres)
-                // Usikker på om dette feltet er i bruk av konsumenter
-                .setErSykmeldtMedArbeidsgiver(erSykmeldtMedArbeidsgiver)
-                .setInaktiveringsdato(inaktiveringsDato)
-                .setServicegruppe(maybeArenaOppfolging.map(VeilarbArenaOppfolgingsStatus::getServicegruppe).orElse(null))
-                .setFormidlingsgruppe(maybeArenaOppfolging.map(VeilarbArenaOppfolgingsStatus::getFormidlingsgruppe).orElse(null))
-                .setRettighetsgruppe(maybeArenaOppfolging.map(VeilarbArenaOppfolgingsStatus::getRettighetsgruppe).orElse(null))
-                .setKanVarsles(!erManuell && digdirKontaktinfo.isKanVarsles());
+        return new OppfolgingStatusData(
+                fnr.get(),
+                aktorId.get(),
+                maybeOppfolging.map(Oppfolging::getVeilederId).orElse(null),
+                digdirKontaktinfo.reservert(),
+                digdirKontaktinfo.aktiv(),
+                erManuell || digdirKontaktinfo.reservert(),
+                maybeOppfolging.map(Oppfolging::getUnderOppfolging).orElse(false),
+                maybeOppfolging.map(oppfolging -> oppfolging.getGjeldendeKvp() != null).orElse(false),
+                maybeOppfolging.map(oppfolging -> !oppfolging.getUnderOppfolging()).orElse(true),
+                !erManuell && digdirKontaktinfo.kanVarsles(),
+                maybeOppfolging.map(Oppfolging::getOppfolgingsperioder).orElse(List.of()),
+                List.of(), //KVP-perioder ble aldri satt før konvertering OppfolgingStatusData-klassen til Kotlin,
+                harSkrivetilgangTilBruker,
+                erInaktivIArena,
+                kanReaktiveres,
+                inaktiveringsDato,
+                erSykmeldtMedArbeidsgiver,
+                maybeArenaOppfolging.map(VeilarbArenaOppfolgingsStatus::getServicegruppe).orElse(null),
+                maybeArenaOppfolging.map(VeilarbArenaOppfolgingsStatus::getFormidlingsgruppe).orElse(null),
+                maybeArenaOppfolging.map(VeilarbArenaOppfolgingsStatus::getRettighetsgruppe).orElse(null),
+                null
+        );
     }
 
     public Boolean harVeilederTilgangTilKontorsperretEnhet(AktorId aktorId) {
@@ -285,12 +291,14 @@ public class OppfolgingService {
 
     private List<OppfolgingsperiodeEntity> populerKvpPerioder(List<OppfolgingsperiodeEntity> oppfolgingsPerioder, List<KvpPeriodeEntity> kvpPerioder) {
         return oppfolgingsPerioder.stream()
-                .map(periode -> periode.toBuilder().kvpPerioder(
-                        kvpPerioder.stream()
-                                .filter(kvp -> authService.harTilgangTilEnhetMedSperre(kvp.getEnhet()))
-                                .filter(kvp -> erKvpIPeriode(kvp, periode))
-                                .collect(toList())
-                ).build())
+                .map(periode -> {
+                            var aktuelleKvpPerioder = kvpPerioder.stream()
+                                    .filter(kvp -> authService.harTilgangTilEnhetMedSperre(kvp.getEnhet()))
+                                    .filter(kvp -> erKvpIPeriode(kvp, periode))
+                                    .toList();
+                            return periode.oppdaterMedKvpPerioder(aktuelleKvpPerioder);
+                        }
+                )
                 .collect(toList());
     }
 

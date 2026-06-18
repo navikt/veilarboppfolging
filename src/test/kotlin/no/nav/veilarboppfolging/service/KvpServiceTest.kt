@@ -11,29 +11,37 @@ import no.nav.veilarboppfolging.BadRequestException
 import no.nav.veilarboppfolging.ForbiddenException
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsBruker
 import no.nav.veilarboppfolging.kafka.KvpPeriode
+import no.nav.veilarboppfolging.kafka.KvpPeriodeEventType
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
+import no.nav.veilarboppfolging.oppfolgingsbruker.arena.LocalArenaOppfolging
 import no.nav.veilarboppfolging.repository.KvpRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
 import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity
 import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity
 import no.nav.veilarboppfolging.repository.enums.KodeverkBruker
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.within
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchers.eq
 import org.mockito.InjectMocks
 import org.mockito.Mock
+import org.mockito.Mockito
 import org.mockito.Mockito.doAnswer
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.junit.MockitoJUnitRunner
+import org.mockito.kotlin.argumentCaptor
 import org.springframework.transaction.support.TransactionTemplate
 import java.time.ZonedDateTime
+import java.time.temporal.ChronoUnit
 import java.util.Optional
 import java.util.function.Consumer
 
@@ -63,11 +71,8 @@ class KvpServiceTest{
     @Before
     fun initialize() {
         `when`(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID)).thenReturn(
-            Optional.of(OppfolgingEntity().setUnderOppfolging(true))
+            Optional.of(OppfolgingEntity(underOppfolging = true, aktorId = AKTOR_ID.get(), veilederId = null, gjeldendeKvpId = null, gjeldendeMaalId = 0, gjeldendeManuellStatusId = null, localArenaOppfolging = Optional<LocalArenaOppfolging>.empty(), oppfolgingsEnhet = null))
         )
-
-        val veilarbArenaOppfolgingsBruker = VeilarbArenaOppfolgingsBruker()
-        veilarbArenaOppfolgingsBruker.setNavKontor(ENHET)
         `when`<EnhetId?>(arbeidsoppfolgingsKontorService.hentOppfolgingsEnhetId(FNR))
             .thenReturn(EnhetId.of(ENHET))
 
@@ -85,8 +90,8 @@ class KvpServiceTest{
     @Test
     fun start_kvp_uten_oppfolging_er_ulovlig_handling() {
         `when`(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID)).thenReturn(
-            Optional.of(OppfolgingEntity().setUnderOppfolging(false))
-        )
+            Optional.of(OppfolgingEntity(null, null, false, null, null, null, null, Optional.empty<LocalArenaOppfolging>())
+        ))
 
         try {
             kvpService!!.startKvp(FNR, START_BEGRUNNELSE)
@@ -123,7 +128,7 @@ class KvpServiceTest{
     @Test(expected = BadRequestException::class)
     fun startKvp_feiler_dersom_bruker_allerede_er_under_kvp() {
         `when`(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID)).thenReturn(
-            Optional.of(OppfolgingEntity().setUnderOppfolging(true).setGjeldendeKvpId(2))
+            Optional.of(OppfolgingEntity(underOppfolging = true, aktorId = AKTOR_ID.get(), veilederId = null, gjeldendeKvpId = 2, gjeldendeMaalId = 0, gjeldendeManuellStatusId = null, localArenaOppfolging = Optional<LocalArenaOppfolging>.empty(), oppfolgingsEnhet = null))
         )
 
         AuthContextHolderThreadLocal.instance().withContext(
@@ -135,21 +140,17 @@ class KvpServiceTest{
 
     fun gittBrukerErUnderOppfolging(kvpId: Long) {
         `when`(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID)).thenReturn(
-            Optional.of(OppfolgingEntity().setUnderOppfolging(true).setGjeldendeKvpId(kvpId))
+            Optional.of(OppfolgingEntity(underOppfolging = true, aktorId = AKTOR_ID.get(), veilederId = null, gjeldendeKvpId = kvpId, gjeldendeMaalId = 0, gjeldendeManuellStatusId = null, localArenaOppfolging = Optional<LocalArenaOppfolging>.empty(), oppfolgingsEnhet = null))
         )
     }
 
     fun gittBrukerHarAktivKvp(kvpId: Long, kvpStartTidspunkt: ZonedDateTime, enhetId: String) {
         `when`(kvpRepositoryMock.hentKvpPeriode(kvpId)).thenReturn(
             Optional.of(
-                KvpPeriodeEntity.builder()
-                    .aktorId(AKTOR_ID.get())
-                    .opprettetDato(kvpStartTidspunkt)
-                    .build()
+                KvpPeriodeEntity(null, null, AKTOR_ID.get(), enhetId, VEILEDER, kvpStartTidspunkt, null, null)
             )
         )
         val kvpPeriodeEntity = mock<KvpPeriodeEntity>()
-        `when`(kvpPeriodeEntity.enhet).thenReturn(enhetId)
         `when`(kvpRepositoryMock.hentGjeldendeKvpPeriode(AKTOR_ID)).thenReturn(Optional.of(
             kvpPeriodeEntity
         ))
@@ -178,11 +179,16 @@ class KvpServiceTest{
             any()
         )
         verify(authService, times(1)).harTilgangTilEnhet(ENHET)
-        verify(kafkaProducerService, times(1)).publiserKvpPeriode(
-            KvpPeriode
-                .start(AKTOR_ID, ENHET, VEILEDER, kvpStartTidspunkt, START_BEGRUNNELSE)
-                .avslutt(VEILEDER, any(), STOP_BEGRUNNELSE)
-        )
+
+        val captor = argumentCaptor<KvpPeriode>()
+        verify(kafkaProducerService, times(1)).publiserKvpPeriode(captor.capture())
+        val publisert = captor.firstValue
+        assertThat(publisert.event).isEqualTo(KvpPeriodeEventType.AVSLUTTET)
+        assertThat(publisert.aktorId).isEqualTo(AKTOR_ID.get())
+        assertThat(publisert.avsluttet?.avsluttetAv).isEqualTo(VEILEDER)
+        assertThat(publisert.avsluttet?.avsluttetBegrunnelse).isEqualTo(STOP_BEGRUNNELSE)
+        assertThat(publisert.avsluttet?.avsluttetDato)
+            .isCloseTo(ZonedDateTime.now(), within(2, ChronoUnit.SECONDS))
     }
 
     @Test
@@ -244,4 +250,6 @@ class KvpServiceTest{
         private const val STOP_BEGRUNNELSE = "STOP_BEGRUNNELSE"
         private const val VEILEDER = "1234"
     }
+
+    private fun <T> any(type: Class<T>): T = Mockito.any<T>(type)
 }

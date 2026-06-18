@@ -3,7 +3,6 @@ package no.nav.veilarboppfolging.service;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.binder.MeterBinder;
-import lombok.extern.slf4j.Slf4j;
 import no.nav.common.metrics.Event;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.veilarboppfolging.repository.KafkaProducerMetricRepository;
@@ -18,7 +17,7 @@ import java.util.Optional;
 import static no.nav.veilarboppfolging.utils.StringUtils.of;
 
 @Service
-@Slf4j
+
 public class MetricsService implements MeterBinder {
 
     @Value("${app.kafka.enabled}") Boolean kafkaEnabled;

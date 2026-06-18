@@ -32,9 +32,9 @@ class OppfolgingsenhetHistorikkRepository (val db: NamedParameterJdbcTemplate) {
     }
 
     fun ResultSet.toOppfolgingsenhetEndringEntity(): OppfolgingsenhetEndringEntity {
-        return OppfolgingsenhetEndringEntity.builder()
-            .enhet(this.getString("enhet"))
-            .endretDato(DbUtils.hentZonedDateTime(this, "endret_dato"))
-            .build()
+        return OppfolgingsenhetEndringEntity(
+            this.getString("enhet"),
+            DbUtils.hentZonedDateTime(this, "endret_dato")
+        )
     }
 }

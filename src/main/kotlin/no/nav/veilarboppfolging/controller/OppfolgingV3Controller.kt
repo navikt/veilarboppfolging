@@ -1,7 +1,6 @@
 package no.nav.veilarboppfolging.controller
 
 import java.time.LocalDate
-import lombok.RequiredArgsConstructor
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.veilarboppfolging.BadRequestException
@@ -49,7 +48,6 @@ import org.springframework.web.server.ResponseStatusException
 
 @RestController
 @RequestMapping("/api/v3")
-@RequiredArgsConstructor
 class OppfolgingV3Controller(
     val oppfolgingService: OppfolgingService,
     val avsluttOppfolgingService: AvsluttOppfolgingService,
@@ -78,10 +76,7 @@ class OppfolgingV3Controller(
 
     @GetMapping("/oppfolging/me")
     fun hentBrukerInfo(): Bruker? {
-        return Bruker()
-            .setId(authService.innloggetBrukerIdent)
-            .setErVeileder(authService.erInternBruker())
-            .setErBruker(authService.erEksternBruker())
+        return Bruker(id = authService.innloggetBrukerIdent, erVeileder = authService.erInternBruker(), erBruker = authService.erEksternBruker())
     }
 
     @PostMapping("/oppfolging/hent-status")
@@ -158,7 +153,7 @@ class OppfolgingV3Controller(
         if (brukerInfo != null) {
             manuellStatusService.oppdaterManuellStatus(
                 fodselsnummer, false, veilederBegrunnelseRequest.begrunnelse,
-                KodeverkBruker.NAV, brukerInfo.getId()
+                KodeverkBruker.NAV, brukerInfo.id
             )
         }
 
@@ -267,7 +262,7 @@ class OppfolgingV3Controller(
     }
 
     private fun filtrerKvpPerioder(periode: OppfolgingsperiodeEntity): OppfolgingsperiodeEntity {
-        if (!authService.erInternBruker() || periode.kvpPerioder == null || periode.kvpPerioder.isEmpty()) {
+        if (!authService.erInternBruker() || periode.kvpPerioder?.isEmpty() ?: true) {
             return periode
         }
 
@@ -275,7 +270,7 @@ class OppfolgingV3Controller(
             .kvpPerioder
             .filter { authService.harTilgangTilEnhet(it.enhet) }
 
-        return periode.toBuilder().kvpPerioder(kvpPeriodeEntities).build()
+        return periode.copy(kvpPerioder = kvpPeriodeEntities)
     }
 
     companion object {

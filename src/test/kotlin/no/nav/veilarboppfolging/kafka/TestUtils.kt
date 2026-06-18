@@ -9,10 +9,13 @@ import no.nav.pto_schema.enums.arena.Rettighetsgruppe
 import no.nav.pto_schema.enums.arena.SikkerhetstiltakType
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.LocalArenaOppfolging
+import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity
 import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity
+import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity
 import java.time.LocalDate
 import java.time.ZonedDateTime
 import java.util.Optional
+import java.util.UUID
 
 object TestUtils {
 
@@ -48,16 +51,17 @@ object TestUtils {
         aktorId: String,
         veilederId: String = "A111111",
         underOppfolging: Boolean = true,
-        localArenaOppfølging: LocalArenaOppfolging = localArenaOppfolging()
-    ) =
-        OppfolgingEntity()
-            .setAktorId(aktorId)
-            .setVeilederId(veilederId)
-            .setUnderOppfolging(underOppfolging)
-            .setGjeldendeManuellStatusId(1)
-            .setGjeldendeMaalId(1)
-            .setGjeldendeKvpId(0)
-            .setLocalArenaOppfolging(Optional.of(localArenaOppfølging))
+        localArenaOppfølging: LocalArenaOppfolging = localArenaOppfolging(),
+    ) = OppfolgingEntity(
+            aktorId = aktorId,
+            veilederId = veilederId,
+            underOppfolging = underOppfolging,
+            gjeldendeManuellStatusId = 1L,
+            gjeldendeMaalId = 1L,
+            gjeldendeKvpId = 0L,
+            localArenaOppfolging = Optional.of(localArenaOppfølging),
+            oppfolgingsEnhet = null
+        )
 
     fun localArenaOppfolging(kvalifiseringsgruppe: Kvalifiseringsgruppe = Kvalifiseringsgruppe.IVURD, formidlingsgruppe: Formidlingsgruppe = Formidlingsgruppe.ARBS) =
         LocalArenaOppfolging(

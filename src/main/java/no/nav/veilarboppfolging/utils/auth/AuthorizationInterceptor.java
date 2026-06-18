@@ -1,10 +1,12 @@
 package no.nav.veilarboppfolging.utils.auth;
 
-import lombok.extern.slf4j.Slf4j;
+
 import no.nav.veilarboppfolging.DefaultExceptionHandler;
 import no.nav.veilarboppfolging.InternalServerError;
 import no.nav.veilarboppfolging.VeilarboppfolgingException;
 import no.nav.veilarboppfolging.service.AuthService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.server.ResponseStatusException;
@@ -13,10 +15,11 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-@Slf4j
+
 @Component
 public class AuthorizationInterceptor implements HandlerInterceptor {
     private final AuthorizationAnnotationHandler annotationHandler;
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     public AuthorizationInterceptor(AuthService authService) {
         this.annotationHandler = new AuthorizationAnnotationHandler(authService);

@@ -102,7 +102,7 @@ public class KvpRepositoryTest extends IsolatedDatabaseTest {
         stop_kvp();
         var maybeKvp = kvpRepository.hentKvpPeriode(kvp.getKvpId());
         assertTrue(maybeKvp.isPresent());
-        assertEquals(serial + 1, maybeKvp.get().getSerial());
+        assertEquals(serial + 1, maybeKvp.map(KvpPeriodeEntity::getSerial).orElseThrow().longValue());
     }
 
     private void stop_kvp() {

@@ -31,8 +31,7 @@ public class ManuellStatusRepositoryTest extends IsolatedDatabaseTest {
 
     @Test
     public void hentManuellStatus__should_return_manuell_status() {
-        ManuellStatusEntity manuellStatus = createManuellStatus(TEST_AKTOR_ID);
-        manuellStatus.setDato(manuellStatus.getDato().truncatedTo(MILLIS));
+        ManuellStatusEntity manuellStatus = createManuellStatus(TEST_AKTOR_ID, true, ZonedDateTime.now().truncatedTo(MILLIS));
 
         oppfolgingsStatusRepository.opprettOppfolging(TEST_AKTOR_ID);
         manuellStatusRepository.create(manuellStatus);
@@ -42,7 +41,12 @@ public class ManuellStatusRepositoryTest extends IsolatedDatabaseTest {
         var maybeManuellStatus = manuellStatusRepository.hentManuellStatus(oppfolging.getGjeldendeManuellStatusId());
 
         assertTrue(maybeManuellStatus.isPresent());
-        assertEquals(manuellStatus, maybeManuellStatus.get());
+        assertEquals(manuellStatus.getManuell(), maybeManuellStatus.get().getManuell());
+        assertEquals(manuellStatus.getDato(), maybeManuellStatus.get().getDato());
+        assertEquals(manuellStatus.getAktorId(), maybeManuellStatus.get().getAktorId());
+        assertEquals(manuellStatus.getBegrunnelse(), maybeManuellStatus.get().getBegrunnelse());
+        assertEquals(manuellStatus.getOpprettetAv(), maybeManuellStatus.get().getOpprettetAv());
+        assertEquals(manuellStatus.getOpprettetAvBrukerId(), maybeManuellStatus.get().getOpprettetAvBrukerId());
     }
 
     @Test
@@ -52,17 +56,9 @@ public class ManuellStatusRepositoryTest extends IsolatedDatabaseTest {
 
     @Test
     public void history__should_return_all_manuell_statuser_for_user() {
-        ManuellStatusEntity manuellStatus1 = createManuellStatus(TEST_AKTOR_ID)
-                .setManuell(false)
-                .setDato(ZonedDateTime.now().minusSeconds(10));
-
-        ManuellStatusEntity manuellStatus2 = createManuellStatus(TEST_AKTOR_ID)
-                .setManuell(true)
-                .setDato(ZonedDateTime.now());
-
-        ManuellStatusEntity manuellStatus3 = createManuellStatus(TEST_AKTOR_ID_2)
-                .setManuell(true)
-                .setDato(ZonedDateTime.now());
+        ManuellStatusEntity manuellStatus1 = createManuellStatus(TEST_AKTOR_ID, false, ZonedDateTime.now().minusSeconds(10));
+        ManuellStatusEntity manuellStatus2 = createManuellStatus(TEST_AKTOR_ID, true, ZonedDateTime.now());
+        ManuellStatusEntity manuellStatus3 = createManuellStatus(TEST_AKTOR_ID_2, true, ZonedDateTime.now());
 
 
         oppfolgingsStatusRepository.opprettOppfolging(TEST_AKTOR_ID);
@@ -76,14 +72,16 @@ public class ManuellStatusRepositoryTest extends IsolatedDatabaseTest {
         assertEquals(2, statuser.size());
     }
 
-    private ManuellStatusEntity createManuellStatus(AktorId aktorId) {
-        return new ManuellStatusEntity()
-                .setAktorId(aktorId.get())
-                .setManuell(true)
-                .setDato(ZonedDateTime.now())
-                .setBegrunnelse("begrunnelse")
-                .setOpprettetAv(KodeverkBruker.SYSTEM)
-                .setOpprettetAvBrukerId("test");
+    private ManuellStatusEntity createManuellStatus(AktorId aktorId, boolean manuell, ZonedDateTime dato) {
+        return new ManuellStatusEntity(
+                null,
+                aktorId.get(),
+                manuell,
+                dato,
+                "begrunnelse",
+                KodeverkBruker.SYSTEM,
+                "test"
+        );
     }
 
 }

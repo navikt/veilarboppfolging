@@ -1,6 +1,6 @@
 package no.nav.veilarboppfolging.service;
 
-import lombok.extern.slf4j.Slf4j;
+
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.NavIdent;
@@ -22,7 +22,7 @@ import java.util.Optional;
 import static java.lang.String.format;
 import static no.nav.veilarboppfolging.utils.SecureLog.secureLog;
 
-@Slf4j
+
 @Service
 public class VeilederTilordningService {
 
@@ -70,31 +70,25 @@ public class VeilederTilordningService {
         List<VeilederTilordning> feilendeTilordninger = new ArrayList<>();
 
         for (VeilederTilordning tilordning : tilordninger) {
-            tilordning.setInnloggetVeilederId(innloggetVeilederId);
+            var oppdatertTilordning = tilordning.oppdaterMedInnloggetVeilederId(innloggetVeilederId);
 
             try {
                 AktorId aktorId = authService.getAktorIdOrThrow(Fnr.of(tilordning.getBrukerFnr()));
                 authService.sjekkSkrivetilgangMedAktorId(aktorId);
-
-                tilordning.setAktoerId(aktorId.get());
+                oppdatertTilordning = tilordning.oppdaterMedAktorId(aktorId.get());
                 String eksisterendeVeileder = veilederTilordningerRepository.hentTilordningForAktoer(aktorId);
-
-                feilendeTilordninger = tildelVeileder(feilendeTilordninger, tilordning, aktorId, eksisterendeVeileder, innloggetVeilederId);
+                feilendeTilordninger = tildelVeileder(feilendeTilordninger, oppdatertTilordning, aktorId, eksisterendeVeileder, innloggetVeilederId);
             } catch (Exception e) {
-                feilendeTilordninger.add(tilordning);
-                loggFeilOppfolging(e, tilordning);
+                feilendeTilordninger.add(oppdatertTilordning);
+                loggFeilOppfolging(e, oppdatertTilordning);
             }
         }
 
-        TilordneVeilederResponse response = new TilordneVeilederResponse().setFeilendeTilordninger(feilendeTilordninger);
-
         if (feilendeTilordninger.isEmpty()) {
-            response.setResultat("OK: Veiledere tilordnet");
+            return new TilordneVeilederResponse("OK: Veiledere tilordnet", List.of());
         } else {
-            response.setResultat("WARNING: Noen brukere kunne ikke tilordnes en veileder");
+            return new TilordneVeilederResponse("WARNING: Noen brukere kunne ikke tilordnes en veileder", feilendeTilordninger);
         }
-
-        return response;
     }
 
     public void lestAktivitetsplan(Fnr fnr) {
@@ -105,7 +99,7 @@ public class VeilederTilordningService {
 
         // TODO: Skriveoperasjonene burde gjøres i en transaksjon
         veilederTilordningerRepository.hentTilordnetVeileder(aktorId)
-                .filter(VeilederTilordningEntity::isNyForVeileder)
+                .filter(VeilederTilordningEntity::getNyForVeileder)
                 .filter(this::erVeilederFor)
                 .map(metricsService::lestAvVeileder)
                 .map(VeilederTilordningEntity::getAktorId)

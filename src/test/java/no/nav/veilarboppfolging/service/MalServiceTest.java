@@ -75,7 +75,7 @@ public class MalServiceTest {
     @Before
     public void setup() {
         when(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID);
-        when(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID)).thenReturn(Optional.of(new OppfolgingEntity().setGjeldendeMaalId(MAL_ID)));
+        when(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID)).thenReturn(Optional.of(oppfolgingMedMaalId(MAL_ID)));
         when(maalRepository.hentMaal(MAL_ID)).thenReturn(Optional.of(mal(BEFORE_KVP)));
         doAnswer((mock) -> {
             Consumer consumer = mock.getArgument(0);
@@ -105,15 +105,15 @@ public class MalServiceTest {
 
     @Test
     public void gjeldendeMal_ikke_satt() {
-        when(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID)).thenReturn(Optional.of(new OppfolgingEntity().setGjeldendeMaalId(0)));
+        when(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID)).thenReturn(Optional.of(oppfolgingMedMaalId(0)));
 
-        MaalEntity malData = maalService.hentMal(FNR);
-        assertThat(malData.getId()).isEqualTo(0L);
+        Optional<MaalEntity> malData = maalService.hentMal(FNR);
+        assertThat(malData).isEmpty();
     }
 
     @Test
     public void hent_mal_ingen_kvp() {
-        MaalEntity malData = maalService.hentMal(FNR);
+        MaalEntity malData = maalService.hentMal(FNR).get();
         assertThat(malData.getId()).isEqualTo(MAL_ID);
     }
 
@@ -121,7 +121,7 @@ public class MalServiceTest {
     public void hent_mal_opprettet_for_kvp() {
         when(kvpRepositoryMock.hentKvpHistorikk(AKTOR_ID)).thenReturn(kvpHistorikk());
 
-        MaalEntity malData = maalService.hentMal(FNR);
+        MaalEntity malData = maalService.hentMal(FNR).get();
         assertThat(malData.getId()).isEqualTo(MAL_ID);
     }
 
@@ -131,8 +131,8 @@ public class MalServiceTest {
         when(maalRepository.hentMaal(MAL_ID)).thenReturn(Optional.of(mal(IN_KVP)));
         when(authService.harTilgangTilEnhetMedSperre(ENHET)).thenReturn(false);
 
-        MaalEntity malData = maalService.hentMal(FNR);
-        assertThat(malData.getId()).isEqualTo(0L);
+        Optional<MaalEntity> malData = maalService.hentMal(FNR);
+        assertThat(malData).isEmpty();
     }
 
     @Test
@@ -141,7 +141,7 @@ public class MalServiceTest {
         when(maalRepository.hentMaal(MAL_ID)).thenReturn(Optional.of(mal(IN_KVP)));
         when(authService.harTilgangTilEnhetMedSperre(ENHET)).thenReturn(true);
 
-        MaalEntity malData = maalService.hentMal(FNR);
+        MaalEntity malData = maalService.hentMal(FNR).get();
         assertThat(malData.getId()).isEqualTo(MAL_ID);
     }
 
@@ -167,44 +167,36 @@ public class MalServiceTest {
         assertThat(ids).containsExactly(1L, 3L);
     }
 
+    private OppfolgingEntity oppfolgingMedMaalId(long maalId) {
+        return new OppfolgingEntity(
+                AKTOR_ID.get(), null, true, null, maalId, null, null, Optional.empty()
+        );
+    }
+
     private List<MaalEntity> malList() {
-        return asList(new MaalEntity()
-                        .setId(1L)
-                        .setAktorId(AKTOR_ID.get())
-                        .setDato(BEFORE_KVP),
-                new MaalEntity()
-                        .setId(2L)
-                        .setAktorId(AKTOR_ID.get())
-                        .setDato(IN_KVP),
-                new MaalEntity()
-                        .setId(3L)
-                        .setAktorId(AKTOR_ID.get())
-                        .setDato(AFTER_KVP)
+        return asList(
+                new MaalEntity(1L, AKTOR_ID.get(), "mal", null, BEFORE_KVP),
+                new MaalEntity(2L, AKTOR_ID.get(), "mal", null, IN_KVP),
+                new MaalEntity(3L, AKTOR_ID.get(), "mal", null, AFTER_KVP)
         );
     }
 
     private KvpPeriodeEntity aktivKvp() {
-        return KvpPeriodeEntity.builder()
-                .kvpId(KVP_ID)
-                .enhet(ENHET)
-                .opprettetDato(START_KVP)
-                .build();
+        return new KvpPeriodeEntity(
+                KVP_ID, null, AKTOR_ID.get(), ENHET, null, START_KVP,
+                null, null, null, null, null, null
+        );
     }
 
     private List<KvpPeriodeEntity> kvpHistorikk() {
-        return singletonList(KvpPeriodeEntity.builder()
-                .kvpId(KVP_ID)
-                .enhet(ENHET)
-                .opprettetDato(START_KVP)
-                .avsluttetDato(STOP_KVP)
-                .build());
+        return singletonList(new KvpPeriodeEntity(
+                KVP_ID, null, AKTOR_ID.get(), ENHET, null, START_KVP,
+                null, null, null, STOP_KVP, null, null
+        ));
     }
 
     private MaalEntity mal(ZonedDateTime dateTime) {
-        return new MaalEntity()
-                .setId(MAL_ID)
-                .setAktorId(AKTOR_ID.get())
-                .setDato(dateTime);
+        return new MaalEntity(MAL_ID, AKTOR_ID.get(), "mal", null, dateTime);
     }
 
 }

@@ -58,7 +58,7 @@ open class KafkaConsumerConfig(
                     .withMetrics(meterRegistry)
                     .withStoreOnFailure(consumerRepository)
                     .withConsumerConfig(
-                        kafkaProperties.getEndringPaaOppfolgingBrukerTopic(),
+                        kafkaProperties.endringPaaOppfolgingBrukerTopic,
                         Deserializers.stringDeserializer(),
                         Deserializers.jsonDeserializer(
                             EndringPaaOppfoelgingsBrukerV2::class.java
@@ -74,7 +74,7 @@ open class KafkaConsumerConfig(
                     .withMetrics(meterRegistry)
                     .withStoreOnFailure(consumerRepository)
                     .withConsumerConfig(
-                        kafkaProperties.getArbeidssokerperioderTopicAiven(),
+                        kafkaProperties.arbeidssokerperioderTopicAiven,
                         Deserializers.stringDeserializer(),
                         getPeriodeAvroDeserializer(),
                         Consumer<ConsumerRecord<String, Periode>> { kafkaMelding: ConsumerRecord<String, Periode> ->

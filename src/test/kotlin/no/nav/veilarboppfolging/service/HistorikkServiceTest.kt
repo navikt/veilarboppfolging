@@ -3,6 +3,7 @@ package no.nav.veilarboppfolging.service
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.veilarboppfolging.controller.response.HistorikkHendelse
+import no.nav.veilarboppfolging.controller.response.HistorikkHendelseType
 import no.nav.veilarboppfolging.oppfolgingsbruker.StartetAvType
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelse
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvregistreringsType
@@ -24,6 +25,7 @@ import org.mockito.InjectMocks
 import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.junit.MockitoJUnitRunner
+import org.springframework.aot.hint.TypeReference.listOf
 import org.springframework.transaction.support.TransactionTemplate
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
@@ -87,15 +89,15 @@ class HistorikkServiceTest {
 
         Assertions.assertThat(typer).isEqualTo(
             listOf(
-                HistorikkHendelse.Type.KVP_STARTET,
-                HistorikkHendelse.Type.KVP_STOPPET,
-                HistorikkHendelse.Type.STARTET_OPPFOLGINGSPERIODE,
-                HistorikkHendelse.Type.AVSLUTTET_OPPFOLGINGSPERIODE,
-                HistorikkHendelse.Type.STARTET_OPPFOLGINGSPERIODE,
-                HistorikkHendelse.Type.SATT_TIL_MANUELL,
-                HistorikkHendelse.Type.SATT_TIL_DIGITAL,
-                HistorikkHendelse.Type.SATT_TIL_MANUELL,
-                HistorikkHendelse.Type.SATT_TIL_DIGITAL
+                HistorikkHendelseType.KVP_STARTET,
+                HistorikkHendelseType.KVP_STOPPET,
+                HistorikkHendelseType.STARTET_OPPFOLGINGSPERIODE,
+                HistorikkHendelseType.AVSLUTTET_OPPFOLGINGSPERIODE,
+                HistorikkHendelseType.STARTET_OPPFOLGINGSPERIODE,
+                HistorikkHendelseType.SATT_TIL_MANUELL,
+                HistorikkHendelseType.SATT_TIL_DIGITAL,
+                HistorikkHendelseType.SATT_TIL_MANUELL,
+                HistorikkHendelseType.SATT_TIL_DIGITAL
             )
         )
     }
@@ -116,7 +118,7 @@ class HistorikkServiceTest {
         )
         gitt_oppfolgingsperioder(listOf(oppfolgingsPeriode))
 
-        val oppfolgingssEventer = listOf(HistorikkHendelse.Type.AVSLUTTET_OPPFOLGINGSPERIODE, HistorikkHendelse.Type.STARTET_OPPFOLGINGSPERIODE)
+        val oppfolgingssEventer = listOf(HistorikkHendelseType.AVSLUTTET_OPPFOLGINGSPERIODE, HistorikkHendelseType.STARTET_OPPFOLGINGSPERIODE)
         val historikk = historikkService.hentInstillingsHistorikk(FNR)
             .filter { oppfolgingssEventer.contains(it.type) }
 
@@ -125,7 +127,7 @@ class HistorikkServiceTest {
         val periodeAvsluttetEvent = historikk[1]
 
         Assertions.assertThat(periodeStartetEvent).isEqualTo(historikkHendelse(
-            type = HistorikkHendelse.Type.STARTET_OPPFOLGINGSPERIODE,
+            type = HistorikkHendelseType.STARTET_OPPFOLGINGSPERIODE,
             tidspunkt = OPPFOLGING_START,
             begrunnelse = "Veileder startet arbeidsrettet oppfølging på bruker",
             opprettetAvType = KodeverkBruker.NAV,
@@ -133,7 +135,7 @@ class HistorikkServiceTest {
         ))
 
         Assertions.assertThat(periodeAvsluttetEvent).isEqualTo(historikkHendelse(
-            type = HistorikkHendelse.Type.AVSLUTTET_OPPFOLGINGSPERIODE,
+            type = HistorikkHendelseType.AVSLUTTET_OPPFOLGINGSPERIODE,
             tidspunkt = OPPFOLGING_END,
             begrunnelse = avsluttetBegrunnelse,
             opprettetAvType = KodeverkBruker.NAV,
@@ -156,7 +158,7 @@ class HistorikkServiceTest {
         )
         gitt_oppfolgingsperioder(listOf(oppfolgingsPeriode))
 
-        val oppfolgingssEventer = listOf(HistorikkHendelse.Type.AVSLUTTET_OPPFOLGINGSPERIODE, HistorikkHendelse.Type.STARTET_OPPFOLGINGSPERIODE)
+        val oppfolgingssEventer = listOf(HistorikkHendelseType.AVSLUTTET_OPPFOLGINGSPERIODE, HistorikkHendelseType.STARTET_OPPFOLGINGSPERIODE)
         val historikk = historikkService.hentInstillingsHistorikk(FNR)
             .filter { oppfolgingssEventer.contains(it.type) }
 
@@ -165,7 +167,7 @@ class HistorikkServiceTest {
         val periodeAvsluttetEvent = historikk[1]
 
         Assertions.assertThat(periodeStartetEvent).isEqualTo(historikkHendelse(
-            type = HistorikkHendelse.Type.STARTET_OPPFOLGINGSPERIODE,
+            type = HistorikkHendelseType.STARTET_OPPFOLGINGSPERIODE,
             tidspunkt = OPPFOLGING_START,
             begrunnelse = "Bruker ble registrert som arbeidssøker av veileder",
             opprettetAvType = KodeverkBruker.NAV,
@@ -173,7 +175,7 @@ class HistorikkServiceTest {
         ))
 
         Assertions.assertThat(periodeAvsluttetEvent).isEqualTo(historikkHendelse(
-            type = HistorikkHendelse.Type.AVSLUTTET_OPPFOLGINGSPERIODE,
+            type = HistorikkHendelseType.AVSLUTTET_OPPFOLGINGSPERIODE,
             tidspunkt = OPPFOLGING_END,
             begrunnelse = avsluttetBegrunnelse,
             opprettetAvType = KodeverkBruker.NAV,
@@ -195,7 +197,7 @@ class HistorikkServiceTest {
         )
         gitt_oppfolgingsperioder(listOf(oppfolgingsPeriode))
 
-        val oppfolgingssEventer = listOf(HistorikkHendelse.Type.AVSLUTTET_OPPFOLGINGSPERIODE, HistorikkHendelse.Type.STARTET_OPPFOLGINGSPERIODE)
+        val oppfolgingssEventer = listOf(HistorikkHendelseType.AVSLUTTET_OPPFOLGINGSPERIODE, HistorikkHendelseType.STARTET_OPPFOLGINGSPERIODE)
         val historikk = historikkService.hentInstillingsHistorikk(FNR)
             .filter { oppfolgingssEventer.contains(it.type) }
 
@@ -204,7 +206,7 @@ class HistorikkServiceTest {
         val periodeAvsluttetEvent = historikk[1]
 
         Assertions.assertThat(periodeStartetEvent).isEqualTo(historikkHendelse(
-            type = HistorikkHendelse.Type.STARTET_OPPFOLGINGSPERIODE,
+            type = HistorikkHendelseType.STARTET_OPPFOLGINGSPERIODE,
             tidspunkt = OPPFOLGING_START,
             begrunnelse = "Registrert som arbeidssøker i arena",
             opprettetAvType = KodeverkBruker.SYSTEM,
@@ -212,7 +214,7 @@ class HistorikkServiceTest {
         ))
 
         Assertions.assertThat(periodeAvsluttetEvent).isEqualTo(historikkHendelse(
-            type = HistorikkHendelse.Type.AVSLUTTET_OPPFOLGINGSPERIODE,
+            type = HistorikkHendelseType.AVSLUTTET_OPPFOLGINGSPERIODE,
             tidspunkt = OPPFOLGING_END,
             begrunnelse = avsluttetBegrunnelse,
             opprettetAvType = KodeverkBruker.SYSTEM,
@@ -234,7 +236,7 @@ class HistorikkServiceTest {
         )
         gitt_oppfolgingsperioder(listOf(oppfolgingsPeriode))
 
-        val oppfolgingssEventer = listOf(HistorikkHendelse.Type.AVSLUTTET_OPPFOLGINGSPERIODE, HistorikkHendelse.Type.STARTET_OPPFOLGINGSPERIODE)
+        val oppfolgingssEventer = listOf(HistorikkHendelseType.AVSLUTTET_OPPFOLGINGSPERIODE, HistorikkHendelseType.STARTET_OPPFOLGINGSPERIODE)
         val historikk = historikkService.hentInstillingsHistorikk(FNR)
             .filter { oppfolgingssEventer.contains(it.type) }
 
@@ -243,7 +245,7 @@ class HistorikkServiceTest {
         val periodeAvsluttetEvent = historikk[1]
 
         Assertions.assertThat(periodeStartetEvent).isEqualTo(historikkHendelse(
-            type = HistorikkHendelse.Type.STARTET_OPPFOLGINGSPERIODE,
+            type = HistorikkHendelseType.STARTET_OPPFOLGINGSPERIODE,
             tidspunkt = OPPFOLGING_START,
             begrunnelse = "Bruker registrerte seg som arbeidssøker",
             opprettetAvType = KodeverkBruker.EKSTERN,
@@ -251,7 +253,7 @@ class HistorikkServiceTest {
         ))
 
         Assertions.assertThat(periodeAvsluttetEvent).isEqualTo(historikkHendelse(
-            type = HistorikkHendelse.Type.AVSLUTTET_OPPFOLGINGSPERIODE,
+            type = HistorikkHendelseType.AVSLUTTET_OPPFOLGINGSPERIODE,
             tidspunkt = OPPFOLGING_END,
             begrunnelse = avsluttetBegrunnelse,
             opprettetAvType = KodeverkBruker.SYSTEM,
@@ -273,7 +275,7 @@ class HistorikkServiceTest {
         )
         gitt_oppfolgingsperioder(listOf(oppfolgingsPeriode))
 
-        val oppfolgingssEventer = listOf(HistorikkHendelse.Type.AVSLUTTET_OPPFOLGINGSPERIODE, HistorikkHendelse.Type.STARTET_OPPFOLGINGSPERIODE)
+        val oppfolgingssEventer = listOf(HistorikkHendelseType.AVSLUTTET_OPPFOLGINGSPERIODE, HistorikkHendelseType.STARTET_OPPFOLGINGSPERIODE)
         val historikk = historikkService.hentInstillingsHistorikk(FNR)
             .filter { oppfolgingssEventer.contains(it.type) }
 
@@ -282,7 +284,7 @@ class HistorikkServiceTest {
         val periodeAvsluttetEvent = historikk[1]
 
         Assertions.assertThat(periodeStartetEvent).isEqualTo(historikkHendelse(
-            type = HistorikkHendelse.Type.STARTET_OPPFOLGINGSPERIODE,
+            type = HistorikkHendelseType.STARTET_OPPFOLGINGSPERIODE,
             tidspunkt = OPPFOLGING_START,
             begrunnelse = "Startet arbeidsrettet oppfølging på bruker",
             opprettetAvType = null,
@@ -290,7 +292,7 @@ class HistorikkServiceTest {
         ))
 
         Assertions.assertThat(periodeAvsluttetEvent).isEqualTo(historikkHendelse(
-            type = HistorikkHendelse.Type.AVSLUTTET_OPPFOLGINGSPERIODE,
+            type = HistorikkHendelseType.AVSLUTTET_OPPFOLGINGSPERIODE,
             tidspunkt = OPPFOLGING_END,
             begrunnelse = avsluttetBegrunnelse,
             opprettetAvType = KodeverkBruker.SYSTEM,
@@ -303,7 +305,7 @@ class HistorikkServiceTest {
         gitt_oppfolgingsperioder(listOf(mockStartetOppfolgingsperiode()))
         gitt_reaktiveringer(listOf(mockReaktivering()))
 
-        val oppfolgingssEventer = listOf(HistorikkHendelse.Type.REAKTIVERT_OPPFOLGINGSPERIODE, HistorikkHendelse.Type.STARTET_OPPFOLGINGSPERIODE)
+        val oppfolgingssEventer = listOf(HistorikkHendelseType.REAKTIVERT_OPPFOLGINGSPERIODE, HistorikkHendelseType.STARTET_OPPFOLGINGSPERIODE)
         val historikk = historikkService.hentInstillingsHistorikk(FNR)
             .filter { oppfolgingssEventer.contains(it.type) }
 
@@ -312,7 +314,7 @@ class HistorikkServiceTest {
         val periodeReaktivertEvent = historikk[1]
 
         Assertions.assertThat(periodeStartetEvent).isEqualTo(historikkHendelse(
-            type = HistorikkHendelse.Type.STARTET_OPPFOLGINGSPERIODE,
+            type = HistorikkHendelseType.STARTET_OPPFOLGINGSPERIODE,
             tidspunkt = OPPFOLGING_START,
             begrunnelse = "Startet arbeidsrettet oppfølging på bruker",
             opprettetAvType = KodeverkBruker.NAV,
@@ -320,7 +322,7 @@ class HistorikkServiceTest {
         ))
 
         Assertions.assertThat(periodeReaktivertEvent).isEqualTo(historikkHendelse(
-            type = HistorikkHendelse.Type.REAKTIVERT_OPPFOLGINGSPERIODE,
+            type = HistorikkHendelseType.REAKTIVERT_OPPFOLGINGSPERIODE,
             tidspunkt = OPPFOLGING_REAKTIVERT,
             begrunnelse = "Bruker manuelt reaktivert i Arena av veileder",
             opprettetAvType = KodeverkBruker.NAV,
@@ -342,24 +344,32 @@ class HistorikkServiceTest {
 
     private fun gitt_oppfolging_start_stopp(startetAvVeilder: String? = null, avsluttetAvVeileder: String? = null) {
         val oppfolgingsperiodeEntities = listOf(
-            OppfolgingsperiodeEntity.builder()
-                .uuid(UUID.randomUUID())
-                .startDato(OPPFOLGING_START)
-                .sluttDato(OPPFOLGING_END)
-                .aktorId(AKTOR_ID.get())
-                .avsluttetAv(avsluttetAvVeileder)
-                .startetBegrunnelse(OppfolgingStartBegrunnelse.MANUELL_REGISTRERING_VEILEDER)
-                .startetAv(startetAvVeilder)
-                .begrunnelse("Avsluttet manuelt")
-                .build(),
-            OppfolgingsperiodeEntity.builder()
-                .uuid(UUID.randomUUID())
-                .startDato(OPPFOLGING_END)
-                .sluttDato(null)
-                .aktorId(AKTOR_ID.get())
-                .startetBegrunnelse(OppfolgingStartBegrunnelse.MANUELL_REGISTRERING_VEILEDER)
-                .begrunnelse(null)
-                .build()
+            OppfolgingsperiodeEntity(
+                UUID.randomUUID(),
+        AKTOR_ID.get(),
+                avsluttetAvVeileder,
+                        OPPFOLGING_START,
+                OPPFOLGING_END,
+                "Avsluttet manuelt",
+                emptyList(),
+                OppfolgingStartBegrunnelse.MANUELL_REGISTRERING_VEILEDER,
+                startetAvVeilder,
+                null,
+                AvregistreringsType.ManuellAvregistrering
+            ),
+            OppfolgingsperiodeEntity(
+                UUID.randomUUID(),
+                AKTOR_ID.get(),
+                null,
+                OPPFOLGING_END,
+                null,
+                null,
+                emptyList(),
+                OppfolgingStartBegrunnelse.MANUELL_REGISTRERING_VEILEDER,
+                null,
+                null,
+                null
+            )
         )
         Mockito.`when`(
             oppfolgingsPeriodeRepository.hentOppfolgingsperioder(AKTOR_ID)
@@ -369,38 +379,61 @@ class HistorikkServiceTest {
 
     private fun gitt_manuell_hitsorikk() {
         val manuellStatus = listOf(
-            ManuellStatusEntity()
-                .setAktorId(AKTOR_ID.get())
-                .setDato(BEFORE_KVP)
-                .setBegrunnelse("OUTSIDE_KVP")
-                .setManuell(true),
-            ManuellStatusEntity()
-                .setAktorId(AKTOR_ID.get())
-                .setDato(BEFORE_KVP)
-                .setBegrunnelse("OUTSIDE_KVP")
-                .setManuell(false),
-            ManuellStatusEntity()
-                .setAktorId(AKTOR_ID.get())
-                .setDato(IN_KVP)
-                .setBegrunnelse("IN_KVP")
-                .setManuell(true),
-            ManuellStatusEntity()
-                .setAktorId(AKTOR_ID.get())
-                .setDato(IN_KVP)
-                .setBegrunnelse("IN_KVP")
-                .setManuell(false),
-            ManuellStatusEntity()
-                .setAktorId(AKTOR_ID.get())
-                .setDato(AFTER_KVP)
-                .setBegrunnelse("OUTSIDE_KVP")
-                .setManuell(true),
-            ManuellStatusEntity()
-                .setAktorId(AKTOR_ID.get())
-                .setDato(AFTER_KVP)
-                .setBegrunnelse("OUTSIDE_KVP")
-                .setManuell(false)
+            ManuellStatusEntity(
+                null,
+                AKTOR_ID.get(),
+                true,
+                BEFORE_KVP,
+                "OUTSIDE_KVP",
+                null,
+                null,
+            ),
+            ManuellStatusEntity(
+                null,
+                AKTOR_ID.get(),
+                false,
+                BEFORE_KVP,
+                "OUTSIDE_KVP",
+                null,
+                null,
+            ),
+            ManuellStatusEntity(
+                null,
+                AKTOR_ID.get(),
+                true,
+                IN_KVP,
+                "IN_KVP",
+                null,
+                null,
+            ),
+            ManuellStatusEntity(
+                null,
+                AKTOR_ID.get(),
+                false,
+                IN_KVP,
+                "IN_KVP",
+                null,
+                null,
+            ),
+            ManuellStatusEntity(
+                null,
+                AKTOR_ID.get(),
+                true,
+                AFTER_KVP,
+                "OUTSIDE_KVP",
+                null,
+                null,
+            ),
+            ManuellStatusEntity(
+                null,
+                AKTOR_ID.get(),
+                false,
+                AFTER_KVP,
+                "OUTSIDE_KVP",
+                null,
+                null,
+            )
         )
-
         Mockito.`when`(manuellStatusService.hentManuellStatusHistorikk(AKTOR_ID)).thenReturn(manuellStatus)
     }
 
@@ -408,18 +441,18 @@ class HistorikkServiceTest {
 
     private fun gitt_kvp() {
         val kvp = mutableListOf<KvpPeriodeEntity?>(
-            KvpPeriodeEntity.builder()
-                .aktorId(AKTOR_ID.get())
-                .kvpId(1L)
-                .opprettetDato(KVP_START)
-                .opprettetBegrunnelse("IN_KVP")
-                .avsluttetDato(KVP_STOP)
-                .avsluttetBegrunnelse("IN_KVP")
-                .enhet(ENHET)
-                .build()
-
+            KvpPeriodeEntity(
+                kvpId = 1L,
+                aktorId = AKTOR_ID.get(),
+                opprettetDato = KVP_START,
+                opprettetBegrunnelse = "IN_KVP",
+                avsluttetDato = KVP_STOP,
+                avsluttetBegrunnelse = "IN_KVP",
+                enhet = ENHET,
+                serial = null,
+                opprettetAv = null,
+            )
         )
-
         Mockito.`when`(kvpRepositoryMock.hentKvpHistorikk(AKTOR_ID)).thenReturn(kvp)
     }
 
@@ -471,7 +504,7 @@ class HistorikkServiceTest {
     }
 
     fun historikkHendelse(
-        type: HistorikkHendelse.Type,
+        type: HistorikkHendelseType,
         tidspunkt: ZonedDateTime,
         begrunnelse: String,
         opprettetAvType: KodeverkBruker?,

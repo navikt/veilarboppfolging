@@ -1,6 +1,5 @@
 package no.nav.veilarboppfolging.repository;
 
-import lombok.SneakyThrows;
 import no.nav.common.types.identer.AktorId;
 import no.nav.veilarboppfolging.repository.entity.MaalEntity;
 import no.nav.veilarboppfolging.utils.DbUtils;
@@ -10,6 +9,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
@@ -45,9 +45,9 @@ public class MaalRepository {
 
     public void opprett(MaalEntity maal) {
         transactor.executeWithoutResult((ignored) -> {
-            maal.setId(DbUtils.nesteFraSekvens(db, "MAL_SEQ"));
-            insert(maal);
-            setActive(maal);
+            var maalMedNyId = maal.kopierOgSettNyId(DbUtils.nesteFraSekvens(db, "MAL_SEQ"));
+            insert(maalMedNyId);
+            setActive(maalMedNyId);
         });
     }
 
@@ -66,14 +66,14 @@ public class MaalRepository {
         );
     }
 
-    @SneakyThrows
-    private static MaalEntity mapMaalEntity(ResultSet result, int row) {
-        return new MaalEntity()
-                .setId(result.getLong("id"))
-                .setAktorId(result.getString("aktor_id"))
-                .setMal(result.getString("mal"))
-                .setEndretAv(result.getString("endret_av"))
-                .setDato(hentZonedDateTime(result, "dato"));
+    
+    private static MaalEntity mapMaalEntity(ResultSet result, int row) throws SQLException {
+        return new MaalEntity(
+            result.getLong("id"),
+            result.getString("aktor_id"),
+            result.getString("mal"),
+            result.getString("endret_av"),
+            hentZonedDateTime(result, "dato")
+        );
     }
-
 }

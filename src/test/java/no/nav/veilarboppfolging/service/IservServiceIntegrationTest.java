@@ -78,7 +78,7 @@ public class IservServiceIntegrationTest {
         Optional<UtmeldingEntity> kanskjeUtmelding = utmeldingRepository.eksisterendeIservBruker(AKTOR_ID);
         assertTrue(kanskjeUtmelding.isPresent());
         UtmeldingEntity utmelding = kanskjeUtmelding.get();
-        assertEquals(AKTOR_ID.get(), utmelding.getAktor_Id());
+        assertEquals(AKTOR_ID.get(), utmelding.getAktorId());
         assertEquals(iservFraDato.toLocalDate(), utmelding.getIservSiden().toLocalDate());
     }
 
@@ -92,7 +92,7 @@ public class IservServiceIntegrationTest {
         Optional<UtmeldingEntity> kanskjeUtmelding = utmeldingRepository.eksisterendeIservBruker(AKTOR_ID);
         assertTrue(kanskjeUtmelding.isPresent());
         UtmeldingEntity utmelding = kanskjeUtmelding.get();
-        assertEquals(AKTOR_ID.get(), utmelding.getAktor_Id());
+        assertEquals(AKTOR_ID.get(), utmelding.getAktorId());
         assertEquals(brukerV2.getIservFraDato(), utmelding.getIservSiden().toLocalDate());
     }
 

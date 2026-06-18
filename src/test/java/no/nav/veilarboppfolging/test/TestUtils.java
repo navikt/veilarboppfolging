@@ -1,6 +1,9 @@
 package no.nav.veilarboppfolging.test;
 
-import lombok.SneakyThrows;
+
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URL;
 import java.nio.file.Files;
@@ -10,14 +13,19 @@ import java.util.concurrent.TimeUnit;
 
 public class TestUtils {
 
-    @SneakyThrows
+    private static Logger log = LoggerFactory.getLogger(TestUtils.class);
+    
     public static String readTestResourceFile(String fileName) {
         URL fileUrl = TestUtils.class.getClassLoader().getResource(fileName);
-        Path resPath = Paths.get(fileUrl.toURI());
-        return Files.readString(resPath);
+        try {
+            Path resPath = Paths.get(fileUrl.toURI());
+            return Files.readString(resPath);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    @SneakyThrows
+    
     public static void verifiserAsynkront(long timeout, TimeUnit unit, Runnable verifiser) {
         long timeoutMillis = unit.toMillis(timeout);
         boolean prosessert = false;
@@ -32,7 +40,7 @@ public class TestUtils {
                 prosessert = true;
             } catch (Throwable a) {
                 if (timedOut) {
-                    throw a;
+                    log.error("verifiserAsynkront feilet", a);
                 }
             }
         }

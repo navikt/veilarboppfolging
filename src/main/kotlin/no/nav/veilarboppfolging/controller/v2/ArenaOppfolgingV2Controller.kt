@@ -1,7 +1,6 @@
 package no.nav.veilarboppfolging.controller.v2
 
-import lombok.RequiredArgsConstructor
-import lombok.extern.slf4j.Slf4j
+
 import no.nav.common.types.identer.Fnr
 import no.nav.veilarboppfolging.controller.v2.request.ArenaOppfolgingRequest
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
@@ -15,9 +14,8 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
-@Slf4j
+
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/api/v2/person")
 class ArenaOppfolgingV2Controller(
     val authService: AuthService,

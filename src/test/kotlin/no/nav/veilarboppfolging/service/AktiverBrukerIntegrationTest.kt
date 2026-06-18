@@ -46,7 +46,7 @@ class AktiverBrukerIntegrationTest : IntegrationTest() {
             AvregistreringsType.ArenaIservKanIkkeReaktiveres)
         startOppfolgingSomArbeidsoker(AKTOR_ID, FNR)
         val oppfolging = oppfolgingService.hentOppfolging(AKTOR_ID)
-        Assertions.assertThat(oppfolging.get().isUnderOppfolging()).isTrue()
+        Assertions.assertThat(oppfolging.get().underOppfolging).isTrue()
     }
 
     @Test
@@ -61,7 +61,7 @@ class AktiverBrukerIntegrationTest : IntegrationTest() {
         Assertions.assertThat(oppfolgingFør.isEmpty()).isTrue()
         aktiverBrukerManueltService.aktiverBrukerManuelt(FNR, "1234")
         val oppfolging = oppfolgingService.hentOppfolging(AKTOR_ID)
-        Assertions.assertThat(oppfolging.get().isUnderOppfolging()).isTrue()
+        Assertions.assertThat(oppfolging.get().underOppfolging).isTrue()
     }
 
     @Test

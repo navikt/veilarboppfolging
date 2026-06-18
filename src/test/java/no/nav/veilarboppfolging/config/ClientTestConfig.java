@@ -1,6 +1,6 @@
 package no.nav.veilarboppfolging.config;
 
-import lombok.extern.slf4j.Slf4j;
+
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.client.norg2.Enhet;
 import no.nav.common.client.norg2.Norg2Client;
@@ -13,6 +13,8 @@ import no.nav.veilarboppfolging.client.digdir_krr.KRRData;
 import no.nav.veilarboppfolging.client.veilarbarena.*;
 import no.nav.veilarboppfolging.service.SisteEndringPaaOppfolgingBrukerService;
 import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -20,9 +22,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-@Slf4j
+
 @Configuration
 public class ClientTestConfig {
+
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     @Bean
     public Norg2Client norg2Client() {
@@ -89,8 +93,9 @@ public class ClientTestConfig {
             @Override
             public ArenaOppfolginsBrukerOppslagResult hentOppfolgingsbruker(Fnr fnr) {
                 return new ArenaOppfolginsBrukerOppslagResult.Success(
-                        new VeilarbArenaOppfolgingsBruker()
-                                .setFodselsnr(fnr.get())
+                        new VeilarbArenaOppfolgingsBruker(
+                                fnr.get(), null, null, null, null, null, null, null, null, null, null, null, null, null
+                        )
                 );
             }
 

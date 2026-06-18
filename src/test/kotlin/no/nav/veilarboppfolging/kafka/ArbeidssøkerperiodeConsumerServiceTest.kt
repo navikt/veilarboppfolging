@@ -9,8 +9,6 @@ import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2
 import no.nav.veilarboppfolging.IntegrationTest
 import no.nav.veilarboppfolging.client.pdl.ForenkletFolkeregisterStatus
 import no.nav.veilarboppfolging.client.pdl.FregStatusOgStatsborgerskap
-import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingRepository
-import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.StartetAvType
 import no.nav.veilarboppfolging.oppfolgingsbruker.BrukerRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant
@@ -297,7 +295,7 @@ class ArbeidssøkerperiodeConsumerServiceTest(
             periode.uuid.toString(),
             periode.aktorId,
             Timestamp.from(periode.startDato.toInstant()),
-            periode.startetBegrunnelse.name,
+            periode.startetBegrunnelse?.name,
             periode.startetAv,
             periode.startetAvType?.name
         )

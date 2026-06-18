@@ -2,7 +2,6 @@ package no.nav.veilarboppfolging.oppfolgingsbruker.arena
 
 import java.time.LocalDate
 import java.util.Optional
-import lombok.extern.slf4j.Slf4j
 import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.client.norg2.Norg2Client
 import no.nav.common.types.identer.EnhetId
@@ -25,7 +24,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import kotlin.jvm.optionals.getOrNull
 
-@Slf4j
 @Service
 class ArenaOppfolgingService @Autowired constructor(
     // Bruker AktorregisterClient istedenfor authService for å unngå sirkulær avhengighet

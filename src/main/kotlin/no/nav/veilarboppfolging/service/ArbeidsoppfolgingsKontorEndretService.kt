@@ -35,7 +35,7 @@ class ArbeidsoppfolgingsKontorEndretService(
         val gjeldendeOppfolgingsperiode = AvsluttetOppfolgingsperiode(
             oppfolgingsperiodeId = oppfolgingsperiode.uuid,
             startTidspunkt = oppfolgingsperiode.startDato,
-            sluttTidspunkt = oppfolgingsperiode.sluttDato,
+            sluttTidspunkt = oppfolgingsperiode.sluttDato ?: throw RuntimeException("Forsøker å publisere avsluttetHendelse for periode som ikke er avsluttet"),
             aktorId = oppfolgingsperiode.aktorId,
             ident = ident.get(),
         )

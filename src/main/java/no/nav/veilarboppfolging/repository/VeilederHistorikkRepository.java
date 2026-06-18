@@ -34,10 +34,10 @@ public class VeilederHistorikkRepository {
     }
 
     private static VeilederTilordningHistorikkEntity mapper(ResultSet resultSet, int rows) throws SQLException {
-        return VeilederTilordningHistorikkEntity.builder()
-                .veileder(resultSet.getString("veileder"))
-                .sistTilordnet(hentZonedDateTime(resultSet, "sist_tilordnet"))
-                .tilordnetAvVeileder(resultSet.getString("tilordnet_av_veileder"))
-                .build();
+        return new VeilederTilordningHistorikkEntity(
+            resultSet.getString("veileder"),
+            hentZonedDateTime(resultSet, "sist_tilordnet"),
+            resultSet.getString("tilordnet_av_veileder")
+        );
     }
 }

@@ -111,7 +111,7 @@ class GraphqlController(
 
     private fun erUnderOppfolging(aktorId: AktorId): Boolean {
         return oppfolgingsStatusRepository.hentOppfolging(aktorId)
-            .map { it.isUnderOppfolging }.orElse(false)
+            .getOrNull()?.underOppfolging ?: false
     }
 
     @QueryMapping
@@ -294,11 +294,11 @@ class GraphqlController(
     fun manuell(brukerStatusDto: BrukerStatusDto, @LocalContextValue aktorId: AktorId): BrukerStatusManuellDto? {
         return manuellService.hentManuellStatus(aktorId)
             .map { BrukerStatusManuellDto(
-                it.isManuell,
+                it.manuell,
                 it.dato.toString(),
-                it?.begrunnelse,
+                it.begrunnelse,
                 it.opprettetAv.toString(),
-                it?.opprettetAvBrukerId
+                it.opprettetAvBrukerId
             ) }
             .getOrNull()
     }
@@ -312,25 +312,26 @@ class GraphqlController(
     @SchemaMapping(typeName = "BrukerStatusDto", field = "kontorSperre")
     fun kontorSperre(brukerStatusDto: BrukerStatusDto, @LocalContextValue aktorId: AktorId): KontorSperre? {
         return kvpRepository.hentGjeldendeKvpPeriode(aktorId)
-            .map { it.enhet }.getOrNull()
-            ?.let { KontorSperre(it) }
+            .let {
+                if (it.isEmpty()) null
+                else it.get().enhet?.let { KontorSperre(it) }
+            }
     }
 
     @SchemaMapping(typeName = "BrukerStatusDto", field = "veilederTilordning")
     fun veilederTilordning(brukerStatusDto: BrukerStatusDto, @LocalContextValue aktorId: AktorId): VeilederTilordningDto? {
         return veilederTilordningerRepository.hentTilordnetVeileder(aktorId)
-            .map { it.veilederId }
             .getOrNull()
-            ?.let { VeilederTilordningDto(it) }
+            ?.veilederId?.let { VeilederTilordningDto(it) }
     }
 
     @SchemaMapping(typeName = "BrukerStatusDto", field = "krr")
     fun reservertIKrr(brukerStatusDto: BrukerStatusDto, @LocalContextValue fnr: Fnr): BrukerStatusKrrDto? {
         val result = manuellService.hentDigdirKontaktinfo(fnr)
         return BrukerStatusKrrDto(
-            kanVarsles = result.isKanVarsles,
-            registrertIKrr = result.isAktiv,
-            reservertIKrr = result.isReservert
+            kanVarsles = result.kanVarsles,
+            registrertIKrr = result.aktiv,
+            reservertIKrr = result.reservert
         )
     }
 

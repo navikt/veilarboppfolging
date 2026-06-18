@@ -2,7 +2,7 @@ package no.nav.veilarboppfolging.service;
 
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.PlainJWT;
-import lombok.SneakyThrows;
+
 import no.nav.common.audit_log.log.AuditLogger;
 import no.nav.common.auth.context.AuthContext;
 import no.nav.common.auth.context.AuthContextHolder;
@@ -304,7 +304,7 @@ class AuthServiceTest {
         assertDoesNotThrow(() -> authService.harTilgangTilEnhet(enhetId.get()));
     }
 
-    @SneakyThrows
+    
     @Test
     void should_allow_system_user_if_in_allowlist_auth_service() {
         setupSystemUserAuthOk();
@@ -314,7 +314,7 @@ class AuthServiceTest {
         assertDoesNotThrow(() -> authService.authorizeRequest(TEST_FNR_2, allowList));
     }
 
-    @SneakyThrows
+    
     @Test
     void should_not_allow_system_user_if_not_in_allowlist_auth_service() {
         setupSystemUserNotInAllowList();
@@ -324,7 +324,7 @@ class AuthServiceTest {
         assertThrows(ForbiddenException.class, () -> authService.authorizeRequest(TEST_FNR_2, allowList));
     }
 
-    @SneakyThrows
+    
     @Test
     void should_allow_external_user_if_access_self_auth_service() {
         setUpExternalUserAuthOk();
@@ -333,7 +333,7 @@ class AuthServiceTest {
         assertDoesNotThrow(() -> authService.authorizeRequest(TEST_FNR_2, emptyList()));
     }
 
-    @SneakyThrows
+    
     @Test
     void should_not_allow_external_user_if_access_other_auth_service() {
         setUpExternalUserAuthOk();
@@ -342,7 +342,7 @@ class AuthServiceTest {
         assertThrows(ForbiddenException.class, () -> authService.authorizeRequest(Fnr.of("11120231920"), emptyList()));
     }
 
-    @SneakyThrows
+    
     @Test
     void should_allow_internal_user_if_access_ok_auth_service() {
         setupInternalUserAuthOk();
@@ -352,7 +352,7 @@ class AuthServiceTest {
         assertDoesNotThrow(() -> authService.authorizeRequest(TEST_FNR_2, emptyList()));
     }
 
-    @SneakyThrows
+    
     @Test
     void external_user_can_not_query_using_aktorid_auth_service() {
         setUpExternalUserAuthOk();
@@ -361,7 +361,7 @@ class AuthServiceTest {
         assertThrows(ForbiddenException.class, () -> authService.authorizeRequest(TEST_AKTOR_ID_3, emptyList()));
     }
 
-    @SneakyThrows
+    
     @Test
     void internal_user_can_query_using_aktorid_auth_service() {
         setupInternalUserAuthOk();

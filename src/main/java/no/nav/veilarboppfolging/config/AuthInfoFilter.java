@@ -3,7 +3,6 @@ package no.nav.veilarboppfolging.config;
 import com.nimbusds.jwt.JWTClaimsSet;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
-import lombok.RequiredArgsConstructor;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.common.auth.context.UserRole;
@@ -18,10 +17,13 @@ import java.util.List;
 import static no.nav.common.rest.filter.LogRequestFilter.NAV_CONSUMER_ID_HEADER_NAME;
 
 
-@RequiredArgsConstructor
 public class AuthInfoFilter implements Filter {
 
-    private final MeterRegistry meterRegistry;
+    private MeterRegistry meterRegistry;
+
+    public AuthInfoFilter(MeterRegistry meterRegistry) {
+        this.meterRegistry = meterRegistry;
+    }
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse response, FilterChain chain) throws ServletException, IOException {

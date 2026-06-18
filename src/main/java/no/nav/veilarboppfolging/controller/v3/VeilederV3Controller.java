@@ -1,22 +1,27 @@
 package no.nav.veilarboppfolging.controller.v3;
 
-import lombok.RequiredArgsConstructor;
 import no.nav.veilarboppfolging.controller.v2.response.HentVeilederV2Response;
 import no.nav.veilarboppfolging.controller.v3.request.VeilederRequest;
 import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.service.VeilederTilordningService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v3")
-@RequiredArgsConstructor
+
 public class VeilederV3Controller {
 
     private final VeilederTilordningService veilederTilordningService;
-
     private final AuthService authService;
+
+    @Autowired
+    public VeilederV3Controller(VeilederTilordningService veilederTilordningService, AuthService authService) {
+        this.veilederTilordningService = veilederTilordningService;
+        this.authService = authService;
+    }
 
     @PostMapping("/hent-veileder")
     public ResponseEntity<HentVeilederV2Response> hentVeileder(@RequestBody VeilederRequest veilederRequest) {

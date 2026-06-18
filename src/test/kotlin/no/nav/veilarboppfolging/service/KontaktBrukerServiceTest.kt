@@ -12,6 +12,7 @@ import no.nav.veilarboppfolging.client.pdl.ForenkletFolkeregisterStatus
 import no.nav.veilarboppfolging.client.pdl.FregStatusOgStatsborgerskap
 import no.nav.veilarboppfolging.client.pdl.PdlFolkeregisterStatusClient
 import no.nav.veilarboppfolging.eventsLogger.BigQueryClient
+import no.nav.veilarboppfolging.oppfolgingsbruker.arena.LocalArenaOppfolging
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
 import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity
 import org.assertj.core.api.Assertions
@@ -51,7 +52,7 @@ class KontaktBrukerServiceTest {
         Mockito.`when`(oppgaveClient.opprettOppgave(fnr, aktorId)).thenReturn(forventetFrist)
         Mockito.`when`(aktorOppslagClient.hentAktorId(fnr)).thenReturn(aktorId)
         Mockito.`when`(oppfolgingsStatusRepository.hentOppfolging(aktorId)).thenReturn(
-            Optional.of(OppfolgingEntity().setUnderOppfolging(false))
+            Optional.of(OppfolgingEntity(underOppfolging = false, aktorId = aktorId.get(), veilederId = null, gjeldendeKvpId = null, gjeldendeMaalId = 0, gjeldendeManuellStatusId = null, localArenaOppfolging = Optional<LocalArenaOppfolging>.empty(), oppfolgingsEnhet = null))
         )
         Mockito.`when`(pdlFolkeregisterStatusClient.hentFolkeregisterStatus(fnr)).thenReturn(
             FregStatusOgStatsborgerskap(
@@ -85,7 +86,7 @@ class KontaktBrukerServiceTest {
     fun opprettOppgave_under_oppfolging_kaster_feil() {
         Mockito.`when`(aktorOppslagClient.hentAktorId(fnr)).thenReturn(aktorId)
         Mockito.`when`(oppfolgingsStatusRepository.hentOppfolging(aktorId)).thenReturn(
-            Optional.of(OppfolgingEntity().setUnderOppfolging(true))
+            Optional.of(OppfolgingEntity(underOppfolging = true, aktorId = aktorId.get(), veilederId = null, gjeldendeKvpId = null, gjeldendeMaalId = 0, gjeldendeManuellStatusId = null, localArenaOppfolging = Optional<LocalArenaOppfolging>.empty(), oppfolgingsEnhet = null))
         )
         Mockito.`when`(pdlFolkeregisterStatusClient.hentFolkeregisterStatus(fnr)).thenReturn(
             FregStatusOgStatsborgerskap(

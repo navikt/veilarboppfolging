@@ -1,58 +1,30 @@
 package no.nav.veilarboppfolging.config;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@Getter
-@Setter
 @ConfigurationProperties(prefix = "app.env")
-public class EnvironmentProperties {
-    private String naisAadDiscoveryUrl;
-
-    private String naisAadClientId;
-
-    private String naisAadIssuer;
-
-    private String tokenxClientId;
-
-    private String tokenxDiscoveryUrl;
-
-    private String norg2Url;
-
-    private String aktorregisterUrl;
-
-    private String arbeidsrettetDialogUrl;
-
-    private String kafkaBrokersUrl;
-
-	private String poaoTilgangUrl;
-
-	private String poaoTilgangScope;
-
-	private String digdirKrrProxyUrl;
-
-	private String digdirKrrProxyScope;
-
-    private String tiltakshistorikkUrl;
-
-    private String tiltakshistorikkScope;
-
-    private String oppgaveUrl;
-
-    private String oppgaveScope;
-
-    private String ungdomsprogramUrl;
-
-    private String ungdomsprogramScope;
-
-
-    private String arbeidssoekerregisteretUrl;
-
-    private String arbeidssoekerregisteretScope;
-
-    private String aapUrl;
-
-    private String aapScope;
-
-}
+public record EnvironmentProperties(
+    String naisAadDiscoveryUrl,
+    String naisAadClientId,
+    String naisAadIssuer,
+    String tokenxClientId,
+    String tokenxDiscoveryUrl,
+    String norg2Url,
+    String aktorregisterUrl,
+    String arbeidsrettetDialogUrl,
+    String kafkaBrokersUrl,
+	String poaoTilgangUrl,
+	String poaoTilgangScope,
+	String digdirKrrProxyUrl,
+	String digdirKrrProxyScope,
+    String tiltakshistorikkUrl,
+    String tiltakshistorikkScope,
+    String oppgaveUrl,
+    String oppgaveScope,
+    String ungdomsprogramUrl,
+    String ungdomsprogramScope,
+    String arbeidssoekerregisteretUrl,
+    String arbeidssoekerregisteretScope,
+    String aapUrl,
+    String aapScope
+) {}

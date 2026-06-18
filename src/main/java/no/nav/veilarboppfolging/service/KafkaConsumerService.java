@@ -1,7 +1,5 @@
 package no.nav.veilarboppfolging.service;
 
-import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.client.aktorregister.IngenGjeldendeIdentException;
 import no.nav.common.types.identer.Fnr;
@@ -11,6 +9,8 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.UtmeldingsService;
 import no.nav.veilarboppfolging.service.utmelding.KanskjeIservBruker;
 import no.nav.veilarboppfolging.utils.SecureLog;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -21,7 +21,7 @@ import java.util.Optional;
 
 import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
 
-@Slf4j
+
 @Service
 public class KafkaConsumerService {
 
@@ -30,6 +30,8 @@ public class KafkaConsumerService {
     private final OppfolgingsbrukerEndretIArenaService oppfolgingsbrukerEndretIArenaService;
     private final AktorOppslagClient aktorOppslagClient;
     private final SisteEndringPaaOppfolgingBrukerService sisteEndringPaaOppfolgingBrukerService;
+
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
     public KafkaConsumerService(
@@ -45,7 +47,7 @@ public class KafkaConsumerService {
         this.sisteEndringPaaOppfolgingBrukerService = sisteEndringPaaOppfolgingBrukerService;
     }
 
-    @SneakyThrows
+    
     public void consumeEndringPaOppfolgingBruker(ConsumerRecord<String, EndringPaaOppfoelgingsBrukerV2> kafkaMelding) {
         EndringPaaOppfoelgingsBrukerV2 endringPaBruker = kafkaMelding.value();
 

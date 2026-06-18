@@ -9,6 +9,7 @@ import no.nav.veilarboppfolging.client.pdl.PdlFolkeregisterStatusClient
 import no.nav.veilarboppfolging.eventsLogger.BigQueryClient
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
 import org.springframework.stereotype.Service
+import kotlin.jvm.optionals.getOrNull
 
 @Service
 class KontaktBrukerService(
@@ -33,7 +34,7 @@ class KontaktBrukerService(
 
     private fun erUnderOppfolging(aktorId: AktorId): Boolean {
         return oppfolgingsStatusRepository.hentOppfolging(aktorId)
-            .map { it.isUnderOppfolging }.orElse(false)
+            .getOrNull()?.underOppfolging ?: false
     }
 
     private fun erUnder18Aar(fnr: Fnr): Boolean {

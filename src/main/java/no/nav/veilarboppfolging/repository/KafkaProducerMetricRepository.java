@@ -1,6 +1,6 @@
 package no.nav.veilarboppfolging.repository;
 
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -10,7 +10,7 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 
 @Repository
-@Slf4j
+
 public class KafkaProducerMetricRepository {
     private final JdbcTemplate db;
 

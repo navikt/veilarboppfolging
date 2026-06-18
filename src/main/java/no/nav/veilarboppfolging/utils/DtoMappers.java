@@ -14,99 +14,96 @@ import no.nav.veilarboppfolging.repository.entity.VeilederTilordningEntity;
 import java.util.Collections;
 import java.util.Optional;
 
-import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 
 public class DtoMappers {
 
     public static Maal tilDto(MaalEntity malData) {
-        return new Maal()
-                .setMal(malData.getMal())
-                .setEndretAv(malData.getEndretAvFormattert())
-                .setDato(malData.getDato());
+        return new Maal(
+            malData.getMal(),
+            malData.getEndretAvFormattert(),
+            malData.getDato()
+        );
+    }
+
+    public static Maal tilDto(Optional<MaalEntity> malData) {
+        if (malData.isPresent()) {
+            return tilDto(malData.get());
+        } else {
+            return new Maal(null, null, null);
+        }
     }
 
     /**
      * Given a Kvp object, return its DTO representation. All fields are included.
      */
     public static KvpDTO kvpToDTO(KvpPeriodeEntity k) {
-        return new KvpDTO()
-                .setKvpId(k.getKvpId())
-                .setSerial(k.getSerial())
-                .setAktorId(k.getAktorId())
-                .setAvsluttetAv(k.getAvsluttetAv())
-                .setAvsluttetBegrunnelse(k.getAvsluttetBegrunnelse())
-                .setAvsluttetDato(k.getAvsluttetDato())
-                .setEnhet(k.getEnhet())
-                .setOpprettetAv(k.getOpprettetAv())
-                .setOpprettetBegrunnelse(k.getOpprettetBegrunnelse())
-                .setOpprettetDato(k.getOpprettetDato());
+        return new KvpDTO(
+                k.getKvpId(),
+                k.getSerial(),
+                k.getAktorId(),
+                k.getEnhet(),
+                k.getOpprettetAv(),
+                k.getOpprettetDato(),
+                k.getOpprettetBegrunnelse(),
+                k.getAvsluttetAv(),
+                k.getAvsluttetDato(),
+                k.getAvsluttetBegrunnelse()
+        );
     }
 
     public static AvslutningsStatusDto tilDto(AvslutningStatusData avslutningStatusData) {
         return new AvslutningsStatusDto(
-                avslutningStatusData.kanAvslutte,
-                avslutningStatusData.underOppfolging,
-                avslutningStatusData.harYtelser,
-                avslutningStatusData.underKvp,
-                avslutningStatusData.inaktiveringsDato,
-                avslutningStatusData.erIserv,
-                avslutningStatusData.harAktiveTiltaksdeltakelser,
-                avslutningStatusData.erDeltakerIUngdomsprogrammet,
-                avslutningStatusData.erArbeidssoeker,
-                avslutningStatusData.harAap
+                avslutningStatusData.getKanAvslutte(),
+                avslutningStatusData.getUnderOppfolging(),
+                avslutningStatusData.getHarYtelser(),
+                avslutningStatusData.getUnderKvp(),
+                avslutningStatusData.getInaktiveringsDato(),
+                avslutningStatusData.getErIserv(),
+                avslutningStatusData.getHarAktiveTiltaksdeltakelser(),
+                avslutningStatusData.getErDeltakerIUngdomsprogrammet(),
+                avslutningStatusData.getErArbeidssoeker(),
+                avslutningStatusData.getHarAap()
         );
     }
 
     public static OppfolgingStatus tilDto(OppfolgingStatusData oppfolgingStatusData, boolean erInternBruker) {
-        OppfolgingStatus status = new OppfolgingStatus()
-                .setFnr(oppfolgingStatusData.fnr)
-                .setAktorId(oppfolgingStatusData.aktorId)
-                .setUnderOppfolging(oppfolgingStatusData.underOppfolging)
-                .setManuell(oppfolgingStatusData.manuell)
-                .setReservasjonKRR(oppfolgingStatusData.reservasjonKRR)
-                .setRegistrertKRR(oppfolgingStatusData.registrertKRR)
-                .setOppfolgingUtgang(oppfolgingStatusData.getOppfolgingUtgang())
-                .setKanReaktiveres(oppfolgingStatusData.kanReaktiveres)
-                .setOppfolgingsPerioder(oppfolgingStatusData.oppfolgingsperioder.stream().map(o -> tilOppfolgingPeriodeDTO(o, erInternBruker)).collect(toList()))
-                .setInaktiveringsdato(oppfolgingStatusData.inaktiveringsdato)
-                .setErSykmeldtMedArbeidsgiver(oppfolgingStatusData.getErSykmeldtMedArbeidsgiver())
-                .setHarSkriveTilgang(true)
-                .setServicegruppe(oppfolgingStatusData.getServicegruppe())
-                .setFormidlingsgruppe(oppfolgingStatusData.getFormidlingsgruppe())
-                .setRettighetsgruppe(oppfolgingStatusData.getRettighetsgruppe())
-                .setKanVarsles(oppfolgingStatusData.kanVarsles)
-                .setUnderKvp(oppfolgingStatusData.underKvp);
-
-        if (erInternBruker) {
-            status
-                    .setVeilederId(oppfolgingStatusData.veilederId)
-                    .setKanStarteOppfolging(oppfolgingStatusData.isKanStarteOppfolging())
-                    .setOppfolgingUtgang(oppfolgingStatusData.getOppfolgingUtgang())
-                    .setHarSkriveTilgang(oppfolgingStatusData.harSkriveTilgang)
-                    .setInaktivIArena(oppfolgingStatusData.inaktivIArena);
-        }
-
-        return status;
+        return new OppfolgingStatus(
+                oppfolgingStatusData.getFnr(),
+                oppfolgingStatusData.getAktorId(),
+                erInternBruker ? oppfolgingStatusData.getVeilederId() : null,
+                oppfolgingStatusData.getReservasjonKRR(),
+                oppfolgingStatusData.getRegistrertKRR(),
+                oppfolgingStatusData.getKanVarsles(),
+                oppfolgingStatusData.getManuell(),
+                oppfolgingStatusData.getUnderOppfolging(),
+                oppfolgingStatusData.getUnderKvp(),
+                oppfolgingStatusData.getOppfolgingUtgang(),
+                erInternBruker ? oppfolgingStatusData.getKanStarteOppfolging() : null,
+                null,
+                oppfolgingStatusData.getOppfolgingsperioder().stream().map(o -> tilOppfolgingPeriodeDTO(o, erInternBruker)).collect(toList()),
+                erInternBruker ? oppfolgingStatusData.getHarSkriveTilgang() : null,
+                erInternBruker ? oppfolgingStatusData.getInaktivIArena() : null,
+                oppfolgingStatusData.getKanReaktiveres(),
+                oppfolgingStatusData.getInaktiveringsdato(),
+                oppfolgingStatusData.getErSykmeldtMedArbeidsgiver(),
+                oppfolgingStatusData.getServicegruppe(),
+                oppfolgingStatusData.getFormidlingsgruppe(),
+                oppfolgingStatusData.getRettighetsgruppe()
+        );
     }
 
     public static OppfolgingPeriodeDTO tilOppfolgingPeriodeDTO(OppfolgingsperiodeEntity oppfolgingsperiode, boolean erInternBruker) {
-        OppfolgingPeriodeDTO periode = new OppfolgingPeriodeDTO()
-                .setUuid(oppfolgingsperiode.getUuid())
-                .setSluttDato(oppfolgingsperiode.getSluttDato())
-                .setStartDato(oppfolgingsperiode.getStartDato())
-                .setKvpPerioder(
-                        ofNullable(oppfolgingsperiode.getKvpPerioder()).orElseGet(Collections::emptyList)
-                                .stream().map(DtoMappers::tilDTO).collect(toList())
-                );
-
-        if (erInternBruker) {
-            periode.setVeileder(oppfolgingsperiode.getAvsluttetAv())
-                    .setAktorId(oppfolgingsperiode.getAktorId())
-                    .setBegrunnelse(oppfolgingsperiode.getBegrunnelse());
-        }
-
-        return periode;
+        return new OppfolgingPeriodeDTO(
+                oppfolgingsperiode.getUuid(),
+                erInternBruker ? oppfolgingsperiode.getAktorId() : null,
+                erInternBruker ? oppfolgingsperiode.getAvsluttetAv() : null,
+                oppfolgingsperiode.getStartDato(),
+                oppfolgingsperiode.getSluttDato(),
+                erInternBruker ? oppfolgingsperiode.getBegrunnelse() : null,
+                Optional.of(oppfolgingsperiode.getKvpPerioder()).orElseGet(Collections::emptyList)
+                        .stream().map(DtoMappers::tilDTO).collect(toList())
+        );
     }
 
     public static SisteTilordnetVeilederV1 tilSisteTilordnetVeilederKafkaDTO(VeilederTilordningEntity tilordning) {
@@ -137,10 +134,11 @@ public class DtoMappers {
     }
 
     public static OppfolgingPeriodeMinimalDTO tilOppfolgingPeriodeMinimalDTO(OppfolgingsperiodeEntity oppfolgingsperiode) {
-        return new OppfolgingPeriodeMinimalDTO()
-                .setUuid(oppfolgingsperiode.getUuid())
-                .setSluttDato(oppfolgingsperiode.getSluttDato())
-                .setStartDato(oppfolgingsperiode.getStartDato());
+        return new OppfolgingPeriodeMinimalDTO(
+                oppfolgingsperiode.getUuid(),
+                oppfolgingsperiode.getStartDato(),
+                oppfolgingsperiode.getSluttDato()
+        );
     }
 
     public static KvpPeriodeDTO tilDTO(KvpPeriodeEntity kvp) {

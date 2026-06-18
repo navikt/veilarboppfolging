@@ -1,6 +1,7 @@
 package no.nav.veilarboppfolging
 
 import jakarta.servlet.http.HttpServletResponse
+import org.apache.arrow.flatbuf.Null
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.ControllerAdvice
@@ -57,6 +58,12 @@ class DefaultExceptionHandler {
     fun mapException(ex: SocketTimeoutException, response: HttpServletResponse) {
         logger.error("Fanget en uhåndtert feil i kall mot annet system", ex)
         response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Feil i kall mot annet system")
+    }
+
+    @ExceptionHandler(value = [NullPointerException::class])
+    fun mapException(ex: NullPointerException, response: HttpServletResponse) {
+        logger.error("Fikk en NullPointerException", ex)
+        response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Feil i system")
     }
 
     @ExceptionHandler(value = [Exception::class])

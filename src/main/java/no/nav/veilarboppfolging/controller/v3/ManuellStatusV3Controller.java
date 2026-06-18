@@ -1,6 +1,5 @@
 package no.nav.veilarboppfolging.controller.v3;
 
-import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.BadRequestException;
 import no.nav.veilarboppfolging.client.digdir_krr.KRRData;
@@ -11,22 +10,28 @@ import no.nav.veilarboppfolging.controller.v3.request.VeilederBegrunnelseRequest
 import no.nav.veilarboppfolging.repository.enums.KodeverkBruker;
 import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.service.ManuellStatusService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/v3")
-@RequiredArgsConstructor
+
 public class ManuellStatusV3Controller {
 
 	private final static List<String> ALLOWLIST = List.of("veilarbdialog", "veilarbaktivitet");
 
 	private final AuthService authService;
-
 	private final ManuellStatusService manuellStatusService;
 
-	@PostMapping("/hent-manuell")
+	@Autowired
+    public ManuellStatusV3Controller(AuthService authService, ManuellStatusService manuellStatusService) {
+        this.authService = authService;
+        this.manuellStatusService = manuellStatusService;
+    }
+
+    @PostMapping("/hent-manuell")
 	public ManuellV2Response hentErUnderManuellOppfolging(@RequestBody ManuellStatusRequest manuellStatusRequest) {
 		authService.sjekkLesetilgangMedFnr(manuellStatusRequest.fnr());
 
@@ -52,7 +57,7 @@ public class ManuellStatusV3Controller {
 		return new ManuellStatusV2Response(
 				erManuell,
 				new ManuellStatusV2Response.KrrStatus(
-						kontaktinfo.isKanVarsles(), kontaktinfo.isReservert()
+						kontaktinfo.kanVarsles(), kontaktinfo.reservert()
 				)
 		);
 	}
