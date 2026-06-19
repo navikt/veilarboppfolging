@@ -1,6 +1,10 @@
 package no.nav.veilarboppfolging.controller;
 
 import com.nimbusds.jwt.JWTClaimsSet;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
@@ -12,13 +16,13 @@ import no.nav.poao_tilgang.client.TilgangType;
 import no.nav.poao_tilgang.client.api.ApiResult;
 import no.nav.veilarboppfolging.ForbiddenException;
 import no.nav.veilarboppfolging.IntegrationTest;
+import no.nav.veilarboppfolging.client.aap.AapClient;
+import no.nav.veilarboppfolging.client.arbeidssoekerregisteret.ArbeidssoekerregisteretClient;
 import no.nav.veilarboppfolging.client.tiltakshistorikk.TiltakshistorikkClient;
 import no.nav.veilarboppfolging.client.ungdomsprogram.UngdomsprogramClient;
-import no.nav.veilarboppfolging.client.arbeidssoekerregisteret.ArbeidssoekerregisteretClient;
-import no.nav.veilarboppfolging.client.aap.AapClient;
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolginsBrukerOppslagResult;
-import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsStatus;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsBruker;
+import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsStatus;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
 import no.nav.veilarboppfolging.controller.response.AvslutningsStatusDto;
 import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeDTO;
@@ -26,19 +30,12 @@ import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeMinimalDTO;
 import no.nav.veilarboppfolging.controller.v2.OppfolgingV2Controller;
 import no.nav.veilarboppfolging.controller.v2.request.AvsluttOppfolgingV2Request;
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
-import no.nav.veilarboppfolging.service.ArenaYtelserService;
 import no.nav.veilarboppfolging.service.AuthService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatusCode;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -57,9 +54,6 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
 
     @Autowired
     AuthService authService;
-
-    @MockitoBean
-    ArenaYtelserService arenaYtelserService;
 
     @Autowired
     VeilarbarenaClient veilarbarenaClient;
@@ -136,7 +130,6 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
         // ISERV i arena, ingen ytelser i arena, ingen aktive tiltak hos komet.
         when(veilarbarenaClient.getArenaOppfolgingsstatus(FNR)).thenReturn(Optional.of(new VeilarbArenaOppfolgingsStatus(null, null, "ISERV", null, null, null)));
         when(veilarbarenaClient.hentOppfolgingsbruker(FNR)).thenReturn(new ArenaOppfolginsBrukerOppslagResult.Success(lagArenaBruker("ISERV")));
-        when(arenaYtelserService.harPagaendeYtelse(FNR)).thenReturn(false);
         when(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(FNR.get())).thenReturn(false);
         when(ungdomsprogramClient.erDeltakerIUngdomsprogrammet(FNR.get())).thenReturn(false);
 
@@ -163,7 +156,6 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
         when(veilarbarenaClient.hentOppfolgingsbruker(FNR)).thenReturn(
                 new ArenaOppfolginsBrukerOppslagResult.Success(lagArenaBruker("ISERV"))
         );
-        when(arenaYtelserService.harPagaendeYtelse(FNR)).thenReturn(false);
         when(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(FNR.get())).thenReturn(true);
 
         var dto = new AvsluttOppfolgingV2Request(new NavIdent("Z151515"), "Begrunnelse", FNR);
@@ -182,7 +174,6 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
         doReturn(permit).when(poaoTilgangClient).evaluatePolicy(any());
         // ISERV i arena, ingen ytelser i arena, ingen aktive tiltak, men deltaker i ungdomsprogrammet.
         when(veilarbarenaClient.hentOppfolgingsbruker(FNR)).thenReturn(new ArenaOppfolginsBrukerOppslagResult.Success(lagArenaBruker("ISERV")));
-        when(arenaYtelserService.harPagaendeYtelse(FNR)).thenReturn(false);
         when(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(FNR.get())).thenReturn(false);
         when(ungdomsprogramClient.erDeltakerIUngdomsprogrammet(FNR.get())).thenReturn(true);
 
@@ -200,7 +191,6 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
         ApiResult<Decision> permit = ApiResult.Companion.success(Decision.Permit.INSTANCE);
         doReturn(permit).when(poaoTilgangClient).evaluatePolicy(any());
         when(veilarbarenaClient.hentOppfolgingsbruker(FNR)).thenReturn(new ArenaOppfolginsBrukerOppslagResult.Success(lagArenaBruker("ISERV")));
-        when(arenaYtelserService.harPagaendeYtelse(FNR)).thenReturn(false);
         when(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(FNR.get())).thenReturn(false);
         when(ungdomsprogramClient.erDeltakerIUngdomsprogrammet(FNR.get())).thenReturn(false);
         when(arbeidssoekerregisteretClient.erArbeidssoeker(FNR.get())).thenReturn(true);
@@ -220,7 +210,6 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
         ApiResult<Decision> permit = ApiResult.Companion.success(Decision.Permit.INSTANCE);
         doReturn(permit).when(poaoTilgangClient).evaluatePolicy(any());
         when(veilarbarenaClient.hentOppfolgingsbruker(FNR)).thenReturn(new ArenaOppfolginsBrukerOppslagResult.Success(lagArenaBruker("ISERV")));
-        when(arenaYtelserService.harPagaendeYtelse(FNR)).thenReturn(false);
         when(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(FNR.get())).thenReturn(false);
         when(ungdomsprogramClient.erDeltakerIUngdomsprogrammet(FNR.get())).thenReturn(false);
         when(arbeidssoekerregisteretClient.erArbeidssoeker(FNR.get())).thenReturn(false);

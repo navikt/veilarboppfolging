@@ -7,6 +7,5 @@ import java.util.*
 interface VeilarbarenaClient : HealthCheck {
     fun hentOppfolgingsbruker(fnr: Fnr): ArenaOppfolginsBrukerOppslagResult
     fun getArenaOppfolgingsstatus(fnr: Fnr): Optional<VeilarbArenaOppfolgingsStatus>
-    fun getArenaYtelser(fnr: Fnr): Optional<YtelserDTO>
     fun registrerIkkeArbeidsoker(fnr: Fnr): RegistrerIArenaResult
 }

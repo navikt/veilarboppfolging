@@ -1,15 +1,18 @@
 package no.nav.veilarboppfolging.service
 
+import java.util.Optional
 import no.nav.veilarboppfolging.client.aap.AapClient
 import no.nav.veilarboppfolging.client.arbeidssoekerregisteret.ArbeidssoekerregisteretClient
 import no.nav.veilarboppfolging.client.tiltakshistorikk.TiltakshistorikkClient
 import no.nav.veilarboppfolging.client.ungdomsprogram.UngdomsprogramClient
 import no.nav.veilarboppfolging.eventsLogger.BigQueryClient
+import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingRepository
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ArenaIservKanIkkeReaktiveres
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.KunneAvsluttes
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.KunneIkkeAvsluttes
+import no.nav.veilarboppfolging.repository.ArbeidsoppfolgingskontorRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
 import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity
@@ -24,9 +27,6 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.springframework.transaction.support.TransactionTemplate
-import java.util.*
-import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingRepository
-import no.nav.veilarboppfolging.repository.ArbeidsoppfolgingskontorRepository
 
 class AvsluttOppfolgingServiceTest {
     private val authService: AuthService = Mockito.mock(AuthService::class.java)
@@ -40,7 +40,6 @@ class AvsluttOppfolgingServiceTest {
     private val ungdomsprogramClient: UngdomsprogramClient = Mockito.mock(UngdomsprogramClient::class.java)
     private val aapClient: AapClient = Mockito.mock(AapClient::class.java)
     private val arbeidssokerRegisterClient: ArbeidssoekerregisteretClient = Mockito.mock(ArbeidssoekerregisteretClient::class.java)
-    private val arenaYtelserService: ArenaYtelserService = Mockito.mock(ArenaYtelserService::class.java)
     private val bigQueryClient: BigQueryClient = Mockito.mock(BigQueryClient::class.java)
     private val transactionTemplate: TransactionTemplate = Mockito.mock(TransactionTemplate::class.java)
     private val arbeidsoppfolgingskontorRepository: ArbeidsoppfolgingskontorRepository = Mockito.mock(ArbeidsoppfolgingskontorRepository::class.java)
@@ -54,7 +53,6 @@ class AvsluttOppfolgingServiceTest {
         ungdomsprogramClient,
         aapClient = aapClient,
         arbeidssoekerregisteretClient = arbeidssokerRegisterClient,
-        arenaYtelserService = arenaYtelserService,
         bigQueryClient = bigQueryClient,
         transactor = transactionTemplate,
         arbeidsoppfolgingskontorRepository = arbeidsoppfolgingskontorRepository,
