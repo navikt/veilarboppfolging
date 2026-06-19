@@ -4,7 +4,6 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
-import java.time.ZonedDateTime
 import java.util.UUID
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.EnhetId
@@ -21,22 +20,18 @@ import no.nav.veilarboppfolging.IntegrationTest
 import no.nav.veilarboppfolging.kafka.ArbeidssøkerperiodeConsumerService
 import no.nav.veilarboppfolging.kafka.TestUtils
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant
-import no.nav.veilarboppfolging.oppfolgingsbruker.arena.EndringPaaOppfolgingsBruker
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvregistreringsType
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.OppdateringFraArena_BleIserv
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.UtmeldingsService
 import no.nav.veilarboppfolging.repository.UtmeldingRepository
 import no.nav.veilarboppfolging.service.KafkaConsumerService
 import no.nav.veilarboppfolging.service.OppfolgingsbrukerEndretIArenaService
+import no.nav.veilarboppfolging.service.ReaktiveringService
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
-import java.time.temporal.ChronoUnit
 import no.nav.paw.arbeidssokerregisteret.api.v1.Metadata as MetaData
 
 class KandidatForUtmeldingFlytTest(
@@ -50,6 +45,8 @@ class KandidatForUtmeldingFlytTest(
     val utmeldingsService: UtmeldingsService,
     @Autowired
     val oppfolgingsbrukerEndretIArenaService: OppfolgingsbrukerEndretIArenaService,
+    @Autowired
+    val reaktiveringService: ReaktiveringService,
 ) : IntegrationTest() {
 
     private val fnr = "01010198765"
@@ -194,6 +191,38 @@ class KandidatForUtmeldingFlytTest(
     }
 
     @Test
+    fun `Sletter kandidat-for-utmelding hvis bruker er under oppfølging og starter ny arbeidssøkerperiode`() {
+        mockVeilarbArenaOppfolgingsBruker(Fnr.of(fnr), Formidlingsgruppe.ISERV)
+        startOppfolgingSomArbeidsoker(aktorId, Fnr.of(fnr))
+        val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(Fnr.of(fnr)).get().uuid
+        kandidatForUtmeldingRepository.lagreKandidat(ArbeidssøkerPeriodeAvsluttet(
+            aktorId = aktorId,
+            fnr = Fnr.of(fnr),
+            oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
+            avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER,
+            kilde ="kilde",
+            aarsak = "aarsak")
+        )
+        assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNotNull()
+
+        val nyPeriode = arbeidssokerperiode(
+            fnr,
+            periodeStartet = LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant()
+        )
+        arbeidssoekerperiodeConsumerService.consumeArbeidssøkerperiode(
+            ConsumerRecord(
+                "topic",
+                0,
+                0,
+                "dummyKey",
+                nyPeriode
+            )
+        )
+
+        assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNull()
+    }
+
+    @Test
     fun `Sletter kandidat-for-utmelding når ny oppfølgingsperiode startes via melding fra Arena`() {
         mockVeilarbArenaOppfolgingsBruker(Fnr.of(fnr), Formidlingsgruppe.ISERV)
         startOppfolgingSomArbeidsoker(aktorId, Fnr.of(fnr))
@@ -211,6 +240,28 @@ class KandidatForUtmeldingFlytTest(
         val registrering = OppfolgingsRegistrering.arenaSyncOppfolgingBrukerRegistrering(Fnr.of(fnr), aktorId,
             Formidlingsgruppe.IARBS, Kvalifiseringsgruppe.VURDU, EnhetId("0318"))
         startOppfolging(aktorId, registrering)
+
+        assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNull()
+    }
+
+    @Test
+    fun `Sletter kandidat-for-utmelding når ny oppfølgingsperiode reaktiveres`() {
+        mockVeilarbArenaOppfolgingsBruker(Fnr.of(fnr), Formidlingsgruppe.ISERV)
+        startOppfolgingSomArbeidsoker(aktorId, Fnr.of(fnr))
+        mockInternBrukerAuthOk(UUID.randomUUID(), aktorId, Fnr.of(fnr))
+        mockArenaOppfolgingServiceRegistrerIkkeArbeidssoker(Fnr.of(fnr))
+        val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(Fnr.of(fnr)).get().uuid
+        kandidatForUtmeldingRepository.lagreKandidat(ArbeidssøkerPeriodeAvsluttet(
+            aktorId = aktorId,
+            fnr = Fnr.of(fnr),
+            oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
+            avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER,
+            kilde ="kilde",
+            aarsak = "aarsak")
+        )
+        assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNotNull()
+
+        reaktiveringService.reaktiverBrukerIArena(Fnr.of(fnr))
 
         assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNull()
     }

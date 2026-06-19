@@ -1,13 +1,11 @@
 package no.nav.veilarboppfolging.kandidatForUtmelding
 
+import java.sql.ResultSet
+import java.util.UUID
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvregistreringsType
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Repository
-import java.sql.ResultSet
-import java.time.ZonedDateTime
-import java.util.*
 
 @Repository
 class KandidatForUtmeldingRepository(
@@ -42,18 +40,8 @@ class KandidatForUtmeldingRepository(
     fun hentKandidat(aktorId: AktorId): KandidatForUtmeldingHendelse? {
         return db.query(
             """
-            SELECT kandidat_for_utmelding.* FROM kandidat_for_utmelding 
-            INNER JOIN oppfolgingsperiode ON oppfolgingsperiode.uuid = kandidat_for_utmelding.oppfolgingsperiode_uuid
-            WHERE kandidat_for_utmelding.aktor_id = :aktor_id
-            AND oppfolgingsperiode.sluttdato is null
-            AND COALESCE(
-                (
-                    SELECT MAX(reaktivering_tidspunkt)
-                    FROM historikk_for_reaktivering
-                    WHERE oppfolgingsperiode = kandidat_for_utmelding.oppfolgingsperiode_uuid
-                ),
-                '-infinity'
-            ) < kandidat_for_utmelding.created_at
+            SELECT * FROM kandidat_for_utmelding 
+            WHERE aktor_id = :aktor_id
             """.trimIndent(),
             mapOf("aktor_id" to aktorId.get()),
         ) { rs, _ -> map(rs) }
