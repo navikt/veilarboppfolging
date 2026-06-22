@@ -56,7 +56,6 @@ public class DtoMappers {
         return new AvslutningsStatusDto(
                 avslutningStatusData.getKanAvslutte(),
                 avslutningStatusData.getUnderOppfolging(),
-                avslutningStatusData.getHarYtelser(),
                 avslutningStatusData.getUnderKvp(),
                 avslutningStatusData.getInaktiveringsDato(),
                 avslutningStatusData.getErIserv(),

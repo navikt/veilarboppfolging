@@ -1,17 +1,17 @@
 package no.nav.veilarboppfolging.controller.v2;
 
+import java.util.List;
+import java.util.stream.Collectors;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.BadRequestException;
 import no.nav.veilarboppfolging.NotFoundException;
-import no.nav.veilarboppfolging.controller.response.AvslutningsStatusDto;
 import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeDTO;
 import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeMinimalDTO;
 import no.nav.veilarboppfolging.controller.v2.request.AvsluttOppfolgingV2Request;
 import no.nav.veilarboppfolging.controller.v2.response.UnderOppfolgingV2Response;
-import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService;
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ManuellAvregistrering;
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant;
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ManuellAvregistrering;
 import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
 import no.nav.veilarboppfolging.service.AuthService;
@@ -25,10 +25,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
-import static no.nav.veilarboppfolging.utils.DtoMappers.*;
+import static no.nav.veilarboppfolging.utils.DtoMappers.tilOppfolgingPeriodeDTO;
+import static no.nav.veilarboppfolging.utils.DtoMappers.tilOppfolgingPeriodeMinimalDTO;
 
 @RestController
 @RequestMapping("/api/v2/oppfolging")
@@ -37,14 +35,12 @@ public class OppfolgingV2Controller {
     private final OppfolgingService oppfolgingService;
     private final AvsluttOppfolgingService avsluttOppfolgingService;
     private final AuthService authService;
-    private final KandidatForUtmeldingService kandidatForUtmeldingService;
 
     @Autowired
-    public OppfolgingV2Controller(OppfolgingService oppfolgingService, AvsluttOppfolgingService avsluttOppfolgingService, AuthService authService, KandidatForUtmeldingService kandidatForUtmeldingService) {
+    public OppfolgingV2Controller(OppfolgingService oppfolgingService, AvsluttOppfolgingService avsluttOppfolgingService, AuthService authService) {
         this.oppfolgingService = oppfolgingService;
         this.avsluttOppfolgingService = avsluttOppfolgingService;
         this.authService = authService;
-        this.kandidatForUtmeldingService = kandidatForUtmeldingService;
     }
 
     @AuthorizeFnr(allowlist = {"veilarbvedtaksstotte", "veilarbdialog", "veilarbaktivitet", "veilarbregistrering", "veilarbportefolje"})
@@ -76,12 +72,6 @@ public class OppfolgingV2Controller {
         var avregistrering = new ManuellAvregistrering(aktorId, new VeilederRegistrant(navIdent), request.getBegrunnelse());
         avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(avregistrering);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-    }
-
-    @GetMapping("/avslutning-status")
-    public AvslutningsStatusDto hentAvslutningStatus(@RequestParam("fnr") Fnr fnr) {
-        authService.skalVereInternBruker();
-        return tilDto(avsluttOppfolgingService.hentAvslutningstatusForManuellAvslutning(fnr));
     }
 
     @GetMapping("/periode/{uuid}")

@@ -121,20 +121,6 @@ class VeilarbarenaClientImpl(
         }
     }
 
-    override fun getArenaYtelser(fnr: Fnr): Optional<YtelserDTO> {
-        val personRequest = PersonRequest(fnr)
-        try {
-            val response = httpPost(UrlUtils.joinPaths(veilarbarenaUrl, "/veilarbarena/api/v2/arena/hent-ytelser"), personRequest, YtelserDTO::class.java)
-            return when (response) {
-                is RequestResult.Success -> response.body
-                is RequestResult.Fail -> Optional.empty()
-            }
-        } catch (e: Exception) {
-            logger.error("Uventet feil ved henting av ytelser fra veilarbarena", e)
-            return Optional.empty()
-        }
-    }
-
     override fun registrerIkkeArbeidsoker(fnr: Fnr): RegistrerIArenaResult {
         val personRequest = PersonRequest(fnr)
 

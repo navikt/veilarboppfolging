@@ -1,5 +1,7 @@
 package no.nav.veilarboppfolging.service
 
+import java.time.ZonedDateTime
+import java.util.UUID
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.common.types.identer.NavIdent
@@ -10,13 +12,23 @@ import no.nav.veilarboppfolging.client.tiltakshistorikk.TiltakshistorikkClient
 import no.nav.veilarboppfolging.client.ungdomsprogram.UngdomsprogramClient
 import no.nav.veilarboppfolging.domain.AvslutningStatusData
 import no.nav.veilarboppfolging.eventsLogger.BigQueryClient
+import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingRepository
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingTilstandOppslagResult
-import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.AktiverBrukerManueltService
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.*
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AdminAvregistrering
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ArenaIservKanIkkeReaktiveres
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.Avregistrering
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvslutningsInput
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.KanAvsluttesInput
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.KunneAvsluttes
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.KunneAvsluttesOverstyring
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.KunneAvsluttesResultat
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.KunneAvsluttesResultat.Companion.kanAvsluttes
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.KunneIkkeAvsluttes
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ManuellAvregistrering
 import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.hendelser.OppfolgingsAvsluttetHendelseDto.Companion.of
+import no.nav.veilarboppfolging.repository.ArbeidsoppfolgingskontorRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
 import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity
@@ -28,10 +40,6 @@ import no.nav.veilarboppfolging.utils.SecureLog.secureLog
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.support.TransactionTemplate
-import java.time.ZonedDateTime
-import java.util.*
-import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingRepository
-import no.nav.veilarboppfolging.repository.ArbeidsoppfolgingskontorRepository
 
 @Service
 class AvsluttOppfolgingService(
@@ -45,7 +53,6 @@ class AvsluttOppfolgingService(
     val ungdomsprogramClient: UngdomsprogramClient,
     val aapClient: AapClient,
     val arbeidssoekerregisteretClient: ArbeidssoekerregisteretClient,
-    val arenaYtelserService: ArenaYtelserService,
     val bigQueryClient: BigQueryClient,
     val transactor: TransactionTemplate,
     val arbeidsoppfolgingskontorRepository: ArbeidsoppfolgingskontorRepository,
@@ -122,7 +129,6 @@ class AvsluttOppfolgingService(
         )
 
         return AvslutningStatusData(
-            harYtelser = arenaYtelserService.harPagaendeYtelse(fnr),
             inaktiveringsDato = inaktiveringsDato,
             kanAvslutte = kanAvsluttes is KunneAvsluttes,
             underOppfolging = kanAvsluttes.kanAvsluttesInput.erUnderOppfolging,

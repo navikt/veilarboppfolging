@@ -73,7 +73,6 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     private AuthService authService = mock(AuthService.class);
     private KafkaProducerService kafkaProducerService = mock(KafkaProducerService.class);
     private ArenaOppfolgingService arenaOppfolgingService = mock(ArenaOppfolgingService.class);
-    private ArenaYtelserService arenaYtelserService = mock(ArenaYtelserService.class);
     private KvpService kvpService = mock(KvpService.class);
     private KvpRepository kvpRepository = mock(KvpRepository.class);
     private ManuellStatusService manuellStatusService = mock(ManuellStatusService.class);
@@ -116,7 +115,6 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
                 ungdomsprogramClient,
                 aapClient,
                 arbeidssoekerregisteretClient,
-                arenaYtelserService,
                 bigQueryClient,
                 transactor,
                 arbeidsoppfolgingskontorRepository,
@@ -542,20 +540,6 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
         assertFalse(avslutningStatusData.getKanAvslutte());
         assertTrue(avslutningStatusData.getHarAap());
-    }
-
-    @Test
-    public void kanAvslutteMedVarselOmAktiveYtelser() {
-        startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.Companion.arenaSyncOppfolgingBrukerRegistrering(fnr, aktorId, Formidlingsgruppe.IARBS, Kvalifiseringsgruppe.BATT, EnhetId.of(ENHET)));
-        assertUnderOppfolgingLagret(aktorId);
-
-        gittArenaOppfolgingStatus("ISERV", "");
-        when(arenaYtelserService.harPagaendeYtelse(fnr)).thenReturn(true);
-
-        AvslutningStatusData avslutningStatusData = avsluttOppfolgingService.hentAvslutningstatusForManuellAvslutning(fnr);
-
-        assertTrue(avslutningStatusData.getKanAvslutte());
-        assertTrue(avslutningStatusData.getHarYtelser());
     }
 
     @Test(expected = ForbiddenException.class)

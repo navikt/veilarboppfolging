@@ -1,6 +1,9 @@
 package no.nav.veilarboppfolging.config;
 
 
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.client.norg2.Enhet;
 import no.nav.common.client.norg2.Norg2Client;
@@ -17,10 +20,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 
 @Configuration
@@ -101,11 +100,6 @@ public class ClientTestConfig {
 
             @Override
             public Optional<VeilarbArenaOppfolgingsStatus> getArenaOppfolgingsstatus(Fnr fnr) {
-                return Optional.empty();
-            }
-
-            @Override
-            public Optional<YtelserDTO> getArenaYtelser(Fnr fnr) {
                 return Optional.empty();
             }
 

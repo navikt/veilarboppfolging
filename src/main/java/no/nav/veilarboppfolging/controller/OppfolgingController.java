@@ -1,19 +1,23 @@
 package no.nav.veilarboppfolging.controller;
 
+import java.util.List;
+import java.util.stream.Collectors;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.BadRequestException;
 import no.nav.veilarboppfolging.NotFoundException;
-import no.nav.veilarboppfolging.controller.request.*;
+import no.nav.veilarboppfolging.controller.request.StartKvpDTO;
+import no.nav.veilarboppfolging.controller.request.StoppKvpDTO;
+import no.nav.veilarboppfolging.controller.request.VeilederBegrunnelseDTO;
 import no.nav.veilarboppfolging.controller.response.*;
 import no.nav.veilarboppfolging.repository.enums.KodeverkBruker;
-import no.nav.veilarboppfolging.service.*;
+import no.nav.veilarboppfolging.service.AuthService;
+import no.nav.veilarboppfolging.service.KvpService;
+import no.nav.veilarboppfolging.service.ManuellStatusService;
+import no.nav.veilarboppfolging.service.OppfolgingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 import static no.nav.veilarboppfolging.utils.DtoMappers.*;
 
@@ -23,15 +27,13 @@ public class OppfolgingController {
     private final static List<String> ALLOWLIST_V1 = List.of("veilarbvedtaksstotte", "veilarbregistrering", "veilarbdirigent");
 
     private final OppfolgingService oppfolgingService;
-    private final AvsluttOppfolgingService avsluttOppfolgingService;
     private final KvpService kvpService;
     private final AuthService authService;
     private final ManuellStatusService manuellStatusService;
 
     @Autowired
-    public OppfolgingController(OppfolgingService oppfolgingService, AvsluttOppfolgingService avsluttOppfolgingService, KvpService kvpService, AuthService authService, ManuellStatusService manuellStatusService) {
+    public OppfolgingController(OppfolgingService oppfolgingService, KvpService kvpService, AuthService authService, ManuellStatusService manuellStatusService) {
         this.oppfolgingService = oppfolgingService;
-        this.avsluttOppfolgingService = avsluttOppfolgingService;
         this.kvpService = kvpService;
         this.authService = authService;
         this.manuellStatusService = manuellStatusService;
@@ -50,12 +52,6 @@ public class OppfolgingController {
     public OppfolgingStatus hentOppfolgingsStatus(@RequestParam(value = "fnr", required = false) Fnr fnr) {
         Fnr fodselsnummer = authService.hentIdentForEksternEllerIntern(fnr);
         return tilDto(oppfolgingService.hentOppfolgingsStatus(fodselsnummer), authService.erInternBruker());
-    }
-
-    @GetMapping("/avslutningStatus")
-    public AvslutningsStatusDto hentAvslutningStatus(@RequestParam("fnr") Fnr fnr) {
-        authService.skalVereInternBruker();
-        return tilDto(avsluttOppfolgingService.hentAvslutningstatusForManuellAvslutning(fnr));
     }
 
     // TODO: Ikke returner OppfolgingStatus
