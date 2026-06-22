@@ -1,8 +1,8 @@
 val kotlinVersion = "2.3.21"
 val flywayVersion = "12.8.1"
-val commonVersion = "4.2026.06.09_07.11-eccd6d131c44"
-val ptoSchemaVersion = "1.2025.09.29_11.36-6e568fa24c23"
-val poaoTilgangVersion = "4.2026.06.03_06.17-9fbee8d2bb00"
+val commonVersion = "4.2026.06.22_05.06-8cd381cd084b"
+val ptoSchemaVersion = "2.2026.06.16_10.51-c03b8278b27d"
+val poaoTilgangVersion = "4.2026.06.22_05.28-bc567ee327c9"
 val wiremockVersion = "3.13.2"
 val schedlockVersion = "7.7.0"
 val googleCloudLibrariesBomVersion = "26.83.0"
@@ -12,14 +12,14 @@ val tmsVarselBuilder = "2.2.0"
 val logstashVersion = "9.0"
 val avroVersion = "1.12.1"
 val confluentKafkaAvroVersion = "8.2.0"
-val okHttpVersion = "5.3.2"
+val okHttpVersion = "5.4.0"
 val dabBigQuerySchemaVersion = "2026.05.11-16.10.4d6c1e3c3451"
 
 plugins {
     val kotlinVersion = "2.3.21"
     kotlin("jvm") version kotlinVersion
     kotlin("plugin.spring") version kotlinVersion
-    id("org.springframework.boot") version "4.0.6"
+    id("org.springframework.boot") version "4.1.0"
     id("io.spring.dependency-management") version "1.1.7"
     id("jacoco")
     id("org.sonarqube") version "7.3.1.8318"

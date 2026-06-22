@@ -184,13 +184,6 @@ public class IservServiceIntegrationTest {
 
         assertTrue(utmeldingRepository.eksisterendeIservBruker(AKTOR_ID).isEmpty());
     }
-    
-    private EndringPaaOppfoelgingsBrukerV2.EndringPaaOppfoelgingsBrukerV2Builder getArenaBrukerBuilder() {
-        return EndringPaaOppfoelgingsBrukerV2.builder()
-                .fodselsnummer(FNR.get())
-                .formidlingsgruppe(Formidlingsgruppe.ISERV)
-                .iservFraDato(iservFraDato.toLocalDate());
-    }
 
     private KanskjeIservBruker kanskjeIservBruker() {
         return kanskjeIservBruker(iservFraDato, Formidlingsgruppe.ISERV);
