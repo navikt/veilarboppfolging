@@ -25,10 +25,10 @@ data class EndringPaaOppfolgingsBruker(
             return EndringPaaOppfolgingsBruker(
                 aktorId,
                 endringPaaOppfolgingsBruker.fodselsnummer,
-                endringPaaOppfolgingsBruker.formidlingsgruppe,
+                endringPaaOppfolgingsBruker.formidlingsgruppe!!,
                 endringPaaOppfolgingsBruker.oppfolgingsenhet,
                 endringPaaOppfolgingsBruker.iservFraDato,
-                endringPaaOppfolgingsBruker.kvalifiseringsgruppe,
+                endringPaaOppfolgingsBruker.kvalifiseringsgruppe ?: Kvalifiseringsgruppe.IVURD,
                 endringPaaOppfolgingsBruker.rettighetsgruppe,
                 endringPaaOppfolgingsBruker.hovedmaal,
                 endringPaaOppfolgingsBruker.sistEndretDato,

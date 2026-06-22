@@ -65,7 +65,7 @@ class KafkaProducerService @Autowired constructor(
     private fun sisteOppfolgingsPeriode(sisteOppfolgingsperiodeV1: SisteOppfolgingsperiodeV1) {
         store(
             kafkaProperties.sisteOppfolgingsperiodeTopic,
-            sisteOppfolgingsperiodeV1.aktorId,
+            sisteOppfolgingsperiodeV1.aktorId!!,
             sisteOppfolgingsperiodeV1
         )
     }
@@ -92,7 +92,7 @@ class KafkaProducerService @Autowired constructor(
     }
 
     fun publiserSisteTilordnetVeileder(recordValue: SisteTilordnetVeilederV1) {
-        store(kafkaProperties.sisteTilordnetVeilederTopic, recordValue.aktorId, recordValue)
+        store(kafkaProperties.sisteTilordnetVeilederTopic, recordValue.aktorId!!, recordValue)
     }
 
     fun publiserEndringPaManuellStatus(aktorId: AktorId, erManuell: Boolean) {

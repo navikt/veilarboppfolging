@@ -88,7 +88,7 @@ data class KanskjeIservBruker(
 
     companion object {
         fun of(bruker: EndringPaaOppfoelgingsBrukerV2, aktorId: AktorId): KanskjeIservBruker {
-            return KanskjeIservBruker(bruker.iservFraDato, aktorId, bruker.formidlingsgruppe, IservTrigger.OppdateringPaaOppfolgingsBruker)
+            return KanskjeIservBruker(bruker.iservFraDato, aktorId, bruker.formidlingsgruppe!!, IservTrigger.OppdateringPaaOppfolgingsBruker)
         }
     }
 }
