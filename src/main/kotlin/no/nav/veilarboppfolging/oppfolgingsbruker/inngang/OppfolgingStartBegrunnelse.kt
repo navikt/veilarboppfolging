@@ -19,8 +19,13 @@ enum class OppfolgingStartBegrunnelse {
        eller servicegruppe OPPFI (helserelatert arbeidsrettet oppfølging i Nav)
        */
     MANUELL_REGISTRERING_VEILEDER,
-    MANUELL_REGISTRERING_BRUKER;
+    MANUELL_REGISTRERING_BRUKER,
     /* Oppfølging startet av veileder via registreringsløsningen inngar */
+    DOLLY;
+    /* Oppfølging startet av testdatafabrikanten Dolly.
+       NB: Ingen folkeregisterstatus-sjekk (PDL) utføres –
+       kan dermed starte oppfølging på testpersoner som er
+       registrert som døde, svært unge eller uten lovlig opphold. */
 
     fun toStartetBegrunnelseDTO(): StartetBegrunnelseDTO {
         if (this == ARBEIDSSOKER_REGISTRERING || this == ARENA_SYNC_ARBS) {
