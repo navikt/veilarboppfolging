@@ -2,6 +2,7 @@ package no.nav.veilarboppfolging.controller.v3;
 
 import no.nav.common.json.JsonUtils;
 import no.nav.common.types.identer.Fnr;
+import no.nav.veilarboppfolging.ForbiddenException;
 import no.nav.veilarboppfolging.client.veilarbarena.*;
 import no.nav.veilarboppfolging.controller.KontaktBrukerDto;
 import no.nav.veilarboppfolging.controller.OppfolgingV3Controller;
@@ -11,10 +12,8 @@ import no.nav.veilarboppfolging.domain.AvslutningStatusData;
 import no.nav.veilarboppfolging.domain.OppfolgingStatusData;
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService;
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.AktiverBrukerManueltService;
-import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
 import no.nav.veilarboppfolging.service.*;
-import no.nav.veilarboppfolging.test.TestUtils;
 import no.nav.veilarboppfolging.utils.auth.AuthorizationInterceptor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,6 +34,7 @@ import java.util.UUID;
 
 import static no.nav.veilarboppfolging.test.TestData.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -318,6 +318,18 @@ class OppfolgingV3ControllerTest {
                 )
                 .andExpect(content().string("{\"resultat\":\"Ny bruker ble registrert ok som IARBS\",\"kode\":\"BRUKER_ALLEREDE_ARBS\"}"))
                 .andExpect(status().is(200));
+    }
+
+    @Test
+    void startOppfolgingsperiode_skal_returnere_403_for_systembruker() throws Exception {
+        when(authService.erEksternBruker()).thenReturn(false);
+        doThrow(new ForbiddenException("Bruker er ikke intern")).when(authService).skalVereInternBruker();
+
+        mockMvc.perform(post("/api/v3/oppfolging/startOppfolgingsperiode")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"fnr\":\"12345678900\",\"henviserSystem\":\"AAP\"}")
+                )
+                .andExpect(status().is(403));
     }
 
     @Test
