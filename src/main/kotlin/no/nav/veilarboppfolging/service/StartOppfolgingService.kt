@@ -9,13 +9,13 @@ import no.nav.veilarboppfolging.eventsLogger.BigQueryClient
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ArbeidsokerRegistrering
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ArenaSyncRegistrering
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.DollyRegistrering
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ManuellRegistreringBruker
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ManuellRegistreringVeileder
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering
 import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.hendelser.OppfolgingStartetHendelseDto
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
-import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity
 import no.nav.veilarboppfolging.utils.DtoMappers
 import no.nav.veilarboppfolging.utils.OppfolgingsperiodeUtils
@@ -82,7 +82,8 @@ open class StartOppfolgingService(
             val arenaKontor = when (oppfolgingsbruker) {
                 is ArbeidsokerRegistrering,
                 is ManuellRegistreringBruker,
-                is ManuellRegistreringVeileder -> null
+                is ManuellRegistreringVeileder,
+                is DollyRegistrering -> null
                 is ArenaSyncRegistrering -> oppfolgingsbruker.enhet
             }
             kafkaProducerService.publiserOppfolgingsStartet(lagOppfolgingStartetHendelseDto(fnr, sistePeriode, arenaKontor, kontorSattAvVeileder))

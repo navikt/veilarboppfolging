@@ -24,6 +24,7 @@ data class OppfolgingsperiodeDTO(
 enum class StartetBegrunnelseDTO {
     ARBEIDSSOKER,
     SYKEMELDT_MER_OPPFOLGING,
-    MANUELL_REGISTRERING_VEILEDER
+    MANUELL_REGISTRERING_VEILEDER,
+    DOLLY
 }
 
