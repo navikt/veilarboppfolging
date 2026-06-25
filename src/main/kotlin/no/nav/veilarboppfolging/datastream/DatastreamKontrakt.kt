@@ -44,7 +44,6 @@ object DatastreamKontrakt {
                         "ARENA_SYNC_IARBS",
                         "MANUELL_REGISTRERING_BRUKER",
                         "MANUELL_REGISTRERING_VEILEDER",
-                        "DOLLY",
                     )
                 ),
                 Kolonne("startet_av"),

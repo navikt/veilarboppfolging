@@ -72,4 +72,4 @@ data class ArenaSyncRegistrering(
 data class DollyRegistrering(
     override val fnr: Fnr,
     override val aktorId: AktorId,
-) : OppfolgingsRegistrering(fnr, aktorId, OppfolgingStartBegrunnelse.DOLLY, SystemRegistrant)
+) : OppfolgingsRegistrering(fnr, aktorId, OppfolgingStartBegrunnelse.MANUELL_REGISTRERING_VEILEDER, SystemRegistrant)
