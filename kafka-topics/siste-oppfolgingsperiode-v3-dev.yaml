@@ -39,3 +39,6 @@ spec:
     - team: amt
       application: amt-person-service
       access: read
+    - team: paw
+      application: paw-arbeidssoekerregisteret-api-oversikt
+      access: read
