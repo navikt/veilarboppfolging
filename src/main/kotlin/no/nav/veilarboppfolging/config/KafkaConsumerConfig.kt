@@ -13,7 +13,6 @@ import no.nav.common.kafka.consumer.util.deserializer.Deserializers
 import no.nav.common.kafka.spring.PostgresJdbcTemplateConsumerRepository
 import no.nav.common.kafka.util.KafkaPropertiesBuilder
 import no.nav.common.utils.EnvironmentUtils
-import no.nav.paw.arbeidssokerregisteret.api.v1.Aarsaksinformasjon
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2
 import no.nav.veilarboppfolging.kafka.ArbeidsoppfolgingskontortilordningConsumerService
@@ -53,7 +52,6 @@ open class KafkaConsumerConfig(
     init {
         val consumerRepository: KafkaConsumerRepository = PostgresJdbcTemplateConsumerRepository(jdbcTemplate)
         if (kafkaEnabled) {
-            val lol: Aarsaksinformasjon
             val topicConfigs = listOf<KafkaConsumerClientBuilder.TopicConfig<*, *>>(
                 KafkaConsumerClientBuilder.TopicConfig<String, EndringPaaOppfoelgingsBrukerV2>()
                     .withLogging()
