@@ -39,6 +39,30 @@ kotlin {
     jvmToolchain(21)
 }
 
+val avroSchemas = configurations.create("avroSchemas") {
+    isTransitive = false
+}
+
+//val avroSchemas = configurations.register("avroSchemas") {
+//    isCanBeResolved = true
+//    isCanBeConsumed = false
+//}
+
+//val extractAvdl = tasks.register<Copy>("extractAvdl") {
+//    from(avroSchemas.flatMap { it.elements })
+//    include("**/*.avdl")
+//    into(layout.buildDirectory.dir("avdl"))
+//}
+
+//tasks.named("generateAvro") {
+//    dependsOn(extractAvdl)
+//}
+
+//generateAvro {
+//    schemasDir.set(layout.projectDirectory.dir("src/main/avro"))
+//    outputDir.set(layout.buildDirectory.dir("generated-avro"))
+//}
+
 tasks.jacocoTestReport {
     reports {
         xml.required.set(true)
@@ -97,6 +121,7 @@ dependencies {
     implementation("no.nav.common:metrics:$commonVersion")
     implementation("no.nav.common:kafka:$commonVersion")
     implementation("org.apache.avro:avro:$avroVersion")
+    avroSchemas("no.nav.paw.arbeidssokerregisteret.api:main-avro-schema:1.26.06.18.18-1")
     implementation("io.confluent:kafka-avro-serializer:$confluentKafkaAvroVersion") {
         exclude(group = "io.swagger.core.v3")
     }
@@ -149,4 +174,10 @@ if (hasProperty("buildScan")) {
         setProperty("termsOfServiceUrl", "https://gradle.com/terms-of-service")
         setProperty("termsOfServiceAgree", "yes")
     }
+}
+
+generateAvro {
+    this.schemas.from(zipTree(avroSchemas.singleFile))
+//    schemasDir.set(layout.projectDirectory.dir("src/main/avro"))
+//    outputDir.set(layout.buildDirectory.dir("generated-avro"))
 }
