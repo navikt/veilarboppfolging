@@ -33,7 +33,11 @@ sealed class KandidatForUtmeldingHendelse(
 }
 
 enum class KandidatForUtmeldingHendelseType {
-    ARBEIDSSOKERPERIODE_AVSLUTTET
+    @Deprecated("Ikke bruk")
+    ARBEIDSSOKERPERIODE_AVSLUTTET,
+    ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
+    ARBEIDSSOKERPERIODE_AVSLUTTET_SVARTE_NEI_I_BEKREFTELSE,
+    ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET,
 }
 
 enum class KandidatForUtmeldingHendelseAvsluttetAv {
