@@ -43,25 +43,6 @@ val avroSchemas = configurations.create("avroSchemas") {
     isTransitive = false
 }
 
-//val avroSchemas = configurations.register("avroSchemas") {
-//    isCanBeResolved = true
-//    isCanBeConsumed = false
-//}
-
-//val extractAvdl = tasks.register<Copy>("extractAvdl") {
-//    from(avroSchemas.flatMap { it.elements })
-//    include("**/*.avdl")
-//    into(layout.buildDirectory.dir("avdl"))
-//}
-
-//tasks.named("generateAvro") {
-//    dependsOn(extractAvdl)
-//}
-
-//generateAvro {
-//    schemasDir.set(layout.projectDirectory.dir("src/main/avro"))
-//    outputDir.set(layout.buildDirectory.dir("generated-avro"))
-//}
 
 tasks.jacocoTestReport {
     reports {
@@ -178,6 +159,4 @@ if (hasProperty("buildScan")) {
 
 generateAvro {
     this.schemas.from(zipTree(avroSchemas.singleFile))
-//    schemasDir.set(layout.projectDirectory.dir("src/main/avro"))
-//    outputDir.set(layout.buildDirectory.dir("generated-avro"))
 }
