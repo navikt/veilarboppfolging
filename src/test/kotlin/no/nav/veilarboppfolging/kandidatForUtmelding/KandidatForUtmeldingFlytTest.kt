@@ -139,7 +139,7 @@ class KandidatForUtmeldingFlytTest(
             oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
             avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER,
             kilde ="kilde",
-            aarsak = "aarsak")
+            detaljer = "aarsak")
         )
         avsluttOppfolgingManueltSomVeileder(aktorId)
 
@@ -160,7 +160,7 @@ class KandidatForUtmeldingFlytTest(
             oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
             avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER,
             kilde ="kilde",
-            aarsak = "aarsak")
+            detaljer = "aarsak")
         )
         avsluttOppfolgingManueltSomVeileder(aktorId)
 
@@ -181,7 +181,7 @@ class KandidatForUtmeldingFlytTest(
             oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
             avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER,
             kilde ="kilde",
-            aarsak = "aarsak")
+            detaljer = "aarsak")
         )
         avsluttOppfolgingManueltSomVeileder(aktorId)
         val registrering = OppfolgingsRegistrering.arbeidssokerRegistrering(Fnr.of(fnr), aktorId, VeilederRegistrant(NavIdent("veileder")))
@@ -201,7 +201,7 @@ class KandidatForUtmeldingFlytTest(
             oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
             avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER,
             kilde ="kilde",
-            aarsak = "aarsak")
+            detaljer = "aarsak")
         )
         assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNotNull()
 
@@ -233,7 +233,7 @@ class KandidatForUtmeldingFlytTest(
             oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
             avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER,
             kilde ="kilde",
-            aarsak = "aarsak")
+            detaljer = "aarsak")
         )
         avsluttOppfolgingManueltSomVeileder(aktorId)
 
@@ -257,7 +257,7 @@ class KandidatForUtmeldingFlytTest(
             oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
             avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER,
             kilde ="kilde",
-            aarsak = "aarsak")
+            detaljer = "aarsak")
         )
         assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNotNull()
 

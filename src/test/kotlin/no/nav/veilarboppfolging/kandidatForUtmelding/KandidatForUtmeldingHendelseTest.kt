@@ -20,7 +20,7 @@ class KandidatForUtmeldingHendelseTest {
             oppfolgingsperiodeUuid = UUID.randomUUID(),
             avsluttetAv = avsluttetAv,
             kilde = "test",
-            aarsak = null
+            detaljer = null
         )
 
     @Test

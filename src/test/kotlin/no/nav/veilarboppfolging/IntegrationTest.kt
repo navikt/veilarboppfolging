@@ -269,7 +269,7 @@ open class IntegrationTest {
             oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
             avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER,
             kilde = "arbeidssøkerregisteret",
-            aarsak = "Avsluttet av veileder"
+            detaljer = "Avsluttet av veileder"
         )
         kandidatForUtmeldingService.lagreKandidatForUtmelding(kandidat)
     }
