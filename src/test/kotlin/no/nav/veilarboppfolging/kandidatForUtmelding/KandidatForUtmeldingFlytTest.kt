@@ -274,10 +274,49 @@ class KandidatForUtmeldingFlytTest(
         assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNull()
     }
 
+    @Test
+    fun `AvsluttAarsakType SVARTE_NEI_I_BEKREFTELSE mappes til riktig KandidatForUtmeldingHendelseType ARBEIDSSOKERPERIODE_AVSLUTTET_SVARTE_NEI_I_BEKREFTELSE`() {
+        mockSytemBrukerAuthOk(aktorId, Fnr.of(fnr))
+        startOppfolgingSomArbeidsoker(aktorId, Fnr.of(fnr))
+        setLocalArenaOppfolging(aktorId, Formidlingsgruppe.ARBS)
+        mockTiltakshistorikk(Fnr.of(fnr), harAktiveDeltakelser = false)
+        mockUngdomsprogram(Fnr.of(fnr), erDeltaker = false)
+        mockArbeidssoekerregisteret(Fnr.of(fnr), erArbeidssoeker = false)
+        mockAap(Fnr.of(fnr), harAap = false)
+
+        assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNull()
+
+        val sluttMelding = ConsumerRecord("topic", 0, 0, "dummyKey", arbeidssokerperiode(fnr, periodeAvsluttet = true, avsluttetAarsakType = AvsluttetAarsakType.SVARTE_NEI_I_BEKREFTELSE))
+        arbeidssoekerperiodeConsumerService.consumeArbeidssøkerperiode(sluttMelding)
+
+        assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)?.type).isEqualTo(
+            KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_SVARTE_NEI_I_BEKREFTELSE)
+    }
+
+    @Test
+    fun `AvsluttAarsakType BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST mappes til riktig KandidatForUtmeldingHendelseType ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT`() {
+        mockSytemBrukerAuthOk(aktorId, Fnr.of(fnr))
+        startOppfolgingSomArbeidsoker(aktorId, Fnr.of(fnr))
+        setLocalArenaOppfolging(aktorId, Formidlingsgruppe.ARBS)
+        mockTiltakshistorikk(Fnr.of(fnr), harAktiveDeltakelser = false)
+        mockUngdomsprogram(Fnr.of(fnr), erDeltaker = false)
+        mockArbeidssoekerregisteret(Fnr.of(fnr), erArbeidssoeker = false)
+        mockAap(Fnr.of(fnr), harAap = false)
+
+        assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNull()
+
+        val sluttMelding = ConsumerRecord("topic", 0, 0, "dummyKey", arbeidssokerperiode(fnr, periodeAvsluttet = true, avsluttetAarsakType = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST))
+        arbeidssoekerperiodeConsumerService.consumeArbeidssøkerperiode(sluttMelding)
+
+        assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)?.type).isEqualTo(
+            KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT)
+    }
+
     private fun arbeidssokerperiode(
         fodselsnummer: String,
         periodeAvsluttet: Boolean = false,
-        periodeStartet: Instant = Instant.now().minusSeconds(1)
+        periodeStartet: Instant = Instant.now().minusSeconds(1),
+        avsluttetAarsakType: AvsluttetAarsakType = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST
     ): Periode {
         val slutt = if (periodeAvsluttet) {
             MetaData().apply {
@@ -304,7 +343,7 @@ class KandidatForUtmeldingFlytTest(
             avsluttet = slutt
             avslutningsInfo = AvslutningsInfo().apply {
                 aarsaksinformasjon = Aarsaksinformasjon().apply {
-                    type = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST
+                    type = avsluttetAarsakType
                 }
             }
         }
