@@ -4,17 +4,11 @@ import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.veilarboppfolging.IntegrationTest
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvregistreringsType
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.OppdateringFraArena_BleIserv
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.UtmeldingsService
 import no.nav.veilarboppfolging.repository.UtmeldingRepository
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.fail
 import org.springframework.beans.factory.annotation.Autowired
-import java.time.ZonedDateTime
-import java.time.temporal.ChronoUnit
 import java.util.UUID
 
 class KandidatForUtmeldingServiceTest : IntegrationTest() {
@@ -55,7 +49,7 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
         assertThat(kandidat?.aktorId).isEqualTo(AKTOR_ID)
         assertThat(kandidat?.avsluttetAv).isEqualTo(KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER)
         assertThat(kandidat?.kilde).isEqualTo("kilde")
-        assertThat(kandidat?.aarsak).isEqualTo("aarsak")
+        assertThat(kandidat?.detaljer).isEqualTo("aarsak")
     }
 
     @Test

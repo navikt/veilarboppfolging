@@ -14,7 +14,7 @@ sealed class KandidatForUtmeldingHendelse(
     val oppfolgingsperiodeUuid: UUID,
     val avsluttetAv: KandidatForUtmeldingHendelseAvsluttetAv,
     val kilde: String,
-    val aarsak: String?,
+    val detaljer: String?,
 ) {
     abstract val type: KandidatForUtmeldingHendelseType
 
@@ -49,7 +49,7 @@ class ArbeidssøkerPeriodeAvsluttet(
     oppfolgingsperiodeUuid: UUID,
     avsluttetAv: KandidatForUtmeldingHendelseAvsluttetAv,
     kilde: String,
-    aarsak: String?
-): KandidatForUtmeldingHendelse(aktorId, fnr, oppfolgingsperiodeUuid, avsluttetAv, kilde, aarsak)  {
+    detaljer: String?
+): KandidatForUtmeldingHendelse(aktorId, fnr, oppfolgingsperiodeUuid, avsluttetAv, kilde, detaljer)  {
     override val type: KandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET
 }

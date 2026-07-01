@@ -14,8 +14,8 @@ class KandidatForUtmeldingRepository(
 
     fun lagreKandidat(hendelse: KandidatForUtmeldingHendelse) {
         val sql = """
-            INSERT INTO kandidat_for_utmelding(aktor_id, hendelse, avsluttet_av, kilde, aarsak, fnr, oppfolgingsperiode_uuid)
-            VALUES (:aktorId, :hendelse, :avsluttet_av, :kilde, :aarsak, :fnr, :oppfolgingsperiode_uuid)
+            INSERT INTO kandidat_for_utmelding(aktor_id, hendelse, avsluttet_av, kilde, detaljer, fnr, oppfolgingsperiode_uuid)
+            VALUES (:aktorId, :hendelse, :avsluttet_av, :kilde, :detaljer, :fnr, :oppfolgingsperiode_uuid)
             ON CONFLICT (aktor_id) DO NOTHING
         """.trimIndent()
         db.update(sql, mapOf(
@@ -23,7 +23,7 @@ class KandidatForUtmeldingRepository(
             "hendelse" to hendelse.type.name,
             "avsluttet_av" to hendelse.avsluttetAv.name,
             "kilde" to hendelse.kilde,
-            "aarsak" to hendelse.aarsak,
+            "detaljer" to hendelse.detaljer,
             "fnr" to hendelse.fnr.get(),
             "oppfolgingsperiode_uuid" to hendelse.oppfolgingsperiodeUuid
         ))
@@ -57,7 +57,7 @@ class KandidatForUtmeldingRepository(
                 oppfolgingsperiodeUuid = UUID.fromString(resultSet.getString("oppfolgingsperiode_uuid")),
                 avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.valueOf(resultSet.getString("avsluttet_av")),
                 kilde = resultSet.getString("kilde"),
-                aarsak = resultSet.getString("aarsak")
+                detaljer = resultSet.getString("detaljer")
             )
         }
     }
