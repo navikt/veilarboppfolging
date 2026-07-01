@@ -47,13 +47,22 @@ enum class KandidatForUtmeldingHendelseAvsluttetAv {
     UKJENT
 }
 
-class ArbeidssøkerPeriodeAvsluttet(
+sealed class ArbeidssøkerPeriodeAvsluttet(
     aktorId: AktorId,
     fnr: Fnr,
     oppfolgingsperiodeUuid: UUID,
     avsluttetAv: KandidatForUtmeldingHendelseAvsluttetAv,
     kilde: String,
     detaljer: String?
-): KandidatForUtmeldingHendelse(aktorId, fnr, oppfolgingsperiodeUuid, avsluttetAv, kilde, detaljer)  {
-    override val type: KandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET
+): KandidatForUtmeldingHendelse(aktorId, fnr, oppfolgingsperiodeUuid, avsluttetAv, kilde, detaljer)
+
+class ArbeidssøkerPeriodeAvsluttetIkkeLevertMeldekort(
+    aktorId: AktorId,
+    fnr: Fnr,
+    oppfolgingsperiodeUuid: UUID,
+    avsluttetAv: KandidatForUtmeldingHendelseAvsluttetAv,
+    kilde: String,
+    detaljer: String?
+): ArbeidssøkerPeriodeAvsluttet(aktorId, fnr, oppfolgingsperiodeUuid, avsluttetAv, kilde, detaljer) {
+    override val type: KandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT
 }
