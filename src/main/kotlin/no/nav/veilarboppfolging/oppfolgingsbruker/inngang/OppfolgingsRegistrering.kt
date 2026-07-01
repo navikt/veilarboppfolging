@@ -29,6 +29,9 @@ sealed class OppfolgingsRegistrering(
         fun arenaSyncOppfolgingBrukerRegistrering(fnr: Fnr, aktorId: AktorId, formidlingsgruppe: Formidlingsgruppe, kvalifiseringsgruppe: Kvalifiseringsgruppe, enhet: EnhetId): ArenaSyncRegistrering {
             return ArenaSyncRegistrering(fnr, aktorId, formidlingsgruppe, kvalifiseringsgruppe, enhet)
         }
+        fun dollyRegistrering(fnr: Fnr, aktorId: AktorId): DollyRegistrering {
+            return DollyRegistrering(fnr, aktorId)
+        }
     }
 }
 
@@ -65,3 +68,8 @@ data class ArenaSyncRegistrering(
     else OppfolgingStartBegrunnelse.ARENA_SYNC_ARBS,
     SystemRegistrant
 )
+
+data class DollyRegistrering(
+    override val fnr: Fnr,
+    override val aktorId: AktorId,
+) : OppfolgingsRegistrering(fnr, aktorId, OppfolgingStartBegrunnelse.MANUELL_REGISTRERING_VEILEDER, SystemRegistrant)

@@ -1,11 +1,11 @@
 val kotlinVersion = "2.3.21"
-val flywayVersion = "12.8.1"
-val commonVersion = "4.2026.06.22_05.06-8cd381cd084b"
+val flywayVersion = "12.9.0"
+val commonVersion = "4.2026.06.24_08.27-d324901a85d7"
 val ptoSchemaVersion = "2.2026.06.16_10.51-c03b8278b27d"
 val poaoTilgangVersion = "4.2026.06.22_05.28-bc567ee327c9"
 val wiremockVersion = "3.13.2"
 val schedlockVersion = "7.7.0"
-val googleCloudLibrariesBomVersion = "26.83.0"
+val googleCloudLibrariesBomVersion = "26.84.0"
 val springDoc = "3.0.3"
 val tmsMicrofrontendBuilder = "3.0.0"
 val tmsVarselBuilder = "2.2.0"
@@ -23,6 +23,7 @@ plugins {
     id("io.spring.dependency-management") version "1.1.7"
     id("jacoco")
     id("org.sonarqube") version "7.3.1.8318"
+    id("io.github.androa.gradle.plugin.avro") version "0.0.12"
 }
 
 group = "no.nav"
@@ -37,6 +38,11 @@ java {
 kotlin {
     jvmToolchain(21)
 }
+
+val avroSchemas = configurations.create("avroSchemas") {
+    isTransitive = false
+}
+
 
 tasks.jacocoTestReport {
     reports {
@@ -96,6 +102,7 @@ dependencies {
     implementation("no.nav.common:metrics:$commonVersion")
     implementation("no.nav.common:kafka:$commonVersion")
     implementation("org.apache.avro:avro:$avroVersion")
+    avroSchemas("no.nav.paw.arbeidssokerregisteret.api:main-avro-schema:1.26.06.18.18-1")
     implementation("io.confluent:kafka-avro-serializer:$confluentKafkaAvroVersion") {
         exclude(group = "io.swagger.core.v3")
     }
@@ -148,4 +155,8 @@ if (hasProperty("buildScan")) {
         setProperty("termsOfServiceUrl", "https://gradle.com/terms-of-service")
         setProperty("termsOfServiceAgree", "yes")
     }
+}
+
+generateAvro {
+    this.schemas.from(zipTree(avroSchemas.singleFile))
 }

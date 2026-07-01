@@ -211,7 +211,7 @@ class OppfolgingV3Controller(
             authService.hentInnloggetPersonIdent()?.let {  Fnr.of(it) }
                 ?: throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Kan ikke hente innlogget personident")
         } else {
-            authService.skalVereInternEllerSystemBruker()
+            authService.skalVereInternBruker()
             startOppfolging.fnr ?: throw ResponseStatusException(HttpStatus.BAD_REQUEST, "fnr er påkrevd for interne brukere")
         }
         authService.sjekkAtApplikasjonErIAllowList(ALLOWLIST)
@@ -277,8 +277,6 @@ class OppfolgingV3Controller(
         private val ALLOWLIST = listOf(
             AllowListApplicationName.INNGAR,
             AllowListApplicationName.INNGAR_EKSTERN,
-            AllowListApplicationName.DOLLY, // Åpen i inbound policy kun i dev
-            AllowListApplicationName.DOLLY_PROXY_TRYGDEETATEN // Åpen i inbound policy kun i dev
         )
     }
 }
