@@ -57,7 +57,7 @@ class KandidatForUtmeldingRepository(
                 oppfolgingsperiodeUuid = UUID.fromString(resultSet.getString("oppfolgingsperiode_uuid")),
                 avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.valueOf(resultSet.getString("avsluttet_av")),
                 kilde = resultSet.getString("kilde"),
-                detaljer = resultSet.getString("detaljer")
+                detaljer = resultSet.getString("detaljer") ?: resultSet.getString("aarsak")
             )
         }
     }
