@@ -252,7 +252,8 @@ class ArbeidssøkerperiodeConsumerServiceTest(
                 tidspunkt = Instant.now()
                 utfoertAv = Bruker(
                     BrukerType.VEILEDER,
-                    "dummyId"
+                    "dummyId",
+                    "tokenx:Level4"
                 )
                 kilde = "dummyKilde"
                 aarsak = "dummyAarsak"
@@ -270,7 +271,8 @@ class ArbeidssøkerperiodeConsumerServiceTest(
                 tidspunkt = periodeStartet
                 utfoertAv = Bruker(
                     BrukerType.VEILEDER,
-                    "dummyId"
+                    "dummyId",
+                    "tokenx:Level4"
                 )
                 kilde = "dummyKilde"
                 aarsak = "dummyAarsak"

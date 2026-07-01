@@ -274,7 +274,7 @@ class KandidatForUtmeldingFlytTest(
         val slutt = if (periodeAvsluttet) {
             MetaData().apply {
                 tidspunkt = Instant.now()
-                utfoertAv = Bruker(BrukerType.VEILEDER, "dummyId")
+                utfoertAv = Bruker(BrukerType.VEILEDER, "dummyId", "tokenx:Level4")
                 kilde = "dummyKilde"
                 aarsak = "dummyAarsak"
                 tidspunktFraKilde = TidspunktFraKilde(Instant.now(), AvviksType.FORSINKELSE)
@@ -288,7 +288,7 @@ class KandidatForUtmeldingFlytTest(
             identitetsnummer = fodselsnummer
             startet = MetaData().apply {
                 tidspunkt = periodeStartet
-                utfoertAv = Bruker(BrukerType.VEILEDER, "dummyId")
+                utfoertAv = Bruker(BrukerType.VEILEDER, "dummyId", "tokenx:Level4")
                 kilde = "dummyKilde"
                 aarsak = "dummyAarsak"
                 tidspunktFraKilde = TidspunktFraKilde(periodeStartet, AvviksType.FORSINKELSE)

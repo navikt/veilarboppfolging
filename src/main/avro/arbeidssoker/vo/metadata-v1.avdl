@@ -1,0 +1,69 @@
+@namespace("no.nav.paw.arbeidssokerregisteret.api.v1")
+protocol Endring {
+	import idl "bruker-v1.avdl";
+
+	/**
+	  * Inneholder metadata om en endring i arbeidssøkerregisteret.
+	 */
+	record Metadata {
+		/**
+		 * Tidspunkt for endringen.
+		 */
+		@logicalType("timestamp-millis")
+		long tidspunkt;
+		Bruker utfoertAv;
+		/**
+		 * Navn på systemet som utførte endringen eller ble benyttet til å utføre endringen.
+		 */
+		string kilde;
+		/**
+	  	 * Aarasek til endringen. Feks "Flyttet ut av landet" eller lignende.
+		 */
+		string aarsak;
+		/**
+		 *Avvik i tid mellom kilde og register.
+ 		 */
+		TidspunktFraKilde? tidspunktFraKilde = null;
+	}
+
+	/**
+	 * Ukjent verdi settes aldri direkte, men brukes som standardverdi og
+	 * for å indikere at en verdi er ukjent for mottaker av melding, dvs at
+	 * at den er satt til en verdi som ikke er definert i Avro-skjemaet til mottaker.
+	 *
+	 * FORSINKELSE - Grunnen til avvik mellom kilde og register er generell forsinkelse
+	 * 				 som oppstår i asynkrone systemer.
+	 *
+	 * RETTING - 	Deprecated: Betyr det samme som SLETTET
+	 *
+	 * SLETTET - 	En periode/opplysning som tidligere er registrert, ble registrert ved en feil
+	 *              og er nå flagget som slettet. Denne brukes utelukkende i metadata for 'avsluttet'.
+	 *
+	 * TIDSPUNKT_KORRIGERT - Tidspunktet som egentlig er korrekt, feks tidspunktet da en periode skulle vært startet eller stoppet.
+	 */
+	enum AvviksType {
+		UKJENT_VERDI,
+		FORSINKELSE,
+		RETTING, // Deprecated: Betyr det samme som SLETTET
+		SLETTET,
+		TIDSPUNKT_KORRIGERT
+	} = UKJENT_VERDI;
+
+	record TidspunktFraKilde {
+		/**
+		 * Betydningen av tidspunktet er avhengig av avviksType.
+		 * FORSINKELSE: Tidspunktet er tidspunktet da endringen skulle vært utført.
+		 *
+		 * SLETTET: Tidspunktet er tidspunktet da endringen ble utført(samme som selve recorden).
+		 *
+		 * TIDSPUNKT_KORRIGERT: Tidspunktet som egentlig er korrekt, feks tidspunktet da en periode skulle vært stoppet
+		 *                		 eller startet
+		 */
+		@logicalType("timestamp-millis")
+		long tidspunkt;
+		/**
+		 * Årsaken til til avvik i tid mellom kilde og register.
+		 */
+		AvviksType avviksType;
+	}
+}

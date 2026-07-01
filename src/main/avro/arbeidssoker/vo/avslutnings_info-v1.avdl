@@ -1,0 +1,16 @@
+@namespace("no.nav.paw.arbeidssokerregisteret.api.v1")
+protocol AvslutningsInfoProtocol {
+	import idl "aarsaksinformasjon-v1.avdl";
+
+	/**
+	 * Inneholder informasjon om avslutnigen av periodeen.
+	 * Fremtidige felt knyttet til avslutning legges til her.
+	 */
+	record AvslutningsInfo {
+		/**
+		  * Vil stortsett være satt, men for å støtte mulige fremtidige endringer
+		  * må konsumenter håndtere at den ikke er satt.
+ 		  */
+		Aarsaksinformasjon? aarsaksinformasjon = null;
+	}
+}
