@@ -2,8 +2,6 @@ package no.nav.veilarboppfolging.kandidatForUtmelding
 
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
-import no.nav.paw.arbeidssokerregisteret.api.v1.Aarsaksinformasjon
-import no.nav.paw.arbeidssokerregisteret.api.v1.AvsluttetAarsakType
 import java.util.UUID
 
 sealed class KandidatForUtmeldingHendelse(
@@ -47,19 +45,16 @@ class ArbeidssøkerPeriodeAvsluttet(
     oppfolgingsperiodeUuid: UUID,
     avsluttetAv: KandidatForUtmeldingHendelseAvsluttetAv,
     kilde: String,
-    avsluttetAarsakType: AvsluttetAarsakType,
+    detaljer: String,
+    kandidatForUtmeldingHendelseType: KandidatForUtmeldingHendelseType
 ) : KandidatForUtmeldingHendelse(
     aktorId,
     fnr,
     oppfolgingsperiodeUuid,
     avsluttetAv,
     kilde,
-    detaljer = avsluttetAarsakType.toString()
+    detaljer
 ) {
-    override val type: KandidatForUtmeldingHendelseType = when (avsluttetAarsakType) {
-        AvsluttetAarsakType.SVARTE_NEI_I_BEKREFTELSE -> KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_SVARTE_NEI_I_BEKREFTELSE
-        AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST -> KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT
-        AvsluttetAarsakType.UDEFINERT, AvsluttetAarsakType.UKJENT_VERDI -> KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET
-    }
+    override val type: KandidatForUtmeldingHendelseType = kandidatForUtmeldingHendelseType
 }
 

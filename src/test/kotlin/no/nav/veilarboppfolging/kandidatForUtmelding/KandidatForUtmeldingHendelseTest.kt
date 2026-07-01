@@ -2,6 +2,7 @@ package no.nav.veilarboppfolging.kandidatForUtmelding
 
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
+import no.nav.paw.arbeidssokerregisteret.api.v1.AvsluttetAarsakType
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import java.util.UUID
@@ -20,7 +21,8 @@ class KandidatForUtmeldingHendelseTest {
             oppfolgingsperiodeUuid = UUID.randomUUID(),
             avsluttetAv = avsluttetAv,
             kilde = "test",
-            avsluttetAarsakType = null
+            kandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
+            detaljer = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
         )
 
     @Test

@@ -5,7 +5,6 @@ Stopp av periode
 [Bekreftelse:ytelse/støtte] Ikke levert innen fristen
 Feilregistrering
 */
-
 update kandidat_for_utmelding
 set hendelse = 'ARBEIDSSOKERPERIODE_AVSLUTTET_SVARTE_NEI_I_BEKREFTELSE', detaljer = aarsak
 where hendelse = 'ARBEIDSSOKERPERIODE_AVSLUTTET'
@@ -14,9 +13,9 @@ where hendelse = 'ARBEIDSSOKERPERIODE_AVSLUTTET'
 update kandidat_for_utmelding
 set hendelse = 'ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT', detaljer = aarsak
 where hendelse = 'ARBEIDSSOKERPERIODE_AVSLUTTET'
-    and aarsak = '[Bekreftelse] ikke levert innen fristen' OR '[Bekreftelse:ytelse/støtte] Ikke levert innen fristen';
+    and aarsak = '[Bekreftelse] ikke levert innen fristen' OR aarsak = '[Bekreftelse:ytelse/støtte] Ikke levert innen fristen';
 
 update kandidat_for_utmelding
 set hendelse = 'ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET', detaljer = aarsak
 where hendelse = 'ARBEIDSSOKERPERIODE_AVSLUTTET'
-    and aarsak = 'Stopp av periode' OR 'Feilregistrering';
+    and aarsak = 'Stopp av periode' OR aarsak = 'Feilregistrering';

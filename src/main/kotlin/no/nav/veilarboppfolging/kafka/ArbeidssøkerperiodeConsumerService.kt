@@ -3,6 +3,7 @@ package no.nav.veilarboppfolging.kafka
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.common.types.identer.NavIdent
+import no.nav.paw.arbeidssokerregisteret.api.v1.AvsluttetAarsakType
 import no.nav.paw.arbeidssokerregisteret.api.v1.BrukerType
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
@@ -13,6 +14,8 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.toRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.UtmeldingsService
 import no.nav.veilarboppfolging.kandidatForUtmelding.ArbeidssøkerPeriodeAvsluttet
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingHendelseAvsluttetAv
+import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingHendelseType
+import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingRepository
 import no.nav.veilarboppfolging.service.AuthService
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService
 import no.nav.veilarboppfolging.service.OppfolgingService
@@ -40,9 +43,10 @@ open class ArbeidssøkerperiodeConsumerService(
             private val authService: AuthService,
             private val arenaOppfolgingService: ArenaOppfolgingService,
             private val utmeldingService: UtmeldingsService,
-            private val kandidatForUtmeldingService: KandidatForUtmeldingService
-) {
-    private val logger = LoggerFactory.getLogger(this::class.java)
+            private val kandidatForUtmeldingService: KandidatForUtmeldingService,
+            private val kandidatForUtmeldingRepository: KandidatForUtmeldingRepository
+        ) {
+            private val logger = LoggerFactory.getLogger(this::class.java)
 
     @Transactional
     open fun consumeArbeidssøkerperiode(kafkaMelding: ConsumerRecord<String, Periode>) {
@@ -86,7 +90,22 @@ open class ArbeidssøkerperiodeConsumerService(
                     BrukerType.SYSTEM -> KandidatForUtmeldingHendelseAvsluttetAv.SYSTEM
                     BrukerType.SLUTTBRUKER -> KandidatForUtmeldingHendelseAvsluttetAv.BRUKER
                 }
-                kandidatForUtmeldingService.lagreKandidatForUtmelding(ArbeidssøkerPeriodeAvsluttet(aktørId, fnr, avsluttetAv = avsluttetAv, kilde = kilde, avsluttetAarsakType = detaljer, oppfolgingsperiodeUuid = gjeldendePeriode.uuid))
+                val type: KandidatForUtmeldingHendelseType = when (arbeidssøkerperiode.avslutningsInfo.aarsaksinformasjon.type) {
+                    AvsluttetAarsakType.SVARTE_NEI_I_BEKREFTELSE -> KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_SVARTE_NEI_I_BEKREFTELSE
+                    AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST -> KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT
+                    AvsluttetAarsakType.UDEFINERT, AvsluttetAarsakType.UKJENT_VERDI -> KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET
+                }
+                kandidatForUtmeldingService.lagreKandidatForUtmelding(
+                    ArbeidssøkerPeriodeAvsluttet(
+                        aktørId,
+                        fnr,
+                        avsluttetAv = avsluttetAv,
+                        kilde = kilde,
+                        detaljer = detaljer.toString(),
+                        kandidatForUtmeldingHendelseType = type,
+                        oppfolgingsperiodeUuid = gjeldendePeriode.uuid
+                    )
+                )
             }
         }
     }
