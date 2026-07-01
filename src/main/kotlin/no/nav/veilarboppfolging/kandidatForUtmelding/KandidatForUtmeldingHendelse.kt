@@ -19,15 +19,11 @@ sealed class KandidatForUtmeldingHendelse(
     abstract val type: KandidatForUtmeldingHendelseType
 
     fun mapTilTag(): KandidatForUtmeldingTag {
-        return when (type) {
-            KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET -> {
-                when (avsluttetAv) {
-                    KandidatForUtmeldingHendelseAvsluttetAv.BRUKER -> ARBEIDSSOKERPERIODE_AVSLUTTET_BRUKER
-                    KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER -> ARBEIDSSOKERPERIODE_AVSLUTTET_VEILEDER
-                    KandidatForUtmeldingHendelseAvsluttetAv.SYSTEM -> ARBEIDSSOKERPERIODE_AVSLUTTET_SYSTEM
-                    KandidatForUtmeldingHendelseAvsluttetAv.UKJENT -> ARBEIDSSOKERPERIODE_AVSLUTTET_UKJENT
-                }
-            }
+        return when (avsluttetAv) {
+            KandidatForUtmeldingHendelseAvsluttetAv.BRUKER -> ARBEIDSSOKERPERIODE_AVSLUTTET_BRUKER
+            KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER -> ARBEIDSSOKERPERIODE_AVSLUTTET_VEILEDER
+            KandidatForUtmeldingHendelseAvsluttetAv.SYSTEM -> ARBEIDSSOKERPERIODE_AVSLUTTET_SYSTEM
+            KandidatForUtmeldingHendelseAvsluttetAv.UKJENT -> ARBEIDSSOKERPERIODE_AVSLUTTET_UKJENT
         }
     }
 }
@@ -47,22 +43,14 @@ enum class KandidatForUtmeldingHendelseAvsluttetAv {
     UKJENT
 }
 
-sealed class ArbeidssøkerPeriodeAvsluttet(
+class ArbeidssøkerPeriodeAvsluttet(
     aktorId: AktorId,
     fnr: Fnr,
     oppfolgingsperiodeUuid: UUID,
+    hendelseType: KandidatForUtmeldingHendelseType,
     avsluttetAv: KandidatForUtmeldingHendelseAvsluttetAv,
     kilde: String,
     detaljer: String?
-): KandidatForUtmeldingHendelse(aktorId, fnr, oppfolgingsperiodeUuid, avsluttetAv, kilde, detaljer)
-
-class ArbeidssøkerPeriodeAvsluttetIkkeLevertMeldekort(
-    aktorId: AktorId,
-    fnr: Fnr,
-    oppfolgingsperiodeUuid: UUID,
-    avsluttetAv: KandidatForUtmeldingHendelseAvsluttetAv,
-    kilde: String,
-    detaljer: String?
-): ArbeidssøkerPeriodeAvsluttet(aktorId, fnr, oppfolgingsperiodeUuid, avsluttetAv, kilde, detaljer) {
-    override val type: KandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT
+): KandidatForUtmeldingHendelse(aktorId, fnr, oppfolgingsperiodeUuid, avsluttetAv, kilde, detaljer) {
+    override val type: KandidatForUtmeldingHendelseType = hendelseType
 }
