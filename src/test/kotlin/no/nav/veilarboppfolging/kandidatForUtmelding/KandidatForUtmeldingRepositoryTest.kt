@@ -48,7 +48,7 @@ class KandidatForUtmeldingRepositoryTest {
         aktorId = aktorId,
         oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
         avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER,
-        detaljer = "årsak",
+        avsluttetAarsakType = "årsak",
         kilde = "kilde"
     )
 }

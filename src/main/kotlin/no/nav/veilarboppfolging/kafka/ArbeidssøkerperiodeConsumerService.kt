@@ -79,14 +79,14 @@ open class ArbeidssøkerperiodeConsumerService(
             val gjeldendePeriode = oppfolgingsperioder.firstOrNull { it.sluttDato == null }
             if (gjeldendePeriode != null) {
                 val kilde = arbeidssøkerperiode.avsluttet?.kilde ?: "arbeidssøkerregisteret"
-                val detaljer = arbeidssøkerperiode.avsluttet?.aarsak
+                val detaljer = arbeidssøkerperiode.avslutningsInfo.aarsaksinformasjon.type
                 val avsluttetAv = when(arbeidssøkerperiode.avsluttet?.utfoertAv?.type) {
                     BrukerType.UKJENT_VERDI, BrukerType.UDEFINERT, null -> KandidatForUtmeldingHendelseAvsluttetAv.UKJENT
                     BrukerType.VEILEDER -> KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER
                     BrukerType.SYSTEM -> KandidatForUtmeldingHendelseAvsluttetAv.SYSTEM
                     BrukerType.SLUTTBRUKER -> KandidatForUtmeldingHendelseAvsluttetAv.BRUKER
                 }
-                kandidatForUtmeldingService.lagreKandidatForUtmelding(ArbeidssøkerPeriodeAvsluttet(aktørId, fnr, avsluttetAv = avsluttetAv, kilde = kilde, detaljer = detaljer, oppfolgingsperiodeUuid = gjeldendePeriode.uuid))
+                kandidatForUtmeldingService.lagreKandidatForUtmelding(ArbeidssøkerPeriodeAvsluttet(aktørId, fnr, avsluttetAv = avsluttetAv, kilde = kilde, avsluttetAarsakType = detaljer, oppfolgingsperiodeUuid = gjeldendePeriode.uuid))
             }
         }
     }

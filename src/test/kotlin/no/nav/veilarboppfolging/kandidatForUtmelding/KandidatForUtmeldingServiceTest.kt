@@ -38,7 +38,7 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
             ArbeidssøkerPeriodeAvsluttet(
                 AKTOR_ID, FNR, avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER,
                 kilde = "kilde",
-                detaljer = "aarsak",
+                avsluttetAarsakType = "aarsak",
                 oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
             )
         )
@@ -65,7 +65,7 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
             ArbeidssøkerPeriodeAvsluttet(
                 AKTOR_ID, FNR, avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER,
                 kilde = "kilde",
-                detaljer = "aarsak",
+                avsluttetAarsakType = "aarsak",
                 oppfolgingsperiodeUuid = UUID.randomUUID(),
             )
         )
@@ -87,7 +87,7 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
             ArbeidssøkerPeriodeAvsluttet(
                 AKTOR_ID, FNR, avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER,
                 kilde = "kilde",
-                detaljer = "aarsak",
+                avsluttetAarsakType = "aarsak",
                 oppfolgingsperiodeUuid = UUID.randomUUID(),
             )
         )
@@ -103,7 +103,7 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
             ArbeidssøkerPeriodeAvsluttet(
                 AKTOR_ID, FNR, avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER,
                 kilde = "kilde",
-                detaljer = "aarsak",
+                avsluttetAarsakType = "aarsak",
                 oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
             )
         )
