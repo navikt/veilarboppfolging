@@ -2,14 +2,10 @@ package no.nav.veilarboppfolging.kandidatForUtmelding
 
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
-import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingTag.ARBEIDSSOKERPERIODE_AVSLUTTET_BRUKER
-import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingTag.ARBEIDSSOKERPERIODE_AVSLUTTET_SYSTEM
-import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingTag.ARBEIDSSOKERPERIODE_AVSLUTTET_UKJENT
-import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingTag.ARBEIDSSOKERPERIODE_AVSLUTTET_VEILEDER
 import java.util.UUID
 
 sealed class KandidatForUtmeldingHendelse(
-    val aktorId : AktorId,
+    val aktorId: AktorId,
     val fnr: Fnr,
     val oppfolgingsperiodeUuid: UUID,
     val avsluttetAv: KandidatForUtmeldingHendelseAvsluttetAv,
@@ -20,20 +16,20 @@ sealed class KandidatForUtmeldingHendelse(
 
     fun mapTilTag(): KandidatForUtmeldingTag {
         return when (type) {
-            KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET -> {
-                when (avsluttetAv) {
-                    KandidatForUtmeldingHendelseAvsluttetAv.BRUKER -> ARBEIDSSOKERPERIODE_AVSLUTTET_BRUKER
-                    KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER -> ARBEIDSSOKERPERIODE_AVSLUTTET_VEILEDER
-                    KandidatForUtmeldingHendelseAvsluttetAv.SYSTEM -> ARBEIDSSOKERPERIODE_AVSLUTTET_SYSTEM
-                    KandidatForUtmeldingHendelseAvsluttetAv.UKJENT -> ARBEIDSSOKERPERIODE_AVSLUTTET_UKJENT
-                }
-            }
+            KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT -> KandidatForUtmeldingTag.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT
+            KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_SVARTE_NEI_I_BEKREFTELSE -> KandidatForUtmeldingTag.ARBEIDSSOKERPERIODE_AVSLUTTET_SVARTE_NEI_I_BEKREFTELSE
+            KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET -> KandidatForUtmeldingTag.ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET
+            KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET -> KandidatForUtmeldingTag.ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET
         }
     }
 }
 
 enum class KandidatForUtmeldingHendelseType {
-    ARBEIDSSOKERPERIODE_AVSLUTTET
+    @Deprecated("Ikke bruk")
+    ARBEIDSSOKERPERIODE_AVSLUTTET,
+    ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
+    ARBEIDSSOKERPERIODE_AVSLUTTET_SVARTE_NEI_I_BEKREFTELSE,
+    ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET,
 }
 
 enum class KandidatForUtmeldingHendelseAvsluttetAv {
@@ -49,7 +45,16 @@ class ArbeidssøkerPeriodeAvsluttet(
     oppfolgingsperiodeUuid: UUID,
     avsluttetAv: KandidatForUtmeldingHendelseAvsluttetAv,
     kilde: String,
-    detaljer: String?
-): KandidatForUtmeldingHendelse(aktorId, fnr, oppfolgingsperiodeUuid, avsluttetAv, kilde, detaljer)  {
-    override val type: KandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET
+    detaljer: String,
+    kandidatForUtmeldingHendelseType: KandidatForUtmeldingHendelseType
+) : KandidatForUtmeldingHendelse(
+    aktorId,
+    fnr,
+    oppfolgingsperiodeUuid,
+    avsluttetAv,
+    kilde,
+    detaljer
+) {
+    override val type: KandidatForUtmeldingHendelseType = kandidatForUtmeldingHendelseType
 }
+
