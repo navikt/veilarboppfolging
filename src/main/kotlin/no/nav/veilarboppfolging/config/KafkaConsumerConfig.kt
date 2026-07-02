@@ -15,6 +15,9 @@ import no.nav.common.kafka.util.KafkaPropertiesBuilder
 import no.nav.common.utils.EnvironmentUtils
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2
+import no.nav.veilarboppfolging.`14a`.`Siste14aConsumerService`
+import no.nav.veilarboppfolging.`14a`.Gjeldende14aVedtakKafkaDTO
+import no.nav.veilarboppfolging.`14a`.Siste14aVedtakKafkaDto
 import no.nav.veilarboppfolging.kafka.ArbeidsoppfolgingskontortilordningConsumerService
 import no.nav.veilarboppfolging.kafka.ArbeidssøkerperiodeConsumerService
 import no.nav.veilarboppfolging.kafka.OppfolgingskontorMelding
@@ -40,6 +43,7 @@ open class KafkaConsumerConfig(
     private val kafkaConsumerService: KafkaConsumerService,
     private val arbeidssøkerperiodeConsumerService: ArbeidssøkerperiodeConsumerService,
     private val arbeidsoppfolgingskontortilordningConsumerService: ArbeidsoppfolgingskontortilordningConsumerService,
+    private val siste14aVedtakConsumerService: Siste14aConsumerService,
     lockProvider: LockProvider,
     @Value("\${app.kafka.enabled}") val kafkaEnabled: Boolean
 ) {
@@ -95,6 +99,20 @@ open class KafkaConsumerConfig(
                         ),
                         Consumer { kafkaMelding: ConsumerRecord<Long, OppfolgingskontorMelding?> ->
                             arbeidsoppfolgingskontortilordningConsumerService.consumeKontortilordning(kafkaMelding)
+                        }
+                    ),
+                KafkaConsumerClientBuilder.TopicConfig<String, Siste14aVedtakKafkaDto>()
+                    .withLogging()
+                    .withMetrics(meterRegistry)
+                    .withStoreOnFailure(consumerRepository)
+                    .withConsumerConfig(
+                        kafkaProperties.siste14aVedtakTopic,
+                        Deserializers.stringDeserializer(),
+                        Deserializers.jsonDeserializer(
+                            Siste14aVedtakKafkaDto::class.java
+                        ),
+                        Consumer { kafkaMelding: ConsumerRecord<String, Siste14aVedtakKafkaDto> ->
+                            siste14aVedtakConsumerService.consumeSiste14AVedtak(kafkaMelding)
                         }
                     )
             )
