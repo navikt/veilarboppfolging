@@ -238,7 +238,7 @@ class KandidatForUtmeldingFlytTest(
         avsluttOppfolgingManueltSomVeileder(aktorId)
 
         val registrering = OppfolgingsRegistrering.arenaSyncOppfolgingBrukerRegistrering(Fnr.of(fnr), aktorId,
-            Formidlingsgruppe.IARBS, Kvalifiseringsgruppe.VURDU, EnhetId("0318"))
+            Formidlingsgruppe.IARBS, Kvalifiseringsgruppe.VURDU)
         startOppfolging(aktorId, registrering)
 
         assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNull()

@@ -162,7 +162,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         oppfolgingsStatusRepository.opprettOppfolging(aktorId);
         assertTrue(oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId).isEmpty());
 
-        startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.Companion.arenaSyncOppfolgingBrukerRegistrering(fnr, aktorId, Formidlingsgruppe.IARBS, Kvalifiseringsgruppe.BATT, EnhetId.of(ENHET)));
+        startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.Companion.arenaSyncOppfolgingBrukerRegistrering(fnr, aktorId, Formidlingsgruppe.IARBS, Kvalifiseringsgruppe.BATT));
         assertUnderOppfolgingLagret(aktorId);
 
         List<OppfolgingsperiodeEntity> oppfolgingsperioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId);
@@ -557,7 +557,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
     @Test
     public void underOppfolgingNiva3_skalReturnereTrueHvisBrukerHarOppfolgingsflagg() {
-        startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.Companion.arenaSyncOppfolgingBrukerRegistrering(fnr, aktorId, Formidlingsgruppe.IARBS, Kvalifiseringsgruppe.BKART, EnhetId.of(ENHET)));
+        startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.Companion.arenaSyncOppfolgingBrukerRegistrering(fnr, aktorId, Formidlingsgruppe.IARBS, Kvalifiseringsgruppe.BKART));
         assertUnderOppfolgingLagret(aktorId);
 
         assertTrue(oppfolgingService.erUnderOppfolgingNiva3(fnr));
@@ -567,7 +567,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     public void startOppfolgingHvisIkkeAlleredeStartet__skal_opprette_ikke_opprette_manuell_status_hvis_ikke_reservert_i_krr() {
         gittReservasjonIKrr(false);
 
-        startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.Companion.arenaSyncOppfolgingBrukerRegistrering(fnr, aktorId, Formidlingsgruppe.IARBS, Kvalifiseringsgruppe.IKVAL, EnhetId.of(ENHET)));
+        startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.Companion.arenaSyncOppfolgingBrukerRegistrering(fnr, aktorId, Formidlingsgruppe.IARBS, Kvalifiseringsgruppe.IKVAL));
 
         verify(manuellStatusService, never()).settBrukerTilManuellGrunnetReservertIKRR(any());
     }
@@ -576,7 +576,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     public void startOppfolgingHvisIkkeAlleredeStartet__skal_opprette_manuell_status_hvis_reservert_i_krr() {
         gittReservasjonIKrr(true);
 
-        startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.Companion.arenaSyncOppfolgingBrukerRegistrering(fnr, aktorId, Formidlingsgruppe.IARBS, Kvalifiseringsgruppe.IVURD, EnhetId.of(ENHET)));
+        startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.Companion.arenaSyncOppfolgingBrukerRegistrering(fnr, aktorId, Formidlingsgruppe.IARBS, Kvalifiseringsgruppe.IVURD));
 
         verify(manuellStatusService, times(1)).settBrukerTilManuellGrunnetReservertIKRR(aktorId);
     }
@@ -660,7 +660,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     private void startOppfolgingForBruker() {
         settTilstandFormidlingsgruppe("IARBS");
         oppfolgingsStatusRepository.opprettOppfolging(aktorId);
-        startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.Companion.arenaSyncOppfolgingBrukerRegistrering(fnr, aktorId, Formidlingsgruppe.IARBS, Kvalifiseringsgruppe.BATT, EnhetId.of(ENHET)));
+        startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.Companion.arenaSyncOppfolgingBrukerRegistrering(fnr, aktorId, Formidlingsgruppe.IARBS, Kvalifiseringsgruppe.BATT));
 
         var periode = oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId).orElseThrow();
         arbeidsoppfolgingskontorRepository.settNavKontor(fnr.get(), aktorId.get(), periode.getUuid(), ENHET);

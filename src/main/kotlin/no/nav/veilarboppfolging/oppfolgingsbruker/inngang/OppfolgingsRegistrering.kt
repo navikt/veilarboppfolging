@@ -26,8 +26,8 @@ sealed class OppfolgingsRegistrering(
         fun manuellRegistreringBruker(fnr: Fnr, aktorId: AktorId): ManuellRegistreringBruker {
             return ManuellRegistreringBruker(fnr, aktorId, BrukerRegistrant(fnr))
         }
-        fun arenaSyncOppfolgingBrukerRegistrering(fnr: Fnr, aktorId: AktorId, formidlingsgruppe: Formidlingsgruppe, kvalifiseringsgruppe: Kvalifiseringsgruppe, enhet: EnhetId): ArenaSyncRegistrering {
-            return ArenaSyncRegistrering(fnr, aktorId, formidlingsgruppe, kvalifiseringsgruppe, enhet)
+        fun arenaSyncOppfolgingBrukerRegistrering(fnr: Fnr, aktorId: AktorId, formidlingsgruppe: Formidlingsgruppe, kvalifiseringsgruppe: Kvalifiseringsgruppe): ArenaSyncRegistrering {
+            return ArenaSyncRegistrering(fnr, aktorId, formidlingsgruppe, kvalifiseringsgruppe)
         }
         fun dollyRegistrering(fnr: Fnr, aktorId: AktorId): DollyRegistrering {
             return DollyRegistrering(fnr, aktorId)
@@ -60,7 +60,6 @@ data class ArenaSyncRegistrering(
     override val aktorId: AktorId,
     val formidlingsgruppe: Formidlingsgruppe,
     val kvalifiseringsgruppe: Kvalifiseringsgruppe,
-    val enhet: EnhetId
 ): OppfolgingsRegistrering(
     fnr,
     aktorId,

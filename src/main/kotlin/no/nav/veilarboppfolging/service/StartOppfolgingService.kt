@@ -78,15 +78,7 @@ open class StartOppfolgingService(
             log.info("Oppfølgingsperiode startet for bruker - publiserer endringer på oppfølgingsperiode-topics.")
             kafkaProducerService.publiserOppfolgingsperiode(DtoMappers.tilOppfolgingsperiodeDTO(sistePeriode))
             kafkaProducerService.publiserVisAoMinSideMicrofrontend(aktorId, fnr)
-
-            val arenaKontor = when (oppfolgingsbruker) {
-                is ArbeidsokerRegistrering,
-                is ManuellRegistreringBruker,
-                is ManuellRegistreringVeileder,
-                is DollyRegistrering -> null
-                is ArenaSyncRegistrering -> oppfolgingsbruker.enhet
-            }
-            kafkaProducerService.publiserOppfolgingsStartet(lagOppfolgingStartetHendelseDto(fnr, sistePeriode, arenaKontor, kontorSattAvVeileder))
+            kafkaProducerService.publiserOppfolgingsStartet(lagOppfolgingStartetHendelseDto(fnr, sistePeriode, kontorSattAvVeileder))
             publiserMinSideBeskjedHvisIkkeReservert(kontaktinfo, aktorId, fnr)
 
             bigQueryClient.loggStartOppfolgingsperiode(
@@ -122,7 +114,6 @@ open class StartOppfolgingService(
     private fun lagOppfolgingStartetHendelseDto(
         fnr: Fnr,
         oppfølgingsperiode: OppfolgingsperiodeEntity,
-        arenaKontor: EnhetId?,
         arbeidsoppfolgingskontor: String?
     ): OppfolgingStartetHendelseDto {
         return OppfolgingStartetHendelseDto(
@@ -134,7 +125,6 @@ open class StartOppfolgingService(
                 ?: throw IllegalStateException("Dette skal aldri skje, alle nystartede oppfølgingsperioder har 'startetAvType'"),
             startetBegrunnelse = oppfølgingsperiode.startetBegrunnelse
                 ?: throw IllegalStateException("Dette skal aldri skje, alle nystartede oppfølgingsperioder har 'startetBegrunnelse'"),
-            arenaKontor = arenaKontor?.get(),
             foretrukketArbeidsoppfolgingskontor = arbeidsoppfolgingskontor,
             fnr = fnr.get()
         )

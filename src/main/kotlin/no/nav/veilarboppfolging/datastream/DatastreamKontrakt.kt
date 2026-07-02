@@ -61,7 +61,6 @@ object DatastreamKontrakt {
                 Kolonne("veileder"),
                 Kolonne("oppdatert"),
                 Kolonne("innsatsgruppe", aksepterteVerdier = setOf("IKVAL", "BATT", "BFORM", "VARIG")),
-                Kolonne("servicegruppe", aksepterteVerdier = setOf("VURDU", "VURDI", "OPPFI", "IVURD", "BKART")),
                 Kolonne(
                     "kvalifiseringsgruppe", aksepterteVerdier = setOf(
                         "BATT", "BFORM", "BKART", "IKVAL", "IVURD", "KAP11", "OPPFI", "VARIG", "VURDI", "VURDU",
@@ -73,9 +72,7 @@ object DatastreamKontrakt {
                     )
                 ),
                 Kolonne("hovedmaal", aksepterteVerdier = setOf("BEHOLDEA", "OKEDELT", "SKAFFEA")),
-                Kolonne("oppfolgingsenhet"),
                 Kolonne("iserv_fra_dato"),
-                Kolonne("enhet"),
             ),
             ikkeReplikerteKolonner = setOf(
                 "gjeldende_manuell_status",
