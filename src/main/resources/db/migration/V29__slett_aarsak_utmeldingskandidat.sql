@@ -1,0 +1,1 @@
+alter table kandidat_for_utmelding drop column aarsak;
