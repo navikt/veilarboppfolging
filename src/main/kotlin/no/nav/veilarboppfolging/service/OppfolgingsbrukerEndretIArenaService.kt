@@ -69,7 +69,6 @@ class OppfolgingsbrukerEndretIArenaService(
                         endringOppfolgingsbruker.aktorId,
                         formidlingsgruppe,
                         kvalifiseringsgruppe,
-                        EnhetId.of(endringOppfolgingsbruker.oppfolgingsenhet)
                     )
                 )
             }

@@ -135,7 +135,6 @@ class OppfolgingsbrukerEndretIArenaServiceTest {
             AKTOR_ID,
             FNR.get(),
             formidlingsgruppe = formidlingsgruppe,
-            oppfolgingsenhet = "1212",
             iservFraDato = null,
             kvalifiseringsgruppe = kvalifiseringsgruppe,
             rettighetsgruppe = null,

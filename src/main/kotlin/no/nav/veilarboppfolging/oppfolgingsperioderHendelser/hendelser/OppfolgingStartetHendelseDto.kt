@@ -12,7 +12,6 @@ class OppfolgingStartetHendelseDto(
     val startetAv: String,
     val startetAvType: StartetAvType,
     val startetBegrunnelse: OppfolgingStartBegrunnelse,
-    val arenaKontor: String?,
     val foretrukketArbeidsoppfolgingskontor: String?,
     val fnr: String,
 ): OppfolgingsHendelseDto(HendelseType.OPPFOLGING_STARTET)

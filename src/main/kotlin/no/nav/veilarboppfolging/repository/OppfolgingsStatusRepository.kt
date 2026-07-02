@@ -24,7 +24,9 @@ class OppfolgingsStatusRepository(private val db: NamedParameterJdbcTemplate) {
         return DbUtils.queryForNullableObject {
             db.queryForObject(
                 """
-                    SELECT os.*, aok.kontor_id 
+                    SELECT os.aktor_id, os.veileder, os.under_oppfolging, os.gjeldende_manuell_status,
+                        os.gjeldende_mal, os.gjeldende_kvp, os.hovedmaal, os.kvalifiseringsgruppe, os.formidlingsgruppe, 
+                        os.iserv_fra_dato, aok.kontor_id 
                     FROM OPPFOLGINGSTATUS os
                      left join ao_kontor aok on os.aktor_id = aok.aktor_id
                     WHERE os.aktor_id = :aktorId
