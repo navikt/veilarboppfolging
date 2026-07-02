@@ -13,7 +13,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Optional;
 
-import static java.lang.String.format;
 import static no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository.*;
 import static no.nav.veilarboppfolging.utils.DbUtils.queryForNullableObject;
 
@@ -34,14 +33,14 @@ public class VeilederTilordningerRepository {
     }
 
     public Optional<VeilederTilordningEntity> hentTilordnetVeileder(AktorId aktorId) {
-        String sql = format("SELECT * FROM %s WHERE %s = ?", TABLE_NAME, AKTOR_ID);
+        String sql = "SELECT aktor_id, veileder, under_oppfolging, ny_for_veileder, sist_tilordnet, oppdatert FROM OPPFOLGINGSTATUS WHERE aktor_id = ?";
         return queryForNullableObject(db, sql, VeilederTilordningerRepository::map, aktorId.get());
     }
 
     public void upsertVeilederTilordning(AktorId aktorId, String veilederId) {
         String insertSql = "INSERT INTO OPPFOLGINGSTATUS(aktor_id, veileder, under_oppfolging, ny_for_veileder, sist_tilordnet, oppdatert) " +
                 "SELECT ?, ?, 0, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP " +
-                "WHERE NOT EXISTS(SELECT * FROM OPPFOLGINGSTATUS WHERE aktor_id = ?)";
+                "WHERE NOT EXISTS(SELECT 1 FROM OPPFOLGINGSTATUS WHERE aktor_id = ?)";
 
         int rowsUpdated = db.update(insertSql, aktorId.get(), veilederId, aktorId.get());
 
