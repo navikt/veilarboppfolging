@@ -73,7 +73,9 @@ class AvsluttOppfolgingServiceTest {
                 null,
                 null,
                 null,
-                Optional.empty()
+                null,
+                Optional.empty(),
+
             )))
     }
     private fun kanReaktiveres() {

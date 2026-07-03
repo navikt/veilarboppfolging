@@ -71,7 +71,12 @@ class KvpServiceTest{
     @Before
     fun initialize() {
         `when`(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID)).thenReturn(
-            Optional.of(OppfolgingEntity(underOppfolging = true, aktorId = AKTOR_ID.get(), veilederId = null, gjeldendeKvpId = null, gjeldendeMaalId = 0, gjeldendeManuellStatusId = null, localArenaOppfolging = Optional<LocalArenaOppfolging>.empty(), oppfolgingsEnhet = null))
+            Optional.of(OppfolgingEntity(
+                underOppfolging = true, aktorId = AKTOR_ID.get(),
+                veilederId = null, gjeldendeKvpId = null,
+                gjeldendeMaalId = 0, gjeldendeManuellStatusId = null,
+                localArenaOppfolging = Optional<LocalArenaOppfolging>.empty(),
+                oppfolgingsEnhet = null, innsatsgruppe = null))
         )
         `when`<EnhetId?>(arbeidsoppfolgingsKontorService.hentOppfolgingsEnhetId(FNR))
             .thenReturn(EnhetId.of(ENHET))
@@ -90,7 +95,13 @@ class KvpServiceTest{
     @Test
     fun start_kvp_uten_oppfolging_er_ulovlig_handling() {
         `when`(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID)).thenReturn(
-            Optional.of(OppfolgingEntity(null, null, false, null, null, null, null, Optional.empty<LocalArenaOppfolging>())
+            Optional.of(OppfolgingEntity(
+                aktorId = null, veilederId = null,
+                underOppfolging = false, gjeldendeManuellStatusId = null,
+                gjeldendeMaalId = null, gjeldendeKvpId = null,
+                oppfolgingsEnhet = null, localArenaOppfolging = Optional.empty<LocalArenaOppfolging>(),
+                innsatsgruppe = null
+            )
         ))
 
         try {
@@ -128,7 +139,12 @@ class KvpServiceTest{
     @Test(expected = BadRequestException::class)
     fun startKvp_feiler_dersom_bruker_allerede_er_under_kvp() {
         `when`(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID)).thenReturn(
-            Optional.of(OppfolgingEntity(underOppfolging = true, aktorId = AKTOR_ID.get(), veilederId = null, gjeldendeKvpId = 2, gjeldendeMaalId = 0, gjeldendeManuellStatusId = null, localArenaOppfolging = Optional<LocalArenaOppfolging>.empty(), oppfolgingsEnhet = null))
+            Optional.of(OppfolgingEntity(
+                underOppfolging = true, aktorId = AKTOR_ID.get(),
+                veilederId = null, gjeldendeKvpId = 2,
+                gjeldendeMaalId = 0, gjeldendeManuellStatusId = null,
+                localArenaOppfolging = Optional<LocalArenaOppfolging>.empty(),
+                oppfolgingsEnhet = null, innsatsgruppe = null))
         )
 
         AuthContextHolderThreadLocal.instance().withContext(
@@ -140,7 +156,12 @@ class KvpServiceTest{
 
     fun gittBrukerErUnderOppfolging(kvpId: Long) {
         `when`(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID)).thenReturn(
-            Optional.of(OppfolgingEntity(underOppfolging = true, aktorId = AKTOR_ID.get(), veilederId = null, gjeldendeKvpId = kvpId, gjeldendeMaalId = 0, gjeldendeManuellStatusId = null, localArenaOppfolging = Optional<LocalArenaOppfolging>.empty(), oppfolgingsEnhet = null))
+            Optional.of(OppfolgingEntity(
+                underOppfolging = true, aktorId = AKTOR_ID.get(),
+                veilederId = null, gjeldendeKvpId = kvpId,
+                gjeldendeMaalId = 0, gjeldendeManuellStatusId = null,
+                localArenaOppfolging = Optional<LocalArenaOppfolging>.empty(),
+                oppfolgingsEnhet = null, innsatsgruppe = null))
         )
     }
 

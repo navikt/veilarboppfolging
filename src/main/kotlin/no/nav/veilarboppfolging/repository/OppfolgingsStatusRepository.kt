@@ -5,6 +5,7 @@ import no.nav.common.types.identer.EnhetId
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.pto_schema.enums.arena.Hovedmaal
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
+import no.nav.veilarboppfolging.`14a`.Innsatsgruppe
 import no.nav.veilarboppfolging.dbutil.toInt
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.LocalArenaOppfolging
 import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity
@@ -26,7 +27,7 @@ class OppfolgingsStatusRepository(private val db: NamedParameterJdbcTemplate) {
                 """
                     SELECT os.aktor_id, os.veileder, os.under_oppfolging, os.gjeldende_manuell_status,
                         os.gjeldende_mal, os.gjeldende_kvp, os.hovedmaal, os.kvalifiseringsgruppe, os.formidlingsgruppe, 
-                        os.iserv_fra_dato, aok.kontor_id 
+                        os.iserv_fra_dato, aok.kontor_id, os.innsatsgruppe
                     FROM OPPFOLGINGSTATUS os
                      left join ao_kontor aok on os.aktor_id = aok.aktor_id
                     WHERE os.aktor_id = :aktorId
@@ -76,6 +77,20 @@ class OppfolgingsStatusRepository(private val db: NamedParameterJdbcTemplate) {
 //        return Oppfolging().setAktorId(aktorId.get()).setUnderOppfolging(false)
     }
 
+    fun oppdaterInnsatsgruppe(aktorId: AktorId, innsatsgruppe: Innsatsgruppe) {
+        val params = mapOf(
+            "aktorId" to aktorId.get(),
+            "innsatsgruppe" to innsatsgruppe.name
+        )
+        db.update(
+            """UPDATE OPPFOLGINGSTATUS 
+                SET innsatsgruppe = :innsatsgruppe, oppdatert = CURRENT_TIMESTAMP 
+                WHERE aktor_id = :aktorId
+            """.trimMargin(),
+            params,
+        )
+    }
+
     fun hentUnikeBrukerePage(offset: Int, pageSize: Int): MutableList<AktorId> {
         val sql = String.format(
             "SELECT DISTINCT aktor_id FROM OPPFOLGINGSTATUS ORDER BY aktor_id OFFSET %d ROWS FETCH NEXT %d ROWS ONLY",
@@ -119,6 +134,7 @@ class OppfolgingsStatusRepository(private val db: NamedParameterJdbcTemplate) {
                 gjeldendeKvpId = rs.getLong("gjeldende_kvp"),
                 oppfolgingsEnhet = rs.getStringOrNull("kontor_id")?.let { EnhetId(it) },
                 localArenaOppfolging = Optional.ofNullable(localArenaOppfolging),
+                innsatsgruppe = rs.getStringOrNull("innsatsgruppe")?.let(Innsatsgruppe::valueOf),
             )
         }
     }

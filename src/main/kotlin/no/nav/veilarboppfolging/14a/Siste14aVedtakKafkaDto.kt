@@ -19,7 +19,7 @@ enum class Innsatsgruppe {
     VARIG_TILPASSET_INNSATS
 }
 
-enum HovedmalMedOkeDeltakelse {
+enum class HovedmalMedOkeDeltakelse {
     SKAFFE_ARBEID,
     BEHOLDE_ARBEID,
     OKE_DELTAKELSE

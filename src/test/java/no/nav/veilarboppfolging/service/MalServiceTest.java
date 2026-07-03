@@ -169,7 +169,10 @@ public class MalServiceTest {
 
     private OppfolgingEntity oppfolgingMedMaalId(long maalId) {
         return new OppfolgingEntity(
-                AKTOR_ID.get(), null, true, null, maalId, null, null, Optional.empty()
+                AKTOR_ID.get(), null,
+                true, null,
+                maalId, null,
+                null, null, Optional.empty()
         );
     }
 
