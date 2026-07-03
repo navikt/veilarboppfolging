@@ -86,7 +86,6 @@ class AktiverBrukerIntegrationTest : IntegrationTest() {
         val hendelse = lagreteMeldingerIUtboks.first() as OppfolgingStartetHendelseDto
         assertThat(hendelse.fnr).isEqualTo(FNR.toString())
         assertThat(hendelse.startetBegrunnelse).isEqualTo(OppfolgingStartBegrunnelse.MANUELL_REGISTRERING_VEILEDER)
-        assertThat(hendelse.arenaKontor).isNull()
         assertThat(hendelse.startetAvType).isEqualTo(StartetAvType.VEILEDER)
         assertThat(hendelse.startetAv).isEqualTo(veilederIdent.get())
         assertThat(hendelse.startetTidspunkt).isCloseTo(ZonedDateTime.now(), within(1, ChronoUnit.SECONDS))
@@ -107,7 +106,6 @@ class AktiverBrukerIntegrationTest : IntegrationTest() {
         assertThat(lagreteMeldingerIUtboks).hasSize(1)
         val hendelse = lagreteMeldingerIUtboks.first() as OppfolgingStartetHendelseDto
         assertThat(hendelse.startetBegrunnelse).isEqualTo(OppfolgingStartBegrunnelse.ARBEIDSSOKER_REGISTRERING)
-        assertThat(hendelse.arenaKontor).isNull()
         assertThat(hendelse.foretrukketArbeidsoppfolgingskontor).isNull()
     }
 
