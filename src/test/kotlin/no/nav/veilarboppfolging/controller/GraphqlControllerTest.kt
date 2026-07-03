@@ -705,7 +705,7 @@ class GraphqlControllerTest: IntegrationTest() {
         val result = tester.documentName("hentKandidatForUtmeldingTag").variable("fnr", fnr.get()).execute()
         result.errors().verify()
         result.path("utmeldingskandidatTag").matchesJson("""
-            "ARBEIDSSOKERPERIODE_AVSLUTTET_VEILEDER"
+            "ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT"
         """.trimIndent())
     }
 

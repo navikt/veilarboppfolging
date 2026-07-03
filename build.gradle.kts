@@ -23,6 +23,7 @@ plugins {
     id("io.spring.dependency-management") version "1.1.7"
     id("jacoco")
     id("org.sonarqube") version "7.3.1.8318"
+    id("io.github.androa.gradle.plugin.avro") version "0.0.12"
 }
 
 group = "no.nav"
@@ -37,6 +38,11 @@ java {
 kotlin {
     jvmToolchain(21)
 }
+
+val avroSchemas = configurations.create("avroSchemas") {
+    isTransitive = false
+}
+
 
 tasks.jacocoTestReport {
     reports {
@@ -96,6 +102,7 @@ dependencies {
     implementation("no.nav.common:metrics:$commonVersion")
     implementation("no.nav.common:kafka:$commonVersion")
     implementation("org.apache.avro:avro:$avroVersion")
+    avroSchemas("no.nav.paw.arbeidssokerregisteret.api:main-avro-schema:1.26.06.18.18-1")
     implementation("io.confluent:kafka-avro-serializer:$confluentKafkaAvroVersion") {
         exclude(group = "io.swagger.core.v3")
     }
@@ -148,4 +155,8 @@ if (hasProperty("buildScan")) {
         setProperty("termsOfServiceUrl", "https://gradle.com/terms-of-service")
         setProperty("termsOfServiceAgree", "yes")
     }
+}
+
+generateAvro {
+    this.schemas.from(zipTree(avroSchemas.singleFile))
 }

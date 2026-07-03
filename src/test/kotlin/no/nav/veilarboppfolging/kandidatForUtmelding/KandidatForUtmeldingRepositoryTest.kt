@@ -3,6 +3,7 @@ package no.nav.veilarboppfolging.kandidatForUtmelding
 import java.util.UUID
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
+import no.nav.paw.arbeidssokerregisteret.api.v1.AvsluttetAarsakType
 import no.nav.veilarboppfolging.LocalDatabaseSingleton
 import no.nav.veilarboppfolging.oppfolgingsbruker.BrukerRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering.Companion.arbeidssokerRegistrering
@@ -48,7 +49,8 @@ class KandidatForUtmeldingRepositoryTest {
         aktorId = aktorId,
         oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
         avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER,
-        aarsak = "årsak",
+        kandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
+        detaljer = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString(),
         kilde = "kilde"
     )
 }

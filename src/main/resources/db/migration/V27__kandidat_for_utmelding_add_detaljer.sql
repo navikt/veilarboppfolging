@@ -1,0 +1,1 @@
+ALTER TABLE kandidat_for_utmelding ADD COLUMN detaljer varchar (255);
