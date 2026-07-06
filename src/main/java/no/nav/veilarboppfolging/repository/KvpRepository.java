@@ -128,15 +128,6 @@ public class KvpRepository {
                 """, params, KvpRepository::mapTilKvp);
     }
 
-    /**
-     * Return a list of KVP objects where the serial number is greater than N.
-     * The serial number is the number of updates the table has undergone.
-     */
-    public List<KvpPeriodeEntity> serialGreaterThan(long serial, long pageSize) {
-        String sql = "SELECT * FROM kvp WHERE serial > ? AND rownum <= ? ORDER BY serial ASC";
-        return db.query(sql, KvpRepository::mapTilKvp, serial, pageSize);
-    }
-
     public Optional<KvpPeriodeEntity> hentKvpPeriode(long id) {
         String sql = "SELECT * FROM KVP WHERE kvp_id = ?";
         return queryForNullableObject(() -> db.queryForObject(sql, KvpRepository::mapTilKvp, id));
