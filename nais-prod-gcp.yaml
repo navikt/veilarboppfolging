@@ -20,7 +20,7 @@ spec:
         permission: READWRITE
     sqlInstances:
       - name: veilarboppfolging
-        type: POSTGRES_14
+        type: POSTGRES_18
         tier: db-custom-2-13312
         diskType: SSD
         diskAutoresize: true
@@ -39,10 +39,10 @@ spec:
     path: veilarboppfolging/internal/prometheus
   liveness:
     path: veilarboppfolging/internal/health/liveness
-    initialDelay: 30
+    initialDelay: 90
   readiness:
     path: veilarboppfolging/internal/health/readiness
-    initialDelay: 30
+    initialDelay: 90
   replicas:
     min: 2
     max: 8
