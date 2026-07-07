@@ -39,10 +39,10 @@ spec:
     path: veilarboppfolging/internal/prometheus
   liveness:
     path: veilarboppfolging/internal/health/liveness
-    initialDelay: 90
+    initialDelay: 30
   readiness:
     path: veilarboppfolging/internal/health/readiness
-    initialDelay: 90
+    initialDelay: 30
   replicas:
     min: 2
     max: 8
