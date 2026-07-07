@@ -48,12 +48,6 @@ public class OppfolgingController {
         );
     }
 
-    @GetMapping
-    public OppfolgingStatus hentOppfolgingsStatus(@RequestParam(value = "fnr", required = false) Fnr fnr) {
-        Fnr fodselsnummer = authService.hentIdentForEksternEllerIntern(fnr);
-        return tilDto(oppfolgingService.hentOppfolgingsStatus(fodselsnummer), authService.erInternBruker());
-    }
-
     // TODO: Ikke returner OppfolgingStatus
     @PostMapping("/settManuell")
     public OppfolgingStatus settTilManuell(@RequestBody VeilederBegrunnelseDTO dto, @RequestParam("fnr") Fnr fnr) {
