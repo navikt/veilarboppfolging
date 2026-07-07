@@ -24,22 +24,42 @@ open class Siste14aConsumerServiceTest: IsolatedDatabaseTest() {
     @Test
     fun `Skal lagre siste 14a vedtak når det kommer melding på siste 14a vedtak topic`() {
         val aktorId = randomAktorId()
-        val melding = ConsumerRecord("topic", 0, 0, "dummyKey", nytt14aVedtak(aktorId))
+        val førsteMelding = ConsumerRecord("topic", 0, 0, "dummyKey", nytt14aVedtak(aktorId, Innsatsgruppe.STANDARD_INNSATS))
+        val sisteMelding = ConsumerRecord("topic", 0, 0, "dummyKey", nytt14aVedtak(aktorId, Innsatsgruppe.SITUASJONSBESTEMT_INNSATS))
+        oppfolgingsStatusRepository.opprettOppfolging(aktorId)
 
-        siste14aConsumerService.consumeSiste14AVedtak(melding)
+        siste14aConsumerService.consumeSiste14AVedtak(førsteMelding)
+        siste14aConsumerService.consumeSiste14AVedtak(sisteMelding)
 
         assertEquals(
             oppfolgingsStatusRepository.hentOppfolging(aktorId)
                 .get().innsatsgruppe,
-            Innsatsgruppe.STANDARD_INNSATS
+            Innsatsgruppe.SITUASJONSBESTEMT_INNSATS
         )
-
     }
 
-    private fun nytt14aVedtak(aktorId: AktorId): Siste14aVedtakKafkaDto {
+    @Test
+    fun `Skal lagre siste 14a vedtak når det kommer melding på siste 14a vedtak topic`() {
+        val aktorId = randomAktorId()
+        val førsteMelding = ConsumerRecord("topic", 0, 0, "dummyKey", nytt14aVedtak(aktorId, Innsatsgruppe.STANDARD_INNSATS))
+        val sisteMelding = ConsumerRecord("topic", 0, 0, "dummyKey", nytt14aVedtak(aktorId, Innsatsgruppe.SITUASJONSBESTEMT_INNSATS))
+        oppfolgingsStatusRepository.opprettOppfolging(aktorId)
+        oppfolgingsStatusRepository.(aktorId)
+
+        siste14aConsumerService.consumeSiste14AVedtak(førsteMelding)
+        siste14aConsumerService.consumeSiste14AVedtak(sisteMelding)
+
+        assertEquals(
+            oppfolgingsStatusRepository.hentOppfolging(aktorId)
+                .get().innsatsgruppe,
+            Innsatsgruppe.SITUASJONSBESTEMT_INNSATS
+        )
+    }
+
+    private fun nytt14aVedtak(aktorId: AktorId, innsatsgruppe: Innsatsgruppe = Innsatsgruppe.STANDARD_INNSATS): Siste14aVedtakKafkaDto {
         return Siste14aVedtakKafkaDto(
             aktorId = aktorId,
-            innsatsgruppe = Innsatsgruppe.STANDARD_INNSATS,
+            innsatsgruppe = innsatsgruppe,
             hovedmal = HovedmalMedOkeDeltakelse.SKAFFE_ARBEID,
             fattetDato = ZonedDateTime.now(),
             fraArena = false

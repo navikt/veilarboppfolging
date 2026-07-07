@@ -27,9 +27,10 @@ class OppfolgingsStatusRepository(private val db: NamedParameterJdbcTemplate) {
                 """
                     SELECT os.aktor_id, os.veileder, os.under_oppfolging, os.gjeldende_manuell_status,
                         os.gjeldende_mal, os.gjeldende_kvp, os.hovedmaal, os.kvalifiseringsgruppe, os.formidlingsgruppe, 
-                        os.iserv_fra_dato, aok.kontor_id, os.innsatsgruppe
+                        os.iserv_fra_dato, aok.kontor_id, innsatsgruppe.innsatsgruppe
                     FROM OPPFOLGINGSTATUS os
                      left join ao_kontor aok on os.aktor_id = aok.aktor_id
+                     left join innsatsgruppe on os.aktor_id = innsatsgruppe.aktor_id
                     WHERE os.aktor_id = :aktorId
                     """.trimIndent(),
                 mapOf("aktorId" to aktorId.get()),
@@ -83,9 +84,10 @@ class OppfolgingsStatusRepository(private val db: NamedParameterJdbcTemplate) {
             "innsatsgruppe" to innsatsgruppe.name
         )
         db.update(
-            """UPDATE OPPFOLGINGSTATUS 
-                SET innsatsgruppe = :innsatsgruppe, oppdatert = CURRENT_TIMESTAMP 
-                WHERE aktor_id = :aktorId
+            """insert into innsatsgruppe 
+                values (:aktorId, :innsatsgruppe)
+                on conflict (aktor_id) DO UPDATE 
+                set innsatsgruppe = :innsatsgruppe, updated_at = current_timestamp
             """.trimMargin(),
             params,
         )
