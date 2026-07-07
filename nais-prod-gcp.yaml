@@ -21,7 +21,7 @@ spec:
     sqlInstances:
       - name: veilarboppfolging
         type: POSTGRES_18
-        tier: db-custom-4-15360
+        tier: db-custom-2-13312
         diskType: SSD
         diskAutoresize: true
         highAvailability: true
@@ -53,8 +53,6 @@ spec:
     requests:
       cpu: 500m
       memory: 2048Mi
-  strategy:
-    type: Recreate
   observability:
     autoInstrumentation:
       enabled: true
