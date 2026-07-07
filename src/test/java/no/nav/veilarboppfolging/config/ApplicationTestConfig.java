@@ -52,7 +52,10 @@ public class ApplicationTestConfig {
 
     @Bean
     public DataSource dataSource() throws IOException {
-        var db = EmbeddedPostgres.start().getPostgresDatabase();
+        var db = EmbeddedPostgres.builder()
+                .setServerConfig("wal_level", "logical")
+                .start()
+                .getPostgresDatabase();
         DbTestUtils.initDb(db);
         return db;
     }
