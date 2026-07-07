@@ -155,5 +155,11 @@ type Oppfolgingsperiode {
     sluttTidspunkt: String
     id: String!
     startetBegrunnelse: OppfolgingStartetBegrunnelse
-    avsluttetAv: String
+    avsluttetAv: String,
+    kvpPerioder: [KvpPeriode]
+}
+
+type KvpPeriode {
+    startTidspunkt: String!
+    sluttTidspunkt: String!
 }

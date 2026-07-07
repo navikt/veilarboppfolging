@@ -336,28 +336,28 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     }
 
     @Test
-    public void hentVeilederTilgang__medEnhetTilgang() {
+    public void harVeilederTilgang__medEnhetTilgangTilBrukersEnhet() {
         when(authService.harTilgangTilEnhet(any())).thenReturn(true);
         when(arbeidsoppfolgingsKontorService.hentOppfolgingsEnhetId(fnr)).thenReturn(EnhetId.of(ENHET));
 
-        var tilgang = oppfolgingService.hentVeilederTilgang(fnr);
+        var tilgang = oppfolgingService.harVeilederTilgangTilBrukersEnhet(fnr);
         assertNotNull(tilgang);
         assertTrue(tilgang.getTilgangTilBrukersKontor());
     }
 
     @Test
-    public void hentVeilederTilgang__utenEnhetTilgang() {
+    public void harVeilederTilgang__utenEnhetTilgangTilBrukersEnhet() {
         when(arbeidsoppfolgingsKontorService.hentOppfolgingsEnhetId(fnr)).thenReturn(EnhetId.of(ENHET));
 
-        VeilederTilgang veilederIkkeTilgang = oppfolgingService.hentVeilederTilgang(fnr);
+        VeilederTilgang veilederIkkeTilgang = oppfolgingService.harVeilederTilgangTilBrukersEnhet(fnr);
         assertFalse(veilederIkkeTilgang.getTilgangTilBrukersKontor());
     }
 
     @Test
-    public void hentVeilederTilgang__skal_ikke_ha_tilgang_nar_bruker_ikke_har_enhet() {
+    public void harVeilederTilgang__skal_ikke_ha_tilgang_TilBrukersEnhet_nar_bruker_ikke_har_enhet() {
         when(arbeidsoppfolgingsKontorService.hentOppfolgingsEnhetId(fnr)).thenReturn(EnhetId.of(ENHET));
 
-        VeilederTilgang veilederIkkeTilgang = oppfolgingService.hentVeilederTilgang(fnr);
+        VeilederTilgang veilederIkkeTilgang = oppfolgingService.harVeilederTilgangTilBrukersEnhet(fnr);
         assertFalse(veilederIkkeTilgang.getTilgangTilBrukersKontor());
     }
 
