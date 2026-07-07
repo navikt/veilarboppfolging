@@ -52,8 +52,9 @@ import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsStatu
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient
 import no.nav.veilarboppfolging.config.EnvironmentProperties
 import no.nav.veilarboppfolging.config.KafkaProperties
-import no.nav.veilarboppfolging.controller.OppfolgingController
+import no.nav.veilarboppfolging.controller.OppfolgingV3Controller
 import no.nav.veilarboppfolging.controller.SakController
+import no.nav.veilarboppfolging.controller.v3.request.OppfolgingRequest
 import no.nav.veilarboppfolging.kandidatForUtmelding.ArbeidssøkerPeriodeAvsluttet
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingHendelseAvsluttetAv
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingHendelseType
@@ -159,7 +160,7 @@ open class IntegrationTest {
     lateinit var authService: AuthService
 
     @Autowired
-    lateinit var oppfolgingController: OppfolgingController
+    lateinit var oppfolgingV3Controller: OppfolgingV3Controller
 
     @Autowired
     lateinit var oppfolgingService: OppfolgingService
@@ -310,7 +311,7 @@ open class IntegrationTest {
         ))
     }
 
-    fun hentOppfolgingsperioder(fnr: Fnr) = oppfolgingController.hentOppfolgingsperioder(fnr)
+    fun hentOppfolgingsperioder(fnr: Fnr) = oppfolgingV3Controller.hentOppfolgingsperioder(OppfolgingRequest(fnr))
 
     fun avsluttOppfolgingManueltSomVeileder(aktorId: AktorId, veileder: NavIdent = NavIdent("veileder"), begrunnelse: String = "Begrunnelse") {
         avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(
@@ -321,7 +322,7 @@ open class IntegrationTest {
     fun mockSytemBrukerAuthOk(aktørId: AktorId, fnr: Fnr) {
         val claims = JWTClaimsSet.Builder()
             .issuer("microsoftonline.com")
-            .claim("azp_name", "cluster:team:veilarbregistrering")
+            .claim("azp_name", "cluster:team:veilarbvedtaksstotte")
             .claim("roles", listOf("access_as_application"))
             .build()
 
@@ -345,7 +346,7 @@ open class IntegrationTest {
     fun mockInternBrukerAuthOk(veilederIOD: UUID,aktørId: AktorId, fnr: Fnr, navIdent: NavIdent = NavIdent("A123456")) {
         val claims = JWTClaimsSet.Builder()
             .issuer("microsoftonline.com")
-            .claim("azp_name", "cluster:team:veilarbregistrering")
+            .claim("azp_name", "cluster:team:veilarbvedtaksstotte")
             .claim("oid", veilederIOD.toString())
             .build()
 

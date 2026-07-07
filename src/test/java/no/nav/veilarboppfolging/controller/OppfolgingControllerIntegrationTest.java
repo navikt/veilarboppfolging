@@ -28,6 +28,7 @@ import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeDTO;
 import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeMinimalDTO;
 import no.nav.veilarboppfolging.controller.v2.OppfolgingV2Controller;
 import no.nav.veilarboppfolging.controller.v2.request.AvsluttOppfolgingV2Request;
+import no.nav.veilarboppfolging.controller.v3.request.OppfolgingRequest;
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
 import no.nav.veilarboppfolging.service.AuthService;
 import org.junit.jupiter.api.Assertions;
@@ -62,6 +63,9 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
 
     @Autowired
     OppfolgingV2Controller oppfolgingV2Controller;
+
+    @Autowired
+    OppfolgingV3Controller oppfolgingV3Controller;
 
     @Autowired
     OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
@@ -230,7 +234,7 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
     private List<OppfolgingPeriodeDTO> startOppfolging() {
         mockSystemBruker();
         startOppfolgingSomArbeidsoker(AKTOR_ID, FNR);
-        var perioder = oppfolgingController.hentOppfolgingsperioder(FNR);
+        var perioder = oppfolgingV3Controller.hentOppfolgingsperioder(new OppfolgingRequest(FNR));
         mockAuthOk();
         return perioder;
     }
@@ -238,7 +242,7 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
     private void mockSystemBruker() {
         JWTClaimsSet claims = new JWTClaimsSet.Builder()
                 .issuer("microsoftonline.com")
-                .claim("azp_name", "cluster:team:veilarbregistrering")
+                .claim("azp_name", "cluster:team:veilarbvedtaksstotte")
                 .claim("roles", Collections.singletonList("access_as_application"))
                 .claim("sub", sub.toString())
                 .claim("oid", sub.toString())
@@ -252,7 +256,7 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
     private void mockAuthOk() {
         JWTClaimsSet claims = new JWTClaimsSet.Builder()
                 .issuer("microsoftonline.com")
-                .claim("azp_name", "cluster:team:veilarbregistrering")
+                .claim("azp_name", "cluster:team:veilarbvedtaksstotte")
                 .claim("sub", sub.toString())
                 .claim("oid", veilederUUID.toString())
                 .claim("NAVident", veilederIdent)

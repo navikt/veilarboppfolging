@@ -1,7 +1,5 @@
 package no.nav.veilarboppfolging.controller;
 
-import java.util.List;
-import java.util.stream.Collectors;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.BadRequestException;
@@ -24,8 +22,6 @@ import static no.nav.veilarboppfolging.utils.DtoMappers.*;
 @RestController
 @RequestMapping("/api/oppfolging")
 public class OppfolgingController {
-    private final static List<String> ALLOWLIST_V1 = List.of("veilarbvedtaksstotte", "veilarbregistrering", "veilarbdirigent");
-
     private final OppfolgingService oppfolgingService;
     private final KvpService kvpService;
     private final AuthService authService;
@@ -120,20 +116,6 @@ public class OppfolgingController {
 
         return tilOppfolgingPeriodeMinimalDTO(periode);
 
-    }
-
-    @GetMapping("/oppfolgingsperioder")
-    public List<OppfolgingPeriodeDTO> hentOppfolgingsperioder(@RequestParam("fnr") Fnr fnr) {
-        authService.skalVereSystemBruker();
-        if (authService.erSystemBrukerFraAzureAd()) {
-            authService.sjekkAtApplikasjonErIAllowList(ALLOWLIST_V1);
-        } else {
-            authService.sjekkLesetilgangMedFnr(fnr);
-        }
-        return oppfolgingService.hentOppfolgingsperioder(fnr)
-                .stream()
-                .map(op -> tilOppfolgingPeriodeDTO(op, true))
-                .collect(Collectors.toList());
     }
 
     /**
