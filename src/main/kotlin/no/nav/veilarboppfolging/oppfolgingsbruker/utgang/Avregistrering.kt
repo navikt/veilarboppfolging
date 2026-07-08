@@ -1,10 +1,10 @@
 package no.nav.veilarboppfolging.oppfolgingsbruker.utgang
 
+import java.util.UUID
 import no.nav.common.types.identer.AktorId
 import no.nav.veilarboppfolging.oppfolgingsbruker.Registrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.SystemRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant
-import java.util.UUID
 
 enum class AvregistreringsType {
     UtmeldtEtter28Dager,
@@ -25,7 +25,7 @@ sealed class Avregistrering(
     abstract fun getAvregistreringsType(): AvregistreringsType
 }
 
-data class UtmeldtEtter28Dager(override val aktorId: AktorId) : Avregistrering(aktorId, SystemRegistrant, BEGRUNNELSE) {
+data class UtmeldtEtter28Dager(override val aktorId: AktorId) : Avregistrering(aktorId, SystemRegistrant(), BEGRUNNELSE) {
     override fun getAvregistreringsType() = AvregistreringsType.UtmeldtEtter28Dager
 
     companion object {
@@ -45,7 +45,7 @@ data class ManuellAvregistrering(
 }
 
 data class ArenaIservKanIkkeReaktiveres(override val aktorId: AktorId) :
-    Avregistrering(aktorId, SystemRegistrant, BEGRUNNELSE) {
+    Avregistrering(aktorId, SystemRegistrant(), BEGRUNNELSE) {
     override fun getAvregistreringsType() = AvregistreringsType.ArenaIservKanIkkeReaktiveres
 
     companion object {
