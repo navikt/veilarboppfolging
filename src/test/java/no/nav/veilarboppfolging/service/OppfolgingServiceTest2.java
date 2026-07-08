@@ -1,14 +1,20 @@
 package no.nav.veilarboppfolging.service;
 
+import no.nav.common.auth.context.AuthContext;
+import no.nav.common.auth.context.AuthContextHolder;
+import no.nav.common.kafka.producer.feilhandtering.KafkaProducerRecordStorage;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.NavIdent;
+import no.nav.common.utils.fn.UnsafeRunnable;
+import no.nav.common.utils.fn.UnsafeSupplier;
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe;
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe;
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirClient;
 import no.nav.veilarboppfolging.client.tiltakshistorikk.TiltakshistorikkClient;
 import no.nav.veilarboppfolging.domain.Oppfolging;
 import no.nav.veilarboppfolging.oppfolgingsbruker.BrukerRegistrant;
+import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService;
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering;
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant;
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvregistreringsType;
@@ -85,8 +91,9 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
                 transactor
         );
 
-        oppfolgingService = new OppfolgingService(null,
-                null, authService,
+        oppfolgingService = new OppfolgingService(
+                mock(KvpService.class),
+                mock(ArenaOppfolgingService.class), authService,
                 oppfolgingsStatusRepository, oppfolgingsPeriodeRepository,
                 manuellStatusService,
                 new KvpRepository(db, namedParameterJdbcTemplate, transactor), maalRepository,
