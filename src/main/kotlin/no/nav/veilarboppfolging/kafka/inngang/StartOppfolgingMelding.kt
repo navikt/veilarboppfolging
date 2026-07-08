@@ -2,7 +2,6 @@ package no.nav.veilarboppfolging.kafka.inngang
 
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
-import java.time.LocalDateTime
 import no.nav.veilarboppfolging.oppfolgingsbruker.StartetAvType
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelseFraSystem
 
@@ -12,7 +11,6 @@ data class StartOppfolgingMelding(
     val kilde: Kilde,
     val arbeidsoppfolgingskontor: String?,
     val registrant: Registrant,
-    val sendtTidspunkt: LocalDateTime,
 ) {
     enum class Aarsak {
         SYKMELDT_UTEN_ARBEIDSGIVER_4_UKER;

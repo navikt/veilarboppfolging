@@ -198,7 +198,6 @@ class StartOppfolgingConsumerServiceTest(
             registrant = registrant,
             arbeidsoppfolgingskontor = kontor,
             kilde = StartOppfolgingMelding.Kilde.ISYFO,
-            sendtTidspunkt = ZonedDateTime.now().toLocalDateTime(),
         )
     }
 }
