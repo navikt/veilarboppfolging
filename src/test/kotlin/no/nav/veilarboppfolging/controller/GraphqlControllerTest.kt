@@ -506,7 +506,7 @@ class GraphqlControllerTest: IntegrationTest() {
     }
 
     @Test
-    fun `skal filtrene bort kvp-perioder i det stille når veileder ikke har tilgang til enheten`() {
+    fun `skal filtrene bort kvp-perioder uten å lage error når veileder ikke har tilgang til enheten`() {
         val veilederId = UUID.randomUUID()
         val veilederNavIdent = NavIdent("B143314")
         val enhet = EnhetId("1212")

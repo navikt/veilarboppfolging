@@ -29,10 +29,7 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService;
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingTilstandOppslagResult;
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering;
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.*;
-import no.nav.veilarboppfolging.repository.ArbeidsoppfolgingskontorRepository;
-import no.nav.veilarboppfolging.repository.KvpRepository;
-import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
-import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
+import no.nav.veilarboppfolging.repository.*;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
 import no.nav.veilarboppfolging.test.DbTestUtils;
 import no.nav.veilarboppfolging.test.IsolatedDatabaseTest;
@@ -128,8 +125,8 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
                 oppfolgingsPeriodeRepository,
                 manuellStatusService,
                 kvpRepository,
-                null,
-                null,
+                new MaalRepository(db, transactor),
+                new BrukerOppslagFlereOppfolgingAktorRepository(db),
                 arbeidsoppfolgingsKontorService,
                 tiltakshistorikkClient);
 
