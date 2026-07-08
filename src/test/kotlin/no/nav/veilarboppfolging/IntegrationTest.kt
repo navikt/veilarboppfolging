@@ -101,6 +101,7 @@ import org.springframework.kafka.test.context.EmbeddedKafka
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.web.context.WebApplicationContext
+import java.time.temporal.ChronoUnit
 
 @EmbeddedKafka(partitions = 1)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -283,7 +284,8 @@ open class IntegrationTest {
     }
 
     fun setBrukerUnderKvp(aktorId: AktorId, enhetId: String, veilederId: String): ZonedDateTime {
-        val startTidspunkt = ZonedDateTime.now()
+        // Running locally and in pipeline don't always return same precision which can make tests fail
+        val startTidspunkt = ZonedDateTime.now().truncatedTo(ChronoUnit.MILLIS)
         kvpRepository.startKvp(aktorId, enhetId, veilederId, "fordi", startTidspunkt)
         return startTidspunkt
     }
