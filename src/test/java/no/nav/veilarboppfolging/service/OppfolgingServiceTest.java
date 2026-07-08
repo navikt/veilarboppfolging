@@ -352,7 +352,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
     @Test
     public void harVeilederTilgang__skal_ikke_ha_tilgang_TilBrukersEnhet_nar_bruker_ikke_har_enhet() {
-        when(arbeidsoppfolgingsKontorService.hentOppfolgingsEnhetId(fnr)).thenReturn(EnhetId.of(ENHET));
+        when(arbeidsoppfolgingsKontorService.hentOppfolgingsEnhetId(fnr)).thenReturn(null);
 
         VeilederTilgang veilederIkkeTilgang = oppfolgingService.harVeilederTilgangTilBrukersEnhet(fnr);
         assertFalse(veilederIkkeTilgang.getTilgangTilBrukersKontor());
