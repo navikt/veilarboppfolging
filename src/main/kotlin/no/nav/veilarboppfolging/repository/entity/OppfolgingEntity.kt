@@ -1,6 +1,7 @@
 package no.nav.veilarboppfolging.repository.entity
 
 import no.nav.common.types.identer.EnhetId
+import no.nav.veilarboppfolging.`14a`.Innsatsgruppe
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.LocalArenaOppfolging
 import java.util.*
 
@@ -18,5 +19,7 @@ data class OppfolgingEntity(
     val gjeldendeMaalId: Long?,
     val gjeldendeKvpId: Long?,
     val oppfolgingsEnhet: EnhetId?,
+    // Kan ofte være null, ikke alle brukere har 14a-vedtak som gir dem en innsatsgruppe
+    val innsatsgruppe: Innsatsgruppe?,
     val localArenaOppfolging: Optional<LocalArenaOppfolging>,
 )

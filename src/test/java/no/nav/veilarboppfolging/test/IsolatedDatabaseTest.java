@@ -14,7 +14,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public abstract class IsolatedDatabaseTest {
 
-    private static final AtomicInteger databaseCounter = new AtomicInteger();
     private final DataSource dataSource = LocalDatabaseSingleton.INSTANCE.getPostgres();
     protected JdbcTemplate db = new JdbcTemplate(dataSource);
     protected NamedParameterJdbcTemplate namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(dataSource);

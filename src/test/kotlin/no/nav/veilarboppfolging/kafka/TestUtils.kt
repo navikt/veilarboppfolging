@@ -60,7 +60,8 @@ object TestUtils {
             gjeldendeMaalId = 1L,
             gjeldendeKvpId = 0L,
             localArenaOppfolging = Optional.of(localArenaOppfølging),
-            oppfolgingsEnhet = null
+            oppfolgingsEnhet = null,
+            innsatsgruppe = null,
         )
 
     fun localArenaOppfolging(kvalifiseringsgruppe: Kvalifiseringsgruppe = Kvalifiseringsgruppe.IVURD, formidlingsgruppe: Formidlingsgruppe = Formidlingsgruppe.ARBS) =
