@@ -22,5 +22,6 @@ public record KafkaProperties(
     String minSideAapenMicrofrontendV1,
     String minSideBrukerVarsel,
     String oppfolgingshendelseV1,
-    String arbeidsoppfolgingskontortilordningTopic
+    String arbeidsoppfolgingskontortilordningTopic,
+    String startOppfolgingTopic
 ) {}

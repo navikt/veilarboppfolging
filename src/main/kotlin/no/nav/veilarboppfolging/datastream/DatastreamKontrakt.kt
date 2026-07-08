@@ -44,6 +44,7 @@ object DatastreamKontrakt {
                         "ARENA_SYNC_IARBS",
                         "MANUELL_REGISTRERING_BRUKER",
                         "MANUELL_REGISTRERING_VEILEDER",
+                        "SYKMELDT_UTEN_ARBEIDSGIVER_4_UKER",
                     )
                 ),
                 Kolonne("startet_av"),
