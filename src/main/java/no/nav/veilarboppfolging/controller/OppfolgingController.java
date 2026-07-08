@@ -99,7 +99,7 @@ public class OppfolgingController {
     @GetMapping("/veilederTilgang")
     public VeilederTilgang hentVeilederTilgang(@RequestParam("fnr") Fnr fnr) {
         authService.skalVereInternBruker();
-        return oppfolgingService.hentVeilederTilgang(fnr);
+        return oppfolgingService.harVeilederTilgangTilBrukersEnhet(fnr);
     }
 
     @GetMapping("/oppfolgingsperiode/{uuid}")

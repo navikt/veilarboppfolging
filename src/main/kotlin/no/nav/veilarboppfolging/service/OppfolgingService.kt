@@ -84,12 +84,12 @@ class OppfolgingService @Autowired constructor(
             ?: VeilederTilgang(false)
     }
 
-    fun hentOppfolgingsperioder(fnr: Fnr?): MutableList<OppfolgingsperiodeEntity?>? {
+    fun hentOppfolgingsperioder(fnr: Fnr?): List<OppfolgingsperiodeEntity> {
         val aktorId = authService.getAktorIdOrThrow(fnr)
         return hentOppfolgingsperioder(aktorId)
     }
 
-    fun hentOppfolgingsperioder(aktorId: AktorId): MutableList<OppfolgingsperiodeEntity?>? {
+    fun hentOppfolgingsperioder(aktorId: AktorId): List<OppfolgingsperiodeEntity> {
         return oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId)
     }
 
@@ -118,61 +118,60 @@ class OppfolgingService @Autowired constructor(
         return erUnderOppfolging(aktorId)
     }
 
-    fun hentOppfolgingsperiode(uuid: String?): Optional<OppfolgingsperiodeEntity?>? {
+    fun hentOppfolgingsperiode(uuid: String?): Optional<OppfolgingsperiodeEntity> {
         return oppfolgingsPeriodeRepository.hentOppfolgingsperiode(uuid)
     }
 
+    fun hentOppfolgingsperioderMedKvp(aktorId: AktorId): List<OppfolgingsperiodeEntity> {
+        val kvpPerioder = kvpRepository.hentKvpHistorikk(aktorId)
+        return oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId)
+            .populerKvpPerioder(kvpPerioder)
+    }
+
+    private fun hentGjeldendeKvpPeriode(oppfolgingEntity: OppfolgingEntity): KvpPeriodeEntity? {
+        val gjeldendeKvpId = oppfolgingEntity.gjeldendeKvpId
+        return if (gjeldendeKvpId != null && gjeldendeKvpId != 0L) {
+            kvpRepository.hentKvpPeriode(gjeldendeKvpId).orElse(null)
+                ?.takeIf { authService.harTilgangTilEnhet(it.enhet) }
+                ?: run {
+                    log.error("Fant ikke KVP periode for id $gjeldendeKvpId eller manglende tilgang")
+                    null
+                }
+        } else {
+            null
+        }
+    }
+
+    private fun hentGjeldendeMaal(oppfolgingEntity: OppfolgingEntity): MaalEntity? {
+        val maalId = oppfolgingEntity.gjeldendeMaalId
+        return if (maalId != null && maalId != 0L) {
+            maalRepository.hentMaal(oppfolgingEntity.gjeldendeMaalId)
+                .orElse(null)
+                ?: run {
+                    log.error("Fant ikke maal for id " + oppfolgingEntity.gjeldendeMaalId)
+                    null
+                }
+        } else { null }
+    }
 
     fun hentOppfolging(aktorId: AktorId): Optional<Oppfolging> {
-        val maybeOppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId)
-
-        if (maybeOppfolging.isEmpty()) {
-            return Optional.empty<Oppfolging>()
-        }
-
-        val oppfolgingEntity = maybeOppfolging.get()
-
-        var maybeKvpPeriode: Optional<KvpPeriodeEntity> = Optional.empty<KvpPeriodeEntity>()
-
-        val gjeldendeKvpPeriode = AtomicReference<KvpPeriodeEntity>()
-        val gjeldendeKvpId = oppfolgingEntity.gjeldendeKvpId
-        if (gjeldendeKvpId != null && gjeldendeKvpId != 0L) {
-            maybeKvpPeriode = kvpRepository.hentKvpPeriode(gjeldendeKvpId)
-            maybeKvpPeriode.ifPresentOrElse({ kvpPeriode ->
-                if (authService.harTilgangTilEnhet(kvpPeriode.enhet)) {
-                    gjeldendeKvpPeriode.set(kvpPeriode)
-                }
-            }, Runnable { log.error("Fant ikke KVP periode for id " + oppfolgingEntity.gjeldendeKvpId) })
-        }
-
-        val maalEntity = AtomicReference<MaalEntity>()
-        if (oppfolgingEntity.gjeldendeMaalId != 0L) {
-            val maybeMaal = maalRepository.hentMaal(oppfolgingEntity.gjeldendeMaalId!!)
-            maybeMaal.ifPresentOrElse(
-                Consumer { eksisterendeMaalEntity -> maalEntity.set(eksisterendeMaalEntity) },
-                Runnable { log.error("Fant ikke maal for id " + oppfolgingEntity.gjeldendeMaalId) }
-            )
-        }
-
+        val oppfolgingEntity = oppfolgingsStatusRepository.hentOppfolging(aktorId).orElse(null) ?: return Optional.empty()
+        val kvpPeriode = hentGjeldendeKvpPeriode(oppfolgingEntity)
+        val maalEntity = hentGjeldendeMaal(oppfolgingEntity)
         val manuellStatus = manuellStatusService.hentManuellStatus(aktorId)
-
-        val kvpPerioder = kvpRepository.hentKvpHistorikk(aktorId)
-        val oppfolgingsperioder = populerKvpPerioder(
-            oppfolgingsPeriodeRepository.hentOppfolgingsperioder(AktorId.of(oppfolgingEntity.aktorId)),
-            kvpPerioder
-        )
+        val oppfolgingsperioder = hentOppfolgingsperioderMedKvp(aktorId)
 
         val oppfolging = Oppfolging(
             oppfolgingEntity.aktorId!!,
             oppfolgingEntity.veilederId,
             oppfolgingEntity.underOppfolging,
             manuellStatus.orElse(null),
-            maalEntity.get(),
+            maalEntity,
             oppfolgingsperioder,
-            gjeldendeKvpPeriode.get()
+            kvpPeriode
         )
 
-        return Optional.of<Oppfolging?>(oppfolging)
+        return Optional.of<Oppfolging>(oppfolging)
     }
 
     fun erUnderOppfolging(aktorId: AktorId): Boolean {
@@ -269,16 +268,14 @@ class OppfolgingService @Autowired constructor(
         )
     }
 
-    private fun populerKvpPerioder(
-        oppfolgingsPerioder: List<OppfolgingsperiodeEntity>,
+    private fun List<OppfolgingsperiodeEntity>.populerKvpPerioder(
         kvpPerioder: List<KvpPeriodeEntity>
     ): List<OppfolgingsperiodeEntity> {
-        return oppfolgingsPerioder
+        return this
             .map { periode ->
-                val aktuelleKvpPerioder = kvpPerioder.stream()
+                val aktuelleKvpPerioder = kvpPerioder
                     .filter { kvp -> authService.harTilgangTilEnhetMedSperre(kvp.enhet) }
                     .filter { kvp -> erKvpIPeriode(kvp, periode) }
-                    .toList()
                 periode.oppdaterMedKvpPerioder(aktuelleKvpPerioder)
             }
     }
@@ -296,8 +293,12 @@ class OppfolgingService @Autowired constructor(
         return periode.sluttDato == null || !periode.sluttDato.isBefore(kvp.opprettetDato)
     }
 
-    fun hentGjeldendeOppfolgingsperiode(fnr: Fnr?): Optional<OppfolgingsperiodeEntity?>? {
+    fun hentGjeldendeOppfolgingsperiode(fnr: Fnr): Optional<OppfolgingsperiodeEntity> {
         val aktorId = authService.getAktorIdOrThrow(fnr)
+        return hentGjeldendeOppfolgingsperiode(aktorId)
+    }
+
+    fun hentGjeldendeOppfolgingsperiode(aktorId: AktorId): Optional<OppfolgingsperiodeEntity> {
         return oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId)
     }
 

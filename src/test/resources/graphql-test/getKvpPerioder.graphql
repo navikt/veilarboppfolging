@@ -1,0 +1,8 @@
+query testHentKvpOppfolgingsperioder($fnr: String!) {
+    oppfolgingsPerioder(fnr: $fnr) {
+        kvpPerioder {
+            startTidspunkt
+            sluttTidspunkt
+        }
+    }
+}

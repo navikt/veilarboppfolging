@@ -11,6 +11,7 @@ import no.nav.veilarboppfolging.IntegrationTest
 import no.nav.veilarboppfolging.client.pdl.ForenkletFolkeregisterStatus
 import no.nav.veilarboppfolging.client.pdl.FregStatusOgStatsborgerskap
 import no.nav.veilarboppfolging.controller.graphql.AdGruppeNavn
+import no.nav.veilarboppfolging.controller.graphql.toISOString
 import no.nav.veilarboppfolging.ident.randomAktorId
 import no.nav.veilarboppfolging.ident.randomFnr
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.KanStarteOppfolgingDto
@@ -475,6 +476,57 @@ class GraphqlControllerTest: IntegrationTest() {
         result.errors().verify()
         result.path("oppfolgingsPerioder").matchesJson("""
             [ { avsluttetAv: "${veilederNavIdent.get()}" } ]
+        """.trimIndent())
+    }
+
+    @Test
+    fun `skal returnere kvp-perioder i oppfolgingsperiodene når veileder har tilgang til enheten`() {
+        val veilederId = UUID.randomUUID()
+        val veilederNavIdent = NavIdent("B143314")
+        val enhet = EnhetId("1212")
+        val (fnr, aktorId) = defaultBruker()
+        mockInternBrukerAuthOk(veilederId, aktorId, fnr)
+        mockPoaoTilgangHarTilgangTilBruker(veilederId, fnr, Decision.Permit, tilgangType = TilgangType.SKRIVE)
+        mockPoaoTilgangHarTilgangTilBruker(veilederId, fnr, Decision.Permit, tilgangType = TilgangType.LESE)
+        mockPoaoTilgangHarTilgangTilEnhetMedSperre(veilederId, enhet, Decision.Permit)
+        setBrukerUnderOppfolging(aktorId, fnr)
+        val kvpStart = setBrukerUnderKvp(aktorId, enhet.get(), veilederNavIdent.get())
+
+        val result = tester.documentName("getKvpPerioder").variable("fnr", fnr.get()).execute()
+        result.errors().verify()
+        result.path("oppfolgingsPerioder").matchesJson("""
+            [
+                {
+                    kvpPerioder: [
+                        { startTidspunkt: "${kvpStart.toISOString()}", sluttTidspunkt: null }
+                    ]
+                }
+            ]
+        """.trimIndent())
+    }
+
+    @Test
+    fun `skal filtrene bort kvp-perioder i det stille når veileder ikke har tilgang til enheten`() {
+        val veilederId = UUID.randomUUID()
+        val veilederNavIdent = NavIdent("B143314")
+        val enhet = EnhetId("1212")
+        val (fnr, aktorId) = defaultBruker()
+        mockInternBrukerAuthOk(veilederId, aktorId, fnr)
+        mockPoaoTilgangHarTilgangTilBruker(veilederId, fnr, Decision.Permit, tilgangType = TilgangType.SKRIVE)
+        mockPoaoTilgangHarTilgangTilBruker(veilederId, fnr, Decision.Permit, tilgangType = TilgangType.LESE)
+        mockPoaoTilgangHarTilgangTilEnhetMedSperre(veilederId, enhet, Decision.Deny("lol", "fordi"))
+        setBrukerUnderOppfolging(aktorId, fnr)
+        setBrukerUnderKvp(aktorId, enhet.get(), veilederNavIdent.get())
+
+        val result = tester.documentName("getKvpPerioder").variable("fnr", fnr.get()).execute()
+
+        result.errors().verify()
+        result.path("oppfolgingsPerioder").matchesJson("""
+            [
+                {
+                    kvpPerioder: []
+                }
+            ]
         """.trimIndent())
     }
 
