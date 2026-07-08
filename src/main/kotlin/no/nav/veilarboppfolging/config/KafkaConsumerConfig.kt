@@ -29,6 +29,8 @@ import org.springframework.context.annotation.Profile
 import org.springframework.jdbc.core.JdbcTemplate
 import java.util.Map
 import java.util.function.Consumer
+import no.nav.veilarboppfolging.kafka.inngang.StartOppfolgingConsumerService
+import no.nav.veilarboppfolging.kafka.inngang.StartOppfolgingMelding
 
 @Profile("!test")
 @Configuration
@@ -40,6 +42,7 @@ open class KafkaConsumerConfig(
     private val kafkaConsumerService: KafkaConsumerService,
     private val arbeidssøkerperiodeConsumerService: ArbeidssøkerperiodeConsumerService,
     private val arbeidsoppfolgingskontortilordningConsumerService: ArbeidsoppfolgingskontortilordningConsumerService,
+    private val startOppfolgingConsumerService: StartOppfolgingConsumerService,
     lockProvider: LockProvider,
     @Value("\${app.kafka.enabled}") val kafkaEnabled: Boolean
 ) {
@@ -95,6 +98,20 @@ open class KafkaConsumerConfig(
                         ),
                         Consumer { kafkaMelding: ConsumerRecord<Long, OppfolgingskontorMelding?> ->
                             arbeidsoppfolgingskontortilordningConsumerService.consumeKontortilordning(kafkaMelding)
+                        }
+                    ),
+                KafkaConsumerClientBuilder.TopicConfig<String, StartOppfolgingMelding>()
+                    .withLogging()
+                    .withMetrics(meterRegistry)
+                    .withStoreOnFailure(consumerRepository)
+                    .withConsumerConfig(
+                        kafkaProperties.startOppfolgingTopic,
+                        Deserializers.stringDeserializer(),
+                        Deserializers.jsonDeserializer(
+                            StartOppfolgingMelding::class.java
+                        ),
+                        Consumer { kafkaMelding: ConsumerRecord<String, StartOppfolgingMelding> ->
+                            startOppfolgingConsumerService.consumeStartOppfolging(kafkaMelding)
                         }
                     )
             )

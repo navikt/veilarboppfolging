@@ -45,6 +45,7 @@ import no.nav.veilarboppfolging.client.tiltakshistorikk.TiltakshistorikkClient
 import no.nav.veilarboppfolging.client.ungdomsprogram.UngdomsprogramClient
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolginsBrukerOppslagResult
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaRegistreringResultat
+import no.nav.veilarboppfolging.client.veilarbarena.RegistrerIArenaError
 import no.nav.veilarboppfolging.client.veilarbarena.RegistrerIArenaSuccess
 import no.nav.veilarboppfolging.client.veilarbarena.RegistrerIkkeArbeidssokerDto
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsBruker
@@ -495,6 +496,15 @@ open class IntegrationTest {
                     "Bruker reaktivert i Arena",
                     ArenaRegistreringResultat.OK_REGISTRERT_I_ARENA
                 )
+            )
+        )
+    }
+
+    fun mockArenaOppfolgingServiceRegistrerIkkeArbeidssokerTekniskFeil(fnr: Fnr) {
+        `when`(arenaOppfolgingService.registrerIkkeArbeidssoker(fnr)).thenReturn(
+            RegistrerIArenaError(
+                "Teknisk feil ved registrering av bruker i Arena",
+                RuntimeException("Teknisk feil ved registrering av bruker i Arena")
             )
         )
     }
