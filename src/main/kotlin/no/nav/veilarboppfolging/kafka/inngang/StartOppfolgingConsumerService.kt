@@ -1,5 +1,6 @@
 package no.nav.veilarboppfolging.kafka.inngang
 
+import no.nav.common.client.norg2.Norg2Client
 import no.nav.common.types.identer.Fnr
 import no.nav.veilarboppfolging.client.pdl.PdlFolkeregisterStatusClient
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaRegistreringResultat
@@ -27,6 +28,7 @@ class StartOppfolgingConsumerService(
     private val startOppfolgingService: StartOppfolgingService,
     private val arenaOppfolgingService: ArenaOppfolgingService,
     private val authService: AuthService,
+    private val norg2Client: Norg2Client,
 ) {
     private val logger = LoggerFactory.getLogger(this::class.java)
 
@@ -36,6 +38,7 @@ class StartOppfolgingConsumerService(
         val startOppfolgingMelding = kafkaMelding.value()
 
         if (kanStarteOppfolging(fnr)) {
+            validerKontor(startOppfolgingMelding.arbeidsoppfolgingskontor)
             val arenaRespons = startOppfolgingIArena(fnr)
             when (arenaRespons.arenaResultat.kode) {
                 ArenaRegistreringResultat.KAN_REAKTIVERES_FORENKLET -> {
@@ -98,6 +101,18 @@ class StartOppfolgingConsumerService(
                 logger.error("Feil ved registrering av bruker i Arena", arenaResponse.throwable)
                 throw RuntimeException(arenaResponse.message, arenaResponse.throwable.cause)
             }
+        }
+    }
+
+    private fun validerKontor(kontor: String?) {
+        if (kontor == null) return
+        val enhet = norg2Client.hentEnhet(kontor)
+        if (enhet == null || enhet.navn == null) {
+            logger.error("Kontor $kontor fra start oppfølging-melding finnes ikke i norg")
+            throw IllegalArgumentException("Arbeidsoppfolgingskontor $kontor finnes ikke i norg")
+        } else if (enhet.nedleggelsesdato != null) {
+            logger.error("Kontor $kontor fra start oppfølging-melding er nedlagt")
+            throw IllegalArgumentException("Arbeidsoppfolgingskontor $kontor er nedlagt")
         }
     }
 }

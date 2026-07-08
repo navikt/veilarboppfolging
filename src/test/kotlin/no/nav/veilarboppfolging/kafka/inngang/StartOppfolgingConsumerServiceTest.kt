@@ -87,12 +87,14 @@ class StartOppfolgingConsumerServiceTest(
             statsborgerskap = norskStatsborgerskap,
             under18 = false,
         ))
+        mockNorgEnhetsNavn("1234", "NAV Testkontor")
         mockArenaOppfolgingServiceRegistrerIkkeArbeidssoker(fnr)
         val startOppfolgingMelding = lagStartOppfolgingMelding(
             fnr = fnr,
             registrant = StartOppfolgingMelding.VeilederRegistrant(
                 opprettetAv = "N123456",
-            )
+            ),
+            kontor = "1234",
         )
         val melding = ConsumerRecord("topic", 0, 0, fnr.get(), startOppfolgingMelding)
 
@@ -114,7 +116,7 @@ class StartOppfolgingConsumerServiceTest(
         assertThat(hendelse.startetAvType).isEqualTo(StartetAvType.VEILEDER)
         assertThat(hendelse.startetAv).isEqualTo("N123456")
         assertThat(hendelse.startetTidspunkt).isCloseTo(ZonedDateTime.now(), within(1, ChronoUnit.SECONDS))
-        assertThat(hendelse.foretrukketArbeidsoppfolgingskontor).isNull()
+        assertThat(hendelse.foretrukketArbeidsoppfolgingskontor).isEqualTo("1234")
         assertThat(hendelse.oppfolgingsPeriodeId).isEqualTo(oppfolgingsperiode.uuid)
     }
 
@@ -189,12 +191,12 @@ class StartOppfolgingConsumerServiceTest(
         }
     }
 
-    fun lagStartOppfolgingMelding(fnr: Fnr, registrant: StartOppfolgingMelding.Registrant): StartOppfolgingMelding {
+    fun lagStartOppfolgingMelding(fnr: Fnr, registrant: StartOppfolgingMelding.Registrant, kontor: String? = null): StartOppfolgingMelding {
         return StartOppfolgingMelding(
             personident = fnr.get(),
             aarsak = StartOppfolgingMelding.Aarsak.SYKMELDT_UTEN_ARBEIDSGIVER_4_UKER,
             registrant = registrant,
-            arbeidsoppfolgingskontor = null,
+            arbeidsoppfolgingskontor = kontor,
             kilde = StartOppfolgingMelding.Kilde.ISYFO,
             sendtTidspunkt = ZonedDateTime.now().toLocalDateTime(),
         )
