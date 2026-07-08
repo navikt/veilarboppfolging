@@ -484,7 +484,7 @@ fun OppfolgingsperiodeEntity.toOppfolgingsperiodeDto(): OppfolgingsperiodeDto {
     )
 }
 
-fun KvpPeriodeEntity.toKvpPeriodeDto() = KvpPeriodeDto(
+private fun KvpPeriodeEntity.toKvpPeriodeDto() = KvpPeriodeDto(
     startTidspunkt = this.opprettetDato.toISOString(),
     sluttTidspunkt = this.avsluttetDato?.toISOString()
 )
