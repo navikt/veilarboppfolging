@@ -134,6 +134,7 @@ class OppfolgingService @Autowired constructor(
             val kvpPeriode = kvpRepository.hentKvpPeriode(gjeldendeKvpId).orElse(null)
             if (kvpPeriode == null) {
                 if (authService.harTilgangTilEnhet(kvpPeriode)) {
+                    log.warn("Bruker hadde ikke tilgan til kvp-periode")
                     kvpPeriode
                 } else {
                     // Hadde ikke tilgang til KVP-periode
