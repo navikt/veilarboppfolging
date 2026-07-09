@@ -21,6 +21,7 @@ import no.nav.poao_tilgang.api.dto.response.Diskresjonskode
 import no.nav.poao_tilgang.api.dto.response.TilgangsattributterResponse
 import no.nav.poao_tilgang.client.Decision
 import no.nav.poao_tilgang.client.NavAnsattTilgangTilEksternBrukerPolicyInput
+import no.nav.poao_tilgang.client.NavAnsattTilgangTilNavEnhetMedSperrePolicyInput
 import no.nav.poao_tilgang.client.NavAnsattTilgangTilNavEnhetPolicyInput
 import no.nav.poao_tilgang.client.PoaoTilgangClient
 import no.nav.poao_tilgang.client.TilgangType
@@ -100,6 +101,7 @@ import org.springframework.kafka.test.context.EmbeddedKafka
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.web.context.WebApplicationContext
+import java.time.temporal.ChronoUnit
 
 @EmbeddedKafka(partitions = 1)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -281,8 +283,11 @@ open class IntegrationTest {
         veilederTilordningerRepository.upsertVeilederTilordning(aktorId, veilederIdent.get())
     }
 
-    fun setBrukerUnderKvp(aktorId: AktorId, enhetId: String, veilederId: String) {
-        kvpRepository.startKvp(aktorId, enhetId, veilederId, "fordi", ZonedDateTime.now())
+    fun setBrukerUnderKvp(aktorId: AktorId, enhetId: String, veilederId: String): ZonedDateTime {
+        // Running locally and in pipeline don't always return same precision which can make tests fail
+        val startTidspunkt = ZonedDateTime.now().truncatedTo(ChronoUnit.MILLIS)
+        kvpRepository.startKvp(aktorId, enhetId, veilederId, "fordi", startTidspunkt)
+        return startTidspunkt
     }
 
     fun setLocalArenaOppfolging(aktorId: AktorId, formidlingsgruppe: Formidlingsgruppe = Formidlingsgruppe.IARBS, enhet: EnhetId? = null) {
@@ -361,6 +366,7 @@ open class IntegrationTest {
 //        `when`(authContextHolder).thenReturn(Optional.of(UserRole.INTERN))
         `when`(authContextHolder.erInternBruker()).thenReturn(true)
         `when`(authContextHolder.erEksternBruker()).thenReturn(false)
+        `when`(authContextHolder.erSystemBruker()).thenReturn(false)
         `when`(aktorOppslagClient.hentAktorId(fnr)).thenReturn(aktørId)
         `when`(aktorOppslagClient.hentFnr(aktørId)).thenReturn(fnr)
         `when`(authContextHolder.uid).thenReturn(Optional.of(navIdent.get()))
@@ -430,6 +436,11 @@ open class IntegrationTest {
 
     fun mockPoaoTilgangHarTilgangTilEnhet(veilederUuid: UUID, enhetId: EnhetId, result: Decision = Decision.Permit) {
         val policyInput = NavAnsattTilgangTilNavEnhetPolicyInput(veilederUuid, enhetId.get())
+        doReturn(ApiResult.success(result)).`when`(poaoTilgangClient).evaluatePolicy(policyInput)
+    }
+
+    fun mockPoaoTilgangHarTilgangTilEnhetMedSperre(veilederUuid: UUID, enhetId: EnhetId, result: Decision = Decision.Permit) {
+        val policyInput = NavAnsattTilgangTilNavEnhetMedSperrePolicyInput(veilederUuid, enhetId.get())
         doReturn(ApiResult.success(result)).`when`(poaoTilgangClient).evaluatePolicy(policyInput)
     }
 
