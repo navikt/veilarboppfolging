@@ -131,12 +131,19 @@ class OppfolgingService @Autowired constructor(
     private fun hentGjeldendeKvpPeriode(oppfolgingEntity: OppfolgingEntity): KvpPeriodeEntity? {
         val gjeldendeKvpId = oppfolgingEntity.gjeldendeKvpId
         return if (gjeldendeKvpId != null && gjeldendeKvpId != 0L) {
-            kvpRepository.hentKvpPeriode(gjeldendeKvpId).orElse(null)
-                ?.takeIf { authService.harTilgangTilEnhet(it.enhet) }
-                ?: run {
-                    log.error("Fant ikke KVP periode for id $gjeldendeKvpId eller manglende tilgang")
+            val kvpPeriode = kvpRepository.hentKvpPeriode(gjeldendeKvpId).orElse(null)
+            if (kvpPeriode == null) {
+                if (authService.harTilgangTilEnhet(kvpPeriode)) {
+                    kvpPeriode
+                } else {
+                    // Hadde ikke tilgang til KVP-periode
                     null
                 }
+            } else {
+                // Fant ikke kvp-periode, dette skal ikke skje
+                log.error("Fant ikke KVP periode for id $gjeldendeKvpId")
+                null
+            }
         } else {
             null
         }
