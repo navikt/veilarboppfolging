@@ -111,6 +111,7 @@ type BrukerStatusDto {
     arena: BrukerStatusArenaDto
     veilederTilordning: VeilederTilordningDto
     harAktiveTiltaksdeltakelser: Boolean!
+    ident: String!
 }
 
 type BrukerStatusArenaDto {
