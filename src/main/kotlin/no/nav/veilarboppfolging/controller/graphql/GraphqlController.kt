@@ -197,7 +197,9 @@ class GraphqlController(
             .put("fnr", fnr)
             .put("aktorId", aktorId)
         return result.localContext(localContext)
-            .data(BrukerStatusDto())
+            .data(BrukerStatusDto(
+                ident = fnr.get()
+            ))
             .build()
     }
 

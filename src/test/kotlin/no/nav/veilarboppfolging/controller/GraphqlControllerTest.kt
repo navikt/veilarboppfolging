@@ -543,6 +543,7 @@ class GraphqlControllerTest: IntegrationTest() {
         setTilordnetVeileder(aktorId, navIdent)
         mockDigdir(fnr, reservertMotDigitalKommunikasjon = true, kanVarsles = false)
         mockTiltakshistorikk(fnr, harAktiveDeltakelser = true)
+        mockVeilarbArenaOppfolgingsStatus(fnr= fnr, formidlingsgruppe = Formidlingsgruppe.ISERV, kanEnkeltReaktiveres = true)
 
         /* Query is hidden in test/resources/graphl-test :) */
         val result = tester.documentName("hentBrukerStatus").variable("fnr", fnr.get()).execute()
@@ -565,7 +566,7 @@ class GraphqlControllerTest: IntegrationTest() {
               },
               "arena": {
                 "inaktivIArena": false,
-                "kanReaktiveres": null,
+                "kanReaktiveres": true,
                 "inaktiveringsdato": null,
                 "kvalifiseringsgruppe": "VURDI",
                 "formidlingsgruppe": "IARBS"
