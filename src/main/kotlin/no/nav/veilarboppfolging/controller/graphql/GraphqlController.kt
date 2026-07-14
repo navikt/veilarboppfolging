@@ -45,6 +45,7 @@ import org.springframework.stereotype.Controller
 import org.springframework.web.server.ResponseStatusException
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import kotlin.jvm.optionals.getOrDefault
 import kotlin.jvm.optionals.getOrNull
 
 enum class TilgangResultat {
@@ -296,7 +297,7 @@ class GraphqlController(
     }
 
     @SchemaMapping(typeName = "BrukerStatusDto", field = "manuell")
-    fun manuell(brukerStatusDto: BrukerStatusDto, @LocalContextValue aktorId: AktorId): BrukerStatusManuellDto? {
+    fun manuell(brukerStatusDto: BrukerStatusDto, @LocalContextValue aktorId: AktorId): BrukerStatusManuellDto {
         return manuellService.hentManuellStatus(aktorId)
             .map { BrukerStatusManuellDto(
                 it.manuell,
@@ -305,7 +306,13 @@ class GraphqlController(
                 it.opprettetAv.toString(),
                 it.opprettetAvBrukerId
             ) }
-            .getOrNull()
+            .getOrDefault(BrukerStatusManuellDto(
+                erManuell = false,
+                tidspunkt = null,
+                begrunnelse = null,
+                endretAvType = null,
+                endretAvIdent = null
+            ))
     }
 
     @SchemaMapping(typeName = "BrukerStatusDto", field = "erKontorsperret")
