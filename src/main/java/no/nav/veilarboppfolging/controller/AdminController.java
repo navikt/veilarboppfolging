@@ -35,38 +35,32 @@ public class AdminController {
 
     public static final String POAO_ADMIN = "poao-admin";
     private final AuthService authService;
-    private final AuthContextHolder authContextHolder;
     private final KafkaRepubliseringService kafkaRepubliseringService;
     private final VeilederTilordningerRepository veilederTilordningerRepository;
     private final ManuellStatusService manuellStatusService;
     private final OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
-    private final OppfolgingService oppfolgingService;
     private final AvsluttOppfolgingService avsluttOppfolgingService;
-    private final KandidatForUtmeldingService kandidatForUtmeldingService;
+    private final RepubliserOppfolgingshendelseService republiserOppfolgingshendelseService;
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
     public AdminController(
             AuthService authService,
-            AuthContextHolder authContextHolder,
             KafkaRepubliseringService kafkaRepubliseringService,
             VeilederTilordningerRepository veilederTilordningerRepository,
             ManuellStatusService manuellStatusService,
             OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository,
-            OppfolgingService oppfolgingService,
             AvsluttOppfolgingService avsluttOppfolgingService,
-            KandidatForUtmeldingService kandidatForUtmeldingService
+            RepubliserOppfolgingshendelseService republiserOppfolgingshendelseService
     ) {
         this.authService = authService;
-        this.authContextHolder = authContextHolder;
         this.kafkaRepubliseringService = kafkaRepubliseringService;
         this.veilederTilordningerRepository = veilederTilordningerRepository;
         this.manuellStatusService = manuellStatusService;
         this.oppfolgingsPeriodeRepository = oppfolgingsPeriodeRepository;
-        this.oppfolgingService = oppfolgingService;
         this.avsluttOppfolgingService = avsluttOppfolgingService;
-        this.kandidatForUtmeldingService = kandidatForUtmeldingService;
+        this.republiserOppfolgingshendelseService = republiserOppfolgingshendelseService;
     }
 
     @PostMapping("/republiser/oppfolgingsperioder")
@@ -169,6 +163,12 @@ public class AdminController {
             log.warn("Kunne ikke avslutte oppfølgingsperiode: {}", e.getMessage());
             return false;
         }
+    }
+
+    @PostMapping("/republiser/oppfolgingshendelse")
+    public void republiserOppfolgingshendelse(@RequestParam AktorId aktorId) {
+        sjekkTilgangTilAdmin();
+        republiserOppfolgingshendelseService.republiserOppfolgingshendelseForBruker(aktorId);
     }
 
     private void sjekkTilgangTilAdmin() {
