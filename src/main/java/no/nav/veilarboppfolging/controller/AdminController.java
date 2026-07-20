@@ -164,7 +164,7 @@ public class AdminController {
     }
 
     @PostMapping("/republiser/oppfolgingshendelse")
-    public void republiserOppfolgingshendelse(@RequestParam AktorId aktorId) {
+    public void republiserOppfolgingshendelse(@RequestBody AktorId aktorId) {
         sjekkTilgangTilAdmin();
         republiserOppfolgingshendelseService.republiserOppfolgingshendelseForBruker(aktorId);
     }
