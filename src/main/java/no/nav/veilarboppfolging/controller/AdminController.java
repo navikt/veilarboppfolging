@@ -1,6 +1,5 @@
 package no.nav.veilarboppfolging.controller;
 
-import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.job.JobRunner;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.NavIdent;
@@ -11,7 +10,6 @@ import no.nav.veilarboppfolging.domain.AvsluttOppfolgingsperiodePayload;
 import no.nav.veilarboppfolging.domain.AvsluttResultat;
 import no.nav.veilarboppfolging.domain.RepubliserOppfolgingsperioderRequest;
 import no.nav.veilarboppfolging.domain.AvsluttPayload;
-import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService;
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant;
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AdminAvregistrering;
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
