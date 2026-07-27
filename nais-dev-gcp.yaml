@@ -182,8 +182,12 @@ spec:
           namespace: dab
         - application: aktivitetsplan
           namespace: pto
+        - application: aktivitetsplan
+          namespace: dab
         - application: arbeidsrettet-dialog
           namespace: pto
+        - application: arbeidsrettet-dialog
+          namespace: dab
         - application: aktivitet-arena-acl
           namespace: dab
         - application: start-samtale
