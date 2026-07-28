@@ -1,6 +1,6 @@
 val kotlinVersion = "2.3.21"
 val flywayVersion = "12.9.0"
-val commonVersion = "4.2026.06.25_10.50-baa9d54e3cd8"
+val commonVersion = "4.2026.07.17_11.36-f5bba2c96561"
 val ptoSchemaVersion = "2.2026.06.16_10.51-c03b8278b27d"
 val poaoTilgangVersion = "4.2026.06.26_13.31-ba260c104ee7"
 val wiremockVersion = "3.13.2"
