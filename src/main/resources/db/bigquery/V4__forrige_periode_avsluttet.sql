@@ -1,0 +1,2 @@
+ALTER TABLE oppfolging_metrikker.OPPFOLGINGSPERIODE_EVENTS
+ADD COLUMN forrigePeriodeAvsluttet TIMESTAMP default null;
