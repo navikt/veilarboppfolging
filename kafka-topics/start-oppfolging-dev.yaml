@@ -18,6 +18,9 @@ spec:
     - team: pto
       application: pto-kafka-manager
       access: readwrite
+    - team: dab
+      application: dab-kafka-manager
+      access: readwrite
     - team: poao
       application: veilarboppfolging
       access: read
