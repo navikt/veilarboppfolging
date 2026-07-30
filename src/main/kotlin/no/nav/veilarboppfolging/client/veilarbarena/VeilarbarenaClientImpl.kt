@@ -15,6 +15,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
+import java.net.SocketTimeoutException
 
 
 sealed class TokenResult {
@@ -94,15 +95,23 @@ class VeilarbarenaClientImpl(
     override fun hentOppfolgingsbruker(fnr: Fnr): ArenaOppfolginsBrukerOppslagResult {
         val personRequest = PersonRequest(fnr)
         try {
-            val response = httpPost(UrlUtils.joinPaths(veilarbarenaUrl, "/veilarbarena/api/v4/hent-oppfolgingsbruker"), personRequest, VeilarbArenaOppfolgingsBruker::class.java)
+            val response = httpPost(
+                UrlUtils.joinPaths(veilarbarenaUrl, "/veilarbarena/api/v4/hent-oppfolgingsbruker"),
+                personRequest,
+                VeilarbArenaOppfolgingsBruker::class.java
+            )
             return when (response) {
                 is RequestResult.Success ->
-                    if(response.body.isPresent) ArenaOppfolginsBrukerOppslagResult.Success(response.body.get())
+                    if (response.body.isPresent) ArenaOppfolginsBrukerOppslagResult.Success(response.body.get())
                     else ArenaOppfolginsBrukerOppslagResult.NotFound()
+
                 is RequestResult.Fail -> ArenaOppfolginsBrukerOppslagResult.Fail(response.message, response.reason)
             }
+        } catch (e: SocketTimeoutException) {
+            logger.error("Timeout mot veilarbarena ved henting av oppfolgingsbruker", e)
+            return ArenaOppfolginsBrukerOppslagResult.Fail(e.message ?: "Uventet feil ved henting av oppfolgingsbruker fra veilarbarena", e)
         } catch (e: Exception) {
-            logger.error("Uventet feil ved henting av oppfolgingsbruker fra veilarbarena", e)
+            logger.error("Uventet feil ved henting av oppfolgingsbruker fra veilarbarena: ${e.message}", e)
             return ArenaOppfolginsBrukerOppslagResult.Fail(e.message ?: "Uventet feil ved henting av oppfolgingsbruker fra veilarbarena", e)
         }
     }
@@ -115,8 +124,12 @@ class VeilarbarenaClientImpl(
                 is RequestResult.Success -> response.body
                 is RequestResult.Fail -> Optional.empty()
             }
-        } catch (e: Exception) {
-            logger.error("Uventet feil ved henting av oppfolgingsstatus fra veilarbarena", e)
+        } catch (e: SocketTimeoutException) {
+            logger.error("Timeout mot veilarbarena ved henting av oppfolgingsstatus", e)
+            return Optional.empty()
+        }
+        catch (e: Exception) {
+            logger.error("Uventet feil ved henting av oppfolgingsstatus fra veilarbarena: ${e.message}", e)
             return Optional.empty()
         }
     }
