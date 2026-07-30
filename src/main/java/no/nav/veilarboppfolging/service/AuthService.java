@@ -11,10 +11,13 @@ import no.nav.common.auth.context.UserRole;
 import no.nav.common.auth.utils.IdentUtils;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.client.aktoroppslag.BrukerIdenter;
+import no.nav.common.client.aktorregister.IngenGjeldendeIdentException;
 import no.nav.common.types.identer.*;
 import no.nav.poao_tilgang.client.*;
+import no.nav.poao_tilgang.client.api.BadHttpStatusApiException;
 import no.nav.veilarboppfolging.BadRequestException;
 import no.nav.veilarboppfolging.ForbiddenException;
+import no.nav.veilarboppfolging.NotFoundException;
 import no.nav.veilarboppfolging.UnauthorizedException;
 import no.nav.veilarboppfolging.config.EnvironmentProperties;
 import no.nav.veilarboppfolging.tokenClient.ErrorMappedAzureAdMachineToMachineTokenClient;
@@ -405,9 +408,14 @@ public class AuthService {
     private void sjekkTilgang(TilgangType tilgangType, Fnr fnr) {
         Optional<SikkerthetsNivå> sikkerhetsnivaa = hentSikkerhetsnivaa();
         if (erInternBruker()) {
-            Decision decision = poaoTilgangClient.evaluatePolicy(new NavAnsattTilgangTilEksternBrukerPolicyInput(
+            var result = poaoTilgangClient.evaluatePolicy(new NavAnsattTilgangTilEksternBrukerPolicyInput(
                     hentInnloggetVeilederUUID(), tilgangType, fnr.get()
-            )).getOrThrow();
+            ));
+            if (result.isFailure() && result.getException() instanceof BadHttpStatusApiException) {
+                var exception = (BadHttpStatusApiException) result.getException() ;
+                if (exception.getHttpStatus() == 404) throw new NotFoundException("Kunne ikke sjekke tilgang til bruker fordi det finnes ikke i PDL");
+            }
+            Decision decision = result.getOrThrow();
             auditLogWithMessageAndDestinationUserId(
                     "Veileder har gjort oppslag på aktorid",
                     fnr.get(),
@@ -418,9 +426,15 @@ public class AuthService {
                 throw new ForbiddenException("NavAnsattTilgangTilEksternBrukerPolicyInput fikk deny");
             }
         } else if (erEksternBruker() && sikkerhetsnivaa.isPresent() && sikkerhetsnivaa.get() == SikkerthetsNivå.Nivå4) {
-            Decision decision = poaoTilgangClient.evaluatePolicy(new EksternBrukerTilgangTilEksternBrukerPolicyInput(
+            var result = poaoTilgangClient.evaluatePolicy(new EksternBrukerTilgangTilEksternBrukerPolicyInput(
                     hentInnloggetPersonIdent(), fnr.get()
-            )).getOrThrow();
+            ));
+            if (result.isFailure() && result.getException() instanceof BadHttpStatusApiException) {
+                var exception = (BadHttpStatusApiException) result.getException() ;
+                if (exception.getHttpStatus() == 404) throw new NotFoundException("Kunne ikke sjekke tilgang til bruker fordi det finnes ikke i PDL");
+            }
+            Decision decision = result.getOrThrow();
+
             auditLogWithMessageAndDestinationUserId(
                     "Ekstern bruker har gjort oppslag på fnr",
                     fnr.get(),

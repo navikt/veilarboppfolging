@@ -17,6 +17,7 @@ type VeilederTilgang {
     harAktiveTiltaksdeltakelserVedFlyttingTilEgetKontor: Boolean
 }
 
+
 enum UtmeldingskandidatTag {
     ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
     ARBEIDSSOKERPERIODE_AVSLUTTET_SVARTE_NEI_I_BEKREFTELSE,
