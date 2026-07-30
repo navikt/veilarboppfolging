@@ -9,12 +9,15 @@ import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.common.auth.context.UserRole;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
+import no.nav.common.client.aktorregister.IngenGjeldendeIdentException;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.poao_tilgang.client.*;
 import no.nav.poao_tilgang.client.api.ApiResult;
+import no.nav.poao_tilgang.client.api.BadHttpStatusApiException;
 import no.nav.veilarboppfolging.ForbiddenException;
+import no.nav.veilarboppfolging.NotFoundException;
 import no.nav.veilarboppfolging.config.EnvironmentProperties;
 import no.nav.veilarboppfolging.tokenClient.ErrorMappedAzureAdMachineToMachineTokenClient;
 import no.nav.veilarboppfolging.tokenClient.ErrorMappedAzureAdOnBehalfOfTokenClient;
@@ -370,6 +373,22 @@ class AuthServiceTest {
         assertDoesNotThrow(() -> authService.authorizeRequest(TEST_AKTOR_ID_3, emptyList()));
     }
 
+    @Test
+    void internbruker_ident_finnes_ikke_skal_kaste_NotFoundException() {
+        setupInternalUserAuthOkIngenGjeldendeIdent();
+        setupAuthService();
+
+        assertThrows(NotFoundException.class, () -> authService.authorizeRequest(TEST_AKTOR_ID_3, emptyList()));
+    }
+
+    @Test
+    void eksternbruker_ident_finnes_ikke_skal_kaste_NotFoundException() {
+        setUpExternalUserAuthOkIngenGjeldendeIdent();
+        setupAuthService();
+
+        assertThrows(NotFoundException.class, () -> authService.sjekkLesetilgangMedAktorId(TEST_AKTOR_ID_3));
+    }
+
     private void setupAuthService() {
         this.authService = new AuthService(
                 authContextHolder,
@@ -433,6 +452,31 @@ class AuthServiceTest {
         this.authContextHolder.setContext(authContext);
     }
 
+    private void setUpExternalUserAuthOkIngenGjeldendeIdent() {
+        JWTClaimsSet claims = new JWTClaimsSet.Builder()
+                .subject(TEST_FNR_2.get())
+                .claim("pid", TEST_FNR_2.get())
+                .claim("acr", "Level4")
+                .claim("client_id", "test_client_id")
+                .audience(TEST_AUDIENCE)
+                .issuer(TEST_TOKENDINGS_ISSUER)
+                .build();
+
+        AuthContext authContext = new AuthContext(
+                UserRole.valueOf("EKSTERN"),
+                new PlainJWT(claims)
+        );
+
+        when(aktorOppslagClient.hentFnr(TEST_AKTOR_ID_3)).thenReturn(TEST_FNR_2);
+
+        this.authContextHolder = AuthContextHolderThreadLocal.instance();
+        this.authContextHolder.setContext(authContext);
+
+        doReturn(new ApiResult<>(new BadHttpStatusApiException(404, "not found"), null))
+                .when(poaoTilgangClient)
+                .evaluatePolicy(any());
+    }
+
     private void setupInternalUserAuthOk() {
         UUID uuid = UUID.randomUUID();
 
@@ -457,5 +501,32 @@ class AuthServiceTest {
 
         Decision decision = Decision.Permit.INSTANCE;
         doReturn(new ApiResult<>(null, decision)).when(poaoTilgangClient).evaluatePolicy(argThat(new PolicyInputMatcher(uuid, TEST_FNR_2.get())));
+    }
+
+    private void setupInternalUserAuthOkIngenGjeldendeIdent() {
+        UUID uuid = UUID.randomUUID();
+
+        JWTClaimsSet claims = new JWTClaimsSet.Builder()
+                .subject(TEST_NAV_IDENT_2.get())
+                .issuer(TEST_AZURE_ISSUER)
+                .audience(TEST_AUDIENCE)
+                .claim("oid", uuid.toString())
+                .claim(AAD_NAV_IDENT_CLAIM, TEST_NAV_IDENT_2.get())
+                .claim("azp_name", "test_client_id")
+                .build();
+
+        AuthContext authContext = new AuthContext(
+                UserRole.valueOf("INTERN"),
+                new PlainJWT(claims)
+        );
+
+        this.authContextHolder = AuthContextHolderThreadLocal.instance();
+        this.authContextHolder.setContext(authContext);
+
+        when(aktorOppslagClient.hentFnr(TEST_AKTOR_ID_3)).thenReturn(TEST_FNR_2);
+
+        doReturn(new ApiResult<>(new BadHttpStatusApiException(404, "not found"), null))
+                .when(poaoTilgangClient)
+                .evaluatePolicy(argThat(new PolicyInputMatcher(uuid, TEST_FNR_2.get())));
     }
 }
