@@ -151,6 +151,8 @@ spec:
         - application: arbeidssokerregistrering-for-veileder
           namespace: paw
         - application: veilarbapi
+          namespace: dab
+        - application: veilarbapi
           namespace: pto
         - application: paw-proxy
           namespace: paw

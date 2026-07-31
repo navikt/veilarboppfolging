@@ -150,6 +150,8 @@ spec:
           namespace: paw
         - application: veilarbapi
           namespace: pto
+        - application: veilarbapi
+          namespace: dab
         - application: paw-proxy
           namespace: paw
         - application: veilarbperson
