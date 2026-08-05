@@ -1,16 +1,12 @@
 package no.nav.veilarboppfolging.service
 
 import no.nav.common.types.identer.AktorId
-import no.nav.common.types.identer.EnhetId
 import no.nav.common.types.identer.Fnr
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
 import no.nav.veilarboppfolging.client.digdir_krr.KRRData
 import no.nav.veilarboppfolging.eventsLogger.BigQueryClient
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService
-import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ArbeidsokerRegistrering
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ArenaSyncRegistrering
-import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.DollyRegistrering
-import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ManuellRegistreringBruker
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ManuellRegistreringVeileder
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering
 import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.hendelser.OppfolgingStartetHendelseDto
@@ -27,6 +23,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.support.TransactionTemplate
 import java.util.*
 import kotlin.jvm.optionals.getOrNull
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.SystemRegistrering
 
 @Service
 open class StartOppfolgingService(
@@ -73,12 +70,22 @@ open class StartOppfolgingService(
 
             val perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId)
             val sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder)
-            val kontorSattAvVeileder = if (oppfolgingsbruker is ManuellRegistreringVeileder) (oppfolgingsbruker.kontorSattAvVeileder) else null
+            val arbeidsoppfolgingskontor = when (oppfolgingsbruker) {
+                is ManuellRegistreringVeileder -> {
+                    oppfolgingsbruker.kontorSattAvVeileder
+                }
+                is SystemRegistrering -> {
+                    oppfolgingsbruker.kontor
+                }
+                else -> {
+                    null
+                }
+            }
 
             log.info("Oppfølgingsperiode startet for bruker - publiserer endringer på oppfølgingsperiode-topics.")
             kafkaProducerService.publiserOppfolgingsperiode(DtoMappers.tilOppfolgingsperiodeDTO(sistePeriode))
             kafkaProducerService.publiserVisAoMinSideMicrofrontend(aktorId, fnr)
-            kafkaProducerService.publiserOppfolgingsStartet(lagOppfolgingStartetHendelseDto(fnr, sistePeriode, kontorSattAvVeileder))
+            kafkaProducerService.publiserOppfolgingsStartet(lagOppfolgingStartetHendelseDto(fnr, sistePeriode, arbeidsoppfolgingskontor))
             publiserMinSideBeskjedHvisIkkeReservert(kontaktinfo, aktorId, fnr)
 
             bigQueryClient.loggStartOppfolgingsperiode(

@@ -21,6 +21,8 @@ jobs:
   deploy:
     name: Deploy to ${{inputs.env}}
     runs-on: ubuntu-latest
+    env:
+      TZ: 'Europe/Oslo'
     environment: ${{ inputs.env }}
     steps:
       - uses: actions/checkout@v7

@@ -1,0 +1,1 @@
+ALTER TABLE oppfolgingsperiode ALTER COLUMN start_begrunnelse TYPE varchar;

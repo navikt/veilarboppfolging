@@ -9,7 +9,6 @@ import no.nav.common.types.identer.Fnr
 import no.nav.common.utils.fn.UnsafeRunnable
 import no.nav.veilarboppfolging.BadRequestException
 import no.nav.veilarboppfolging.ForbiddenException
-import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsBruker
 import no.nav.veilarboppfolging.kafka.KvpPeriode
 import no.nav.veilarboppfolging.kafka.KvpPeriodeEventType
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
@@ -25,7 +24,6 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchers.eq

@@ -177,7 +177,7 @@ class OppfolgingV3Controller(
     @PostMapping("/oppfolging/hent-veilederTilgang")
     fun hentVeilederTilgang(@RequestBody veilederRequest: VeilederRequest): VeilederTilgang? {
         authService.skalVereInternBruker()
-        return oppfolgingService.hentVeilederTilgang(veilederRequest.fnr)
+        return oppfolgingService.harVeilederTilgangTilBrukersEnhet(veilederRequest.fnr)
     }
 
     @PostMapping("/oppfolging/harFlereAktorIderMedOppfolging")
@@ -253,7 +253,7 @@ class OppfolgingV3Controller(
 
     private fun hentOppfolgingsperioder(aktorId: AktorId): List<OppfolgingPeriodeDTO> {
         return oppfolgingService.hentOppfolgingsperioder(aktorId)
-            .map { periode -> this.filtrerKvpPerioder(periode) }
+            .map { periode -> this.filtrerBortKvpPerioderBrukerIkkeHarTilgangTil(periode) }
             .map { oppfolgingsperiode -> this.mapTilDto(oppfolgingsperiode) }
     }
 
@@ -261,7 +261,7 @@ class OppfolgingV3Controller(
         return DtoMappers.tilOppfolgingPeriodeDTO(oppfolgingsperiode, !authService.erEksternBruker())
     }
 
-    private fun filtrerKvpPerioder(periode: OppfolgingsperiodeEntity): OppfolgingsperiodeEntity {
+    private fun filtrerBortKvpPerioderBrukerIkkeHarTilgangTil(periode: OppfolgingsperiodeEntity): OppfolgingsperiodeEntity {
         if (!authService.erInternBruker() || periode.kvpPerioder?.isEmpty() ?: true) {
             return periode
         }

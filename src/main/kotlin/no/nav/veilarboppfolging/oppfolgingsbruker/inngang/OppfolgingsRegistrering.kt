@@ -1,7 +1,6 @@
 package no.nav.veilarboppfolging.oppfolgingsbruker.inngang
 
 import no.nav.common.types.identer.AktorId
-import no.nav.common.types.identer.EnhetId
 import no.nav.common.types.identer.Fnr
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
@@ -31,6 +30,9 @@ sealed class OppfolgingsRegistrering(
         }
         fun dollyRegistrering(fnr: Fnr, aktorId: AktorId): DollyRegistrering {
             return DollyRegistrering(fnr, aktorId)
+        }
+        fun systemRegistrering(fnr: Fnr, aktorId: AktorId, registrant: Registrant, oppfolgingStartBegrunnelseFraSystem: OppfolgingStartBegrunnelseFraSystem, kontor: String?): SystemRegistrering {
+            return SystemRegistrering(fnr, aktorId, registrant, oppfolgingStartBegrunnelseFraSystem, kontor)
         }
     }
 }
@@ -65,10 +67,18 @@ data class ArenaSyncRegistrering(
     aktorId,
     if (formidlingsgruppe == Formidlingsgruppe.IARBS) OppfolgingStartBegrunnelse.ARENA_SYNC_IARBS
     else OppfolgingStartBegrunnelse.ARENA_SYNC_ARBS,
-    SystemRegistrant
+    SystemRegistrant()
 )
 
 data class DollyRegistrering(
     override val fnr: Fnr,
     override val aktorId: AktorId,
-) : OppfolgingsRegistrering(fnr, aktorId, OppfolgingStartBegrunnelse.MANUELL_REGISTRERING_VEILEDER, SystemRegistrant)
+) : OppfolgingsRegistrering(fnr, aktorId, OppfolgingStartBegrunnelse.MANUELL_REGISTRERING_VEILEDER, SystemRegistrant())
+
+data class SystemRegistrering(
+    override val fnr: Fnr,
+    override val aktorId: AktorId,
+    override val registrertAv: Registrant,
+    val oppfolgingStartBegrunnelseFraSystem: OppfolgingStartBegrunnelseFraSystem,
+    val kontor: String?,
+) : OppfolgingsRegistrering(fnr, aktorId, oppfolgingStartBegrunnelseFraSystem.toOppfolgingStartBegrunnelse(), registrertAv)

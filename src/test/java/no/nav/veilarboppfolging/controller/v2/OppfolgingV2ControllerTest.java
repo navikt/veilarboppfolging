@@ -2,7 +2,6 @@ package no.nav.veilarboppfolging.controller.v2;
 
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService;
-import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
 import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.service.AvsluttOppfolgingService;

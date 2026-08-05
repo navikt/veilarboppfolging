@@ -150,6 +150,8 @@ spec:
           namespace: paw
         - application: veilarbapi
           namespace: pto
+        - application: veilarbapi
+          namespace: dab
         - application: paw-proxy
           namespace: paw
         - application: veilarbperson
@@ -182,8 +184,12 @@ spec:
           namespace: dab
         - application: aktivitetsplan
           namespace: pto
+        - application: aktivitetsplan
+          namespace: dab
         - application: arbeidsrettet-dialog
           namespace: pto
+        - application: arbeidsrettet-dialog
+          namespace: dab
         - application: aktivitet-arena-acl
           namespace: dab
         - application: start-samtale

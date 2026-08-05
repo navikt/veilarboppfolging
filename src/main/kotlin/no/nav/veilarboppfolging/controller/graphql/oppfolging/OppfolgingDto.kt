@@ -13,4 +13,10 @@ data class OppfolgingsperiodeDto(
     val id: String,
     val startetBegrunnelse: String?,
     val avsluttetAv: String?,
+    val kvpPerioder: List<KvpPeriodeDto>
+)
+
+data class KvpPeriodeDto(
+    val startTidspunkt: String,
+    val sluttTidspunkt: String?
 )

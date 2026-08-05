@@ -17,6 +17,7 @@ type VeilederTilgang {
     harAktiveTiltaksdeltakelserVedFlyttingTilEgetKontor: Boolean
 }
 
+
 enum UtmeldingskandidatTag {
     ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
     ARBEIDSSOKERPERIODE_AVSLUTTET_SVARTE_NEI_I_BEKREFTELSE,
@@ -111,6 +112,7 @@ type BrukerStatusDto {
     arena: BrukerStatusArenaDto
     veilederTilordning: VeilederTilordningDto
     harAktiveTiltaksdeltakelser: Boolean!
+    ident: String!
 }
 
 type BrukerStatusArenaDto {
@@ -155,5 +157,11 @@ type Oppfolgingsperiode {
     sluttTidspunkt: String
     id: String!
     startetBegrunnelse: OppfolgingStartetBegrunnelse
-    avsluttetAv: String
+    avsluttetAv: String,
+    kvpPerioder: [KvpPeriode]
+}
+
+type KvpPeriode {
+    startTidspunkt: String!
+    sluttTidspunkt: String
 }

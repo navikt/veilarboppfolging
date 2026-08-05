@@ -30,6 +30,7 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.KanStarteOppfolgingEks
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.KanStarteOppfolgingSjekk.Companion.sjekkKanStarteOppfolgingPaBrukerForVeileder
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.toKanStarteOppfolging
 import no.nav.veilarboppfolging.repository.*
+import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity
 import no.nav.veilarboppfolging.service.AuthService
 import no.nav.veilarboppfolging.service.ManuellStatusService
@@ -42,7 +43,9 @@ import org.springframework.graphql.data.method.annotation.SchemaMapping
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Controller
 import org.springframework.web.server.ResponseStatusException
+import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import kotlin.jvm.optionals.getOrDefault
 import kotlin.jvm.optionals.getOrNull
 
 enum class TilgangResultat {
@@ -62,6 +65,7 @@ class GraphqlController(
     private val authService: AuthService,
     private val poaoTilgangClient: PoaoTilgangClient,
     private val oppfolgingsPeriodeRepository: OppfolgingsPeriodeRepository,
+    private val oppfolgingsService: OppfolgingService,
     private val pdlFolkeregisterStatusClient: PdlFolkeregisterStatusClient,
     private val arenaService: ArenaOppfolgingService,
     private val manuellService: ManuellStatusService,
@@ -194,7 +198,9 @@ class GraphqlController(
             .put("fnr", fnr)
             .put("aktorId", aktorId)
         return result.localContext(localContext)
-            .data(BrukerStatusDto())
+            .data(BrukerStatusDto(
+                ident = fnr.get()
+            ))
             .build()
     }
 
@@ -291,7 +297,7 @@ class GraphqlController(
     }
 
     @SchemaMapping(typeName = "BrukerStatusDto", field = "manuell")
-    fun manuell(brukerStatusDto: BrukerStatusDto, @LocalContextValue aktorId: AktorId): BrukerStatusManuellDto? {
+    fun manuell(brukerStatusDto: BrukerStatusDto, @LocalContextValue aktorId: AktorId): BrukerStatusManuellDto {
         return manuellService.hentManuellStatus(aktorId)
             .map { BrukerStatusManuellDto(
                 it.manuell,
@@ -300,7 +306,13 @@ class GraphqlController(
                 it.opprettetAv.toString(),
                 it.opprettetAvBrukerId
             ) }
-            .getOrNull()
+            .getOrDefault(BrukerStatusManuellDto(
+                erManuell = false,
+                tidspunkt = null,
+                begrunnelse = null,
+                endretAvType = null,
+                endretAvIdent = null
+            ))
     }
 
     @SchemaMapping(typeName = "BrukerStatusDto", field = "erKontorsperret")
@@ -377,7 +389,7 @@ class GraphqlController(
 
         val innloggetBrukerFnr = authService.innloggetBrukerIdent
         val aktorId = aktorOppslagClient.hentAktorId(Fnr.of(innloggetBrukerFnr))
-        return oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId)
+        return oppfolgingsService.hentGjeldendeOppfolgingsperiode(aktorId)
             .map { it.toOppfolgingsperiodeDto() }
             .getOrNull()
     }
@@ -401,7 +413,8 @@ class GraphqlController(
         val result = DataFetcherResult.newResult<List<OppfolgingsperiodeDto>>()
         val eksternBrukerId = sjekkLeseTilgang(fnr)
         val aktorId = eksternBrukerId.getAktorId()
-        return oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId)
+
+        return oppfolgingsService.hentOppfolgingsperioderMedKvp(aktorId)
             .map { it.toOppfolgingsperiodeDto() }
             .let { result.data(it).build() }
     }
@@ -467,15 +480,23 @@ object AdGruppeNavn {
     const val MODIA_GENERELL = "0000-GA-BD06_ModiaGenerellTilgang"
 }
 
+fun ZonedDateTime.toISOString(): String = this.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+
 fun OppfolgingsperiodeEntity.toOppfolgingsperiodeDto(): OppfolgingsperiodeDto {
     return OppfolgingsperiodeDto(
-        startTidspunkt = startDato.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME),
-        sluttTidspunkt = sluttDato?.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME),
+        startTidspunkt = startDato.toISOString(),
+        sluttTidspunkt = sluttDato?.toISOString(),
         id = uuid.toString(),
         startetBegrunnelse?.name,
+        kvpPerioder = this.kvpPerioder.map { it.toKvpPeriodeDto() },
         avsluttetAv = this.avsluttetAv
     )
 }
+
+private fun KvpPeriodeEntity.toKvpPeriodeDto() = KvpPeriodeDto(
+    startTidspunkt = this.opprettetDato.toISOString(),
+    sluttTidspunkt = this.avsluttetDato?.toISOString()
+)
 
 
 sealed class Tilgang

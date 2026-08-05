@@ -1,6 +1,7 @@
 package no.nav.veilarboppfolging
 
 import jakarta.servlet.http.HttpServletResponse
+import no.nav.common.client.aktorregister.IngenGjeldendeIdentException
 import org.apache.arrow.flatbuf.Null
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
@@ -60,6 +61,12 @@ class DefaultExceptionHandler {
         response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Feil i kall mot annet system")
     }
 
+    @ExceptionHandler(value = [IngenGjeldendeIdentException::class])
+    fun mapException(ex: IngenGjeldendeIdentException, response: HttpServletResponse) {
+        logger.warn("Ingen gjeldende ident funnet", ex)
+        response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Feil i kall mot annet system")
+    }
+
     @ExceptionHandler(value = [NullPointerException::class])
     fun mapException(ex: NullPointerException, response: HttpServletResponse) {
         logger.error("Fikk en NullPointerException", ex)
@@ -68,6 +75,7 @@ class DefaultExceptionHandler {
 
     @ExceptionHandler(value = [Exception::class])
     fun mapException(ex: Exception, response: HttpServletResponse) {
+        logger.error("Uhåndtert feil", ex)
         response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value())
     }
 

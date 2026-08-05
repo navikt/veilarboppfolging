@@ -14,7 +14,6 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ArenaIservKanIkkeReakti
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.KanAvsluttesInput
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.KunneAvsluttes
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
-import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity
 import org.junit.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource

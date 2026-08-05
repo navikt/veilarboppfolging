@@ -13,7 +13,6 @@ import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolginsBrukerOppslag
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsStatus
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient
 import no.nav.veilarboppfolging.kafka.TestUtils.oppfølgingsBrukerEndret
-import no.nav.veilarboppfolging.oppfolgingsbruker.SystemRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingTilstandOppslagResult
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.GetOppfolginsstatusFailure
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.GetOppfolginsstatusSuccess
@@ -40,6 +39,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import no.nav.veilarboppfolging.config.ApplicationConfig.SYSTEM_USER_NAME
 import tools.jackson.databind.DeserializationFeature
 import tools.jackson.databind.cfg.DateTimeFeature
 import tools.jackson.databind.json.JsonMapper
@@ -364,7 +364,7 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
         val periode = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId)
         assert(statusEtterEndring.isPresent)
         assertEquals(periode.size, 1)
-        assertEquals(periode.first().avsluttetAv, SystemRegistrant.SYSTEM_REGISTRANT_NAME)
+        assertEquals(periode.first().avsluttetAv, SYSTEM_USER_NAME)
         assertEquals(periode.first().begrunnelse, ArenaIservKanIkkeReaktiveres.BEGRUNNELSE)
         assertThat(statusEtterEndring.get().underOppfolging).isFalse()
     }

@@ -8,4 +8,5 @@ data class BrukerStatusDto(
     val kontorSperre: KontorSperre? = null,
     val tilordnetVeileder: VeilederTilordningDto? = null,
     val harAktiveTiltaksdeltakelser: Boolean? = null,
+    val ident: String? = null
 )

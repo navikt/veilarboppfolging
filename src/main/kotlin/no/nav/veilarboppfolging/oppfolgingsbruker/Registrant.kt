@@ -16,11 +16,11 @@ class BrukerRegistrant(
     override fun getType() = StartetAvType.BRUKER
 }
 
-object SystemRegistrant : Registrant() {
-    override fun getIdent(): String = SYSTEM_REGISTRANT_NAME
+class SystemRegistrant(
+    val systemnavn: String = SYSTEM_USER_NAME
+) : Registrant() {
+    override fun getIdent(): String = systemnavn
     override fun getType() = StartetAvType.SYSTEM
-
-    const val SYSTEM_REGISTRANT_NAME = SYSTEM_USER_NAME
 }
 
 class VeilederRegistrant(
@@ -30,9 +30,9 @@ class VeilederRegistrant(
     override fun getType() = StartetAvType.VEILEDER
 }
 
-fun StartetAvType.toRegistrant(navIdent: NavIdent, fnr: Fnr): Registrant {
+fun StartetAvType.toRegistrant(navIdent: NavIdent, fnr: Fnr, systemnavn: String = SYSTEM_USER_NAME): Registrant {
     return when (this) {
-        StartetAvType.SYSTEM -> SystemRegistrant
+        StartetAvType.SYSTEM -> SystemRegistrant(systemnavn)
         StartetAvType.BRUKER -> BrukerRegistrant(fnr)
         StartetAvType.VEILEDER -> VeilederRegistrant(navIdent)
     }

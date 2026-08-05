@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.Cacheable;
 
+import java.net.SocketTimeoutException;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
@@ -71,6 +72,9 @@ public class DigdirClientImpl implements DigdirClient {
 			RestUtils.throwIfNotSuccessful(response);
 			return RestUtils.parseJsonResponse(response, KrrPersonerResponseDto.class)
 					.flatMap(KrrPersonerResponseDto::assertSinglePersonToKrrData);
+		} catch (SocketTimeoutException e) {
+			log.error("Timeout mot Digdir-krr-proxy ved henting av KRR-data", e);
+			return empty();
 		} catch (Exception e) {
 			log.error("Feil under henting av data fra Digdir_KRR", e);
 			return empty();

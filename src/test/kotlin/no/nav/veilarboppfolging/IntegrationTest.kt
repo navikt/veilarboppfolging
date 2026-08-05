@@ -21,6 +21,7 @@ import no.nav.poao_tilgang.api.dto.response.Diskresjonskode
 import no.nav.poao_tilgang.api.dto.response.TilgangsattributterResponse
 import no.nav.poao_tilgang.client.Decision
 import no.nav.poao_tilgang.client.NavAnsattTilgangTilEksternBrukerPolicyInput
+import no.nav.poao_tilgang.client.NavAnsattTilgangTilNavEnhetMedSperrePolicyInput
 import no.nav.poao_tilgang.client.NavAnsattTilgangTilNavEnhetPolicyInput
 import no.nav.poao_tilgang.client.PoaoTilgangClient
 import no.nav.poao_tilgang.client.TilgangType
@@ -45,6 +46,7 @@ import no.nav.veilarboppfolging.client.tiltakshistorikk.TiltakshistorikkClient
 import no.nav.veilarboppfolging.client.ungdomsprogram.UngdomsprogramClient
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolginsBrukerOppslagResult
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaRegistreringResultat
+import no.nav.veilarboppfolging.client.veilarbarena.RegistrerIArenaError
 import no.nav.veilarboppfolging.client.veilarbarena.RegistrerIArenaSuccess
 import no.nav.veilarboppfolging.client.veilarbarena.RegistrerIkkeArbeidssokerDto
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsBruker
@@ -52,8 +54,9 @@ import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsStatu
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient
 import no.nav.veilarboppfolging.config.EnvironmentProperties
 import no.nav.veilarboppfolging.config.KafkaProperties
-import no.nav.veilarboppfolging.controller.OppfolgingController
+import no.nav.veilarboppfolging.controller.OppfolgingV3Controller
 import no.nav.veilarboppfolging.controller.SakController
+import no.nav.veilarboppfolging.controller.v3.request.OppfolgingRequest
 import no.nav.veilarboppfolging.kandidatForUtmelding.ArbeidssøkerPeriodeAvsluttet
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingHendelseAvsluttetAv
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingHendelseType
@@ -98,6 +101,7 @@ import org.springframework.kafka.test.context.EmbeddedKafka
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.web.context.WebApplicationContext
+import java.time.temporal.ChronoUnit
 
 @EmbeddedKafka(partitions = 1)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -159,7 +163,7 @@ open class IntegrationTest {
     lateinit var authService: AuthService
 
     @Autowired
-    lateinit var oppfolgingController: OppfolgingController
+    lateinit var oppfolgingV3Controller: OppfolgingV3Controller
 
     @Autowired
     lateinit var oppfolgingService: OppfolgingService
@@ -279,8 +283,11 @@ open class IntegrationTest {
         veilederTilordningerRepository.upsertVeilederTilordning(aktorId, veilederIdent.get())
     }
 
-    fun setBrukerUnderKvp(aktorId: AktorId, enhetId: String, veilederId: String) {
-        kvpRepository.startKvp(aktorId, enhetId, veilederId, "fordi", ZonedDateTime.now())
+    fun setBrukerUnderKvp(aktorId: AktorId, enhetId: String, veilederId: String): ZonedDateTime {
+        // Running locally and in pipeline don't always return same precision which can make tests fail
+        val startTidspunkt = ZonedDateTime.now().truncatedTo(ChronoUnit.MILLIS)
+        kvpRepository.startKvp(aktorId, enhetId, veilederId, "fordi", startTidspunkt)
+        return startTidspunkt
     }
 
     fun setLocalArenaOppfolging(aktorId: AktorId, formidlingsgruppe: Formidlingsgruppe = Formidlingsgruppe.IARBS, enhet: EnhetId? = null) {
@@ -310,7 +317,7 @@ open class IntegrationTest {
         ))
     }
 
-    fun hentOppfolgingsperioder(fnr: Fnr) = oppfolgingController.hentOppfolgingsperioder(fnr)
+    fun hentOppfolgingsperioder(fnr: Fnr) = oppfolgingV3Controller.hentOppfolgingsperioder(OppfolgingRequest(fnr))
 
     fun avsluttOppfolgingManueltSomVeileder(aktorId: AktorId, veileder: NavIdent = NavIdent("veileder"), begrunnelse: String = "Begrunnelse") {
         avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(
@@ -321,7 +328,7 @@ open class IntegrationTest {
     fun mockSytemBrukerAuthOk(aktørId: AktorId, fnr: Fnr) {
         val claims = JWTClaimsSet.Builder()
             .issuer("microsoftonline.com")
-            .claim("azp_name", "cluster:team:veilarbregistrering")
+            .claim("azp_name", "cluster:team:veilarbvedtaksstotte")
             .claim("roles", listOf("access_as_application"))
             .build()
 
@@ -345,7 +352,7 @@ open class IntegrationTest {
     fun mockInternBrukerAuthOk(veilederIOD: UUID,aktørId: AktorId, fnr: Fnr, navIdent: NavIdent = NavIdent("A123456")) {
         val claims = JWTClaimsSet.Builder()
             .issuer("microsoftonline.com")
-            .claim("azp_name", "cluster:team:veilarbregistrering")
+            .claim("azp_name", "cluster:team:veilarbvedtaksstotte")
             .claim("oid", veilederIOD.toString())
             .build()
 
@@ -359,6 +366,7 @@ open class IntegrationTest {
 //        `when`(authContextHolder).thenReturn(Optional.of(UserRole.INTERN))
         `when`(authContextHolder.erInternBruker()).thenReturn(true)
         `when`(authContextHolder.erEksternBruker()).thenReturn(false)
+        `when`(authContextHolder.erSystemBruker()).thenReturn(false)
         `when`(aktorOppslagClient.hentAktorId(fnr)).thenReturn(aktørId)
         `when`(aktorOppslagClient.hentFnr(aktørId)).thenReturn(fnr)
         `when`(authContextHolder.uid).thenReturn(Optional.of(navIdent.get()))
@@ -431,6 +439,11 @@ open class IntegrationTest {
         doReturn(ApiResult.success(result)).`when`(poaoTilgangClient).evaluatePolicy(policyInput)
     }
 
+    fun mockPoaoTilgangHarTilgangTilEnhetMedSperre(veilederUuid: UUID, enhetId: EnhetId, result: Decision = Decision.Permit) {
+        val policyInput = NavAnsattTilgangTilNavEnhetMedSperrePolicyInput(veilederUuid, enhetId.get())
+        doReturn(ApiResult.success(result)).`when`(poaoTilgangClient).evaluatePolicy(policyInput)
+    }
+
     fun mockNorgEnhetsNavn(enhetsNr: String, enhetsNavn: String) {
         val enhet = Enhet().also { it.navn = enhetsNavn }
         `when`(norg2Client.hentEnhet(enhetsNr)).thenReturn(enhet)
@@ -494,6 +507,15 @@ open class IntegrationTest {
                     "Bruker reaktivert i Arena",
                     ArenaRegistreringResultat.OK_REGISTRERT_I_ARENA
                 )
+            )
+        )
+    }
+
+    fun mockArenaOppfolgingServiceRegistrerIkkeArbeidssokerTekniskFeil(fnr: Fnr) {
+        `when`(arenaOppfolgingService.registrerIkkeArbeidssoker(fnr)).thenReturn(
+            RegistrerIArenaError(
+                "Teknisk feil ved registrering av bruker i Arena",
+                RuntimeException("Teknisk feil ved registrering av bruker i Arena")
             )
         )
     }

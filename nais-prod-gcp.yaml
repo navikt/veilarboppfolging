@@ -20,7 +20,7 @@ spec:
         permission: READWRITE
     sqlInstances:
       - name: veilarboppfolging
-        type: POSTGRES_14
+        type: POSTGRES_18
         tier: db-custom-2-13312
         diskType: SSD
         diskAutoresize: true
@@ -151,6 +151,8 @@ spec:
         - application: arbeidssokerregistrering-for-veileder
           namespace: paw
         - application: veilarbapi
+          namespace: dab
+        - application: veilarbapi
           namespace: pto
         - application: paw-proxy
           namespace: paw
@@ -187,6 +189,10 @@ spec:
           namespace: dab
         - application: aktivitetsplan
           namespace: pto
+        - application: aktivitetsplan
+          namespace: dab
+        - application: arbeidsrettet-dialog
+          namespace: dab
         - application: arbeidsrettet-dialog
           namespace: pto
         - application: aktivitet-arena-acl

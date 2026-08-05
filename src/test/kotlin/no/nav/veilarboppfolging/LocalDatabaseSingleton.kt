@@ -6,8 +6,12 @@ import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 
 object LocalDatabaseSingleton {
-    val postgres = EmbeddedPostgres.start().postgresDatabase.also {
-        DbTestUtils.initDb(it)
-    }
+    val postgres = EmbeddedPostgres.builder()
+        .setServerConfig("wal_level", "logical")
+        .start()
+        .postgresDatabase
+        .also {
+            DbTestUtils.initDb(it)
+        }
     val jdbcTemplate = JdbcTemplate(postgres)
 }

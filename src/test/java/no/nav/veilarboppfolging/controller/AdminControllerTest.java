@@ -63,7 +63,7 @@ public class AdminControllerTest {
     private AktorOppslagClient aktorOppslagClient;
 
     @MockitoBean
-    private KandidatForUtmeldingService kandidatForUtmeldingService;
+    private RepubliserOppfolgingshendelseService republiserOppfolgingshendelseService;
 
     @Test
     public void republiserOppfolgingsperioder__should_return_403_if_user_missing() throws Exception {

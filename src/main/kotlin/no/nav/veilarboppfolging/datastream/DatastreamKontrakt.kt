@@ -44,6 +44,7 @@ object DatastreamKontrakt {
                         "ARENA_SYNC_IARBS",
                         "MANUELL_REGISTRERING_BRUKER",
                         "MANUELL_REGISTRERING_VEILEDER",
+                        "SYKMELDT_UTEN_ARBEIDSGIVER_4_UKER",
                     )
                 ),
                 Kolonne("startet_av"),
@@ -83,5 +84,27 @@ object DatastreamKontrakt {
                 "sist_tilordnet",
             ),
         ),
+        Tabell(
+            navn = "ao_kontor",
+            kolonner = listOf(
+                Kolonne("ident"),
+                Kolonne("aktor_id"),
+                Kolonne("oppfolgingsperiode_id"),
+                Kolonne("kontor_id"),
+                Kolonne("created_at"),
+                Kolonne("updated_at"),
+            )
+        ),
+        Tabell(
+            navn = "veileder_tilordninger",
+            kolonner = listOf(
+                Kolonne("aktor_id"),
+                Kolonne("veileder"),
+                Kolonne("sist_tilordnet"),
+                Kolonne("tilordning_seq"),
+                Kolonne("tilordnet_av_veileder"),
+                Kolonne("rowid"),
+            )
+        )
     )
 }

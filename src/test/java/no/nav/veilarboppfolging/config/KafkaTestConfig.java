@@ -1,6 +1,7 @@
 package no.nav.veilarboppfolging.config;
 
 import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 import net.javacrumbs.shedlock.core.LockProvider;
 import no.nav.common.job.leader_election.LeaderElectionClient;
 import no.nav.common.kafka.consumer.KafkaConsumerClient;
@@ -118,5 +119,12 @@ public class KafkaTestConfig {
         consumerClient.start();
         consumerRecordProcessor.start();
         producerRecordProcessor.start();
+    }
+
+    @PreDestroy
+    public void stop() {
+        producerRecordProcessor.close();
+        consumerRecordProcessor.stop();
+        consumerClient.stop();
     }
 }

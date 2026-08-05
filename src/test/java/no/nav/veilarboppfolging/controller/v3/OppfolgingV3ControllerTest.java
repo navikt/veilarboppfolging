@@ -258,7 +258,7 @@ class OppfolgingV3ControllerTest {
 
     @Test
     void hentVeilederTilgang_skal_returnere_veiledertilgang() throws Exception {
-        when(oppfolgingService.hentVeilederTilgang(TEST_FNR)).thenReturn(new VeilederTilgang(true));
+        when(oppfolgingService.harVeilederTilgangTilBrukersEnhet(TEST_FNR)).thenReturn(new VeilederTilgang(true));
 
         String expectedJson = "{\"tilgangTilBrukersKontor\":true}";
         mockMvc.perform(post("/api/v3/oppfolging/hent-veilederTilgang")

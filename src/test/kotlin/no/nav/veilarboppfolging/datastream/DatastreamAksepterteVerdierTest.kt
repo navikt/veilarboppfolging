@@ -39,7 +39,7 @@ class DatastreamAksepterteVerdierTest {
         verifiserSnapshot(
             tabellNavn = "oppfolgingstatus",
             kolonneNavn = "formidlingsgruppe",
-            faktiskeVerdier = Formidlingsgruppe.values().map { it.name }.toSet(),
+            faktiskeVerdier = Formidlingsgruppe.entries.map { it.name }.toSet(),
         )
     }
 
@@ -48,7 +48,7 @@ class DatastreamAksepterteVerdierTest {
         verifiserSnapshot(
             tabellNavn = "oppfolgingstatus",
             kolonneNavn = "kvalifiseringsgruppe",
-            faktiskeVerdier = Kvalifiseringsgruppe.values().map { it.name }.toSet(),
+            faktiskeVerdier = Kvalifiseringsgruppe.entries.map { it.name }.toSet(),
         )
     }
 
@@ -57,7 +57,7 @@ class DatastreamAksepterteVerdierTest {
         verifiserSnapshot(
             tabellNavn = "oppfolgingstatus",
             kolonneNavn = "hovedmaal",
-            faktiskeVerdier = Hovedmaal.values().map { it.name }.toSet(),
+            faktiskeVerdier = Hovedmaal.entries.map { it.name }.toSet(),
         )
     }
 
@@ -70,7 +70,7 @@ class DatastreamAksepterteVerdierTest {
         verifiserSnapshot(
             tabellNavn = "oppfolgingsperiode",
             kolonneNavn = "start_begrunnelse",
-            faktiskeVerdier = OppfolgingStartBegrunnelse.values().map { it.name }.toSet(),
+            faktiskeVerdier = OppfolgingStartBegrunnelse.entries.map { it.name }.toSet(),
         )
     }
 
@@ -79,7 +79,7 @@ class DatastreamAksepterteVerdierTest {
         verifiserSnapshot(
             tabellNavn = "oppfolgingsperiode",
             kolonneNavn = "startet_av_type",
-            faktiskeVerdier = StartetAvType.values().map { it.name }.toSet(),
+            faktiskeVerdier = StartetAvType.entries.map { it.name }.toSet(),
         )
     }
 }
