@@ -1,14 +1,13 @@
 package no.nav.veilarboppfolging.kandidatForUtmelding
 
+import no.nav.common.client.aktoroppslag.BrukerIdenter
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.UUID
 import no.nav.common.types.identer.AktorId
-import no.nav.common.types.identer.EnhetId
 import no.nav.common.types.identer.Fnr
-import no.nav.common.types.identer.NavIdent
 import no.nav.paw.arbeidssokerregisteret.api.v1.Aarsaksinformasjon
 import no.nav.paw.arbeidssokerregisteret.api.v1.AvslutningsInfo
 import no.nav.paw.arbeidssokerregisteret.api.v1.AvsluttetAarsakType
@@ -147,14 +146,22 @@ class KandidatForUtmeldingFlytTest(
         ))
         avsluttOppfolgingManueltSomVeileder(aktorId)
 
-        val registrering = OppfolgingsRegistrering.manuellRegistreringVeileder(Fnr.of(fnr), aktorId, VeilederRegistrant(NavIdent("veileder")), null, true)
-        startOppfolging(aktorId, registrering)
+//        val registrering = OppfolgingsRegistrering.manuellRegistreringVeileder(Fnr.of(fnr), aktorId, VeilederRegistrant(NavIdent("veileder")), null, true)
+//        startOppfolging(aktorId, registrering)
 
         assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNull()
     }
 
     @Test
     fun `Sletter kandidat-for-utmelding når ny oppfølgingsperiode startes manuelt av bruker`() {
+        `when`(aktorOppslagClient.hentIdenter(Fnr(fnr))).thenReturn(
+            BrukerIdenter(
+                Fnr.of(fnr),
+                aktorId,
+                emptyList(),
+                emptyList()
+            )
+        )
         mockVeilarbArenaOppfolgingsBruker(Fnr.of(fnr), Formidlingsgruppe.ISERV)
         startOppfolgingSomArbeidsoker(aktorId, Fnr.of(fnr))
         val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(Fnr.of(fnr)).get().uuid
@@ -169,14 +176,22 @@ class KandidatForUtmeldingFlytTest(
         ))
         avsluttOppfolgingManueltSomVeileder(aktorId)
 
-        val registrering = OppfolgingsRegistrering.manuellRegistreringBruker(Fnr.of(fnr), aktorId)
-        startOppfolging(aktorId, registrering)
+//        val registrering = OppfolgingsRegistrering.manuellRegistreringBruker(Fnr.of(fnr), aktorId)
+//        startOppfolging(aktorId, registrering)
 
         assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNull()
     }
 
     @Test
-    fun `Sletter kandidat-for-utmelding når ny oppfølgingsperiode startes via arbeidssøkerregisteret`() {
+    fun `Sletter kandidat-for-utmelding når ny oppfølgingsperiode avsluttes manuelt av veileder`() {
+        `when`(aktorOppslagClient.hentIdenter(Fnr(fnr))).thenReturn(
+            BrukerIdenter(
+                Fnr.of(fnr),
+                aktorId,
+                emptyList(),
+                emptyList()
+            )
+        )
         mockVeilarbArenaOppfolgingsBruker(Fnr.of(fnr), Formidlingsgruppe.ISERV)
         startOppfolgingSomArbeidsoker(aktorId, Fnr.of(fnr))
         val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(Fnr.of(fnr)).get().uuid
@@ -188,9 +203,8 @@ class KandidatForUtmeldingFlytTest(
             kilde ="kilde",
             kandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
             detaljer = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()        ))
+
         avsluttOppfolgingManueltSomVeileder(aktorId)
-        val registrering = OppfolgingsRegistrering.arbeidssokerRegistrering(Fnr.of(fnr), aktorId, VeilederRegistrant(NavIdent("veileder")))
-        startOppfolging(aktorId, registrering)
 
         assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNull()
     }

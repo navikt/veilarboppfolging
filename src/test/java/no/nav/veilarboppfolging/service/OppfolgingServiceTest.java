@@ -1,5 +1,7 @@
 package no.nav.veilarboppfolging.service;
 
+import no.nav.common.client.aktoroppslag.AktorOppslagClient;
+import no.nav.common.client.aktoroppslag.BrukerIdenter;
 import no.nav.common.client.aktorregister.IngenGjeldendeIdentException;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
@@ -77,6 +79,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     private UngdomsprogramClient ungdomsprogramClient = mock(UngdomsprogramClient.class);
     private ArbeidssoekerregisteretClient arbeidssoekerregisteretClient = mock(ArbeidssoekerregisteretClient.class);
     private AapClient aapClient = mock(AapClient.class);
+    private AktorOppslagClient aktorOppslagClient = mock(AktorOppslagClient.class);
     private OppfolgingsStatusRepository oppfolgingsStatusRepository;
     private OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
     private OppfolgingService oppfolgingService;
@@ -115,7 +118,8 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
                 bigQueryClient,
                 transactor,
                 arbeidsoppfolgingskontorRepository,
-                kandidatForUtmeldingRepository
+                kandidatForUtmeldingRepository,
+                aktorOppslagClient
         );
         oppfolgingService = new OppfolgingService(
                 kvpService,
@@ -128,7 +132,8 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
                 new MaalRepository(db, transactor),
                 new BrukerOppslagFlereOppfolgingAktorRepository(db),
                 arbeidsoppfolgingsKontorService,
-                tiltakshistorikkClient);
+                tiltakshistorikkClient,
+                aktorOppslagClient);
 
         startOppfolgingService = new StartOppfolgingService(
                 manuellStatusService,
@@ -146,11 +151,12 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
         when(authService.getAktorIdOrThrow(fnr)).thenReturn(aktorId);
         when(authService.getFnrOrThrow(aktorId)).thenReturn(fnr);
+        when(aktorOppslagClient.hentIdenter(fnr)).thenReturn(new BrukerIdenter(fnr, aktorId, List.of(), List.of()));
         stubArenaTilstand();
         stubArenaStatus();
         when(arbeidsoppfolgingsKontorService.hentOppfolgingsEnhetId(fnr)).thenReturn(EnhetId.of(ENHET));
         when(manuellStatusService.hentDigdirKontaktinfo(fnr)).thenReturn(new KRRData(false, fnr.get(), false, false));
-        when(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(fnr.get())).thenReturn(false);
+        when(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(List.of(fnr))).thenReturn(false);
     }
 
     @Test
@@ -298,7 +304,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
     @Test
     public void skal_ikke_avslutte_oppfolging_hvis_aktive_tiltaksdeltakelser() {
-        when(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(fnr.get())).thenReturn(true);
+        when(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(List.of(fnr))).thenReturn(true);
         settTilstandFormidlingsgruppe("IARBS");
         oppfolgingsStatusRepository.opprettOppfolging(aktorId);
         startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.Companion.arbeidssokerRegistrering(fnr, aktorId, new BrukerRegistrant(fnr)));
@@ -316,7 +322,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
     @Test
     public void skal_ikke_avslutte_oppfolging_hvis_deltaker_i_ungdomsprogrammet() {
-        when(ungdomsprogramClient.erDeltakerIUngdomsprogrammet(fnr.get())).thenReturn(true);
+        when(ungdomsprogramClient.erDeltakerIUngdomsprogrammet(fnr)).thenReturn(true);
         settTilstandFormidlingsgruppe("IARBS");
         oppfolgingsStatusRepository.opprettOppfolging(aktorId);
         startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.Companion.arbeidssokerRegistrering(fnr, aktorId, new BrukerRegistrant(fnr)));
@@ -485,7 +491,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
     @Test
     public void kanIkkeAvslutteHvisManHarAktiveTiltaksdeltakelser() {
-        when(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(fnr.get())).thenReturn(true);
+        when(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(List.of(fnr))).thenReturn(true);
         startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.Companion.arbeidssokerRegistrering(fnr, aktorId, new VeilederRegistrant(NAV_IDENT)));
         assertUnderOppfolgingLagret(aktorId);
 
@@ -499,7 +505,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
     @Test
     public void kanIkkeAvslutteHvisManErDeltakerIUngdomsprogrammet() {
-        when(ungdomsprogramClient.erDeltakerIUngdomsprogrammet(fnr.get())).thenReturn(true);
+        when(ungdomsprogramClient.erDeltakerIUngdomsprogrammet(fnr)).thenReturn(true);
         startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.Companion.arbeidssokerRegistrering(fnr, aktorId, new VeilederRegistrant(NAV_IDENT)));
         assertUnderOppfolgingLagret(aktorId);
 
