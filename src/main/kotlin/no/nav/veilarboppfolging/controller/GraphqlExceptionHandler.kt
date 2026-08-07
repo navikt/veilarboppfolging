@@ -49,7 +49,7 @@ class GraphqlExceptionHandler: DataFetcherExceptionResolver {
                 .errorType(ErrorType.ValidationError)
                 .build()
             is GraphqlError -> GraphqlErrorBuilder.newError(env)
-                .message(ex.toString())
+                .message(ex.message)
                 .errorType(ex.errorType)
                 .build()
             else -> GraphqlErrorBuilder.newError(env)
