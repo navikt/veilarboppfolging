@@ -4,6 +4,7 @@ import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.givenThat
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo
 import com.github.tomakehurst.wiremock.junit5.WireMockTest
+import no.nav.common.types.identer.Fnr
 import kotlin.test.assertEquals
 import okhttp3.OkHttpClient
 import org.intellij.lang.annotations.Language
@@ -31,7 +32,7 @@ class TiltakshistorikkClientTest {
         )
         val tiltakshistorikkClient = TiltakshistorikkClient(apiUrl, { "token" }, OkHttpClient.Builder().build())
 
-        assertEquals(false, tiltakshistorikkClient.harAktiveTiltaksdeltakelser("12345678910"))
+        assertEquals(false, tiltakshistorikkClient.harAktiveTiltaksdeltakelser(listOf(Fnr.of("12345678910"))))
     }
 
     @Test
@@ -87,7 +88,7 @@ class TiltakshistorikkClientTest {
         )
         val tiltakshistorikkClient = TiltakshistorikkClient(apiUrl, { "token" }, OkHttpClient.Builder().build())
 
-        assertEquals(false, tiltakshistorikkClient.harAktiveTiltaksdeltakelser("12345678910"))
+        assertEquals(false, tiltakshistorikkClient.harAktiveTiltaksdeltakelser(listOf(Fnr.of("12345678910"))))
     }
 
     @Test
@@ -131,6 +132,6 @@ class TiltakshistorikkClientTest {
         )
         val tiltakshistorikkClient = TiltakshistorikkClient(apiUrl, { "token" }, OkHttpClient.Builder().build())
 
-        assertEquals(true, tiltakshistorikkClient.harAktiveTiltaksdeltakelser("12345678910"))
+        assertEquals(true, tiltakshistorikkClient.harAktiveTiltaksdeltakelser(listOf(Fnr.of("12345678910"))))
     }
 }

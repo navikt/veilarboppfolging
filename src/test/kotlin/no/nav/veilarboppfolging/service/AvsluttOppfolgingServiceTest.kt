@@ -1,5 +1,7 @@
 package no.nav.veilarboppfolging.service
 
+import no.nav.common.client.aktoroppslag.AktorOppslagClient
+import no.nav.common.client.aktoroppslag.BrukerIdenter
 import java.util.Optional
 import no.nav.veilarboppfolging.client.aap.AapClient
 import no.nav.veilarboppfolging.client.arbeidssoekerregisteret.ArbeidssoekerregisteretClient
@@ -44,6 +46,7 @@ class AvsluttOppfolgingServiceTest {
     private val transactionTemplate: TransactionTemplate = Mockito.mock(TransactionTemplate::class.java)
     private val arbeidsoppfolgingskontorRepository: ArbeidsoppfolgingskontorRepository = Mockito.mock(ArbeidsoppfolgingskontorRepository::class.java)
     private val kandidatForUtmeldingRepository: KandidatForUtmeldingRepository = Mockito.mock(KandidatForUtmeldingRepository::class.java)
+    private val aktorOppslagClient: AktorOppslagClient = Mockito.mock(AktorOppslagClient::class.java)
 
     private fun <T> any(type: Class<T>): T = Mockito.any<T>(type)
 
@@ -57,6 +60,7 @@ class AvsluttOppfolgingServiceTest {
         transactor = transactionTemplate,
         arbeidsoppfolgingskontorRepository = arbeidsoppfolgingskontorRepository,
         kandidatForUtmeldingRepository = kandidatForUtmeldingRepository,
+        aktorOppslagClient = aktorOppslagClient
     )
 
     private fun arenaIservAvregistrering(): ArenaIservKanIkkeReaktiveres {
@@ -97,6 +101,7 @@ class AvsluttOppfolgingServiceTest {
     fun `skal avslutte oppfolging pa bruker som er under oppfolging i veilarboppfolging men er ISERV i arena og ikke kan reaktiveres`() {
         brukerErUnderOppfolgingLokalt()
         kanIkkeReaktiveres()
+        mockBrukerIdenter()
         `when`(kvpService.erUnderKvp(TEST_AKTOR_ID)).thenReturn(false)
 
         val brukverV2 = arenaIservAvregistrering()
@@ -111,9 +116,10 @@ class AvsluttOppfolgingServiceTest {
     fun `skal ikke avslutte oppfolging pa bruker som er under kvp`() {
         brukerErUnderOppfolgingLokalt()
         kanIkkeReaktiveres()
+        mockBrukerIdenter()
         `when`(kvpService.erUnderKvp(TEST_AKTOR_ID)).thenReturn(true)
-        `when`(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(TEST_FNR.get())).thenReturn(false)
-        `when`(ungdomsprogramClient.erDeltakerIUngdomsprogrammet(TEST_FNR.get())).thenReturn(false)
+        `when`(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(listOf(TEST_FNR))).thenReturn(false)
+        `when`(ungdomsprogramClient.erDeltakerIUngdomsprogrammet(TEST_FNR)).thenReturn(false)
         `when`(arbeidssokerRegisterClient.erArbeidssoeker(TEST_FNR.get())).thenReturn(false)
         `when`(aapClient.harAap(TEST_FNR.get())).thenReturn(false)
 
@@ -131,9 +137,10 @@ class AvsluttOppfolgingServiceTest {
     fun `skal ikke avslutte oppfolging pa bruker som har aktive tiltaksdeltakelser`() {
         brukerErUnderOppfolgingLokalt()
         kanIkkeReaktiveres()
+        mockBrukerIdenter()
         `when`(kvpService.erUnderKvp(TEST_AKTOR_ID)).thenReturn(false)
-        `when`(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(TEST_FNR.get())).thenReturn(true)
-        `when`(ungdomsprogramClient.erDeltakerIUngdomsprogrammet(TEST_FNR.get())).thenReturn(false)
+        `when`(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(listOf(TEST_FNR))).thenReturn(true)
+        `when`(ungdomsprogramClient.erDeltakerIUngdomsprogrammet(TEST_FNR)).thenReturn(false)
         `when`(arbeidssokerRegisterClient.erArbeidssoeker(TEST_FNR.get())).thenReturn(false)
         `when`(aapClient.harAap(TEST_FNR.get())).thenReturn(false)
 
@@ -149,9 +156,10 @@ class AvsluttOppfolgingServiceTest {
     fun `skal ikke avslutte oppfolging pa bruker som er deltaker i ungdomsprogrammet`() {
         brukerErUnderOppfolgingLokalt()
         kanIkkeReaktiveres()
+        mockBrukerIdenter()
         `when`(kvpService.erUnderKvp(TEST_AKTOR_ID)).thenReturn(false)
-        `when`(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(TEST_FNR.get())).thenReturn(false)
-        `when`(ungdomsprogramClient.erDeltakerIUngdomsprogrammet(TEST_FNR.get())).thenReturn(true)
+        `when`(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(listOf(TEST_FNR))).thenReturn(false)
+        `when`(ungdomsprogramClient.erDeltakerIUngdomsprogrammet(TEST_FNR)).thenReturn(true)
         `when`(arbeidssokerRegisterClient.erArbeidssoeker(TEST_FNR.get())).thenReturn(false)
         `when`(aapClient.harAap(TEST_FNR.get())).thenReturn(false)
         val brukverV2 = arenaIservAvregistrering()
@@ -164,9 +172,10 @@ class AvsluttOppfolgingServiceTest {
     @Test
     fun `skal ikke avslutte oppfolging pa bruker som er arbeidssoeker`() {
         brukerErUnderOppfolgingLokalt()
+        mockBrukerIdenter()
         `when`(kvpService.erUnderKvp(TEST_AKTOR_ID)).thenReturn(false)
-        `when`(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(TEST_FNR.get())).thenReturn(false)
-        `when`(ungdomsprogramClient.erDeltakerIUngdomsprogrammet(TEST_FNR.get())).thenReturn(false)
+        `when`(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(listOf(TEST_FNR))).thenReturn(false)
+        `when`(ungdomsprogramClient.erDeltakerIUngdomsprogrammet(TEST_FNR)).thenReturn(false)
         `when`(arbeidssokerRegisterClient.erArbeidssoeker(TEST_FNR.get())).thenReturn(true)
 
         val brukverV2 = arenaIservAvregistrering()
@@ -175,5 +184,16 @@ class AvsluttOppfolgingServiceTest {
 
         verify(startOppfolgingService, never()).startOppfolgingHvisIkkeAlleredeStartet(any())
         assertInstanceOf<KunneIkkeAvsluttes>(result)
+    }
+
+    private fun mockBrukerIdenter() {
+        `when`(aktorOppslagClient.hentIdenter(TEST_FNR)).thenReturn(
+            BrukerIdenter(
+                TEST_FNR,
+                TEST_AKTOR_ID,
+                listOf(),
+                listOf()
+            )
+        )
     }
 }
