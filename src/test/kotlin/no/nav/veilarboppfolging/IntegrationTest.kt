@@ -102,6 +102,7 @@ import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.web.context.WebApplicationContext
 import java.time.temporal.ChronoUnit
+import no.nav.common.client.aktoroppslag.BrukerIdenter
 
 @EmbeddedKafka(partitions = 1)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -341,6 +342,15 @@ open class IntegrationTest {
         `when`(authContextHolder.erSystemBruker()).thenReturn(true)
         `when`(aktorOppslagClient.hentAktorId(fnr)).thenReturn(aktørId)
         `when`(aktorOppslagClient.hentFnr(aktørId)).thenReturn(fnr)
+    }
+
+    fun mockHentIdenter(fnr: Fnr, aktorId: AktorId, historiskeFnr: List<Fnr> = emptyList()) {
+        `when`(aktorOppslagClient.hentIdenter(fnr)).thenReturn(BrukerIdenter(
+            fnr,
+            aktorId,
+            historiskeFnr,
+            emptyList()
+        ))
     }
 
     fun mockEksternBrukerAuthOk(fnr: Fnr) {
