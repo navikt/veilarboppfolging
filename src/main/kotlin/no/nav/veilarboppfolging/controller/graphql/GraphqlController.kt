@@ -166,6 +166,11 @@ class GraphqlController(
         return oppfolgingService.harVeilederTilgangTilKontorsperretEnhet(aktorId)
     }
 
+    @SchemaMapping(typeName = "VeilederTilgang", field = "harVeilederLeseTilgangTilBrukersEnhet")
+    fun harVeilederLeseTilgangTilBrukersEnhet(tilgang: VeilederTilgangDto, @LocalContextValue fnr: Fnr): Boolean {
+        return oppfolgingService.harVeilederTilgangTilBrukersEnhet(fnr).tilgangTilBrukersKontor
+    }
+
     @SchemaMapping(typeName = "VeilederTilgang", field = "harVeilederTilgangFlytteBrukerTilEgetKontor")
     fun harVeilederTilgangFlytteBrukerTilEgetKontor(tilgang: VeilederTilgangDto, @LocalContextValue fnr: Fnr): Boolean {
         val aktorId = aktorOppslagClient.hentAktorId(fnr)
