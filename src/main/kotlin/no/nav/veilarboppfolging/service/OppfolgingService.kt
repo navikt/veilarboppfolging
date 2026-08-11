@@ -2,6 +2,7 @@ package no.nav.veilarboppfolging.service
 
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
+import no.nav.poao_tilgang.client.TilgangType
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
 import no.nav.veilarboppfolging.client.tiltakshistorikk.TiltakshistorikkClient
@@ -31,10 +32,6 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
 import java.util.Optional
-import java.util.concurrent.atomic.AtomicReference
-import java.util.function.Consumer
-import java.util.function.Function
-import java.util.stream.Collectors
 
 @Service
 class OppfolgingService @Autowired constructor(
@@ -77,7 +74,9 @@ class OppfolgingService @Autowired constructor(
 
 
     fun harVeilederTilgangTilBrukersEnhet(fnr: Fnr): VeilederTilgang {
-        authService.sjekkLesetilgangMedFnr(fnr)
+        val tilgangTilBruker = authService.evaluerNavAnsattTilgangTilBruker(fnr, TilgangType.LESE)
+        if (tilgangTilBruker.isDeny) return VeilederTilgang(false)
+
         return arbeidsoppfolgingsKontorService.hentOppfolgingsEnhetId(fnr)
             ?.let{ enhetId -> authService.harTilgangTilEnhet(enhetId.get()) }
             ?.let{ harTilgang -> VeilederTilgang(harTilgang) }
