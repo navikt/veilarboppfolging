@@ -407,6 +407,7 @@ class GraphqlControllerTest: IntegrationTest() {
         setBrukerUnderOppfolging(aktorId, fnr)
         setBrukerUnderKvp(aktorId, enhetId.get(), veilederUuid.toString())
         mockInternBrukerAuthOk(veilederUuid, aktorId, fnr)
+        mockIdenter(fnr, aktorId)
         mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Permit)
         mockPoaoTilgangHarTilgangTilEnhet(veilederUuid, enhetId, Decision.Deny("NEI", "FORDI"))
         mockTiltakshistorikk(fnr, harAktiveDeltakelser = false)
@@ -416,6 +417,7 @@ class GraphqlControllerTest: IntegrationTest() {
         result.path("veilederTilgang").matchesJson("""
             { 
                 "harVeilederLeseTilgangTilBruker": true,
+                "harVeilederLeseTilgangTilBrukersEnhet": false,
                 "harVeilederLeseTilgangTilBrukersKontorsperre": false,
                 "harVeilederTilgangFlytteBrukerTilEgetKontor": true,
                 "tilgang": "HAR_TILGANG",
@@ -436,7 +438,6 @@ class GraphqlControllerTest: IntegrationTest() {
         val veilederUuid = UUID.randomUUID()
         val fnr = randomFnr()
         val aktorId = randomAktorId()
-        val enhetId = EnhetId("3131")
         setBrukerUnderOppfolging(aktorId, fnr)
         mockInternBrukerAuthOk(veilederUuid, aktorId, fnr)
         mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Deny("NEI", "FORDI"))

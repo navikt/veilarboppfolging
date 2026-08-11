@@ -166,6 +166,11 @@ class GraphqlController(
         return oppfolgingService.harVeilederTilgangTilKontorsperretEnhet(aktorId)
     }
 
+    @SchemaMapping(typeName = "VeilederTilgang", field = "harVeilederLeseTilgangTilBrukersEnhet")
+    fun harVeilederLeseTilgangTilBrukersEnhet(tilgang: VeilederTilgangDto, @LocalContextValue fnr: Fnr): Boolean {
+        return oppfolgingService.harVeilederTilgangTilBrukersEnhet(fnr).tilgangTilBrukersKontor
+    }
+
     @SchemaMapping(typeName = "VeilederTilgang", field = "harVeilederTilgangFlytteBrukerTilEgetKontor")
     fun harVeilederTilgangFlytteBrukerTilEgetKontor(tilgang: VeilederTilgangDto, @LocalContextValue fnr: Fnr): Boolean {
         val aktorId = aktorOppslagClient.hentAktorId(fnr)
@@ -232,7 +237,7 @@ class GraphqlController(
             }
             UserRole.INTERN -> {
                 val fnr = eksternBrukerId.getFnr()
-                val isAllowed = authService.evaluerNavAnsattTilagngTilBruker(fnr, TilgangType.LESE)
+                val isAllowed = authService.evaluerNavAnsattTilgangTilBruker(fnr, TilgangType.LESE)
                 when (isAllowed) {
                     is Decision.Deny -> HarIkkeTilgang("Veileder har ikke tilgang til bruker")
                     Decision.Permit -> HarTilgang(eksternBrukerId)
@@ -243,7 +248,7 @@ class GraphqlController(
     }
 
     private fun evaluerNavAnsattTilgangTilEksternBruker(fnr: String): TilgangResultat {
-        val decision = authService.evaluerNavAnsattTilagngTilBruker(Fnr.of(fnr), TilgangType.LESE)
+        val decision = authService.evaluerNavAnsattTilgangTilBruker(Fnr.of(fnr), TilgangType.LESE)
         return when (decision) {
             is Decision.Deny -> decision.tryToFindDenyReason()
             Decision.Permit -> TilgangResultat.HAR_TILGANG

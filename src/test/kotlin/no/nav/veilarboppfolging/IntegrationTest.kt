@@ -382,6 +382,15 @@ open class IntegrationTest {
         `when`(authContextHolder.uid).thenReturn(Optional.of(navIdent.get()))
     }
 
+    fun mockIdenter(fnr: Fnr, aktorId: AktorId, historiskeFnr: List<Fnr> = emptyList()) {
+        `when`(aktorOppslagClient.hentIdenter(fnr)).thenReturn(BrukerIdenter(
+            fnr,
+            aktorId,
+            historiskeFnr,
+            emptyList()
+        ))
+    }
+
     fun mockPdlGeografiskTilknytning(fnr: Fnr, enhetsNr: String, gtType: GTType = GTType.BYDEL) {
         `when`(geografiskTilknytningClient.hentGeografiskTilknytning(fnr))
             .thenReturn(GeografiskTilknytningClient.GeografiskTilknytningOgAdressebeskyttelse(
