@@ -438,7 +438,6 @@ class GraphqlControllerTest: IntegrationTest() {
         val veilederUuid = UUID.randomUUID()
         val fnr = randomFnr()
         val aktorId = randomAktorId()
-//        val enhetId = EnhetId("3131")
         setBrukerUnderOppfolging(aktorId, fnr)
         mockInternBrukerAuthOk(veilederUuid, aktorId, fnr)
         mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Deny("NEI", "FORDI"))
