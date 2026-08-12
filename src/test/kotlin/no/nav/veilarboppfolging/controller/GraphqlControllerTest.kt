@@ -450,6 +450,7 @@ class GraphqlControllerTest: IntegrationTest() {
         result.path("veilederTilgang").matchesJson("""
             { 
                 "harVeilederLeseTilgangTilBruker": false,
+                "harVeilederLeseTilgangTilBrukersEnhet": false,
                 "harVeilederTilgangFlytteBrukerTilEgetKontor": true,
                 "harAktiveTiltaksdeltakelserVedFlyttingTilEgetKontor": true,
             }
@@ -591,7 +592,7 @@ class GraphqlControllerTest: IntegrationTest() {
         val result = tester.documentName("altQuery").variable("fnr", fnr.get()).execute()
         result.errors()
             .expect { it.path == "oppfolgingsPerioder" && it.message == "NavAnsattTilgangTilEksternBrukerPolicyInput fikk deny" }
-            .expect { it.path == "oppfolgingsEnhet" && it.message == "Ikke tilgang til oppfolgingsenhet: Veileder har ikke tilgang til bruker" }
+            .expect { it.path == "oppfolgingsEnhet" && it.message == "Ikke tilgang til oppfolgingsEnhet: Veileder har ikke tilgang til bruker" }
             .expect { it.path == "brukerStatus" && it.message == "Ikke tilgang til brukerStatus: Veileder har ikke tilgang til bruker" }
             .verify()
         result.path("veilederTilgang").matchesJson("""
@@ -622,7 +623,7 @@ class GraphqlControllerTest: IntegrationTest() {
         val result = tester.documentName("altQuery").variable("fnr", fnr.get()).execute()
         result.errors()
             .expect { it.path == "oppfolgingsPerioder" && it.message == "NavAnsattTilgangTilEksternBrukerPolicyInput fikk deny" }
-            .expect { it.path == "oppfolgingsEnhet" && it.message == "Ikke tilgang til oppfolgingsenhet: Veileder har ikke tilgang til bruker" }
+            .expect { it.path == "oppfolgingsEnhet" && it.message == "Ikke tilgang til oppfolgingsEnhet: Veileder har ikke tilgang til bruker" }
             .expect { it.path == "brukerStatus" && it.message == "Ikke tilgang til brukerStatus: Veileder har ikke tilgang til bruker" }
             .verify()
         result.path("veilederTilgang").matchesJson("""
