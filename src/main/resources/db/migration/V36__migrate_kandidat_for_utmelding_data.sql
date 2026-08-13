@@ -11,11 +11,8 @@ INSERT INTO kandidater_for_utmelding_hendelser (
 )
 SELECT
     gen_random_uuid(),
-    kfu.hendelse,
-    CASE
-        WHEN kfu.detaljer IS NOT NULL THEN jsonb_build_object('detaljer', kfu.detaljer)
-        ELSE NULL
-    END,
+    kfu.hendelse, -- ARBEIDSSOKERPERIODE_AVSLUTTET_SVARTE_NEI_I_BEKREFTELSE | ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT | ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET
+    null,
     NULL,
     kfu.avsluttet_av,
     kfu.kilde,
