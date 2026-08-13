@@ -11,6 +11,7 @@ type Query {
 type VeilederTilgang {
     harTilgang: Boolean! @deprecated(reason: "Erstattet av harVeilederLeseTilgangTIlBruker som er mer beskrivende")
     harVeilederLeseTilgangTilBruker: Boolean!
+    harVeilederLeseTilgangTilBrukersEnhet: Boolean!
     harVeilederLeseTilgangTilBrukersKontorsperre: Boolean
     harVeilederTilgangFlytteBrukerTilEgetKontor: Boolean!
     tilgang: TilgangResultat

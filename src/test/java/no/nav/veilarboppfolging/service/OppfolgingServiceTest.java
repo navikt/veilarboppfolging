@@ -7,6 +7,8 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.NavIdent;
+import no.nav.poao_tilgang.client.Decision;
+import no.nav.poao_tilgang.client.TilgangType;
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe;
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe;
 import no.nav.veilarboppfolging.ForbiddenException;
@@ -341,6 +343,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     @Test
     public void harVeilederTilgang__medEnhetTilgangTilBrukersEnhet() {
         when(authService.harTilgangTilEnhet(any())).thenReturn(true);
+        when(authService.evaluerNavAnsattTilgangTilBruker(fnr, TilgangType.LESE)).thenReturn(Decision.Permit.INSTANCE);
         when(arbeidsoppfolgingsKontorService.hentOppfolgingsEnhetId(fnr)).thenReturn(EnhetId.of(ENHET));
 
         var tilgang = oppfolgingService.harVeilederTilgangTilBrukersEnhet(fnr);
@@ -351,6 +354,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     @Test
     public void harVeilederTilgang__utenEnhetTilgangTilBrukersEnhet() {
         when(arbeidsoppfolgingsKontorService.hentOppfolgingsEnhetId(fnr)).thenReturn(EnhetId.of(ENHET));
+        when(authService.evaluerNavAnsattTilgangTilBruker(fnr, TilgangType.LESE)).thenReturn(Decision.Permit.INSTANCE);
 
         VeilederTilgang veilederIkkeTilgang = oppfolgingService.harVeilederTilgangTilBrukersEnhet(fnr);
         assertFalse(veilederIkkeTilgang.getTilgangTilBrukersKontor());
@@ -359,6 +363,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     @Test
     public void harVeilederTilgang__skal_ikke_ha_tilgang_TilBrukersEnhet_nar_bruker_ikke_har_enhet() {
         when(arbeidsoppfolgingsKontorService.hentOppfolgingsEnhetId(fnr)).thenReturn(null);
+        when(authService.evaluerNavAnsattTilgangTilBruker(fnr, TilgangType.LESE)).thenReturn(Decision.Permit.INSTANCE);
 
         VeilederTilgang veilederIkkeTilgang = oppfolgingService.harVeilederTilgangTilBrukersEnhet(fnr);
         assertFalse(veilederIkkeTilgang.getTilgangTilBrukersKontor());
