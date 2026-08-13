@@ -48,9 +48,9 @@ class KandidatForUtmeldingRepositoryTest {
         fnr = fnr,
         aktorId = aktorId,
         oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
-        avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER,
+        utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
         kandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
-        detaljer = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString(),
+        avslutningsarsak = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString(),
         kilde = "kilde"
     )
 }

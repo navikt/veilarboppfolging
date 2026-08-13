@@ -20,10 +20,10 @@ class KandidatForUtmeldingHendelseTest {
             aktorId = aktorId,
             fnr = fnr,
             oppfolgingsperiodeUuid = UUID.randomUUID(),
-            avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER,
+            utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
             kilde = "test",
             kandidatForUtmeldingHendelseType = kandidatForUtmeldingHendelseType,
-            detaljer = aarsakType.toString()
+            avslutningsarsak = aarsakType.toString()
         )
 
     @Test

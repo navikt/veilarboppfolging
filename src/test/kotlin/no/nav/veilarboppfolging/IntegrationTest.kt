@@ -58,7 +58,7 @@ import no.nav.veilarboppfolging.controller.OppfolgingV3Controller
 import no.nav.veilarboppfolging.controller.SakController
 import no.nav.veilarboppfolging.controller.v3.request.OppfolgingRequest
 import no.nav.veilarboppfolging.kandidatForUtmelding.ArbeidssøkerPeriodeAvsluttet
-import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingHendelseAvsluttetAv
+import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingHendelseUtfortAvType
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingHendelseType
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingRepository
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService
@@ -272,10 +272,10 @@ open class IntegrationTest {
             aktorId = aktorId,
             fnr = fnr,
             oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
-            avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER,
+            utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
             kilde = "arbeidssøkerregisteret",
             kandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
-            detaljer = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
+            avslutningsarsak = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
         )
         kandidatForUtmeldingService.lagreKandidatForUtmelding(kandidat)
     }

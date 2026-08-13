@@ -15,8 +15,8 @@ class KandidatForUtmeldingRepository(
     fun lagreKandidat(hendelse: KandidatForUtmeldingHendelse) {
         val hendelseId = insertUtmeldingsHendelse(hendelse)
         val sql = """
-            INSERT INTO kandidater_for_utmelding(aktor_id, siste_utmeldingshendelse_id, oppfolgingsperiode_uuid, forlenget_til)
-            VALUES (:aktorId, :hendelseId, :oppfolgingsperiodeId, null)
+            INSERT INTO kandidater_for_utmelding(siste_utmeldingshendelse_id, oppfolgingsperiode_uuid, forlenget_til)
+            VALUES (:hendelseId, :oppfolgingsperiodeId, null)
             ON CONFLICT (oppfolgingsperiode_uuid) 
             DO UPDATE SET updated_at = current_timestamp, siste_utmeldingshendelse_id = :hendelseId
         """.trimIndent()
@@ -24,34 +24,35 @@ class KandidatForUtmeldingRepository(
             sql, mapOf(
                 "oppfolgingsperiodeId" to hendelse.oppfolgingsperiodeUuid,
                 "hendelseId" to hendelseId,
-                "avsluttetAv" to hendelse.avsluttetAv.name,
+                "avsluttetAv" to hendelse.utfortAvType.name,
             )
         )
     }
 
     private fun insertUtmeldingsHendelse(hendelse: KandidatForUtmeldingHendelse): UUID {
         val sql = """
-            INSERT INTO kandidater_for_utmelding(gen_random_uuid(), utfoert_av, utfoert_av_type, kilde, hendelse_detaljer, oppfolgingsperiode_uuid)
-            VALUES (:hendelse, :utfoertAv, :utfoertAvType, :kilde, :detaljer, :oppfolgingsperiode_uuid)
+            INSERT INTO kandidater_for_utmelding_hendelser(utmeldingshendelse_id, hendelse, hendelse_data, utfort_av, utfort_av_type, kilde, oppfolgingsperiode_uuid)
+            VALUES (gen_random_uuid(), :hendelse, :hendelseData, :utfortAv, :utfortAvType, :kilde, :oppfolgingsperiode_uuid)
+            RETURNING utmeldingshendelse_id
         """.trimIndent()
-        db.update(
+        return db.queryForObject(
             sql, mapOf(
                 "hendelse" to hendelse.type.name,
-                "utfoertAv" to hendelse.avsluttetAv.utfoertAv.name,
-                "utfoertAvType" to hendelse.avsluttetAv.utfoertAvType.name, 
+                "hendelseData" to hendelse.hendelseDataJson,
+                "utfortAv" to hendelse.utfortAv,
+                "utfortAvType" to hendelse.utfortAvType.name,
                 "kilde" to hendelse.kilde,
-                "detaljer" to hendelse.detaljer,
                 "oppfolgingsperiode_uuid" to hendelse.oppfolgingsperiodeUuid
             )
-        )
+        ) { rs, _ -> UUID.fromString(rs.getString("utmeldingshendelse_id")) }!!
     }
 
-    fun fjernKandidat(aktorId: AktorId) {
+    fun fjernKandidat(oppfolgingsperiodeId: UUID) {
         val sql = """
-            DELETE FROM kandidat_for_utmelding
-            WHERE aktor_id = :aktorId
+            DELETE FROM kandidater_for_utmelding
+            WHERE oppfolgingsperiode_uuid = :oppfolgingsperiodeId
         """.trimIndent()
-        db.update(sql, mapOf("aktorId" to aktorId.get()))
+        db.update(sql, mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeId.toString()))
     }
 
     fun hentKandidat(aktorId: AktorId): KandidatForUtmeldingHendelse? {
@@ -74,9 +75,9 @@ class KandidatForUtmeldingRepository(
                 aktorId = AktorId.of(resultSet.getString("aktor_id")),
                 fnr = Fnr.of(resultSet.getString("fnr")),
                 oppfolgingsperiodeUuid = UUID.fromString(resultSet.getString("oppfolgingsperiode_uuid")),
-                avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.valueOf(resultSet.getString("avsluttet_av")),
+                utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.valueOf(resultSet.getString("avsluttet_av")),
                 kilde = resultSet.getString("kilde"),
-                detaljer = resultSet.getString("detaljer"),
+                avslutningsarsak = resultSet.getString("detaljer"),
                 kandidatForUtmeldingHendelseType = type
             )
         }

@@ -13,7 +13,7 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrerin
 import no.nav.veilarboppfolging.oppfolgingsbruker.toRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.UtmeldingsService
 import no.nav.veilarboppfolging.kandidatForUtmelding.ArbeidssøkerPeriodeAvsluttet
-import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingHendelseAvsluttetAv
+import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingHendelseUtfortAvType
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingHendelseType
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingRepository
 import no.nav.veilarboppfolging.service.AuthService
@@ -83,12 +83,12 @@ open class ArbeidssøkerperiodeConsumerService(
             val gjeldendePeriode = oppfolgingsperioder.firstOrNull { it.sluttDato == null }
             if (gjeldendePeriode != null) {
                 val kilde = arbeidssøkerperiode.avsluttet?.kilde ?: "arbeidssøkerregisteret"
-                val detaljer = arbeidssøkerperiode.avslutningsInfo.aarsaksinformasjon.type
+                val avsluttetAarsakType = arbeidssøkerperiode.avslutningsInfo.aarsaksinformasjon.type
                 val avsluttetAv = when(arbeidssøkerperiode.avsluttet?.utfoertAv?.type) {
-                    BrukerType.UKJENT_VERDI, BrukerType.UDEFINERT, null -> KandidatForUtmeldingHendelseAvsluttetAv.UKJENT
-                    BrukerType.VEILEDER -> KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER
-                    BrukerType.SYSTEM -> KandidatForUtmeldingHendelseAvsluttetAv.SYSTEM
-                    BrukerType.SLUTTBRUKER -> KandidatForUtmeldingHendelseAvsluttetAv.BRUKER
+                    BrukerType.UKJENT_VERDI, BrukerType.UDEFINERT, null -> KandidatForUtmeldingHendelseUtfortAvType.UKJENT
+                    BrukerType.VEILEDER -> KandidatForUtmeldingHendelseUtfortAvType.VEILEDER
+                    BrukerType.SYSTEM -> KandidatForUtmeldingHendelseUtfortAvType.SYSTEM
+                    BrukerType.SLUTTBRUKER -> KandidatForUtmeldingHendelseUtfortAvType.BRUKER
                 }
                 val type: KandidatForUtmeldingHendelseType = when (arbeidssøkerperiode.avslutningsInfo.aarsaksinformasjon.type) {
                     AvsluttetAarsakType.SVARTE_NEI_I_BEKREFTELSE -> KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_SVARTE_NEI_I_BEKREFTELSE
@@ -99,9 +99,10 @@ open class ArbeidssøkerperiodeConsumerService(
                     ArbeidssøkerPeriodeAvsluttet(
                         aktørId,
                         fnr,
-                        avsluttetAv = avsluttetAv,
+                        utfortAvType = avsluttetAv,
+                        utfortAv = arbeidssøkerperiode.avsluttet?.utfoertAv?.id,
                         kilde = kilde,
-                        detaljer = detaljer.toString(),
+                        avslutningsarsak = avsluttetAarsakType.toString(),
                         kandidatForUtmeldingHendelseType = type,
                         oppfolgingsperiodeUuid = gjeldendePeriode.uuid
                     )

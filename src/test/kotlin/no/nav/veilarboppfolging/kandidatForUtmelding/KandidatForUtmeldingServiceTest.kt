@@ -2,7 +2,6 @@ package no.nav.veilarboppfolging.kandidatForUtmelding
 
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
-import no.nav.paw.arbeidssokerregisteret.api.v1.AvsluttetAarsakType
 import no.nav.paw.arbeidssokerregisteret.api.v1.AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.veilarboppfolging.IntegrationTest
@@ -38,11 +37,11 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
 
         kandidatForUtmeldingService.lagreKandidatForUtmelding(
             ArbeidssøkerPeriodeAvsluttet(
-                AKTOR_ID, FNR, avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER,
+                AKTOR_ID, FNR, utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
                 kilde = "kilde",
                 oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
                 kandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
-                detaljer = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
+                avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
             )
         )
 
@@ -50,9 +49,9 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
         assertThat(kandidat).isNotNull
         assertThat(kandidat?.fnr).isEqualTo(FNR)
         assertThat(kandidat?.aktorId).isEqualTo(AKTOR_ID)
-        assertThat(kandidat?.avsluttetAv).isEqualTo(KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER)
+        assertThat(kandidat?.utfortAvType).isEqualTo(KandidatForUtmeldingHendelseUtfortAvType.VEILEDER)
         assertThat(kandidat?.kilde).isEqualTo("kilde")
-        assertThat(kandidat?.detaljer).isEqualTo(BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString())
+        assertThat(kandidat?.hendelseDataJson).isEqualTo(BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString())
     }
 
     @Test
@@ -66,10 +65,10 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
 
         kandidatForUtmeldingService.lagreKandidatForUtmelding(
             ArbeidssøkerPeriodeAvsluttet(
-                AKTOR_ID, FNR, avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER,
+                AKTOR_ID, FNR, utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
                 kilde = "kilde",
                 kandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
-                detaljer = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString(),
+                avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString(),
                 oppfolgingsperiodeUuid = UUID.randomUUID(),
             )
         )
@@ -89,10 +88,10 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
 
         kandidatForUtmeldingService.lagreKandidatForUtmelding(
             ArbeidssøkerPeriodeAvsluttet(
-                AKTOR_ID, FNR, avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER,
+                AKTOR_ID, FNR, utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
                 kilde = "kilde",
                 kandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
-                detaljer = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString(),
+                avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString(),
                 oppfolgingsperiodeUuid = UUID.randomUUID(),
             )
         )
@@ -106,10 +105,10 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
         val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(FNR).get().uuid
         kandidatForUtmeldingRepository.lagreKandidat(
             ArbeidssøkerPeriodeAvsluttet(
-                AKTOR_ID, FNR, avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER,
+                AKTOR_ID, FNR, utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
                 kilde = "kilde",
                 kandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
-                detaljer = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString(),
+                avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString(),
                 oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
             )
         )

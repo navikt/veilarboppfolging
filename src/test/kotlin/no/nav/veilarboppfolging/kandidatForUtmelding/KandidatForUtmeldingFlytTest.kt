@@ -6,7 +6,6 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.UUID
 import no.nav.common.types.identer.AktorId
-import no.nav.common.types.identer.EnhetId
 import no.nav.common.types.identer.Fnr
 import no.nav.common.types.identer.NavIdent
 import no.nav.paw.arbeidssokerregisteret.api.v1.Aarsaksinformasjon
@@ -140,10 +139,10 @@ class KandidatForUtmeldingFlytTest(
             aktorId = aktorId,
             fnr = Fnr.of(fnr),
             oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
-            avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER,
+            utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
             kilde = "arbeidssøkerregisteret",
             kandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
-            detaljer = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
+            avslutningsarsak = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
         ))
         avsluttOppfolgingManueltSomVeileder(aktorId)
 
@@ -162,10 +161,10 @@ class KandidatForUtmeldingFlytTest(
             aktorId = aktorId,
             fnr = Fnr.of(fnr),
             oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
-            avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER,
+            utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
             kilde ="kilde",
             kandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
-            detaljer = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
+            avslutningsarsak = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
         ))
         avsluttOppfolgingManueltSomVeileder(aktorId)
 
@@ -184,10 +183,10 @@ class KandidatForUtmeldingFlytTest(
             aktorId = aktorId,
             fnr = Fnr.of(fnr),
             oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
-            avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER,
+            utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
             kilde ="kilde",
             kandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
-            detaljer = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()        ))
+            avslutningsarsak = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()        ))
         avsluttOppfolgingManueltSomVeileder(aktorId)
         val registrering = OppfolgingsRegistrering.arbeidssokerRegistrering(Fnr.of(fnr), aktorId, VeilederRegistrant(NavIdent("veileder")))
         startOppfolging(aktorId, registrering)
@@ -204,10 +203,10 @@ class KandidatForUtmeldingFlytTest(
             aktorId = aktorId,
             fnr = Fnr.of(fnr),
             oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
-            avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER,
+            utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
             kilde ="kilde",
             kandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
-            detaljer = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
+            avslutningsarsak = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
         ))
         assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNotNull()
 
@@ -237,10 +236,10 @@ class KandidatForUtmeldingFlytTest(
             aktorId = aktorId,
             fnr = Fnr.of(fnr),
             oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
-            avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER,
+            utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
             kilde ="kilde",
             kandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
-            detaljer = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
+            avslutningsarsak = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
         ))
         avsluttOppfolgingManueltSomVeileder(aktorId)
 
@@ -262,10 +261,10 @@ class KandidatForUtmeldingFlytTest(
             aktorId = aktorId,
             fnr = Fnr.of(fnr),
             oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
-            avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER,
+            utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
             kilde ="kilde",
             kandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
-            detaljer = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
+            avslutningsarsak = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
         ))
         assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNotNull()
 
