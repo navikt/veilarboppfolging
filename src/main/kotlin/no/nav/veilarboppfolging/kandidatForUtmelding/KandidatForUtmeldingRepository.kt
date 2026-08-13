@@ -4,7 +4,6 @@ import java.sql.ResultSet
 import java.util.UUID
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
-import no.nav.paw.arbeidssokerregisteret.api.v1.AvsluttetAarsakType
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Repository
 
@@ -14,19 +13,34 @@ class KandidatForUtmeldingRepository(
 ) {
 
     fun lagreKandidat(hendelse: KandidatForUtmeldingHendelse) {
+        val hendelseId = insertUtmeldingsHendelse(hendelse)
         val sql = """
-            INSERT INTO kandidat_for_utmelding(aktor_id, hendelse, avsluttet_av, kilde, detaljer, fnr, oppfolgingsperiode_uuid)
-            VALUES (:aktorId, :hendelse, :avsluttet_av, :kilde, :detaljer, :fnr, :oppfolgingsperiode_uuid)
-            ON CONFLICT (aktor_id) DO NOTHING
+            INSERT INTO kandidater_for_utmelding(aktor_id, siste_utmeldingshendelse_id, oppfolgingsperiode_uuid, forlenget_til)
+            VALUES (:aktorId, :hendelseId, :oppfolgingsperiodeId, null)
+            ON CONFLICT (oppfolgingsperiode_uuid) 
+            DO UPDATE SET updated_at = current_timestamp, siste_utmeldingshendelse_id = :hendelseId
         """.trimIndent()
         db.update(
             sql, mapOf(
-                "aktorId" to hendelse.aktorId.get(),
+                "oppfolgingsperiodeId" to hendelse.oppfolgingsperiodeUuid,
+                "hendelseId" to hendelseId,
+                "avsluttetAv" to hendelse.avsluttetAv.name,
+            )
+        )
+    }
+
+    private fun insertUtmeldingsHendelse(hendelse: KandidatForUtmeldingHendelse): UUID {
+        val sql = """
+            INSERT INTO kandidater_for_utmelding(gen_random_uuid(), utfoert_av, utfoert_av_type, kilde, hendelse_detaljer, oppfolgingsperiode_uuid)
+            VALUES (:hendelse, :utfoertAv, :utfoertAvType, :kilde, :detaljer, :oppfolgingsperiode_uuid)
+        """.trimIndent()
+        db.update(
+            sql, mapOf(
                 "hendelse" to hendelse.type.name,
-                "avsluttet_av" to hendelse.avsluttetAv.name,
+                "utfoertAv" to hendelse.avsluttetAv.utfoertAv.name,
+                "utfoertAvType" to hendelse.avsluttetAv.utfoertAvType.name, 
                 "kilde" to hendelse.kilde,
                 "detaljer" to hendelse.detaljer,
-                "fnr" to hendelse.fnr.get(),
                 "oppfolgingsperiode_uuid" to hendelse.oppfolgingsperiodeUuid
             )
         )
