@@ -11,7 +11,6 @@ import no.nav.common.auth.context.UserRole;
 import no.nav.common.auth.utils.IdentUtils;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.client.aktoroppslag.BrukerIdenter;
-import no.nav.common.client.aktorregister.IngenGjeldendeIdentException;
 import no.nav.common.types.identer.*;
 import no.nav.poao_tilgang.client.*;
 import no.nav.poao_tilgang.client.api.BadHttpStatusApiException;
@@ -393,13 +392,25 @@ public class AuthService {
     }
 
     /* Brukes når man trenger å vite hvorfor veileder fikk Deny */
-    public Decision evaluerNavAnsattTilagngTilBruker(Fnr fnr, TilgangType tilgangType) {
+    public Decision evaluerNavAnsattTilgangTilBruker(Fnr fnr, TilgangType tilgangType) {
         if(!erInternBruker()) {
             throw new ForbiddenException("Må være intern bruker");
         }
-        return poaoTilgangClient.evaluatePolicy(new NavAnsattTilgangTilEksternBrukerPolicyInput(
+        var result = poaoTilgangClient.evaluatePolicy(new NavAnsattTilgangTilEksternBrukerPolicyInput(
                 hentInnloggetVeilederUUID(), tilgangType, fnr.get()
-        )).getOrThrow();
+        ));
+        if (result.isFailure() && result.getException() instanceof BadHttpStatusApiException) {
+            var exception = (BadHttpStatusApiException) result.getException() ;
+            if (exception.getHttpStatus() == 404) throw new NotFoundException("Kunne ikke sjekke tilgang til bruker fordi ident finnes ikke i PDL");
+        }
+        var decision = result.getOrThrow();
+        auditLogWithMessageAndDestinationUserId(
+                "Veileder har gjort oppslag på aktorid",
+                fnr.get(),
+                authContextHolder.getNavIdent().orElse(NavIdent.of(UKJENT_NAV_IDENT)).get(),
+                decision.isPermit() ? AuthorizationDecision.PERMIT : AuthorizationDecision.DENY
+        );
+        return decision;
     }
 
     private void sjekkTilgang(TilgangType tilgangType, AktorId aktorId) {
@@ -408,20 +419,7 @@ public class AuthService {
     private void sjekkTilgang(TilgangType tilgangType, Fnr fnr) {
         Optional<SikkerthetsNivå> sikkerhetsnivaa = hentSikkerhetsnivaa();
         if (erInternBruker()) {
-            var result = poaoTilgangClient.evaluatePolicy(new NavAnsattTilgangTilEksternBrukerPolicyInput(
-                    hentInnloggetVeilederUUID(), tilgangType, fnr.get()
-            ));
-            if (result.isFailure() && result.getException() instanceof BadHttpStatusApiException) {
-                var exception = (BadHttpStatusApiException) result.getException() ;
-                if (exception.getHttpStatus() == 404) throw new NotFoundException("Kunne ikke sjekke tilgang til bruker fordi det finnes ikke i PDL");
-            }
-            Decision decision = result.getOrThrow();
-            auditLogWithMessageAndDestinationUserId(
-                    "Veileder har gjort oppslag på aktorid",
-                    fnr.get(),
-                    authContextHolder.getNavIdent().orElse(NavIdent.of(UKJENT_NAV_IDENT)).get(),
-                    decision.isPermit() ? AuthorizationDecision.PERMIT : AuthorizationDecision.DENY
-            );
+            var decision = evaluerNavAnsattTilgangTilBruker(fnr, tilgangType);
             if (decision.isDeny()) {
                 throw new ForbiddenException("NavAnsattTilgangTilEksternBrukerPolicyInput fikk deny");
             }
@@ -431,7 +429,7 @@ public class AuthService {
             ));
             if (result.isFailure() && result.getException() instanceof BadHttpStatusApiException) {
                 var exception = (BadHttpStatusApiException) result.getException() ;
-                if (exception.getHttpStatus() == 404) throw new NotFoundException("Kunne ikke sjekke tilgang til bruker fordi det finnes ikke i PDL");
+                if (exception.getHttpStatus() == 404) throw new NotFoundException("Kunne ikke sjekke tilgang til bruker fordi ident finnes ikke i PDL");
             }
             Decision decision = result.getOrThrow();
 

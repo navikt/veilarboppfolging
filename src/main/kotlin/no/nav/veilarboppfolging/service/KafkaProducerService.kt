@@ -23,7 +23,6 @@ import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.hendelser.Oppfolgin
 import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.hendelser.OppfolgingsAvsluttetHendelseDto
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.LongSerializer
-import org.apache.kafka.common.serialization.StringSerializer
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -31,6 +30,7 @@ import org.springframework.stereotype.Service
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.UUID
+import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.FilterhendelseRecord
 
 @Service
 class KafkaProducerService @Autowired constructor(
@@ -60,6 +60,10 @@ class KafkaProducerService @Autowired constructor(
 
     fun publiserOppfolgingsStartet(oppfolgingsperiodeStartet: OppfolgingStartetHendelseDto) {
         store(kafkaProperties.oppfolgingshendelseV1, oppfolgingsperiodeStartet.fnr, oppfolgingsperiodeStartet)
+    }
+
+    fun publiserFilterhendelse(hendelseId: UUID, filterhendelseRecord: FilterhendelseRecord) {
+        store(kafkaProperties.portefoljeHendelsesfilterTopic, hendelseId.toString(), filterhendelseRecord)
     }
 
     private fun sisteOppfolgingsPeriode(sisteOppfolgingsperiodeV1: SisteOppfolgingsperiodeV1) {

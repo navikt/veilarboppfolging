@@ -102,6 +102,7 @@ import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.web.context.WebApplicationContext
 import java.time.temporal.ChronoUnit
+import no.nav.common.client.aktoroppslag.BrukerIdenter
 
 @EmbeddedKafka(partitions = 1)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -343,6 +344,15 @@ open class IntegrationTest {
         `when`(aktorOppslagClient.hentFnr(aktørId)).thenReturn(fnr)
     }
 
+    fun mockHentIdenter(fnr: Fnr, aktorId: AktorId, historiskeFnr: List<Fnr> = emptyList()) {
+        `when`(aktorOppslagClient.hentIdenter(fnr)).thenReturn(BrukerIdenter(
+            fnr,
+            aktorId,
+            historiskeFnr,
+            emptyList()
+        ))
+    }
+
     fun mockEksternBrukerAuthOk(fnr: Fnr) {
             `when`(authContextHolder.getRole()).thenReturn(Optional.of(UserRole.EKSTERN))
             `when`(authContextHolder.erEksternBruker()).thenReturn(true)
@@ -370,6 +380,15 @@ open class IntegrationTest {
         `when`(aktorOppslagClient.hentAktorId(fnr)).thenReturn(aktørId)
         `when`(aktorOppslagClient.hentFnr(aktørId)).thenReturn(fnr)
         `when`(authContextHolder.uid).thenReturn(Optional.of(navIdent.get()))
+    }
+
+    fun mockIdenter(fnr: Fnr, aktorId: AktorId, historiskeFnr: List<Fnr> = emptyList()) {
+        `when`(aktorOppslagClient.hentIdenter(fnr)).thenReturn(BrukerIdenter(
+            fnr,
+            aktorId,
+            historiskeFnr,
+            emptyList()
+        ))
     }
 
     fun mockPdlGeografiskTilknytning(fnr: Fnr, enhetsNr: String, gtType: GTType = GTType.BYDEL) {

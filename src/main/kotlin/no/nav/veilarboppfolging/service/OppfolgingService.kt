@@ -2,6 +2,7 @@ package no.nav.veilarboppfolging.service
 
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
+import no.nav.poao_tilgang.client.TilgangType
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
 import no.nav.veilarboppfolging.client.tiltakshistorikk.TiltakshistorikkClient
@@ -73,7 +74,9 @@ class OppfolgingService @Autowired constructor(
 
 
     fun harVeilederTilgangTilBrukersEnhet(fnr: Fnr): VeilederTilgang {
-        authService.sjekkLesetilgangMedFnr(fnr)
+        val tilgangTilBruker = authService.evaluerNavAnsattTilgangTilBruker(fnr, TilgangType.LESE)
+        if (tilgangTilBruker.isDeny) return VeilederTilgang(false)
+
         return arbeidsoppfolgingsKontorService.hentOppfolgingsEnhetId(fnr)
             ?.let{ enhetId -> authService.harTilgangTilEnhet(enhetId.get()) }
             ?.let{ harTilgang -> VeilederTilgang(harTilgang) }
