@@ -1,10 +1,8 @@
 package no.nav.veilarboppfolging.kandidatForUtmelding
 
-import no.nav.common.json.JsonUtils
 import java.sql.ResultSet
 import java.util.UUID
-import no.nav.common.types.identer.AktorId
-import no.nav.common.types.identer.Fnr
+import no.nav.common.json.JsonUtils
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Repository
 

@@ -1,6 +1,7 @@
 package no.nav.veilarboppfolging.kandidatForUtmelding
 
 import java.util.UUID
+import no.nav.common.json.JsonUtils
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.paw.arbeidssokerregisteret.api.v1.AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST
@@ -52,7 +53,10 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
         assertThat(kandidat?.oppfolgingsperiodeUuid).isEqualTo(oppfolgingsperiodeUuid)
         assertThat(kandidat?.utfortAvType).isEqualTo(KandidatForUtmeldingHendelseUtfortAvType.VEILEDER)
         assertThat(kandidat?.kilde).isEqualTo("kilde")
-        assertThat(kandidat?.hendelseDataJson).isEqualTo(BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString())
+        assertThat(kandidat?.hendelseDataJson?.value).isEqualTo(
+            JsonUtils.getMapper()
+                .writeValueAsString(ArbeidssøkerPeriodeAvsluttet.Detaljer(BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()))
+        )
     }
 
     @Test
