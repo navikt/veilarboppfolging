@@ -96,15 +96,14 @@ open class ArbeidssøkerperiodeConsumerService(
                     AvsluttetAarsakType.UDEFINERT, AvsluttetAarsakType.UKJENT_VERDI -> KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET
                 }
                 kandidatForUtmeldingService.lagreKandidatForUtmelding(
+                    fnr,
                     ArbeidssøkerPeriodeAvsluttet(
-                        aktørId,
-                        fnr,
+                        oppfolgingsperiodeUuid = gjeldendePeriode.uuid,
                         utfortAvType = avsluttetAv,
                         utfortAv = arbeidssøkerperiode.avsluttet?.utfoertAv?.id,
                         kilde = kilde,
                         avslutningsarsak = avsluttetAarsakType.toString(),
                         kandidatForUtmeldingHendelseType = type,
-                        oppfolgingsperiodeUuid = gjeldendePeriode.uuid
                     )
                 )
             }

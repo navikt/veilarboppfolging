@@ -1,5 +1,6 @@
 package no.nav.veilarboppfolging.kandidatForUtmelding
 
+import no.nav.common.json.JsonUtils
 import java.sql.ResultSet
 import java.util.UUID
 import no.nav.common.types.identer.AktorId
@@ -32,7 +33,7 @@ class KandidatForUtmeldingRepository(
     private fun insertUtmeldingsHendelse(hendelse: KandidatForUtmeldingHendelse): UUID {
         val sql = """
             INSERT INTO kandidater_for_utmelding_hendelser(utmeldingshendelse_id, hendelse, hendelse_data, utfort_av, utfort_av_type, kilde, oppfolgingsperiode_uuid)
-            VALUES (gen_random_uuid(), :hendelse, :hendelseData, :utfortAv, :utfortAvType, :kilde, :oppfolgingsperiode_uuid)
+            VALUES (gen_random_uuid(), :hendelse, :hendelseData::jsonb, :utfortAv, :utfortAvType, :kilde, :oppfolgingsperiode_uuid)
             RETURNING utmeldingshendelse_id
         """.trimIndent()
         return db.queryForObject(
@@ -55,13 +56,14 @@ class KandidatForUtmeldingRepository(
         db.update(sql, mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeId.toString()))
     }
 
-    fun hentKandidat(aktorId: AktorId): KandidatForUtmeldingHendelse? {
+    fun hentKandidat(oppfolgingsperiodeId: UUID): KandidatForUtmeldingHendelse? {
         return db.query(
             """
-            SELECT * FROM kandidat_for_utmelding 
-            WHERE aktor_id = :aktor_id
+            SELECT * FROM kandidater_for_utmelding 
+            
+            WHERE oppfolgingsperiode_uuid = :oppfolgingsperiodeId
             """.trimIndent(),
-            mapOf("aktor_id" to aktorId.get()),
+            mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeId.toString()),
         ) { rs, _ -> map(rs) }
             .firstOrNull()
     }
@@ -71,15 +73,16 @@ class KandidatForUtmeldingRepository(
         return when (type) {
             KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET,
             KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
-            KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_SVARTE_NEI_I_BEKREFTELSE -> ArbeidssøkerPeriodeAvsluttet(
-                aktorId = AktorId.of(resultSet.getString("aktor_id")),
-                fnr = Fnr.of(resultSet.getString("fnr")),
-                oppfolgingsperiodeUuid = UUID.fromString(resultSet.getString("oppfolgingsperiode_uuid")),
-                utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.valueOf(resultSet.getString("avsluttet_av")),
-                kilde = resultSet.getString("kilde"),
-                avslutningsarsak = resultSet.getString("detaljer"),
-                kandidatForUtmeldingHendelseType = type
-            )
+            KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_SVARTE_NEI_I_BEKREFTELSE -> resultSet.toArbeidssøkerPeriodeAvsluttet()
         }
     }
 }
+
+fun ResultSet.toArbeidssøkerPeriodeAvsluttet() = ArbeidssøkerPeriodeAvsluttet(
+    oppfolgingsperiodeUuid = UUID.fromString(getString("oppfolgingsperiode_uuid")),
+    utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.valueOf(getString("utfort_av_type")),
+    utfortAv = getString("utfort_av"),
+    kilde = getString("kilde"),
+    avslutningsarsak = JsonUtils.fromJson(getString("hendelseData"), ArbeidssøkerPeriodeAvsluttet.Detaljer::class.java).avslutningsarsak,
+    kandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.valueOf(getString("hendelse"))
+)

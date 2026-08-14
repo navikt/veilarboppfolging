@@ -17,10 +17,9 @@ class KandidatForUtmeldingHendelseTest {
         aarsakType: AvsluttetAarsakType
     ): ArbeidssøkerPeriodeAvsluttet =
         ArbeidssøkerPeriodeAvsluttet(
-            aktorId = aktorId,
-            fnr = fnr,
             oppfolgingsperiodeUuid = UUID.randomUUID(),
             utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
+            utfortAv = "A123123",
             kilde = "test",
             kandidatForUtmeldingHendelseType = kandidatForUtmeldingHendelseType,
             avslutningsarsak = aarsakType.toString()

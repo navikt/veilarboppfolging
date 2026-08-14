@@ -160,7 +160,7 @@ class AvsluttOppfolgingService(
             val sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder)
 
             arbeidsoppfolgingskontorRepository.slettNavKontor(sistePeriode.uuid)
-            kandidatForUtmeldingRepository.fjernKandidat(aktorId)
+            kandidatForUtmeldingRepository.fjernKandidat(sistePeriode.uuid)
 
             log.info("Oppfølgingsperiode avsluttet for bruker - publiserer endringer på oppfølgingsperiode-topics.")
             kafkaProducerService.publiserOppfolgingsperiode(DtoMappers.tilOppfolgingsperiodeDTO(sistePeriode))

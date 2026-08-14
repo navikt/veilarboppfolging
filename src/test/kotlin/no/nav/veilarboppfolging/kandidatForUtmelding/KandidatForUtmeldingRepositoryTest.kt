@@ -13,6 +13,7 @@ import no.nav.veilarboppfolging.test.DbTestUtils
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertInstanceOf
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.transaction.support.TransactionTemplate
 
@@ -32,23 +33,62 @@ class KandidatForUtmeldingRepositoryTest {
     }
 
     @Test
-    fun `Henter kandidat`() {
+    fun `Henter kandidat - skal gi ut kandidater som ikke er forlenget`() {
         val oppfolgingsbruker = arbeidssokerRegistrering(fnr, aktorId, BrukerRegistrant(fnr))
         oppfolgingsStatusRepository.opprettOppfolging(aktorId)
         oppfolgingsPeriodeRepository.start(oppfolgingsbruker)
         val oppfolgingsperiodeUuid = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId).first().uuid
-        kandidatForUtmeldingRepository.lagreKandidat(arbeidssøkerPeriodeAvsluttet(oppfolgingsperiodeUuid))
+        val avsluttet = arbeidssøkerPeriodeAvsluttet(oppfolgingsperiodeUuid)
+        kandidatForUtmeldingRepository.lagreKandidat(avsluttet)
 
-        val kandidat = kandidatForUtmeldingRepository.hentKandidat(aktorId)
+        val kandidat = kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeUuid)
 
-        assertThat(kandidat).isNotNull()
+        assertInstanceOf<ArbeidssøkerPeriodeAvsluttet>(kandidat)
+        assertThat(kandidat.avslutningsarsak).isEqualTo(avsluttet.avslutningsarsak)
+        assertThat(kandidat.oppfolgingsperiodeUuid).isEqualTo(oppfolgingsperiodeUuid)
+        assertThat(kandidat.kilde).isEqualTo(avsluttet.kilde)
+        assertThat(kandidat.utfortAv).isEqualTo(avsluttet.utfortAv)
+        assertThat(kandidat.utfortAvType).isEqualTo(avsluttet.utfortAvType)
+    }
+
+    @Test
+    fun `Hent kandidat - Skal ikke gi ut kandidater som er forlenget`() {
+        val oppfolgingsbruker = arbeidssokerRegistrering(fnr, aktorId, BrukerRegistrant(fnr))
+        oppfolgingsStatusRepository.opprettOppfolging(aktorId)
+        oppfolgingsPeriodeRepository.start(oppfolgingsbruker)
+        val oppfolgingsperiodeUuid = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId).first().uuid
+        val avsluttet = arbeidssøkerPeriodeAvsluttet(oppfolgingsperiodeUuid)
+        namedJdbcTemplate.update("""
+            UPDATE kandidater_for_utmelding SET forlenget_til = CURRENT_TIMESTAMP + INTERVAL '1 hour' WHERE oppfolgingsperiode_uuid = :oppfolgingsperiodeId
+        """.trimIndent(), mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeUuid))
+        kandidatForUtmeldingRepository.lagreKandidat(avsluttet)
+
+        val kandidat = kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeUuid)
+
+        assertThat(kandidat).isNull()
+    }
+
+    @Test
+    fun `Hent kandidat - Skal ikke gi ut kandidater som er forlenget også når forlengelsen er gått ut`() {
+        val oppfolgingsbruker = arbeidssokerRegistrering(fnr, aktorId, BrukerRegistrant(fnr))
+        oppfolgingsStatusRepository.opprettOppfolging(aktorId)
+        oppfolgingsPeriodeRepository.start(oppfolgingsbruker)
+        val oppfolgingsperiodeUuid = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId).first().uuid
+        val avsluttet = arbeidssøkerPeriodeAvsluttet(oppfolgingsperiodeUuid)
+        namedJdbcTemplate.update("""
+            UPDATE kandidater_for_utmelding SET forlenget_til = CURRENT_TIMESTAMP - INTERVAL '1 hour' WHERE oppfolgingsperiode_uuid = :oppfolgingsperiodeId
+        """.trimIndent(), mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeUuid))
+        kandidatForUtmeldingRepository.lagreKandidat(avsluttet)
+
+        val kandidat = kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeUuid)
+
+        assertThat(kandidat).isNull()
     }
 
     fun arbeidssøkerPeriodeAvsluttet(oppfolgingsperiodeUuid: UUID) = ArbeidssøkerPeriodeAvsluttet(
-        fnr = fnr,
-        aktorId = aktorId,
         oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
         utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
+        utfortAv = "A123123",
         kandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
         avslutningsarsak = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString(),
         kilde = "kilde"

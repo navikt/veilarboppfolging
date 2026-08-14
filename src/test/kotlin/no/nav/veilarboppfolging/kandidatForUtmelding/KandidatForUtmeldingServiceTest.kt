@@ -36,8 +36,10 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
         val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(FNR).get().uuid
 
         kandidatForUtmeldingService.lagreKandidatForUtmelding(
+            FNR,
             ArbeidssøkerPeriodeAvsluttet(
-                AKTOR_ID, FNR, utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
+                utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
+                utfortAv = "A123123",
                 kilde = "kilde",
                 oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
                 kandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
@@ -47,8 +49,7 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
 
         val kandidat = kandidatForUtmeldingRepository.hentKandidat(AKTOR_ID)
         assertThat(kandidat).isNotNull
-        assertThat(kandidat?.fnr).isEqualTo(FNR)
-        assertThat(kandidat?.aktorId).isEqualTo(AKTOR_ID)
+        assertThat(kandidat?.oppfolgingsperiodeUuid).isEqualTo(oppfolgingsperiodeUuid)
         assertThat(kandidat?.utfortAvType).isEqualTo(KandidatForUtmeldingHendelseUtfortAvType.VEILEDER)
         assertThat(kandidat?.kilde).isEqualTo("kilde")
         assertThat(kandidat?.hendelseDataJson).isEqualTo(BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString())
@@ -64,8 +65,10 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
         mockAap(FNR, harAap = false)
 
         kandidatForUtmeldingService.lagreKandidatForUtmelding(
+            FNR,
             ArbeidssøkerPeriodeAvsluttet(
-                AKTOR_ID, FNR, utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
+                utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
+                utfortAv = "A123123",
                 kilde = "kilde",
                 kandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
                 avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString(),
@@ -87,8 +90,10 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
         mockAap(FNR, harAap = false)
 
         kandidatForUtmeldingService.lagreKandidatForUtmelding(
+            FNR,
             ArbeidssøkerPeriodeAvsluttet(
-                AKTOR_ID, FNR, utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
+                utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
+                utfortAv = "A123123",
                 kilde = "kilde",
                 kandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
                 avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString(),
@@ -105,7 +110,8 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
         val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(FNR).get().uuid
         kandidatForUtmeldingRepository.lagreKandidat(
             ArbeidssøkerPeriodeAvsluttet(
-                AKTOR_ID, FNR, utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
+                utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
+                utfortAv = "A123123",
                 kilde = "kilde",
                 kandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
                 avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString(),
@@ -114,7 +120,7 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
         )
         assertThat(kandidatForUtmeldingRepository.hentKandidat(AKTOR_ID)).isNotNull()
 
-        kandidatForUtmeldingService.fjernKandidatForUtmelding(AKTOR_ID)
+        kandidatForUtmeldingService.fjernKandidatForUtmelding(oppfolgingsperiodeUuid)
 
         assertThat(kandidatForUtmeldingRepository.hentKandidat(AKTOR_ID)).isNull()
     }
@@ -123,7 +129,7 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
     fun `fjernKandidatForUtmelding feiler ikke når kandidat ikke finnes i databasen`() {
         assertThat(kandidatForUtmeldingRepository.hentKandidat(AKTOR_ID)).isNull()
 
-        kandidatForUtmeldingService.fjernKandidatForUtmelding(AKTOR_ID)
+        kandidatForUtmeldingService.fjernKandidatForUtmelding(UUID.randomUUID())
 
         assertThat(kandidatForUtmeldingRepository.hentKandidat(AKTOR_ID)).isNull()
     }

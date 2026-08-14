@@ -1,20 +1,17 @@
 package no.nav.veilarboppfolging.kandidatForUtmelding
 
-import no.nav.common.types.identer.AktorId
-import no.nav.common.types.identer.Fnr
 import java.util.UUID
 import no.nav.common.json.JsonUtils
+import org.postgresql.util.PGobject
 
 sealed class KandidatForUtmeldingHendelse(
-    val aktorId: AktorId,
-    val fnr: Fnr,
     val oppfolgingsperiodeUuid: UUID,
     val utfortAvType: KandidatForUtmeldingHendelseUtfortAvType,
     val utfortAv: String?,
     val kilde: String,
 ) {
     abstract val type: KandidatForUtmeldingHendelseType
-    abstract val hendelseDataJson: String?
+    abstract val hendelseDataJson: PGobject?
 
     fun mapTilTag(): KandidatForUtmeldingTag {
         return when (type) {
@@ -39,24 +36,23 @@ enum class KandidatForUtmeldingHendelseUtfortAvType {
 }
 
 class ArbeidssøkerPeriodeAvsluttet(
-    aktorId: AktorId,
-    fnr: Fnr,
     oppfolgingsperiodeUuid: UUID,
     utfortAvType: KandidatForUtmeldingHendelseUtfortAvType,
     utfortAv: String?,
     kilde: String,
-    avslutningsarsak: String,
-    kandidatForUtmeldingHendelseType: KandidatForUtmeldingHendelseType
+    kandidatForUtmeldingHendelseType: KandidatForUtmeldingHendelseType,
+    val avslutningsarsak: String
 ) : KandidatForUtmeldingHendelse(
-    aktorId,
-    fnr,
     oppfolgingsperiodeUuid,
     utfortAvType,
     utfortAv,
     kilde,
 ) {
     override val type: KandidatForUtmeldingHendelseType = kandidatForUtmeldingHendelseType
-    override val hendelseDataJson: String = JsonUtils.getMapper().writeValueAsString(Detaljer(avslutningsarsak))
+    override val hendelseDataJson: PGobject? = PGobject().apply {
+        type = "jsonb"
+        value = JsonUtils.getMapper().writeValueAsString(Detaljer(avslutningsarsak))
+    }
 
     data class Detaljer(
         val avslutningsarsak: String

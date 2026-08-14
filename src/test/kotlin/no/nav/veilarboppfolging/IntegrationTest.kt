@@ -267,17 +267,16 @@ open class IntegrationTest {
         oppfolgingsPeriodeRepository.start(bruker)
     }
 
-    fun lagreKandidatForUtmelding(aktorId: AktorId, fnr: Fnr, oppfolgingsperiodeUuid: UUID) {
+    fun lagreKandidatForUtmelding(fnr: Fnr, oppfolgingsperiodeUuid: UUID) {
         val kandidat = ArbeidssøkerPeriodeAvsluttet(
-            aktorId = aktorId,
-            fnr = fnr,
             oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
             utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
+            utfortAv = "A123123",
             kilde = "arbeidssøkerregisteret",
             kandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
             avslutningsarsak = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
         )
-        kandidatForUtmeldingService.lagreKandidatForUtmelding(kandidat)
+        kandidatForUtmeldingService.lagreKandidatForUtmelding(fnr,kandidat)
     }
 
     fun setTilordnetVeileder(aktorId: AktorId, veilederIdent: NavIdent) {

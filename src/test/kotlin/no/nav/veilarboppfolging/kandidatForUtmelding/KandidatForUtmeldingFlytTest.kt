@@ -136,10 +136,9 @@ class KandidatForUtmeldingFlytTest(
         startOppfolgingSomArbeidsoker(aktorId, Fnr.of(fnr))
         val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(Fnr.of(fnr)).get().uuid
         kandidatForUtmeldingRepository.lagreKandidat(ArbeidssøkerPeriodeAvsluttet(
-            aktorId = aktorId,
-            fnr = Fnr.of(fnr),
             oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
             utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
+            utfortAv = "A123123",
             kilde = "arbeidssøkerregisteret",
             kandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
             avslutningsarsak = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
@@ -158,10 +157,9 @@ class KandidatForUtmeldingFlytTest(
         startOppfolgingSomArbeidsoker(aktorId, Fnr.of(fnr))
         val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(Fnr.of(fnr)).get().uuid
         kandidatForUtmeldingRepository.lagreKandidat(ArbeidssøkerPeriodeAvsluttet(
-            aktorId = aktorId,
-            fnr = Fnr.of(fnr),
             oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
             utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
+            utfortAv = "A123123",
             kilde ="kilde",
             kandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
             avslutningsarsak = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
@@ -180,10 +178,9 @@ class KandidatForUtmeldingFlytTest(
         startOppfolgingSomArbeidsoker(aktorId, Fnr.of(fnr))
         val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(Fnr.of(fnr)).get().uuid
         kandidatForUtmeldingRepository.lagreKandidat(ArbeidssøkerPeriodeAvsluttet(
-            aktorId = aktorId,
-            fnr = Fnr.of(fnr),
             oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
             utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
+            utfortAv = "A123123",
             kilde ="kilde",
             kandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
             avslutningsarsak = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()        ))
@@ -200,10 +197,9 @@ class KandidatForUtmeldingFlytTest(
         startOppfolgingSomArbeidsoker(aktorId, Fnr.of(fnr))
         val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(Fnr.of(fnr)).get().uuid
         kandidatForUtmeldingRepository.lagreKandidat(ArbeidssøkerPeriodeAvsluttet(
-            aktorId = aktorId,
-            fnr = Fnr.of(fnr),
             oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
             utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
+            utfortAv = "A123123",
             kilde ="kilde",
             kandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
             avslutningsarsak = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
@@ -233,10 +229,9 @@ class KandidatForUtmeldingFlytTest(
         startOppfolgingSomArbeidsoker(aktorId, Fnr.of(fnr))
         val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(Fnr.of(fnr)).get().uuid
         kandidatForUtmeldingRepository.lagreKandidat(ArbeidssøkerPeriodeAvsluttet(
-            aktorId = aktorId,
-            fnr = Fnr.of(fnr),
             oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
             utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
+            utfortAv = "A123123",
             kilde ="kilde",
             kandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
             avslutningsarsak = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
@@ -258,10 +253,9 @@ class KandidatForUtmeldingFlytTest(
         mockArenaOppfolgingServiceRegistrerIkkeArbeidssoker(Fnr.of(fnr))
         val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(Fnr.of(fnr)).get().uuid
         kandidatForUtmeldingRepository.lagreKandidat(ArbeidssøkerPeriodeAvsluttet(
-            aktorId = aktorId,
-            fnr = Fnr.of(fnr),
             oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
             utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
+            utfortAv = "A123123",
             kilde ="kilde",
             kandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
             avslutningsarsak = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
