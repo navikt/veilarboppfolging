@@ -58,10 +58,10 @@ class KandidatForUtmeldingRepositoryTest {
         oppfolgingsPeriodeRepository.start(oppfolgingsbruker)
         val oppfolgingsperiodeUuid = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId).first().uuid
         val avsluttet = arbeidssøkerPeriodeAvsluttet(oppfolgingsperiodeUuid)
+        kandidatForUtmeldingRepository.lagreKandidat(avsluttet)
         namedJdbcTemplate.update("""
             UPDATE kandidater_for_utmelding SET forlenget_til = CURRENT_TIMESTAMP + INTERVAL '1 hour' WHERE oppfolgingsperiode_uuid = :oppfolgingsperiodeId
-        """.trimIndent(), mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeUuid))
-        kandidatForUtmeldingRepository.lagreKandidat(avsluttet)
+        """.trimIndent(), mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeUuid.toString()))
 
         val kandidat = kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeUuid)
 
@@ -75,10 +75,10 @@ class KandidatForUtmeldingRepositoryTest {
         oppfolgingsPeriodeRepository.start(oppfolgingsbruker)
         val oppfolgingsperiodeUuid = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId).first().uuid
         val avsluttet = arbeidssøkerPeriodeAvsluttet(oppfolgingsperiodeUuid)
+        kandidatForUtmeldingRepository.lagreKandidat(avsluttet)
         namedJdbcTemplate.update("""
             UPDATE kandidater_for_utmelding SET forlenget_til = CURRENT_TIMESTAMP - INTERVAL '1 hour' WHERE oppfolgingsperiode_uuid = :oppfolgingsperiodeId
-        """.trimIndent(), mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeUuid))
-        kandidatForUtmeldingRepository.lagreKandidat(avsluttet)
+        """.trimIndent(), mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeUuid.toString()))
 
         val kandidat = kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeUuid)
 

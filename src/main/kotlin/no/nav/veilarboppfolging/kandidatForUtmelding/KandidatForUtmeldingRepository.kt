@@ -59,9 +59,10 @@ class KandidatForUtmeldingRepository(
     fun hentKandidat(oppfolgingsperiodeId: UUID): KandidatForUtmeldingHendelse? {
         return db.query(
             """
-            SELECT * FROM kandidater_for_utmelding 
-            
-            WHERE oppfolgingsperiode_uuid = :oppfolgingsperiodeId
+            SELECT kfuh.*
+            FROM kandidater_for_utmelding kfu
+            JOIN kandidater_for_utmelding_hendelser kfuh ON kfu.siste_utmeldingshendelse_id = kfuh.utmeldingshendelse_id
+            WHERE kfu.oppfolgingsperiode_uuid = :oppfolgingsperiodeId AND kfu.forlenget_til IS NULL
             """.trimIndent(),
             mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeId.toString()),
         ) { rs, _ -> map(rs) }
@@ -83,6 +84,6 @@ fun ResultSet.toArbeidssøkerPeriodeAvsluttet() = ArbeidssøkerPeriodeAvsluttet(
     utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.valueOf(getString("utfort_av_type")),
     utfortAv = getString("utfort_av"),
     kilde = getString("kilde"),
-    avslutningsarsak = JsonUtils.fromJson(getString("hendelseData"), ArbeidssøkerPeriodeAvsluttet.Detaljer::class.java).avslutningsarsak,
+    avslutningsarsak = JsonUtils.fromJson(getString("hendelse_data"), ArbeidssøkerPeriodeAvsluttet.Detaljer::class.java).avslutningsarsak,
     kandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.valueOf(getString("hendelse"))
 )
