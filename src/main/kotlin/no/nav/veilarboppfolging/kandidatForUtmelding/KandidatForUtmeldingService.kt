@@ -6,11 +6,14 @@ import no.nav.veilarboppfolging.service.AvsluttOppfolgingService
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.util.UUID
+import kotlin.jvm.optionals.getOrNull
+import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 
 @Service
 class KandidatForUtmeldingService(
     private val avsluttOppfolgingService: AvsluttOppfolgingService,
-    private val kandidatForUtmeldingRepository: KandidatForUtmeldingRepository
+    private val kandidatForUtmeldingRepository: KandidatForUtmeldingRepository,
+    private val oppfolgingsPeriodeRepository: OppfolgingsPeriodeRepository,
 ) {
 
     private val logger = LoggerFactory.getLogger(this::class.java)
@@ -42,5 +45,10 @@ class KandidatForUtmeldingService(
 
     fun hentKandidatForUtmeldingTag(oppfolgingsperiodeId: UUID): KandidatForUtmeldingTag? {
         return kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeId)?.mapTilTag()
+    }
+
+    fun hentKandidatForUtmeldingTag(aktorId: AktorId): KandidatForUtmeldingTag? {
+        val oppfolgingsperiodeId = oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId)?.getOrNull()?.uuid ?: return null
+        return hentKandidatForUtmeldingTag(oppfolgingsperiodeId)
     }
 }

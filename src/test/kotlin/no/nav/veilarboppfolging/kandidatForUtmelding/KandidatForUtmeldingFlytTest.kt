@@ -70,12 +70,12 @@ class KandidatForUtmeldingFlytTest(
         mockArbeidssoekerregisteret(Fnr.of(fnr), erArbeidssoeker = false)
         mockAap(Fnr.of(fnr), harAap = false)
 
-        assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNull()
+        assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId)).isNull()
 
         val sluttMelding = ConsumerRecord("topic", 0, 0, "dummyKey", arbeidssokerperiode(fnr, periodeAvsluttet = true))
         arbeidssoekerperiodeConsumerService.consumeArbeidssøkerperiode(sluttMelding)
 
-        assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNotNull()
+        assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId)).isNotNull()
     }
 
     @Test
@@ -148,7 +148,7 @@ class KandidatForUtmeldingFlytTest(
         val registrering = OppfolgingsRegistrering.manuellRegistreringVeileder(Fnr.of(fnr), aktorId, VeilederRegistrant(NavIdent("veileder")), null, true)
         startOppfolging(aktorId, registrering)
 
-        assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNull()
+        assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId)).isNull()
     }
 
     @Test
@@ -169,7 +169,7 @@ class KandidatForUtmeldingFlytTest(
         val registrering = OppfolgingsRegistrering.manuellRegistreringBruker(Fnr.of(fnr), aktorId)
         startOppfolging(aktorId, registrering)
 
-        assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNull()
+        assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId)).isNull()
     }
 
     @Test
@@ -188,7 +188,7 @@ class KandidatForUtmeldingFlytTest(
         val registrering = OppfolgingsRegistrering.arbeidssokerRegistrering(Fnr.of(fnr), aktorId, VeilederRegistrant(NavIdent("veileder")))
         startOppfolging(aktorId, registrering)
 
-        assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNull()
+        assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId)).isNull()
     }
 
     @Test
@@ -204,7 +204,7 @@ class KandidatForUtmeldingFlytTest(
             kandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
             avslutningsarsak = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
         ))
-        assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNotNull()
+        assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId)).isNotNull()
 
         val nyPeriode = arbeidssokerperiode(
             fnr,
@@ -220,7 +220,7 @@ class KandidatForUtmeldingFlytTest(
             )
         )
 
-        assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNull()
+        assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId)).isNull()
     }
 
     @Test
@@ -242,7 +242,7 @@ class KandidatForUtmeldingFlytTest(
             Formidlingsgruppe.IARBS, Kvalifiseringsgruppe.VURDU)
         startOppfolging(aktorId, registrering)
 
-        assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNull()
+        assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId)).isNull()
     }
 
     @Test
@@ -260,11 +260,11 @@ class KandidatForUtmeldingFlytTest(
             kandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
             avslutningsarsak = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
         ))
-        assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNotNull()
+        assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId)).isNotNull()
 
         reaktiveringService.reaktiverBrukerIArena(Fnr.of(fnr))
 
-        assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNull()
+        assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId)).isNull()
     }
 
     @Test
@@ -277,13 +277,13 @@ class KandidatForUtmeldingFlytTest(
         mockArbeidssoekerregisteret(Fnr.of(fnr), erArbeidssoeker = false)
         mockAap(Fnr.of(fnr), harAap = false)
 
-        assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNull()
+        assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId)).isNull()
 
         val sluttMelding = ConsumerRecord("topic", 0, 0, "dummyKey", arbeidssokerperiode(fnr, periodeAvsluttet = true, avsluttetAarsakType = AvsluttetAarsakType.SVARTE_NEI_I_BEKREFTELSE))
         arbeidssoekerperiodeConsumerService.consumeArbeidssøkerperiode(sluttMelding)
 
-        assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)?.type).isEqualTo(
-            KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_SVARTE_NEI_I_BEKREFTELSE)
+        assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId))!!.isEqualTo(
+            KandidatForUtmeldingTag.ARBEIDSSOKERPERIODE_AVSLUTTET_SVARTE_NEI_I_BEKREFTELSE)
     }
 
     @Test
@@ -296,13 +296,13 @@ class KandidatForUtmeldingFlytTest(
         mockArbeidssoekerregisteret(Fnr.of(fnr), erArbeidssoeker = false)
         mockAap(Fnr.of(fnr), harAap = false)
 
-        assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNull()
+        assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId)).isNull()
 
         val sluttMelding = ConsumerRecord("topic", 0, 0, "dummyKey", arbeidssokerperiode(fnr, periodeAvsluttet = true, avsluttetAarsakType = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST))
         arbeidssoekerperiodeConsumerService.consumeArbeidssøkerperiode(sluttMelding)
 
-        assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)?.type).isEqualTo(
-            KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT)
+        assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId))!!.isEqualTo(
+            KandidatForUtmeldingTag.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT)
     }
 
     private fun arbeidssokerperiode(

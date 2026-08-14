@@ -1,5 +1,6 @@
 package no.nav.veilarboppfolging.kandidatForUtmelding
 
+import java.util.UUID
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.paw.arbeidssokerregisteret.api.v1.AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST
@@ -10,7 +11,6 @@ import no.nav.veilarboppfolging.repository.UtmeldingRepository
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import java.util.UUID
 
 class KandidatForUtmeldingServiceTest : IntegrationTest() {
 
@@ -47,7 +47,7 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
             )
         )
 
-        val kandidat = kandidatForUtmeldingRepository.hentKandidat(AKTOR_ID)
+        val kandidat = kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeUuid)
         assertThat(kandidat).isNotNull
         assertThat(kandidat?.oppfolgingsperiodeUuid).isEqualTo(oppfolgingsperiodeUuid)
         assertThat(kandidat?.utfortAvType).isEqualTo(KandidatForUtmeldingHendelseUtfortAvType.VEILEDER)
@@ -64,6 +64,8 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
         mockArbeidssoekerregisteret(FNR, erArbeidssoeker = false)
         mockAap(FNR, harAap = false)
 
+        val oppfolgingsperiodeId = UUID.randomUUID()
+
         kandidatForUtmeldingService.lagreKandidatForUtmelding(
             FNR,
             ArbeidssøkerPeriodeAvsluttet(
@@ -72,11 +74,11 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
                 kilde = "kilde",
                 kandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
                 avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString(),
-                oppfolgingsperiodeUuid = UUID.randomUUID(),
+                oppfolgingsperiodeUuid = oppfolgingsperiodeId,
             )
         )
 
-        assertThat(kandidatForUtmeldingRepository.hentKandidat(AKTOR_ID)).isNull()
+        assertThat(kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeId)).isNull()
     }
 
     @Test
@@ -88,6 +90,7 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
         mockUngdomsprogram(FNR, erDeltaker = false)
         mockArbeidssoekerregisteret(FNR, erArbeidssoeker = true)
         mockAap(FNR, harAap = false)
+        val oppfolgingsperiodeId = UUID.randomUUID()
 
         kandidatForUtmeldingService.lagreKandidatForUtmelding(
             FNR,
@@ -97,11 +100,11 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
                 kilde = "kilde",
                 kandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
                 avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString(),
-                oppfolgingsperiodeUuid = UUID.randomUUID(),
+                oppfolgingsperiodeUuid = oppfolgingsperiodeId,
             )
         )
 
-        assertThat(kandidatForUtmeldingRepository.hentKandidat(AKTOR_ID)).isNull()
+        assertThat(kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeId)).isNull()
     }
 
     @Test
@@ -118,20 +121,21 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
                 oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
             )
         )
-        assertThat(kandidatForUtmeldingRepository.hentKandidat(AKTOR_ID)).isNotNull()
+        assertThat(kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeUuid)).isNotNull()
 
         kandidatForUtmeldingService.fjernKandidatForUtmelding(oppfolgingsperiodeUuid)
 
-        assertThat(kandidatForUtmeldingRepository.hentKandidat(AKTOR_ID)).isNull()
+        assertThat(kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeUuid)).isNull()
     }
 
     @Test
     fun `fjernKandidatForUtmelding feiler ikke når kandidat ikke finnes i databasen`() {
-        assertThat(kandidatForUtmeldingRepository.hentKandidat(AKTOR_ID)).isNull()
+        val oppfolgingsperiodeId = UUID.randomUUID()
+        assertThat(kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeId)).isNull()
 
-        kandidatForUtmeldingService.fjernKandidatForUtmelding(UUID.randomUUID())
+        kandidatForUtmeldingService.fjernKandidatForUtmelding(oppfolgingsperiodeId)
 
-        assertThat(kandidatForUtmeldingRepository.hentKandidat(AKTOR_ID)).isNull()
+        assertThat(kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeId)).isNull()
     }
 }
 
