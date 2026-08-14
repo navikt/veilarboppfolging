@@ -39,9 +39,9 @@ open class StartOppfolgingService(
 ) {
     val log = LoggerFactory.getLogger(StartOppfolgingService::class.java)
 
-    fun startOppfolgingHvisIkkeAlleredeStartet(oppfolgingsbruker: OppfolgingsRegistrering) {
-        val aktorId = oppfolgingsbruker.aktorId
-        val fnr = oppfolgingsbruker.fnr
+    fun startOppfolgingHvisIkkeAlleredeStartet(oppfolgingsRegistrering: OppfolgingsRegistrering) {
+        val aktorId = oppfolgingsRegistrering.aktorId
+        val fnr = oppfolgingsRegistrering.fnr
         val kontaktinfo = manuellStatusService.hentDigdirKontaktinfo(fnr)
 
         transactor.executeWithoutResult { _ ->
@@ -64,16 +64,16 @@ open class StartOppfolgingService(
                 }
             }
 
-            oppfolgingsPeriodeRepository.start(oppfolgingsbruker)
+            oppfolgingsPeriodeRepository.start(oppfolgingsRegistrering)
 
             val perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId)
             val sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder)
-            val arbeidsoppfolgingskontor = when (oppfolgingsbruker) {
+            val arbeidsoppfolgingskontor = when (oppfolgingsRegistrering) {
                 is ManuellRegistreringVeileder -> {
-                    oppfolgingsbruker.kontorSattAvVeileder
+                    oppfolgingsRegistrering.kontorSattAvVeileder
                 }
                 is SystemRegistrering -> {
-                    oppfolgingsbruker.kontor
+                    oppfolgingsRegistrering.kontor
                 }
                 else -> {
                     null
@@ -87,11 +87,12 @@ open class StartOppfolgingService(
             publiserMinSideBeskjedHvisIkkeReservert(kontaktinfo, aktorId, fnr)
 
             bigQueryClient.loggStartOppfolgingsperiode(
-                oppfolgingsbruker.oppfolgingStartBegrunnelse,
+                oppfolgingsRegistrering.oppfolgingStartBegrunnelse,
                 sistePeriode.uuid,
-                oppfolgingsbruker.registrertAv.getType(),
-                Optional.ofNullable(getKvalifiseringsGruppe(oppfolgingsbruker)),
-                if (oppfolgingsbruker is ManuellRegistreringVeileder) oppfolgingsbruker.manueltSjekketLovligOpphold else null,
+                oppfolgingsRegistrering.registrertAv.getType(),
+                Optional.ofNullable(getKvalifiseringsGruppe(oppfolgingsRegistrering)),
+                if (oppfolgingsRegistrering is ManuellRegistreringVeileder) oppfolgingsRegistrering.manueltSjekketLovligOpphold else null,
+                perioder.mapNotNull { it.sluttDato }.maxByOrNull { it }
             )
         }
     }
