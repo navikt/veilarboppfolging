@@ -41,7 +41,7 @@ class ArbeidssøkerPeriodeAvsluttet(
     utfortAv: String?,
     kilde: String,
     kandidatForUtmeldingHendelseType: KandidatForUtmeldingHendelseType,
-    val avslutningsarsak: String
+    val avslutningsarsak: String?
 ) : KandidatForUtmeldingHendelse(
     oppfolgingsperiodeUuid,
     utfortAvType,
@@ -49,13 +49,15 @@ class ArbeidssøkerPeriodeAvsluttet(
     kilde,
 ) {
     override val type: KandidatForUtmeldingHendelseType = kandidatForUtmeldingHendelseType
-    override val hendelseDataJson: PGobject? = PGobject().apply {
-        type = "jsonb"
-        value = JsonUtils.getMapper().writeValueAsString(Detaljer(avslutningsarsak))
+    override val hendelseDataJson: PGobject? = avslutningsarsak?.let {
+        PGobject().apply {
+            type = "jsonb"
+            value = JsonUtils.getMapper().writeValueAsString(Detaljer(it))
+        }
     }
 
     data class Detaljer(
-        val avslutningsarsak: String
+        val avslutningsarsak: String?
     )
 }
 

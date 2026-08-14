@@ -3,6 +3,7 @@ package no.nav.veilarboppfolging.kandidatForUtmelding
 import java.sql.ResultSet
 import java.util.UUID
 import no.nav.common.json.JsonUtils
+import no.nav.veilarboppfolging.repository.getStringOrNull
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Repository
 
@@ -82,6 +83,6 @@ fun ResultSet.toArbeidssøkerPeriodeAvsluttet() = ArbeidssøkerPeriodeAvsluttet(
     utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.valueOf(getString("utfort_av_type")),
     utfortAv = getString("utfort_av"),
     kilde = getString("kilde"),
-    avslutningsarsak = JsonUtils.fromJson(getString("hendelse_data"), ArbeidssøkerPeriodeAvsluttet.Detaljer::class.java).avslutningsarsak,
+    avslutningsarsak = getStringOrNull("hendelse_data")?.let { JsonUtils.fromJson(it, ArbeidssøkerPeriodeAvsluttet.Detaljer::class.java).avslutningsarsak },
     kandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.valueOf(getString("hendelse"))
 )
