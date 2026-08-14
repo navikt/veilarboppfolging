@@ -64,7 +64,8 @@ open class ArbeidssøkerperiodeConsumerService(
 
         val nyPeriode = arbeidssøkerperiode.avsluttet == null
         if (nyPeriode) {
-            val nyestePeriodeStartDato = oppfolgingsperioder.maxByOrNull { it.startDato }?.startDato
+            val nyestePeriode = oppfolgingsperioder.maxByOrNull { it.startDato }
+            val nyestePeriodeStartDato = nyestePeriode?.startDato
             if (nyestePeriodeStartDato?.isAfter(arbeidssøkerperiodeStartet) == true) {
                 logger.info("Har allerede registrert oppfølgingsperiode etter startdato for arbeidssøkerperiode")
                 return
@@ -78,6 +79,8 @@ open class ArbeidssøkerperiodeConsumerService(
 
             startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.arbeidssokerRegistrering(fnr, aktørId, registrant))
             utmeldHvisBrukerBleIservEtterArbeidssøkerRegistrering(fnr, arbeidssøkerperiodeStartet, aktørId)
+            if(nyestePeriode != null)
+                kandidatForUtmeldingService.fjernKandidatForUtmelding(nyestePeriode.uuid)
         } else {
             logger.info("Melding om avsluttet arbeidssøkerperiode, flagger som utmeldingskandidat hvis under oppfølging")
             val gjeldendePeriode = oppfolgingsperioder.firstOrNull { it.sluttDato == null }
