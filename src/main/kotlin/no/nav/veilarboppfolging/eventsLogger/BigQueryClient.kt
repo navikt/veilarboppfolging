@@ -89,7 +89,7 @@ class BigQueryClientImplementation(private val bigQuery: BigQuery): BigQueryClie
                 "timestamp" to ZonedDateTime.now().toOffsetDateTime().toString(),
                 "event" to BigQueryEventType.OPFOLGINGSPERIODE_START.name,
                 "kvalifiseringsgruppe" to kvalifiseringsgruppe.map { it.name }.orElse(null),
-                "forrigePeriodeAvsluttet" to forrigePeriodeAvsluttet?.toOffsetDateTime().toString(),
+                "forrigePeriodeAvsluttet" to forrigePeriodeAvsluttet?.toOffsetDateTime()?.toString(),
             ) + (if (manuellSjekkLovligOpphold != null) mapOf("manuellSjekkLovligOpphold" to manuellSjekkLovligOpphold) else emptyMap())
         }
     }
