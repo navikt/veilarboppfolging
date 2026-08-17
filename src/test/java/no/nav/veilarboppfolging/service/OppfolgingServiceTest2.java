@@ -1,5 +1,6 @@
 package no.nav.veilarboppfolging.service;
 
+import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.NavIdent;
@@ -94,7 +95,8 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
                 new KvpRepository(db, namedParameterJdbcTemplate, transactor), maalRepository,
                 new BrukerOppslagFlereOppfolgingAktorRepository(db),
                 arbeidsoppfolgingsKontorService,
-                mock(TiltakshistorikkClient.class)
+                mock(TiltakshistorikkClient.class),
+                mock(AktorOppslagClient.class)
             );
 
         startOppfolgingService = new StartOppfolgingService(

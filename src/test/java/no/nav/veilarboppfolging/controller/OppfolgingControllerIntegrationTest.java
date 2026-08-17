@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
+import no.nav.common.client.aktoroppslag.BrukerIdenter;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.NavIdent;
@@ -133,8 +134,8 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
         // ISERV i arena, ingen ytelser i arena, ingen aktive tiltak hos komet.
         when(veilarbarenaClient.getArenaOppfolgingsstatus(FNR)).thenReturn(Optional.of(new VeilarbArenaOppfolgingsStatus(null, null, "ISERV", null, null, null)));
         when(veilarbarenaClient.hentOppfolgingsbruker(FNR)).thenReturn(new ArenaOppfolginsBrukerOppslagResult.Success(lagArenaBruker("ISERV")));
-        when(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(FNR.get())).thenReturn(false);
-        when(ungdomsprogramClient.erDeltakerIUngdomsprogrammet(FNR.get())).thenReturn(false);
+        when(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(List.of(FNR))).thenReturn(false);
+        when(ungdomsprogramClient.erDeltakerIUngdomsprogrammet(FNR)).thenReturn(false);
 
         var navIdent = new NavIdent("Z151515");
         var begrunnelse = "Har fått jobb";
@@ -157,7 +158,7 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
         when(veilarbarenaClient.hentOppfolgingsbruker(FNR)).thenReturn(
                 new ArenaOppfolginsBrukerOppslagResult.Success(lagArenaBruker("ISERV"))
         );
-        when(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(FNR.get())).thenReturn(true);
+        when(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(List.of(FNR))).thenReturn(true);
 
         var dto = new AvsluttOppfolgingV2Request(new NavIdent("Z151515"), "Begrunnelse", FNR);
         var avslutningStatus = oppfolgingV2Controller.avsluttOppfolging(dto);
@@ -175,8 +176,8 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
         doReturn(permit).when(poaoTilgangClient).evaluatePolicy(any());
         // ISERV i arena, ingen ytelser i arena, ingen aktive tiltak, men deltaker i ungdomsprogrammet.
         when(veilarbarenaClient.hentOppfolgingsbruker(FNR)).thenReturn(new ArenaOppfolginsBrukerOppslagResult.Success(lagArenaBruker("ISERV")));
-        when(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(FNR.get())).thenReturn(false);
-        when(ungdomsprogramClient.erDeltakerIUngdomsprogrammet(FNR.get())).thenReturn(true);
+        when(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(List.of(FNR))).thenReturn(false);
+        when(ungdomsprogramClient.erDeltakerIUngdomsprogrammet(FNR)).thenReturn(true);
 
         var dto = new AvsluttOppfolgingV2Request(new NavIdent("Z151515"), "Begrunnelse", FNR);
         var avslutningStatus = oppfolgingV2Controller.avsluttOppfolging(dto);
@@ -192,8 +193,8 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
         ApiResult<Decision> permit = ApiResult.Companion.success(Decision.Permit.INSTANCE);
         doReturn(permit).when(poaoTilgangClient).evaluatePolicy(any());
         when(veilarbarenaClient.hentOppfolgingsbruker(FNR)).thenReturn(new ArenaOppfolginsBrukerOppslagResult.Success(lagArenaBruker("ISERV")));
-        when(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(FNR.get())).thenReturn(false);
-        when(ungdomsprogramClient.erDeltakerIUngdomsprogrammet(FNR.get())).thenReturn(false);
+        when(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(List.of(FNR))).thenReturn(false);
+        when(ungdomsprogramClient.erDeltakerIUngdomsprogrammet(FNR)).thenReturn(false);
         when(arbeidssoekerregisteretClient.erArbeidssoeker(FNR.get())).thenReturn(true);
 
         var dto = new AvsluttOppfolgingV2Request(new NavIdent("Z151515"), "Begrunnelse", FNR);
@@ -211,8 +212,8 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
         ApiResult<Decision> permit = ApiResult.Companion.success(Decision.Permit.INSTANCE);
         doReturn(permit).when(poaoTilgangClient).evaluatePolicy(any());
         when(veilarbarenaClient.hentOppfolgingsbruker(FNR)).thenReturn(new ArenaOppfolginsBrukerOppslagResult.Success(lagArenaBruker("ISERV")));
-        when(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(FNR.get())).thenReturn(false);
-        when(ungdomsprogramClient.erDeltakerIUngdomsprogrammet(FNR.get())).thenReturn(false);
+        when(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(List.of(FNR))).thenReturn(false);
+        when(ungdomsprogramClient.erDeltakerIUngdomsprogrammet(FNR)).thenReturn(false);
         when(arbeidssoekerregisteretClient.erArbeidssoeker(FNR.get())).thenReturn(false);
         when(aapClient.harAap(FNR.get())).thenReturn(true);
 
@@ -271,6 +272,7 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
         when(authContextHolder.erEksternBruker()).thenReturn(false);
         when(aktorOppslagClient.hentAktorId(FNR)).thenReturn(AKTOR_ID);
         when(aktorOppslagClient.hentFnr(AKTOR_ID)).thenReturn(FNR);
+        when(aktorOppslagClient.hentIdenter(FNR)).thenReturn(new BrukerIdenter(FNR, AKTOR_ID, List.of(), List.of()));
     }
 
 }

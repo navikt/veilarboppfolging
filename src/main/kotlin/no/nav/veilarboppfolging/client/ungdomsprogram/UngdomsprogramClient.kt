@@ -1,5 +1,6 @@
 package no.nav.veilarboppfolging.client.ungdomsprogram
 
+import no.nav.common.types.identer.Fnr
 import java.util.function.Supplier
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -30,12 +31,12 @@ class UngdomsprogramClient(
 
     private val mediaTypeJson = "application/json".toMediaType()
 
-    fun erDeltakerIUngdomsprogrammet(personident: String): Boolean {
+    fun erDeltakerIUngdomsprogrammet(personident: Fnr): Boolean {
         val request = Request.Builder()
             .url("$baseUrl/ekstern/deltakelse/sjekk")
             .addHeader("Authorization", "Bearer ${tokenProvider.get()}")
             .post(
-                objectMapper.writeValueAsString(SjekkDeltakelseRequest(personident))
+                objectMapper.writeValueAsString(SjekkDeltakelseRequest(personident.get()))
                     .toRequestBody(mediaTypeJson)
             )
             .build()

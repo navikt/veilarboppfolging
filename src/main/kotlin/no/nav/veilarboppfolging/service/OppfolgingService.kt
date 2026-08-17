@@ -1,5 +1,6 @@
 package no.nav.veilarboppfolging.service
 
+import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.poao_tilgang.client.TilgangType
@@ -45,7 +46,8 @@ class OppfolgingService @Autowired constructor(
     private val maalRepository: MaalRepository,
     private val brukerOppslagFlereOppfolgingAktorRepository: BrukerOppslagFlereOppfolgingAktorRepository,
     private val arbeidsoppfolgingsKontorService: ArbeidsoppfolgingsKontorService,
-    private val tiltakshistorikkClient: TiltakshistorikkClient
+    private val tiltakshistorikkClient: TiltakshistorikkClient,
+    private val aktorOppslagClient: AktorOppslagClient
 ) {
     private val log: Logger = LoggerFactory.getLogger(this.javaClass)
 
@@ -188,7 +190,9 @@ class OppfolgingService @Autowired constructor(
     }
 
     fun harAktiveTiltaksdeltakelser(fnr: Fnr): Boolean {
-        return tiltakshistorikkClient.harAktiveTiltaksdeltakelser(fnr.get())
+        val identer = aktorOppslagClient.hentIdenter(fnr)
+            .let { it.historiskeFnr + listOf(it.fnr) }
+        return tiltakshistorikkClient.harAktiveTiltaksdeltakelser(identer)
     }
 
     private fun getOppfolgingStatus(fnr: Fnr?): OppfolgingEntity? {

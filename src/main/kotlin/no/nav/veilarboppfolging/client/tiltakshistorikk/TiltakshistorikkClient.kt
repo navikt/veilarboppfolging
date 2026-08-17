@@ -1,5 +1,7 @@
 package no.nav.veilarboppfolging.client.tiltakshistorikk
 
+import no.nav.common.types.identer.EksternBrukerId
+import no.nav.common.types.identer.Fnr
 import java.util.function.Supplier
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -11,6 +13,7 @@ import tools.jackson.databind.cfg.DateTimeFeature
 import tools.jackson.databind.json.JsonMapper
 import tools.jackson.module.kotlin.KotlinModule
 import tools.jackson.module.kotlin.readValue
+import java.util.function.Function
 
 // Dokumentasjon: https://github.com/navikt/mulighetsrommet/tree/main/mulighetsrommet-tiltakshistorikk
 class TiltakshistorikkClient(
@@ -28,8 +31,8 @@ class TiltakshistorikkClient(
 
     private val mediaTypeJson = "application/json".toMediaType()
 
-    fun harAktiveTiltaksdeltakelser(personident: String): Boolean {
-        val tiltakshistorikk = hentTiltaksdeltakelser(personident)
+    fun harAktiveTiltaksdeltakelser(personidenter: List<EksternBrukerId>): Boolean {
+        val tiltakshistorikk = hentTiltaksdeltakelser(personidenter)
         logger.info("Fant ${tiltakshistorikk.size} tiltaksdeltakelser")
         val aktiveTiltaksdeltakelser = tiltakshistorikk.filter {
             it.erAktiv()
@@ -38,12 +41,12 @@ class TiltakshistorikkClient(
         return aktiveTiltaksdeltakelser.isNotEmpty()
     }
 
-    private fun hentTiltaksdeltakelser(personident: String): List<TiltakshistorikkV1Dto> {
-        val response = hentTiltakshistorikk(personident)
+    private fun hentTiltaksdeltakelser(personidenter: List<EksternBrukerId>): List<TiltakshistorikkV1Dto> {
+        val response = hentTiltakshistorikk(personidenter)
 
         if (response.kunneIkkeHenteDeltakelserFraTeamTiltak()) {
             logger.warn("Tiltakshistorikk kunne ikke hente tiltak fra Team Tiltak. Prøver på nytt..")
-            val retryResponse = hentTiltakshistorikk(personident)
+            val retryResponse = hentTiltakshistorikk(personidenter)
 
             if (retryResponse.kunneIkkeHenteDeltakelserFraTeamTiltak()) {
                 logger.warn("Tiltakshistorikk kunne ikke hente tiltak fra Team Tiltak med retry, returnerer responsen")
@@ -54,11 +57,11 @@ class TiltakshistorikkClient(
         }
     }
 
-    private fun hentTiltakshistorikk(personident: String): TiltakshistorikkResponse {
+    private fun hentTiltakshistorikk(personidenter: List<EksternBrukerId>): TiltakshistorikkResponse {
         val request = Request.Builder()
             .url("$baseUrl/api/v1/historikk")
             .addHeader("Authorization", "Bearer ${tokenProvider.get()}")
-            .post(objectMapper.writeValueAsString(TiltakshistorikkRequest(listOf(NorskIdent(personident)))).toRequestBody(mediaTypeJson))
+            .post(objectMapper.writeValueAsString(TiltakshistorikkRequest(personidenter.map { NorskIdent(it.get()) })).toRequestBody(mediaTypeJson))
             .build()
 
         httpClient.newCall(request).execute().use { response ->
