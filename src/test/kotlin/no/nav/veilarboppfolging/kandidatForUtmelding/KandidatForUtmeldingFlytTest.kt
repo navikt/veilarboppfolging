@@ -205,6 +205,8 @@ class KandidatForUtmeldingFlytTest(
             detaljer = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()        ))
 
         avsluttOppfolgingManueltSomVeileder(aktorId)
+        val registrering = OppfolgingsRegistrering.arbeidssokerRegistrering(Fnr.of(fnr), aktorId, VeilederRegistrant(NavIdent("veileder")))
+        startOppfolging(aktorId, registrering)
 
         assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNull()
     }
