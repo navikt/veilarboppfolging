@@ -754,7 +754,7 @@ class GraphqlControllerTest: IntegrationTest() {
         mockVeilarbArenaOppfolgingsBruker(fnr, Formidlingsgruppe.ISERV)
         setBrukerUnderOppfolging(aktorId, fnr)
         val oppfolgingsperiode = hentOppfolgingsperioder(fnr).first { it.sluttDato == null }
-        lagreKandidatForUtmelding(aktorId, fnr, oppfolgingsperiode.uuid)
+        lagreKandidatForUtmelding(fnr, oppfolgingsperiode.uuid)
 
         /* Query is hidden in test/resources/graphl-test :) */
         val result = tester.documentName("hentKandidatForUtmeldingTag").variable("fnr", fnr.get()).execute()

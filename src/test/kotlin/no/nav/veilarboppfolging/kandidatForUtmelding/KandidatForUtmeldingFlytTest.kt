@@ -6,7 +6,6 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.UUID
 import no.nav.common.types.identer.AktorId
-import no.nav.common.types.identer.EnhetId
 import no.nav.common.types.identer.Fnr
 import no.nav.common.types.identer.NavIdent
 import no.nav.paw.arbeidssokerregisteret.api.v1.Aarsaksinformasjon
@@ -71,12 +70,12 @@ class KandidatForUtmeldingFlytTest(
         mockArbeidssoekerregisteret(Fnr.of(fnr), erArbeidssoeker = false)
         mockAap(Fnr.of(fnr), harAap = false)
 
-        assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNull()
+        assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId)).isNull()
 
         val sluttMelding = ConsumerRecord("topic", 0, 0, "dummyKey", arbeidssokerperiode(fnr, periodeAvsluttet = true))
         arbeidssoekerperiodeConsumerService.consumeArbeidssøkerperiode(sluttMelding)
 
-        assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNotNull()
+        assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId)).isNotNull()
     }
 
     @Test
@@ -137,20 +136,19 @@ class KandidatForUtmeldingFlytTest(
         startOppfolgingSomArbeidsoker(aktorId, Fnr.of(fnr))
         val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(Fnr.of(fnr)).get().uuid
         kandidatForUtmeldingRepository.lagreKandidat(ArbeidssøkerPeriodeAvsluttet(
-            aktorId = aktorId,
-            fnr = Fnr.of(fnr),
             oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
-            avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER,
+            utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
+            utfortAv = "A123123",
             kilde = "arbeidssøkerregisteret",
             kandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
-            detaljer = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
+            avslutningsarsak = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
         ))
         avsluttOppfolgingManueltSomVeileder(aktorId)
 
         val registrering = OppfolgingsRegistrering.manuellRegistreringVeileder(Fnr.of(fnr), aktorId, VeilederRegistrant(NavIdent("veileder")), null, true)
         startOppfolging(aktorId, registrering)
 
-        assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNull()
+        assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId)).isNull()
     }
 
     @Test
@@ -159,20 +157,19 @@ class KandidatForUtmeldingFlytTest(
         startOppfolgingSomArbeidsoker(aktorId, Fnr.of(fnr))
         val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(Fnr.of(fnr)).get().uuid
         kandidatForUtmeldingRepository.lagreKandidat(ArbeidssøkerPeriodeAvsluttet(
-            aktorId = aktorId,
-            fnr = Fnr.of(fnr),
             oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
-            avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER,
+            utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
+            utfortAv = "A123123",
             kilde ="kilde",
             kandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
-            detaljer = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
+            avslutningsarsak = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
         ))
         avsluttOppfolgingManueltSomVeileder(aktorId)
 
         val registrering = OppfolgingsRegistrering.manuellRegistreringBruker(Fnr.of(fnr), aktorId)
         startOppfolging(aktorId, registrering)
 
-        assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNull()
+        assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId)).isNull()
     }
 
     @Test
@@ -181,18 +178,17 @@ class KandidatForUtmeldingFlytTest(
         startOppfolgingSomArbeidsoker(aktorId, Fnr.of(fnr))
         val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(Fnr.of(fnr)).get().uuid
         kandidatForUtmeldingRepository.lagreKandidat(ArbeidssøkerPeriodeAvsluttet(
-            aktorId = aktorId,
-            fnr = Fnr.of(fnr),
             oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
-            avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER,
+            utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
+            utfortAv = "A123123",
             kilde ="kilde",
             kandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
-            detaljer = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()        ))
+            avslutningsarsak = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()        ))
         avsluttOppfolgingManueltSomVeileder(aktorId)
         val registrering = OppfolgingsRegistrering.arbeidssokerRegistrering(Fnr.of(fnr), aktorId, VeilederRegistrant(NavIdent("veileder")))
         startOppfolging(aktorId, registrering)
 
-        assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNull()
+        assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId)).isNull()
     }
 
     @Test
@@ -201,15 +197,14 @@ class KandidatForUtmeldingFlytTest(
         startOppfolgingSomArbeidsoker(aktorId, Fnr.of(fnr))
         val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(Fnr.of(fnr)).get().uuid
         kandidatForUtmeldingRepository.lagreKandidat(ArbeidssøkerPeriodeAvsluttet(
-            aktorId = aktorId,
-            fnr = Fnr.of(fnr),
             oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
-            avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER,
+            utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
+            utfortAv = "A123123",
             kilde ="kilde",
             kandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
-            detaljer = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
+            avslutningsarsak = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
         ))
-        assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNotNull()
+        assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId)).isNotNull()
 
         val nyPeriode = arbeidssokerperiode(
             fnr,
@@ -225,7 +220,7 @@ class KandidatForUtmeldingFlytTest(
             )
         )
 
-        assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNull()
+        assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId)).isNull()
     }
 
     @Test
@@ -234,13 +229,12 @@ class KandidatForUtmeldingFlytTest(
         startOppfolgingSomArbeidsoker(aktorId, Fnr.of(fnr))
         val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(Fnr.of(fnr)).get().uuid
         kandidatForUtmeldingRepository.lagreKandidat(ArbeidssøkerPeriodeAvsluttet(
-            aktorId = aktorId,
-            fnr = Fnr.of(fnr),
             oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
-            avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER,
+            utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
+            utfortAv = "A123123",
             kilde ="kilde",
             kandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
-            detaljer = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
+            avslutningsarsak = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
         ))
         avsluttOppfolgingManueltSomVeileder(aktorId)
 
@@ -248,7 +242,7 @@ class KandidatForUtmeldingFlytTest(
             Formidlingsgruppe.IARBS, Kvalifiseringsgruppe.VURDU)
         startOppfolging(aktorId, registrering)
 
-        assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNull()
+        assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId)).isNull()
     }
 
     @Test
@@ -259,19 +253,18 @@ class KandidatForUtmeldingFlytTest(
         mockArenaOppfolgingServiceRegistrerIkkeArbeidssoker(Fnr.of(fnr))
         val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(Fnr.of(fnr)).get().uuid
         kandidatForUtmeldingRepository.lagreKandidat(ArbeidssøkerPeriodeAvsluttet(
-            aktorId = aktorId,
-            fnr = Fnr.of(fnr),
             oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
-            avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER,
+            utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
+            utfortAv = "A123123",
             kilde ="kilde",
             kandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
-            detaljer = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
+            avslutningsarsak = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
         ))
-        assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNotNull()
+        assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId)).isNotNull()
 
         reaktiveringService.reaktiverBrukerIArena(Fnr.of(fnr))
 
-        assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNull()
+        assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId)).isNull()
     }
 
     @Test
@@ -284,13 +277,13 @@ class KandidatForUtmeldingFlytTest(
         mockArbeidssoekerregisteret(Fnr.of(fnr), erArbeidssoeker = false)
         mockAap(Fnr.of(fnr), harAap = false)
 
-        assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNull()
+        assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId)).isNull()
 
         val sluttMelding = ConsumerRecord("topic", 0, 0, "dummyKey", arbeidssokerperiode(fnr, periodeAvsluttet = true, avsluttetAarsakType = AvsluttetAarsakType.SVARTE_NEI_I_BEKREFTELSE))
         arbeidssoekerperiodeConsumerService.consumeArbeidssøkerperiode(sluttMelding)
 
-        assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)?.type).isEqualTo(
-            KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_SVARTE_NEI_I_BEKREFTELSE)
+        assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId))!!.isEqualTo(
+            KandidatForUtmeldingTag.ARBEIDSSOKERPERIODE_AVSLUTTET_SVARTE_NEI_I_BEKREFTELSE)
     }
 
     @Test
@@ -303,13 +296,13 @@ class KandidatForUtmeldingFlytTest(
         mockArbeidssoekerregisteret(Fnr.of(fnr), erArbeidssoeker = false)
         mockAap(Fnr.of(fnr), harAap = false)
 
-        assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNull()
+        assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId)).isNull()
 
         val sluttMelding = ConsumerRecord("topic", 0, 0, "dummyKey", arbeidssokerperiode(fnr, periodeAvsluttet = true, avsluttetAarsakType = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST))
         arbeidssoekerperiodeConsumerService.consumeArbeidssøkerperiode(sluttMelding)
 
-        assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)?.type).isEqualTo(
-            KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT)
+        assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId))!!.isEqualTo(
+            KandidatForUtmeldingTag.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT)
     }
 
     private fun arbeidssokerperiode(

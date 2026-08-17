@@ -74,7 +74,7 @@ class ReaktiveringService(
                                     veilederIdent = navIdent.get(),
                                 )
                             )
-                            kandidatForUtmeldingRepository.fjernKandidat(aktorId)
+                            kandidatForUtmeldingRepository.fjernKandidat(sistePeriode.uuid)
                             return@execute ReaktiveringSuccess(arenaKode)
                         }
                     }

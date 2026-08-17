@@ -72,20 +72,20 @@ open class KafkaConsumerConfig(
                             )
                         }
                     ),
-//                KafkaConsumerClientBuilder.TopicConfig<String, Periode>()
-//                    .withLogging()
-//                    .withMetrics(meterRegistry)
-//                    .withStoreOnFailure(consumerRepository)
-//                    .withConsumerConfig(
-//                        kafkaProperties.arbeidssokerperioderTopicAiven,
-//                        Deserializers.stringDeserializer(),
-//                        getPeriodeAvroDeserializer(),
-//                        Consumer<ConsumerRecord<String, Periode>> { kafkaMelding: ConsumerRecord<String, Periode> ->
-//                            arbeidssøkerperiodeConsumerService.consumeArbeidssøkerperiode(
-//                                kafkaMelding
-//                            )
-//                        }
-//                    ),
+                KafkaConsumerClientBuilder.TopicConfig<String, Periode>()
+                    .withLogging()
+                    .withMetrics(meterRegistry)
+                    .withStoreOnFailure(consumerRepository)
+                    .withConsumerConfig(
+                        kafkaProperties.arbeidssokerperioderTopicAiven,
+                        Deserializers.stringDeserializer(),
+                        getPeriodeAvroDeserializer(),
+                        Consumer<ConsumerRecord<String, Periode>> { kafkaMelding: ConsumerRecord<String, Periode> ->
+                            arbeidssøkerperiodeConsumerService.consumeArbeidssøkerperiode(
+                                kafkaMelding
+                            )
+                        }
+                    ),
                 KafkaConsumerClientBuilder.TopicConfig<Long, OppfolgingskontorMelding?>()
                     .withLogging()
                     .withMetrics(meterRegistry)

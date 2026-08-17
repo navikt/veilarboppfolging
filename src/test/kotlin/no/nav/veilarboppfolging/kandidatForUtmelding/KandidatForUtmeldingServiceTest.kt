@@ -1,8 +1,9 @@
 package no.nav.veilarboppfolging.kandidatForUtmelding
 
+import java.util.UUID
+import no.nav.common.json.JsonUtils
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
-import no.nav.paw.arbeidssokerregisteret.api.v1.AvsluttetAarsakType
 import no.nav.paw.arbeidssokerregisteret.api.v1.AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.veilarboppfolging.IntegrationTest
@@ -11,7 +12,6 @@ import no.nav.veilarboppfolging.repository.UtmeldingRepository
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import java.util.UUID
 
 class KandidatForUtmeldingServiceTest : IntegrationTest() {
 
@@ -37,22 +37,26 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
         val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(FNR).get().uuid
 
         kandidatForUtmeldingService.lagreKandidatForUtmelding(
+            FNR,
             ArbeidssøkerPeriodeAvsluttet(
-                AKTOR_ID, FNR, avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER,
+                utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
+                utfortAv = "A123123",
                 kilde = "kilde",
                 oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
                 kandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
-                detaljer = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
+                avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
             )
         )
 
-        val kandidat = kandidatForUtmeldingRepository.hentKandidat(AKTOR_ID)
+        val kandidat = kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeUuid)
         assertThat(kandidat).isNotNull
-        assertThat(kandidat?.fnr).isEqualTo(FNR)
-        assertThat(kandidat?.aktorId).isEqualTo(AKTOR_ID)
-        assertThat(kandidat?.avsluttetAv).isEqualTo(KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER)
+        assertThat(kandidat?.oppfolgingsperiodeUuid).isEqualTo(oppfolgingsperiodeUuid)
+        assertThat(kandidat?.utfortAvType).isEqualTo(KandidatForUtmeldingHendelseUtfortAvType.VEILEDER)
         assertThat(kandidat?.kilde).isEqualTo("kilde")
-        assertThat(kandidat?.detaljer).isEqualTo(BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString())
+        assertThat(kandidat?.hendelseDataJson?.value).isEqualTo(
+            JsonUtils.getMapper()
+                .writeValueAsString(ArbeidssøkerPeriodeAvsluttet.Detaljer(BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()))
+        )
     }
 
     @Test
@@ -64,17 +68,21 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
         mockArbeidssoekerregisteret(FNR, erArbeidssoeker = false)
         mockAap(FNR, harAap = false)
 
+        val oppfolgingsperiodeId = UUID.randomUUID()
+
         kandidatForUtmeldingService.lagreKandidatForUtmelding(
+            FNR,
             ArbeidssøkerPeriodeAvsluttet(
-                AKTOR_ID, FNR, avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER,
+                utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
+                utfortAv = "A123123",
                 kilde = "kilde",
                 kandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
-                detaljer = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString(),
-                oppfolgingsperiodeUuid = UUID.randomUUID(),
+                avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString(),
+                oppfolgingsperiodeUuid = oppfolgingsperiodeId,
             )
         )
 
-        assertThat(kandidatForUtmeldingRepository.hentKandidat(AKTOR_ID)).isNull()
+        assertThat(kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeId)).isNull()
     }
 
     @Test
@@ -86,18 +94,21 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
         mockUngdomsprogram(FNR, erDeltaker = false)
         mockArbeidssoekerregisteret(FNR, erArbeidssoeker = true)
         mockAap(FNR, harAap = false)
+        val oppfolgingsperiodeId = UUID.randomUUID()
 
         kandidatForUtmeldingService.lagreKandidatForUtmelding(
+            FNR,
             ArbeidssøkerPeriodeAvsluttet(
-                AKTOR_ID, FNR, avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER,
+                utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
+                utfortAv = "A123123",
                 kilde = "kilde",
                 kandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
-                detaljer = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString(),
-                oppfolgingsperiodeUuid = UUID.randomUUID(),
+                avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString(),
+                oppfolgingsperiodeUuid = oppfolgingsperiodeId,
             )
         )
 
-        assertThat(kandidatForUtmeldingRepository.hentKandidat(AKTOR_ID)).isNull()
+        assertThat(kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeId)).isNull()
     }
 
     @Test
@@ -106,27 +117,29 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
         val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(FNR).get().uuid
         kandidatForUtmeldingRepository.lagreKandidat(
             ArbeidssøkerPeriodeAvsluttet(
-                AKTOR_ID, FNR, avsluttetAv = KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER,
+                utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
+                utfortAv = "A123123",
                 kilde = "kilde",
                 kandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
-                detaljer = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString(),
+                avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString(),
                 oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
             )
         )
-        assertThat(kandidatForUtmeldingRepository.hentKandidat(AKTOR_ID)).isNotNull()
+        assertThat(kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeUuid)).isNotNull()
 
-        kandidatForUtmeldingService.fjernKandidatForUtmelding(AKTOR_ID)
+        kandidatForUtmeldingService.fjernKandidatForUtmelding(oppfolgingsperiodeUuid)
 
-        assertThat(kandidatForUtmeldingRepository.hentKandidat(AKTOR_ID)).isNull()
+        assertThat(kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeUuid)).isNull()
     }
 
     @Test
     fun `fjernKandidatForUtmelding feiler ikke når kandidat ikke finnes i databasen`() {
-        assertThat(kandidatForUtmeldingRepository.hentKandidat(AKTOR_ID)).isNull()
+        val oppfolgingsperiodeId = UUID.randomUUID()
+        assertThat(kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeId)).isNull()
 
-        kandidatForUtmeldingService.fjernKandidatForUtmelding(AKTOR_ID)
+        kandidatForUtmeldingService.fjernKandidatForUtmelding(oppfolgingsperiodeId)
 
-        assertThat(kandidatForUtmeldingRepository.hentKandidat(AKTOR_ID)).isNull()
+        assertThat(kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeId)).isNull()
     }
 }
 

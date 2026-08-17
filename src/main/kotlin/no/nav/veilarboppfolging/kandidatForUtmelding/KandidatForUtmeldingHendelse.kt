@@ -1,18 +1,17 @@
 package no.nav.veilarboppfolging.kandidatForUtmelding
 
-import no.nav.common.types.identer.AktorId
-import no.nav.common.types.identer.Fnr
 import java.util.UUID
+import no.nav.common.json.JsonUtils
+import org.postgresql.util.PGobject
 
 sealed class KandidatForUtmeldingHendelse(
-    val aktorId: AktorId,
-    val fnr: Fnr,
     val oppfolgingsperiodeUuid: UUID,
-    val avsluttetAv: KandidatForUtmeldingHendelseAvsluttetAv,
+    val utfortAvType: KandidatForUtmeldingHendelseUtfortAvType,
+    val utfortAv: String?,
     val kilde: String,
-    val detaljer: String?,
 ) {
     abstract val type: KandidatForUtmeldingHendelseType
+    abstract val hendelseDataJson: PGobject?
 
     fun mapTilTag(): KandidatForUtmeldingTag {
         return when (type) {
@@ -29,7 +28,7 @@ enum class KandidatForUtmeldingHendelseType {
     ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET,
 }
 
-enum class KandidatForUtmeldingHendelseAvsluttetAv {
+enum class KandidatForUtmeldingHendelseUtfortAvType {
     VEILEDER,
     SYSTEM,
     BRUKER,
@@ -37,21 +36,28 @@ enum class KandidatForUtmeldingHendelseAvsluttetAv {
 }
 
 class ArbeidssøkerPeriodeAvsluttet(
-    aktorId: AktorId,
-    fnr: Fnr,
     oppfolgingsperiodeUuid: UUID,
-    avsluttetAv: KandidatForUtmeldingHendelseAvsluttetAv,
+    utfortAvType: KandidatForUtmeldingHendelseUtfortAvType,
+    utfortAv: String?,
     kilde: String,
-    detaljer: String,
-    kandidatForUtmeldingHendelseType: KandidatForUtmeldingHendelseType
+    kandidatForUtmeldingHendelseType: KandidatForUtmeldingHendelseType,
+    val avslutningsarsak: String?
 ) : KandidatForUtmeldingHendelse(
-    aktorId,
-    fnr,
     oppfolgingsperiodeUuid,
-    avsluttetAv,
+    utfortAvType,
+    utfortAv,
     kilde,
-    detaljer
 ) {
     override val type: KandidatForUtmeldingHendelseType = kandidatForUtmeldingHendelseType
+    override val hendelseDataJson: PGobject? = avslutningsarsak?.let {
+        PGobject().apply {
+            type = "jsonb"
+            value = JsonUtils.getMapper().writeValueAsString(Detaljer(it))
+        }
+    }
+
+    data class Detaljer(
+        val avslutningsarsak: String?
+    )
 }
 
