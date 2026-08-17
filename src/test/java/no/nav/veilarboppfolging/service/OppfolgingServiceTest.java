@@ -40,6 +40,7 @@ import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -79,7 +80,8 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     private UngdomsprogramClient ungdomsprogramClient = mock(UngdomsprogramClient.class);
     private ArbeidssoekerregisteretClient arbeidssoekerregisteretClient = mock(ArbeidssoekerregisteretClient.class);
     private AapClient aapClient = mock(AapClient.class);
-    private AktorOppslagClient aktorOppslagClient = mock(AktorOppslagClient.class);
+    @Mock
+    private AktorOppslagClient aktorOppslagClient;
     private OppfolgingsStatusRepository oppfolgingsStatusRepository;
     private OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
     private OppfolgingService oppfolgingService;
