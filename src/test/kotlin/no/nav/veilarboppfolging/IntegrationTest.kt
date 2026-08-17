@@ -103,6 +103,7 @@ import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.web.context.WebApplicationContext
 import java.time.temporal.ChronoUnit
+import no.nav.veilarboppfolging.kandidatForUtmelding.FjernKandidatForUtmeldingService
 import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.FilterhendelseRecord
 
 @EmbeddedKafka(partitions = 1)
@@ -244,6 +245,9 @@ open class IntegrationTest {
 
     @Autowired
     lateinit var kandidatForUtmeldingService: KandidatForUtmeldingService
+
+    @Autowired
+    lateinit var fjernKandidatForUtmeldingService: FjernKandidatForUtmeldingService
 
     @Autowired
     lateinit var kandidatForUtmeldingRepository: KandidatForUtmeldingRepository

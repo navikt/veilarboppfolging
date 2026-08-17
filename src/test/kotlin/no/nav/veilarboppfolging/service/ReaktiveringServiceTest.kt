@@ -1,16 +1,25 @@
 package no.nav.veilarboppfolging.service
 
+import java.time.ZonedDateTime
+import java.util.Optional
+import java.util.UUID
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.veilarboppfolging.LocalDatabaseSingleton
-import no.nav.veilarboppfolging.client.veilarbarena.*
+import no.nav.veilarboppfolging.client.veilarbarena.AlleredeUnderoppfolgingError
+import no.nav.veilarboppfolging.client.veilarbarena.ArenaRegistreringResultat
+import no.nav.veilarboppfolging.client.veilarbarena.ReaktiveringSuccess
+import no.nav.veilarboppfolging.client.veilarbarena.RegistrerIArenaError
+import no.nav.veilarboppfolging.client.veilarbarena.RegistrerIArenaSuccess
+import no.nav.veilarboppfolging.client.veilarbarena.RegistrerIkkeArbeidssokerDto
+import no.nav.veilarboppfolging.client.veilarbarena.UkjentFeilUnderReaktiveringError
 import no.nav.veilarboppfolging.kafka.TestUtils
+import no.nav.veilarboppfolging.kandidatForUtmelding.FjernKandidatForUtmeldingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.StartetAvType
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
 import no.nav.veilarboppfolging.repository.ReaktiveringRepository
-import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity
 import org.junit.Assert
 import org.junit.Before
@@ -27,9 +36,6 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.transaction.TransactionStatus
 import org.springframework.transaction.support.TransactionCallback
 import org.springframework.transaction.support.TransactionTemplate
-import java.time.ZonedDateTime
-import java.util.*
-import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingRepository
 
 @RunWith(MockitoJUnitRunner::class)
 class ReaktiveringServiceTest {
@@ -38,7 +44,7 @@ class ReaktiveringServiceTest {
     private var oppfolgingsStatusRepository = mock(OppfolgingsStatusRepository::class.java)
     private var arenaOppfolgingService = mock(ArenaOppfolgingService::class.java)
     private var oppfolgingsPeriodeRepository = mock(OppfolgingsPeriodeRepository::class.java)
-    private var kandidatForUtmeldingRepository = mock(KandidatForUtmeldingRepository::class.java)
+    private var fjernKandidatForUtmeldingService = mock(FjernKandidatForUtmeldingService::class.java)
     private var transactor = mock(TransactionTemplate::class.java)
     private val reaktiveringService = ReaktiveringService(
         authService,
@@ -46,7 +52,7 @@ class ReaktiveringServiceTest {
         arenaOppfolgingService,
         reaktiveringRepository,
         oppfolgingsPeriodeRepository,
-        kandidatForUtmeldingRepository,
+        fjernKandidatForUtmeldingService,
         transactor
     )
 

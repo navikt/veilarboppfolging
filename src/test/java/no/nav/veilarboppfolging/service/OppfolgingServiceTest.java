@@ -1,5 +1,10 @@
 package no.nav.veilarboppfolging.service;
 
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.client.aktoroppslag.BrukerIdenter;
 import no.nav.common.client.aktorregister.IngenGjeldendeIdentException;
@@ -12,11 +17,11 @@ import no.nav.poao_tilgang.client.TilgangType;
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe;
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe;
 import no.nav.veilarboppfolging.ForbiddenException;
+import no.nav.veilarboppfolging.client.aap.AapClient;
+import no.nav.veilarboppfolging.client.arbeidssoekerregisteret.ArbeidssoekerregisteretClient;
 import no.nav.veilarboppfolging.client.digdir_krr.KRRData;
 import no.nav.veilarboppfolging.client.tiltakshistorikk.TiltakshistorikkClient;
 import no.nav.veilarboppfolging.client.ungdomsprogram.UngdomsprogramClient;
-import no.nav.veilarboppfolging.client.arbeidssoekerregisteret.ArbeidssoekerregisteretClient;
-import no.nav.veilarboppfolging.client.aap.AapClient;
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolgingTilstand;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsStatus;
 import no.nav.veilarboppfolging.controller.response.UnderOppfolgingDTO;
@@ -25,7 +30,7 @@ import no.nav.veilarboppfolging.domain.AvslutningStatusData;
 import no.nav.veilarboppfolging.domain.OppfolgingStatusData;
 import no.nav.veilarboppfolging.eventsLogger.BigQueryClient;
 import no.nav.veilarboppfolging.kafka.dto.OppfolgingsperiodeDTO;
-import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingRepository;
+import no.nav.veilarboppfolging.kandidatForUtmelding.FjernKandidatForUtmeldingService;
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService;
 import no.nav.veilarboppfolging.oppfolgingsbruker.BrukerRegistrant;
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant;
@@ -46,12 +51,6 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.transaction.support.TransactionTemplate;
-
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import static org.junit.Assert.*;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -93,7 +92,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     private BigQueryClient bigQueryClient = mock(BigQueryClient.class);
     private ArbeidsoppfolgingsKontorService arbeidsoppfolgingsKontorService = mock(ArbeidsoppfolgingsKontorService.class);
     private KandidatForUtmeldingService kandidatForUtmeldingService = mock(KandidatForUtmeldingService.class);
-    private KandidatForUtmeldingRepository kandidatForUtmeldingRepository;
+    private FjernKandidatForUtmeldingService fjernKandidatForUtmeldingService = mock(FjernKandidatForUtmeldingService.class);
 
     @Before
     public void setup() {
@@ -106,7 +105,6 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         oppfolgingsStatusRepository = new OppfolgingsStatusRepository(new NamedParameterJdbcTemplate(db));
         oppfolgingsPeriodeRepository = new OppfolgingsPeriodeRepository(db, transactor);
         arbeidsoppfolgingskontorRepository = new ArbeidsoppfolgingskontorRepository(new NamedParameterJdbcTemplate(db));
-        kandidatForUtmeldingRepository = new KandidatForUtmeldingRepository(new NamedParameterJdbcTemplate(db));
 
         avsluttOppfolgingService = new AvsluttOppfolgingService(
                 authService,
@@ -122,7 +120,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
                 bigQueryClient,
                 transactor,
                 arbeidsoppfolgingskontorRepository,
-                kandidatForUtmeldingRepository,
+                fjernKandidatForUtmeldingService,
                 aktorOppslagClient
         );
         oppfolgingService = new OppfolgingService(

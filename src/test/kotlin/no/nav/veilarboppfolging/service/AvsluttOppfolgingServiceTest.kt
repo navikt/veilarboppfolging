@@ -1,14 +1,14 @@
 package no.nav.veilarboppfolging.service
 
+import java.util.Optional
 import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.client.aktoroppslag.BrukerIdenter
-import java.util.Optional
 import no.nav.veilarboppfolging.client.aap.AapClient
 import no.nav.veilarboppfolging.client.arbeidssoekerregisteret.ArbeidssoekerregisteretClient
 import no.nav.veilarboppfolging.client.tiltakshistorikk.TiltakshistorikkClient
 import no.nav.veilarboppfolging.client.ungdomsprogram.UngdomsprogramClient
 import no.nav.veilarboppfolging.eventsLogger.BigQueryClient
-import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingRepository
+import no.nav.veilarboppfolging.kandidatForUtmelding.FjernKandidatForUtmeldingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ArenaIservKanIkkeReaktiveres
@@ -45,7 +45,7 @@ class AvsluttOppfolgingServiceTest {
     private val bigQueryClient: BigQueryClient = Mockito.mock(BigQueryClient::class.java)
     private val transactionTemplate: TransactionTemplate = Mockito.mock(TransactionTemplate::class.java)
     private val arbeidsoppfolgingskontorRepository: ArbeidsoppfolgingskontorRepository = Mockito.mock(ArbeidsoppfolgingskontorRepository::class.java)
-    private val kandidatForUtmeldingRepository: KandidatForUtmeldingRepository = Mockito.mock(KandidatForUtmeldingRepository::class.java)
+    private val fjernKandidatForUtmeldingService: FjernKandidatForUtmeldingService = Mockito.mock(FjernKandidatForUtmeldingService::class.java)
     private val aktorOppslagClient: AktorOppslagClient = Mockito.mock(AktorOppslagClient::class.java)
 
     private fun <T> any(type: Class<T>): T = Mockito.any<T>(type)
@@ -59,7 +59,7 @@ class AvsluttOppfolgingServiceTest {
         bigQueryClient = bigQueryClient,
         transactor = transactionTemplate,
         arbeidsoppfolgingskontorRepository = arbeidsoppfolgingskontorRepository,
-        kandidatForUtmeldingRepository = kandidatForUtmeldingRepository,
+        fjernKandidatForUtmeldingService = fjernKandidatForUtmeldingService,
         aktorOppslagClient = aktorOppslagClient
     )
 

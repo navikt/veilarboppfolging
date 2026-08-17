@@ -1,8 +1,8 @@
 package no.nav.veilarboppfolging.service
 
-import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import java.time.ZonedDateTime
 import java.util.UUID
+import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.common.types.identer.NavIdent
@@ -13,7 +13,7 @@ import no.nav.veilarboppfolging.client.tiltakshistorikk.TiltakshistorikkClient
 import no.nav.veilarboppfolging.client.ungdomsprogram.UngdomsprogramClient
 import no.nav.veilarboppfolging.domain.AvslutningStatusData
 import no.nav.veilarboppfolging.eventsLogger.BigQueryClient
-import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingRepository
+import no.nav.veilarboppfolging.kandidatForUtmelding.FjernKandidatForUtmeldingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingTilstandOppslagResult
@@ -57,7 +57,7 @@ class AvsluttOppfolgingService(
     val bigQueryClient: BigQueryClient,
     val transactor: TransactionTemplate,
     val arbeidsoppfolgingskontorRepository: ArbeidsoppfolgingskontorRepository,
-    val kandidatForUtmeldingRepository: KandidatForUtmeldingRepository,
+    val fjernKandidatForUtmeldingService: FjernKandidatForUtmeldingService,
     val aktorOppslagClient: AktorOppslagClient
 ) {
 
@@ -162,7 +162,7 @@ class AvsluttOppfolgingService(
             val sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder)
 
             arbeidsoppfolgingskontorRepository.slettNavKontor(sistePeriode.uuid)
-            kandidatForUtmeldingRepository.fjernKandidat(sistePeriode.uuid)
+            fjernKandidatForUtmeldingService.fjernKandidatForUtmelding(sistePeriode.uuid)
 
             log.info("Oppfølgingsperiode avsluttet for bruker - publiserer endringer på oppfølgingsperiode-topics.")
             kafkaProducerService.publiserOppfolgingsperiode(DtoMappers.tilOppfolgingsperiodeDTO(sistePeriode))
