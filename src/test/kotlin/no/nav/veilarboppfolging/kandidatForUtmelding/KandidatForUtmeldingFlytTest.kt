@@ -146,8 +146,8 @@ class KandidatForUtmeldingFlytTest(
         ))
         avsluttOppfolgingManueltSomVeileder(aktorId)
 
-//        val registrering = OppfolgingsRegistrering.manuellRegistreringVeileder(Fnr.of(fnr), aktorId, VeilederRegistrant(NavIdent("veileder")), null, true)
-//        startOppfolging(aktorId, registrering)
+        val registrering = OppfolgingsRegistrering.manuellRegistreringVeileder(Fnr.of(fnr), aktorId, VeilederRegistrant(NavIdent("veileder")), null, true)
+        startOppfolging(aktorId, registrering)
 
         assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNull()
     }
@@ -176,8 +176,8 @@ class KandidatForUtmeldingFlytTest(
         ))
         avsluttOppfolgingManueltSomVeileder(aktorId)
 
-//        val registrering = OppfolgingsRegistrering.manuellRegistreringBruker(Fnr.of(fnr), aktorId)
-//        startOppfolging(aktorId, registrering)
+        val registrering = OppfolgingsRegistrering.manuellRegistreringBruker(Fnr.of(fnr), aktorId)
+        startOppfolging(aktorId, registrering)
 
         assertThat(kandidatForUtmeldingRepository.hentKandidat(aktorId)).isNull()
     }
