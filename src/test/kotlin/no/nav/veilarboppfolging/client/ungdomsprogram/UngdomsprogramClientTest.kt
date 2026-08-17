@@ -4,6 +4,7 @@ import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.givenThat
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo
 import com.github.tomakehurst.wiremock.junit5.WireMockTest
+import no.nav.common.types.identer.Fnr
 import kotlin.test.assertEquals
 import okhttp3.OkHttpClient
 import org.intellij.lang.annotations.Language
@@ -35,7 +36,7 @@ class UngdomsprogramClientTest {
         )
         val client = UngdomsprogramClient(apiUrl, { "token" }, OkHttpClient.Builder().build())
 
-        assertEquals(true, client.erDeltakerIUngdomsprogrammet("12345678910"))
+        assertEquals(true, client.erDeltakerIUngdomsprogrammet(Fnr.of("12345678910")))
     }
 
     @Test
@@ -60,7 +61,7 @@ class UngdomsprogramClientTest {
         )
         val client = UngdomsprogramClient(apiUrl, { "token" }, OkHttpClient.Builder().build())
 
-        assertEquals(false, client.erDeltakerIUngdomsprogrammet("12345678910"))
+        assertEquals(false, client.erDeltakerIUngdomsprogrammet(Fnr.of("12345678910")))
     }
 
     @Test
@@ -76,7 +77,7 @@ class UngdomsprogramClientTest {
         val client = UngdomsprogramClient(apiUrl, { "token" }, OkHttpClient.Builder().build())
 
         assertThrows<RuntimeException> {
-            client.erDeltakerIUngdomsprogrammet("12345678910")
+            client.erDeltakerIUngdomsprogrammet(Fnr.of("12345678910"))
         }
     }
 }

@@ -8,6 +8,7 @@ import java.util.UUID
 import no.nav.common.auth.context.AuthContextHolder
 import no.nav.common.auth.context.UserRole
 import no.nav.common.client.aktoroppslag.AktorOppslagClient
+import no.nav.common.client.aktoroppslag.BrukerIdenter
 import no.nav.common.client.norg2.Enhet
 import no.nav.common.client.norg2.Norg2Client
 import no.nav.common.json.JsonUtils
@@ -102,7 +103,6 @@ import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.web.context.WebApplicationContext
 import java.time.temporal.ChronoUnit
-import no.nav.common.client.aktoroppslag.BrukerIdenter
 import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.FilterhendelseRecord
 
 @EmbeddedKafka(partitions = 1)
@@ -342,6 +342,7 @@ open class IntegrationTest {
         `when`(authContextHolder.erSystemBruker()).thenReturn(true)
         `when`(aktorOppslagClient.hentAktorId(fnr)).thenReturn(aktørId)
         `when`(aktorOppslagClient.hentFnr(aktørId)).thenReturn(fnr)
+        `when`(aktorOppslagClient.hentIdenter(fnr)).thenReturn(BrukerIdenter(fnr, aktørId, listOf(), listOf()))
     }
 
     fun mockHentIdenter(fnr: Fnr, aktorId: AktorId, historiskeFnr: List<Fnr> = emptyList()) {
@@ -379,6 +380,7 @@ open class IntegrationTest {
         `when`(authContextHolder.erSystemBruker()).thenReturn(false)
         `when`(aktorOppslagClient.hentAktorId(fnr)).thenReturn(aktørId)
         `when`(aktorOppslagClient.hentFnr(aktørId)).thenReturn(fnr)
+        `when`(aktorOppslagClient.hentIdenter(fnr)).thenReturn(BrukerIdenter(fnr, aktørId, listOf(), listOf()))
         `when`(authContextHolder.uid).thenReturn(Optional.of(navIdent.get()))
     }
 
@@ -400,12 +402,12 @@ open class IntegrationTest {
     }
 
     fun mockTiltakshistorikk(fnr: Fnr, harAktiveDeltakelser: Boolean = false) {
-        `when`(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(fnr.get())).thenReturn(harAktiveDeltakelser)
+        `when`(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(listOf(fnr))).thenReturn(harAktiveDeltakelser)
 
     }
 
     fun mockUngdomsprogram(fnr: Fnr, erDeltaker: Boolean = false) {
-        `when`(ungdomsprogramClient.erDeltakerIUngdomsprogrammet(fnr.get())).thenReturn(erDeltaker)
+        `when`(ungdomsprogramClient.erDeltakerIUngdomsprogrammet(fnr)).thenReturn(erDeltaker)
     }
 
     fun mockArbeidssoekerregisteret(fnr: Fnr, erArbeidssoeker: Boolean = false) {

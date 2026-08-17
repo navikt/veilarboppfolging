@@ -1,5 +1,6 @@
 package no.nav.veilarboppfolging.service
 
+import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import java.time.ZonedDateTime
 import java.util.UUID
 import no.nav.common.types.identer.AktorId
@@ -56,7 +57,8 @@ class AvsluttOppfolgingService(
     val bigQueryClient: BigQueryClient,
     val transactor: TransactionTemplate,
     val arbeidsoppfolgingskontorRepository: ArbeidsoppfolgingskontorRepository,
-    val kandidatForUtmeldingRepository: KandidatForUtmeldingRepository
+    val kandidatForUtmeldingRepository: KandidatForUtmeldingRepository,
+    val aktorOppslagClient: AktorOppslagClient
 ) {
 
     val log = LoggerFactory.getLogger(this::class.java)
@@ -291,8 +293,12 @@ class AvsluttOppfolgingService(
         avsluttOppfolgingForBruker(KunneAvsluttesOverstyring(avregistrering))
     }
 
-    fun harAktiveTiltaksdeltakelser(fnr: Fnr) = tiltakshistorikkClient.harAktiveTiltaksdeltakelser(fnr.get())
-    fun erDeltakerIUngdomsprogrammet(fnr: Fnr) = ungdomsprogramClient.erDeltakerIUngdomsprogrammet(fnr.get())
+    fun harAktiveTiltaksdeltakelser(fnr: Fnr): Boolean {
+        val identer = aktorOppslagClient.hentIdenter(fnr)
+            .let { it.historiskeFnr + listOf(it.fnr) }
+        return tiltakshistorikkClient.harAktiveTiltaksdeltakelser(identer)
+    }
+    fun erDeltakerIUngdomsprogrammet(fnr: Fnr) = ungdomsprogramClient.erDeltakerIUngdomsprogrammet(fnr)
     fun erArbeidssoeker(fnr: Fnr) = arbeidssoekerregisteretClient.erArbeidssoeker(fnr.get())
     fun harAap(fnr: Fnr) = aapClient.harAap(fnr.get())
 }

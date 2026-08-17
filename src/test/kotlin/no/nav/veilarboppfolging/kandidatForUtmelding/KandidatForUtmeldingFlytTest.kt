@@ -1,5 +1,6 @@
 package no.nav.veilarboppfolging.kandidatForUtmelding
 
+import no.nav.common.client.aktoroppslag.BrukerIdenter
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -23,6 +24,7 @@ import no.nav.veilarboppfolging.kafka.ArbeidssøkerperiodeConsumerService
 import no.nav.veilarboppfolging.kafka.TestUtils
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering.Companion.arbeidssokerRegistrering
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.UtmeldingsService
 import no.nav.veilarboppfolging.repository.UtmeldingRepository
 import no.nav.veilarboppfolging.service.KafkaConsumerService
@@ -153,6 +155,14 @@ class KandidatForUtmeldingFlytTest(
 
     @Test
     fun `Sletter kandidat-for-utmelding når ny oppfølgingsperiode startes manuelt av bruker`() {
+        `when`(aktorOppslagClient.hentIdenter(Fnr(fnr))).thenReturn(
+            BrukerIdenter(
+                Fnr.of(fnr),
+                aktorId,
+                emptyList(),
+                emptyList()
+            )
+        )
         mockVeilarbArenaOppfolgingsBruker(Fnr.of(fnr), Formidlingsgruppe.ISERV)
         startOppfolgingSomArbeidsoker(aktorId, Fnr.of(fnr))
         val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(Fnr.of(fnr)).get().uuid
@@ -173,7 +183,15 @@ class KandidatForUtmeldingFlytTest(
     }
 
     @Test
-    fun `Sletter kandidat-for-utmelding når ny oppfølgingsperiode startes via arbeidssøkerregisteret`() {
+    fun `Sletter kandidat-for-utmelding når ny oppfølgingsperiode avsluttes manuelt av veileder`() {
+        `when`(aktorOppslagClient.hentIdenter(Fnr(fnr))).thenReturn(
+            BrukerIdenter(
+                Fnr.of(fnr),
+                aktorId,
+                emptyList(),
+                emptyList()
+            )
+        )
         mockVeilarbArenaOppfolgingsBruker(Fnr.of(fnr), Formidlingsgruppe.ISERV)
         startOppfolgingSomArbeidsoker(aktorId, Fnr.of(fnr))
         val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(Fnr.of(fnr)).get().uuid
@@ -183,9 +201,11 @@ class KandidatForUtmeldingFlytTest(
             utfortAv = "A123123",
             kilde ="kilde",
             kandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
-            avslutningsarsak = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()        ))
+            avslutningsarsak = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString())
+        )
+
         avsluttOppfolgingManueltSomVeileder(aktorId)
-        val registrering = OppfolgingsRegistrering.arbeidssokerRegistrering(Fnr.of(fnr), aktorId, VeilederRegistrant(NavIdent("veileder")))
+        val registrering = arbeidssokerRegistrering(Fnr.of(fnr), aktorId, VeilederRegistrant(NavIdent("veileder")))
         startOppfolging(aktorId, registrering)
 
         assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId)).isNull()
