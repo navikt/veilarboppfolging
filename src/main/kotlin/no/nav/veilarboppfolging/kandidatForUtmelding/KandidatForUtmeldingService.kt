@@ -4,6 +4,7 @@ import java.util.UUID
 import kotlin.jvm.optionals.getOrNull
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
+import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.Operasjon
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.service.AvsluttOppfolgingService
 import no.nav.veilarboppfolging.service.KafkaProducerService
@@ -36,7 +37,7 @@ class KandidatForUtmeldingService(
                 if (sendUtmeldingskandidaterTilObo) {
                     val filterkategoriPersonId = kandidatForUtmeldingRepository.hentEllerOpprettFilterhendelseId(kandidatForUtmeldingHendelse.oppfolgingsperiodeUuid)
                     logger.info("Sender kandidat for utmelding til OBO med key=$filterkategoriPersonId for oppfølgingsperiode ${kandidatForUtmeldingHendelse.oppfolgingsperiodeUuid}")
-                    val filterhendelse = kandidatForUtmeldingHendelse.tilFilterhendelseRecord(fnr)
+                    val filterhendelse = kandidatForUtmeldingHendelse.tilFilterhendelseRecord(fnr, Operasjon.START)
                     kafkaProducerService.publiserFilterhendelse(filterkategoriPersonId, filterhendelse)
                 } else {
                     logger.info("Sender ikke kandidat for utmelding til OBO for oppfølgingsperiode ${kandidatForUtmeldingHendelse.oppfolgingsperiodeUuid} fordi sending til OBO er togglet av")

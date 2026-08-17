@@ -83,7 +83,6 @@ class KandidatForUtmeldingRepository(
         ) { rs, _ -> UUID.fromString(rs.getString("filterkategori_person_id")) }!!
     }
 
-    // Brukes kun for tester
     fun hentFilterhendelseId(oppfolgingsperiodeId: UUID): UUID? {
         return db.query(
             """

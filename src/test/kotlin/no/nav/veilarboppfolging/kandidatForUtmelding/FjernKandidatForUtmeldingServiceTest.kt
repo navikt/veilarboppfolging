@@ -6,6 +6,8 @@ import no.nav.common.types.identer.Fnr
 import no.nav.paw.arbeidssokerregisteret.api.v1.AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.veilarboppfolging.IntegrationTest
+import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.Kategori
+import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.Operasjon
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
@@ -15,7 +17,7 @@ class FjernKandidatForUtmeldingServiceTest : IntegrationTest() {
     private val FNR = Fnr.of("12345678912")
 
     @Test
-    fun `fjernKandidatForUtmelding fjerner kandidat fra databasen`() {
+    fun `fjernKandidatForUtmelding fjerner kandidat fra databasen og skriver til kafka`() {
         mockSytemBrukerAuthOk(AKTOR_ID, FNR)
         setBrukerUnderOppfolging(AKTOR_ID, FNR)
         setLocalArenaOppfolging(AKTOR_ID, Formidlingsgruppe.ARBS)
@@ -35,11 +37,15 @@ class FjernKandidatForUtmeldingServiceTest : IntegrationTest() {
                 oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
             )
         )
+        val filterkategoriPersonId = kandidatForUtmeldingRepository.hentEllerOpprettFilterhendelseId(oppfolgingsperiodeUuid)
         assertThat(kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeUuid)).isNotNull()
 
         fjernKandidatForUtmeldingService.fjernKandidatForUtmelding(oppfolgingsperiodeUuid)
 
         assertThat(kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeUuid)).isNull()
+        val filterhendelse = getFilterhendelseRecordsStoredInKafkaOutbox(kafkaProperties.portefoljeHendelsesfilterTopic, filterkategoriPersonId.toString()).first()
+        assertThat(filterhendelse.operasjon).isEqualTo(Operasjon.STOPP)
+        assertThat(filterhendelse.kategori).isEqualTo(Kategori.KANDIDAT_FOR_UTMELDING)
     }
 
     @Test

@@ -23,7 +23,7 @@ sealed class KandidatForUtmeldingHendelse(
     abstract val type: KandidatForUtmeldingHendelseType
     abstract val hendelseDataJson: PGobject?
 
-    abstract fun tilFilterhendelseRecord(fnr: Fnr): FilterhendelseRecord
+    abstract fun tilFilterhendelseRecord(fnr: Fnr, operasjon: Operasjon): FilterhendelseRecord
 
     private val erProd: Boolean = EnvironmentUtils.isProduction().getOrElse { false }
 
@@ -77,11 +77,11 @@ class ArbeidssøkerPeriodeAvsluttet(
         val avslutningsarsak: String?
     )
 
-    override fun tilFilterhendelseRecord(fnr: Fnr): FilterhendelseRecord {
+    override fun tilFilterhendelseRecord(fnr: Fnr, operasjon: Operasjon): FilterhendelseRecord {
         return FilterhendelseRecord(
             personID = NorskIdent(fnr.get()),
             kategori = Kategori.KANDIDAT_FOR_UTMELDING,
-            operasjon = Operasjon.START,
+            operasjon = operasjon,
             hendelse = FilterhendelseRecord.HendelseInnhold(
                 beskrivelse = when (type) {
                     KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT -> "Arbeidssøkerperiode avsluttet: Ikke levert meldekort"
