@@ -104,6 +104,8 @@ spec:
       value: https://oppgave.dev-fss-pub.nais.io
     - name: OPPGAVE_SCOPE
       value: api://dev-fss.oppgavehandtering.oppgave/.default
+    - name: SEND_UTMELDINGSKANDIDATER_TIL_OBO
+      value: "false"
   kafka:
     pool: nav-dev
   azure:

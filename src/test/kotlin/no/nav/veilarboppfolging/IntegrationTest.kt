@@ -103,6 +103,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.web.context.WebApplicationContext
 import java.time.temporal.ChronoUnit
 import no.nav.common.client.aktoroppslag.BrukerIdenter
+import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.FilterhendelseRecord
 
 @EmbeddedKafka(partitions = 1)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -548,6 +549,16 @@ open class IntegrationTest {
         """.trimIndent(), mapOf("topic" to topic, "fnr" to fnr.toByteArray())) { resultSet, row ->
             val json = resultSet.getBytes("value").toString(Charsets.UTF_8)
             objectMapper.readValue(json, OppfolgingsHendelseDto::class.java)
+        }
+    }
+
+    fun getFilterhendelseRecordsStoredInKafkaOutbox(topic: String, key: String): List<FilterhendelseRecord> {
+        return template.query("""
+            SELECT * FROM kafka_producer_record
+            where topic = :topic and key = :key
+        """.trimIndent(), mapOf("topic" to topic, "key" to key.toByteArray())) { resultSet, row ->
+            val json = resultSet.getBytes("value").toString(Charsets.UTF_8)
+            objectMapper.readValue(json, FilterhendelseRecord::class.java)
         }
     }
 }

@@ -106,6 +106,8 @@ spec:
       value: https://oppgave.prod-fss-pub.nais.io
     - name: OPPGAVE_SCOPE
       value: api://prod-fss.oppgavehandtering.oppgave/.default
+    - name: SEND_UTMELDINGSKANDIDATER_TIL_OBO
+      value: "false"
   kafka:
     pool: nav-prod
   azure:

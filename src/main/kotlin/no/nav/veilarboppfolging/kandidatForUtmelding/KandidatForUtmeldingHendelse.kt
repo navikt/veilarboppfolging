@@ -1,7 +1,17 @@
 package no.nav.veilarboppfolging.kandidatForUtmelding
 
+import java.net.URI
+import java.time.ZonedDateTime
 import java.util.UUID
+import kotlin.jvm.optionals.getOrElse
 import no.nav.common.json.JsonUtils
+import no.nav.common.types.identer.Fnr
+import no.nav.common.types.identer.NorskIdent
+import no.nav.common.utils.EnvironmentUtils
+import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.FilterhendelseRecord
+import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.Kategori
+import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.Operasjon
+import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.UtmeldingsKandidatDetaljer
 import org.postgresql.util.PGobject
 
 sealed class KandidatForUtmeldingHendelse(
@@ -12,6 +22,13 @@ sealed class KandidatForUtmeldingHendelse(
 ) {
     abstract val type: KandidatForUtmeldingHendelseType
     abstract val hendelseDataJson: PGobject?
+
+    abstract fun tilFilterhendelseRecord(fnr: Fnr): FilterhendelseRecord
+
+    private val erProd: Boolean = EnvironmentUtils.isProduction().getOrElse { false }
+
+    fun baseUrlVeilarbpersonflate() =
+        if (erProd) "https://veilarbpersonflate.intern.nav.no" else "https://veilarbpersonflate.ansatt.dev.nav.no"
 
     fun mapTilTag(): KandidatForUtmeldingTag {
         return when (type) {
@@ -59,5 +76,28 @@ class ArbeidssøkerPeriodeAvsluttet(
     data class Detaljer(
         val avslutningsarsak: String?
     )
+
+    override fun tilFilterhendelseRecord(fnr: Fnr): FilterhendelseRecord {
+        return FilterhendelseRecord(
+            personID = NorskIdent(fnr.get()),
+            kategori = Kategori.KANDIDAT_FOR_UTMELDING,
+            operasjon = Operasjon.START,
+            hendelse = FilterhendelseRecord.HendelseInnhold(
+                beskrivelse = when (type) {
+                    KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT -> "Arbeidssøkerperiode avsluttet: Ikke levert meldekort"
+                    KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_SVARTE_NEI_I_BEKREFTELSE -> "Arbeidssøkerperiode avsluttet: Svarte nei i bekreftelse"
+                    KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET -> "Arbeidssøkerperiode avsluttet"
+                },
+                dato = ZonedDateTime.now(),
+                lenke = URI("${baseUrlVeilarbpersonflate()}/aktivitetsplan").toURL(),
+                detaljer = null,
+                utmeldingsKandidatDetaljer = when (type) {
+                    KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT -> UtmeldingsKandidatDetaljer.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT
+                    KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_SVARTE_NEI_I_BEKREFTELSE -> UtmeldingsKandidatDetaljer.ARBEIDSSOKERPERIODE_AVSLUTTET_SVARTE_NEI_I_BEKREFTELSE
+                    KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET -> UtmeldingsKandidatDetaljer.ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET
+                }
+            )
+        )
+    }
 }
 

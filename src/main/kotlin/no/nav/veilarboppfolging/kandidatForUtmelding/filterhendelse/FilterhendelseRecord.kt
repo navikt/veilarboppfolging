@@ -6,7 +6,7 @@ import java.time.ZonedDateTime
 
 data class FilterhendelseRecord(
     val personID: NorskIdent,
-    val avsender: String,
+    val avsender: String = "veilarboppfolging",
     val kategori: Kategori,
     val operasjon: Operasjon,
     val hendelse: HendelseInnhold
