@@ -13,7 +13,7 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrerin
 import no.nav.veilarboppfolging.oppfolgingsbruker.toRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.UtmeldingsService
 import no.nav.veilarboppfolging.kandidatForUtmelding.ArbeidssøkerPeriodeAvsluttet
-import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingHendelseAvsluttetAv
+import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingHendelseUtfortAvType
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingHendelseType
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingRepository
 import no.nav.veilarboppfolging.service.AuthService
@@ -64,7 +64,8 @@ open class ArbeidssøkerperiodeConsumerService(
 
         val nyPeriode = arbeidssøkerperiode.avsluttet == null
         if (nyPeriode) {
-            val nyestePeriodeStartDato = oppfolgingsperioder.maxByOrNull { it.startDato }?.startDato
+            val nyestePeriode = oppfolgingsperioder.maxByOrNull { it.startDato }
+            val nyestePeriodeStartDato = nyestePeriode?.startDato
             if (nyestePeriodeStartDato?.isAfter(arbeidssøkerperiodeStartet) == true) {
                 logger.info("Har allerede registrert oppfølgingsperiode etter startdato for arbeidssøkerperiode")
                 return
@@ -78,17 +79,19 @@ open class ArbeidssøkerperiodeConsumerService(
 
             startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.arbeidssokerRegistrering(fnr, aktørId, registrant))
             utmeldHvisBrukerBleIservEtterArbeidssøkerRegistrering(fnr, arbeidssøkerperiodeStartet, aktørId)
+            if(nyestePeriode != null)
+                kandidatForUtmeldingService.fjernKandidatForUtmelding(nyestePeriode.uuid)
         } else {
             logger.info("Melding om avsluttet arbeidssøkerperiode, flagger som utmeldingskandidat hvis under oppfølging")
             val gjeldendePeriode = oppfolgingsperioder.firstOrNull { it.sluttDato == null }
             if (gjeldendePeriode != null) {
                 val kilde = arbeidssøkerperiode.avsluttet?.kilde ?: "arbeidssøkerregisteret"
-                val detaljer = arbeidssøkerperiode.avslutningsInfo.aarsaksinformasjon.type
+                val avsluttetAarsakType = arbeidssøkerperiode.avslutningsInfo.aarsaksinformasjon.type
                 val avsluttetAv = when(arbeidssøkerperiode.avsluttet?.utfoertAv?.type) {
-                    BrukerType.UKJENT_VERDI, BrukerType.UDEFINERT, null -> KandidatForUtmeldingHendelseAvsluttetAv.UKJENT
-                    BrukerType.VEILEDER -> KandidatForUtmeldingHendelseAvsluttetAv.VEILEDER
-                    BrukerType.SYSTEM -> KandidatForUtmeldingHendelseAvsluttetAv.SYSTEM
-                    BrukerType.SLUTTBRUKER -> KandidatForUtmeldingHendelseAvsluttetAv.BRUKER
+                    BrukerType.UKJENT_VERDI, BrukerType.UDEFINERT, null -> KandidatForUtmeldingHendelseUtfortAvType.UKJENT
+                    BrukerType.VEILEDER -> KandidatForUtmeldingHendelseUtfortAvType.VEILEDER
+                    BrukerType.SYSTEM -> KandidatForUtmeldingHendelseUtfortAvType.SYSTEM
+                    BrukerType.SLUTTBRUKER -> KandidatForUtmeldingHendelseUtfortAvType.BRUKER
                 }
                 val type: KandidatForUtmeldingHendelseType = when (arbeidssøkerperiode.avslutningsInfo.aarsaksinformasjon.type) {
                     AvsluttetAarsakType.SVARTE_NEI_I_BEKREFTELSE -> KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_SVARTE_NEI_I_BEKREFTELSE
@@ -96,14 +99,14 @@ open class ArbeidssøkerperiodeConsumerService(
                     AvsluttetAarsakType.UDEFINERT, AvsluttetAarsakType.UKJENT_VERDI -> KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET
                 }
                 kandidatForUtmeldingService.lagreKandidatForUtmelding(
+                    fnr,
                     ArbeidssøkerPeriodeAvsluttet(
-                        aktørId,
-                        fnr,
-                        avsluttetAv = avsluttetAv,
+                        oppfolgingsperiodeUuid = gjeldendePeriode.uuid,
+                        utfortAvType = avsluttetAv,
+                        utfortAv = arbeidssøkerperiode.avsluttet?.utfoertAv?.id,
                         kilde = kilde,
-                        detaljer = detaljer.toString(),
+                        avslutningsarsak = avsluttetAarsakType.toString(),
                         kandidatForUtmeldingHendelseType = type,
-                        oppfolgingsperiodeUuid = gjeldendePeriode.uuid
                     )
                 )
             }

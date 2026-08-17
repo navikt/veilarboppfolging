@@ -1,22 +1,27 @@
 package no.nav.veilarboppfolging.kandidatForUtmelding
 
 import no.nav.common.types.identer.AktorId
+import no.nav.common.types.identer.Fnr
 import no.nav.veilarboppfolging.service.AvsluttOppfolgingService
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import java.util.UUID
+import kotlin.jvm.optionals.getOrNull
+import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 
 @Service
 class KandidatForUtmeldingService(
     private val avsluttOppfolgingService: AvsluttOppfolgingService,
-    private val kandidatForUtmeldingRepository: KandidatForUtmeldingRepository
+    private val kandidatForUtmeldingRepository: KandidatForUtmeldingRepository,
+    private val oppfolgingsPeriodeRepository: OppfolgingsPeriodeRepository,
 ) {
 
     private val logger = LoggerFactory.getLogger(this::class.java)
 
-    fun lagreKandidatForUtmelding(kandidatForUtmeldingHendelse: KandidatForUtmeldingHendelse) {
+    fun lagreKandidatForUtmelding(fnr: Fnr, kandidatForUtmeldingHendelse: KandidatForUtmeldingHendelse) {
         // Vi sjekker avslutningsstatus for manuell avregistrering siden de bare blir kandidater for utmelding
         // Vi tar dem ikke ut av oppfølging automatisk
-        val avslutningsstatus = avsluttOppfolgingService.hentAvslutningstatusForManuellAvslutning(kandidatForUtmeldingHendelse.fnr)
+        val avslutningsstatus = avsluttOppfolgingService.hentAvslutningstatusForManuellAvslutning(fnr)
 
         if (avslutningsstatus.kanAvslutte) {
             kandidatForUtmeldingRepository.lagreKandidat(kandidatForUtmeldingHendelse)
@@ -33,12 +38,17 @@ class KandidatForUtmeldingService(
      *
      * Fjerner ikke kandidater fra tabellen når bruker reaktiveres. Disse filtreres nå bort i hentKandidat spørringen
      */
-    fun fjernKandidatForUtmelding(aktorId: AktorId) {
-        kandidatForUtmeldingRepository.fjernKandidat(aktorId)
+    fun fjernKandidatForUtmelding(oppfolgingsperiodeId: UUID) {
+        kandidatForUtmeldingRepository.fjernKandidat(oppfolgingsperiodeId)
         logger.info("Fjerner kandidat for utmelding")
     }
 
+    fun hentKandidatForUtmeldingTag(oppfolgingsperiodeId: UUID): KandidatForUtmeldingTag? {
+        return kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeId)?.mapTilTag()
+    }
+
     fun hentKandidatForUtmeldingTag(aktorId: AktorId): KandidatForUtmeldingTag? {
-        return kandidatForUtmeldingRepository.hentKandidat(aktorId)?.mapTilTag()
+        val oppfolgingsperiodeId = oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId)?.getOrNull()?.uuid ?: return null
+        return hentKandidatForUtmeldingTag(oppfolgingsperiodeId)
     }
 }
