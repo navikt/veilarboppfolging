@@ -164,7 +164,7 @@ class GraphqlControllerTest: IntegrationTest() {
         /* Query is hidden in test/resources/graphl-test :) */
         val result = tester.documentName("getEnhetQuery").variable("fnr", fnr.get()).execute()
         result.errors()
-            .expect { it.message.equals(expectedError.toString()) }
+            .expect { it.message.equals(expectedError.message) }
             .expect { it.errorType.equals(expectedError.errorType) }
             .verify()
     }
@@ -407,6 +407,7 @@ class GraphqlControllerTest: IntegrationTest() {
         setBrukerUnderOppfolging(aktorId, fnr)
         setBrukerUnderKvp(aktorId, enhetId.get(), veilederUuid.toString())
         mockInternBrukerAuthOk(veilederUuid, aktorId, fnr)
+        mockIdenter(fnr, aktorId)
         mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Permit)
         mockPoaoTilgangHarTilgangTilEnhet(veilederUuid, enhetId, Decision.Deny("NEI", "FORDI"))
         mockTiltakshistorikk(fnr, harAktiveDeltakelser = false)
@@ -416,6 +417,7 @@ class GraphqlControllerTest: IntegrationTest() {
         result.path("veilederTilgang").matchesJson("""
             { 
                 "harVeilederLeseTilgangTilBruker": true,
+                "harVeilederLeseTilgangTilBrukersEnhet": false,
                 "harVeilederLeseTilgangTilBrukersKontorsperre": false,
                 "harVeilederTilgangFlytteBrukerTilEgetKontor": true,
                 "tilgang": "HAR_TILGANG",
@@ -436,7 +438,6 @@ class GraphqlControllerTest: IntegrationTest() {
         val veilederUuid = UUID.randomUUID()
         val fnr = randomFnr()
         val aktorId = randomAktorId()
-        val enhetId = EnhetId("3131")
         setBrukerUnderOppfolging(aktorId, fnr)
         mockInternBrukerAuthOk(veilederUuid, aktorId, fnr)
         mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Deny("NEI", "FORDI"))
@@ -449,6 +450,7 @@ class GraphqlControllerTest: IntegrationTest() {
         result.path("veilederTilgang").matchesJson("""
             { 
                 "harVeilederLeseTilgangTilBruker": false,
+                "harVeilederLeseTilgangTilBrukersEnhet": false,
                 "harVeilederTilgangFlytteBrukerTilEgetKontor": true,
                 "harAktiveTiltaksdeltakelserVedFlyttingTilEgetKontor": true,
             }
@@ -590,7 +592,7 @@ class GraphqlControllerTest: IntegrationTest() {
         val result = tester.documentName("altQuery").variable("fnr", fnr.get()).execute()
         result.errors()
             .expect { it.path == "oppfolgingsPerioder" && it.message == "NavAnsattTilgangTilEksternBrukerPolicyInput fikk deny" }
-            .expect { it.path == "oppfolgingsEnhet" && it.message == "Ikke tilgang til oppfolgingsenhet: Veileder har ikke tilgang til bruker" }
+            .expect { it.path == "oppfolgingsEnhet" && it.message == "Ikke tilgang til oppfolgingsEnhet: Veileder har ikke tilgang til bruker" }
             .expect { it.path == "brukerStatus" && it.message == "Ikke tilgang til brukerStatus: Veileder har ikke tilgang til bruker" }
             .verify()
         result.path("veilederTilgang").matchesJson("""
@@ -621,7 +623,7 @@ class GraphqlControllerTest: IntegrationTest() {
         val result = tester.documentName("altQuery").variable("fnr", fnr.get()).execute()
         result.errors()
             .expect { it.path == "oppfolgingsPerioder" && it.message == "NavAnsattTilgangTilEksternBrukerPolicyInput fikk deny" }
-            .expect { it.path == "oppfolgingsEnhet" && it.message == "Ikke tilgang til oppfolgingsenhet: Veileder har ikke tilgang til bruker" }
+            .expect { it.path == "oppfolgingsEnhet" && it.message == "Ikke tilgang til oppfolgingsEnhet: Veileder har ikke tilgang til bruker" }
             .expect { it.path == "brukerStatus" && it.message == "Ikke tilgang til brukerStatus: Veileder har ikke tilgang til bruker" }
             .verify()
         result.path("veilederTilgang").matchesJson("""

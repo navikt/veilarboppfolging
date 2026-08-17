@@ -1,7 +1,9 @@
 package no.nav.veilarboppfolging.controller.graphql
 
 import graphql.GraphQLContext
+import graphql.GraphQLError
 import graphql.execution.DataFetcherResult
+import graphql.schema.DataFetchingEnvironment
 import no.nav.common.auth.context.UserRole
 import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.client.norg2.Norg2Client
@@ -64,7 +66,6 @@ class GraphqlController(
     private val aktorOppslagClient: AktorOppslagClient,
     private val authService: AuthService,
     private val poaoTilgangClient: PoaoTilgangClient,
-    private val oppfolgingsPeriodeRepository: OppfolgingsPeriodeRepository,
     private val oppfolgingsService: OppfolgingService,
     private val pdlFolkeregisterStatusClient: PdlFolkeregisterStatusClient,
     private val arenaService: ArenaOppfolgingService,
@@ -82,13 +83,20 @@ class GraphqlController(
     }
 
     @QueryMapping
-    fun utmeldingskandidatTag(@Argument fnr: String? = null): DataFetcherResult<KandidatForUtmeldingTag> {
+    fun utmeldingskandidatTag(@Argument fnr: String? = null, environment: DataFetchingEnvironment): DataFetcherResult<KandidatForUtmeldingTag> {
+        val dataFetchResult = DataFetcherResult.newResult<KandidatForUtmeldingTag>()
         val tilgang = sjekkTilgang(fnr, EksterneHarIkkeTilgang)
-        if (tilgang is HarIkkeTilgang) throw ForbiddenException("Ikke tilgang til utmeldingskandidatTag: ${tilgang.message}")
+        if (tilgang is HarIkkeTilgang) {
+            return dataFetchResult
+                .error(GraphQLError.newError()
+                    .message("Ikke tilgang til utmeldingskandidatTag: ${tilgang.message}")
+                    .path(environment.executionStepInfo.path)
+                    .build())
+                .build()
+        }
 
         val eksternBrukerId = fnrFraContext(fnr)
 
-        val dataFetchResult = DataFetcherResult.newResult<KandidatForUtmeldingTag>()
         val fnr = eksternBrukerId.getFnr()
         val aktorId = eksternBrukerId.getAktorId()
 
@@ -102,10 +110,17 @@ class GraphqlController(
     }
 
     @QueryMapping
-    fun oppfolgingsEnhet(@Argument fnr: String? = null): DataFetcherResult<OppfolgingsEnhetQueryDto> {
+    fun oppfolgingsEnhet(@Argument fnr: String? = null, environment: DataFetchingEnvironment): DataFetcherResult<OppfolgingsEnhetQueryDto> {
         val dataFetchResult = DataFetcherResult.newResult<OppfolgingsEnhetQueryDto>()
         val tilgang = sjekkTilgang(fnr, AlleHarTilgang(AuthService.SikkerthetsNivå.Nivå3))
-        if (tilgang is HarIkkeTilgang) throw ForbiddenException("Ikke tilgang til oppfolgingsenhet: ${tilgang.message}")
+        if (tilgang is HarIkkeTilgang) {
+            return dataFetchResult
+                .error(GraphQLError.newError()
+                    .message("Ikke tilgang til oppfolgingsEnhet: ${tilgang.message}")
+                    .path(environment.executionStepInfo.path)
+                    .build())
+                .build()
+        }
 
         val eksternBrukerId = (tilgang as HarTilgang).eksternBrukerId
         val localContext = GraphQLContext.getDefault().put("fnr", eksternBrukerId.getFnr())
@@ -166,6 +181,11 @@ class GraphqlController(
         return oppfolgingService.harVeilederTilgangTilKontorsperretEnhet(aktorId)
     }
 
+    @SchemaMapping(typeName = "VeilederTilgang", field = "harVeilederLeseTilgangTilBrukersEnhet")
+    fun harVeilederLeseTilgangTilBrukersEnhet(tilgang: VeilederTilgangDto, @LocalContextValue fnr: Fnr): Boolean {
+        return oppfolgingService.harVeilederTilgangTilBrukersEnhet(fnr).tilgangTilBrukersKontor
+    }
+
     @SchemaMapping(typeName = "VeilederTilgang", field = "harVeilederTilgangFlytteBrukerTilEgetKontor")
     fun harVeilederTilgangFlytteBrukerTilEgetKontor(tilgang: VeilederTilgangDto, @LocalContextValue fnr: Fnr): Boolean {
         val aktorId = aktorOppslagClient.hentAktorId(fnr)
@@ -186,10 +206,18 @@ class GraphqlController(
 
 
     @QueryMapping
-    fun brukerStatus(@Argument fnr: String?): DataFetcherResult<BrukerStatusDto> {
+    fun brukerStatus(@Argument fnr: String?, environment: DataFetchingEnvironment): DataFetcherResult<BrukerStatusDto> {
         val result = DataFetcherResult.newResult<BrukerStatusDto>()
         val tilgang = sjekkTilgang(fnr, AlleHarTilgang(AuthService.SikkerthetsNivå.Nivå4))
-        if (tilgang is HarIkkeTilgang) throw ForbiddenException("Ikke tilgang til brukerStatus: ${tilgang.message}")
+        if (tilgang is HarIkkeTilgang) {
+            return result
+                .error(GraphQLError.newError()
+                    .message("Ikke tilgang til brukerStatus: ${tilgang.message}")
+                    .path(environment.executionStepInfo.path)
+                    .build())
+                .build()
+        }
+
 
         val eksternBrukerId = (tilgang as HarTilgang).eksternBrukerId
         val fnr = eksternBrukerId.getFnr()
@@ -232,7 +260,7 @@ class GraphqlController(
             }
             UserRole.INTERN -> {
                 val fnr = eksternBrukerId.getFnr()
-                val isAllowed = authService.evaluerNavAnsattTilagngTilBruker(fnr, TilgangType.LESE)
+                val isAllowed = authService.evaluerNavAnsattTilgangTilBruker(fnr, TilgangType.LESE)
                 when (isAllowed) {
                     is Decision.Deny -> HarIkkeTilgang("Veileder har ikke tilgang til bruker")
                     Decision.Permit -> HarTilgang(eksternBrukerId)
@@ -243,7 +271,7 @@ class GraphqlController(
     }
 
     private fun evaluerNavAnsattTilgangTilEksternBruker(fnr: String): TilgangResultat {
-        val decision = authService.evaluerNavAnsattTilagngTilBruker(Fnr.of(fnr), TilgangType.LESE)
+        val decision = authService.evaluerNavAnsattTilgangTilBruker(Fnr.of(fnr), TilgangType.LESE)
         return when (decision) {
             is Decision.Deny -> decision.tryToFindDenyReason()
             Decision.Permit -> TilgangResultat.HAR_TILGANG

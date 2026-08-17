@@ -46,9 +46,9 @@ class ArbeidsoppfolgingskontorRepository(private val db: NamedParameterJdbcTempl
         return db.query(sql, params) { rs, _ -> rs.getString("kontor_id")?.let { EnhetId.of(it) } }.firstOrNull()
     }
 
-    fun hentEnhet(fnr: Fnr): EnhetId? {
-        val params = mapOf("ident" to fnr.get())
-        val sql = "SELECT kontor_id FROM ao_kontor WHERE ident = :ident"
+    fun hentEnhet(fnr: List<Fnr>): EnhetId? {
+        val params = mapOf("ident" to fnr.map { it.get() })
+        val sql = "SELECT kontor_id FROM ao_kontor WHERE ident in (:ident) order by updated_at desc limit 1"
         return db.query(sql, params) { rs, _ -> rs.getString("kontor_id")?.let { EnhetId.of(it) } }.firstOrNull()
     }
 }

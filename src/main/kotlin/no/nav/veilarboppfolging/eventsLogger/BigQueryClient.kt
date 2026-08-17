@@ -12,8 +12,6 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ArbeidsøkerRegSync_Ikk
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ArbeidsøkerRegSync_NoOp
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ArbeidsøkerRegSync_OppdaterIservDato
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.Avregistrering
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvregistreringsType
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ManuellAvregistrering
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.OppdateringFraArena_AlleredeUteAvOppfolging
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.OppdateringFraArena_BleIserv
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.OppdateringFraArena_IkkeLengerIserv
@@ -37,7 +35,7 @@ data class UtmeldingsAntall(
 )
 
 interface BigQueryClient {
-    fun loggStartOppfolgingsperiode(startBegrunnelse: OppfolgingStartBegrunnelse, oppfolgingPeriodeId: UUID, startedAvType: StartetAvType, kvalifiseringsgruppe: Optional<Kvalifiseringsgruppe>, manuellSjekkLovligOpphold: Boolean? = null)
+    fun loggStartOppfolgingsperiode(startBegrunnelse: OppfolgingStartBegrunnelse, oppfolgingPeriodeId: UUID, startedAvType: StartetAvType, kvalifiseringsgruppe: Optional<Kvalifiseringsgruppe>, manuellSjekkLovligOpphold: Boolean? = null, forrigePeriodeAvsluttet: ZonedDateTime?)
     fun loggAvsluttOppfolgingsperiode(oppfolgingPeriodeId: UUID, avregistrering: Avregistrering, aktivIArena: Boolean? = null)
     fun loggUtmeldingsHendelse(utmelding: UtmeldingsHendelse)
     fun loggUtmeldingsCount(utmelding: UtmeldingsAntall)
@@ -80,7 +78,8 @@ class BigQueryClientImplementation(private val bigQuery: BigQuery): BigQueryClie
             oppfolgingPeriodeId: UUID,
             startedAvType: StartetAvType,
             kvalifiseringsgruppe: Optional<Kvalifiseringsgruppe>,
-            manuellSjekkLovligOpphold: Boolean?
+            manuellSjekkLovligOpphold: Boolean?,
+            forrigePeriodeAvsluttet: ZonedDateTime?
         ) {
         insertIntoOppfolgingEvents(oppfolgingsperiodeEventsTable) {
             mapOf(
@@ -90,6 +89,7 @@ class BigQueryClientImplementation(private val bigQuery: BigQuery): BigQueryClie
                 "timestamp" to ZonedDateTime.now().toOffsetDateTime().toString(),
                 "event" to BigQueryEventType.OPFOLGINGSPERIODE_START.name,
                 "kvalifiseringsgruppe" to kvalifiseringsgruppe.map { it.name }.orElse(null),
+                "forrigePeriodeAvsluttet" to forrigePeriodeAvsluttet?.toOffsetDateTime()?.toString(),
             ) + (if (manuellSjekkLovligOpphold != null) mapOf("manuellSjekkLovligOpphold" to manuellSjekkLovligOpphold) else emptyMap())
         }
     }

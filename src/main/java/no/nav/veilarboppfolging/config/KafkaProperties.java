@@ -23,5 +23,6 @@ public record KafkaProperties(
     String minSideBrukerVarsel,
     String oppfolgingshendelseV1,
     String arbeidsoppfolgingskontortilordningTopic,
-    String startOppfolgingTopic
+    String startOppfolgingTopic,
+    String portefoljeHendelsesfilterTopic
 ) {}
