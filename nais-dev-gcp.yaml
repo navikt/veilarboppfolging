@@ -105,7 +105,7 @@ spec:
     - name: OPPGAVE_SCOPE
       value: api://dev-fss.oppgavehandtering.oppgave/.default
     - name: SEND_UTMELDINGSKANDIDATER_TIL_OBO
-      value: "false"
+      value: "true"
   kafka:
     pool: nav-dev
   azure:
