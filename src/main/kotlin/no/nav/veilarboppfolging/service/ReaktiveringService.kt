@@ -4,6 +4,7 @@ import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.common.types.identer.NavIdent
 import no.nav.veilarboppfolging.client.veilarbarena.*
+import no.nav.veilarboppfolging.kandidatForUtmelding.FjernKandidatForUtmeldingService
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingRepository
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
@@ -25,7 +26,7 @@ class ReaktiveringService(
     val arenaOppfolgingService: ArenaOppfolgingService,
     val reaktiveringRepository: ReaktiveringRepository,
     val oppfolgingsPeriodeRepository: OppfolgingsPeriodeRepository,
-    val kandidatForUtmeldingRepository: KandidatForUtmeldingRepository,
+    val fjernkandidatForUtmeldingService: FjernKandidatForUtmeldingService,
     private val transactor: TransactionTemplate,
 ) {
     private val logger: Logger = LoggerFactory.getLogger(ReaktiveringService::class.java)
@@ -74,7 +75,7 @@ class ReaktiveringService(
                                     veilederIdent = navIdent.get(),
                                 )
                             )
-                            kandidatForUtmeldingRepository.fjernKandidat(sistePeriode.uuid)
+                            fjernkandidatForUtmeldingService.fjernKandidatForUtmelding(sistePeriode.uuid)
                             return@execute ReaktiveringSuccess(arenaKode)
                         }
                     }
