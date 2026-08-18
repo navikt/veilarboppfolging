@@ -13,14 +13,14 @@ data class FilterhendelseRecord(
 ) {
     data class HendelseInnhold(
         val beskrivelse: String,
+        val beskrivelseEnum: String?,
         val dato: ZonedDateTime,
         val lenke: URL,
         val detaljer: String?,
-        val utmeldingsKandidatDetaljer: UtmeldingsKandidatDetaljer?,
     )
 }
 
-enum class UtmeldingsKandidatDetaljer {
+enum class BeskrivelseEnum {
     ARBEIDSSOKERPERIODE_AVSLUTTET_SVARTE_NEI_I_BEKREFTELSE,
     ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
     ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET
