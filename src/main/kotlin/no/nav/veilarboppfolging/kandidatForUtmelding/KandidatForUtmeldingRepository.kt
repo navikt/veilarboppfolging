@@ -68,6 +68,19 @@ class KandidatForUtmeldingRepository(
             .firstOrNull()
     }
 
+    fun hentSisteKandidatForUtmeldingHendelse(oppfolgingsperiodeId: UUID): KandidatForUtmeldingHendelse? {
+        return db.query(
+            """
+            SELECT *
+            FROM kandidater_for_utmelding_hendelser
+            WHERE oppfolgingsperiode_uuid = :oppfolgingsperiodeId order by created_at desc
+            LIMIT 1
+            """.trimIndent(),
+            mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeId.toString()),
+        ) { rs, _ -> map(rs) }
+            .firstOrNull()
+    }
+
     fun hentAntallKandidaterForUtmelding(): Int {
         val sql = """
             SELECT COUNT(*) AS antall
