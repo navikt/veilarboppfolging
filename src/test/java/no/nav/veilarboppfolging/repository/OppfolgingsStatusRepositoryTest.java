@@ -8,6 +8,8 @@ import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -41,6 +43,32 @@ public class OppfolgingsStatusRepositoryTest {
         assertEquals(2, unikeBrukerePage2.size());
         assertEquals(aktorId2, unikeBrukerePage2.get(0));
         assertEquals(aktorId3, unikeBrukerePage2.get(1));
+    }
+
+    @Test
+    public void hentAntallUnderOppfolgingMedIserv__skal_returnere_antall_under_oppfolging_med_iserv() {
+        jdbcTemplate.update(
+                "INSERT INTO OPPFOLGINGSTATUS(aktor_id, under_oppfolging, iserv_fra_dato, oppdatert) VALUES (?, ?, ?, CURRENT_TIMESTAMP)",
+                "aktorId1",
+                1,
+                Timestamp.from(Instant.now())
+        );
+        jdbcTemplate.update(
+                "INSERT INTO OPPFOLGINGSTATUS(aktor_id, under_oppfolging, iserv_fra_dato, oppdatert) VALUES (?, ?, ?, CURRENT_TIMESTAMP)",
+                "aktorId2",
+                1,
+                null
+        );
+        jdbcTemplate.update(
+                "INSERT INTO OPPFOLGINGSTATUS(aktor_id, under_oppfolging, iserv_fra_dato, oppdatert) VALUES (?, ?, ?, CURRENT_TIMESTAMP)",
+                "aktorId3",
+                0,
+                Timestamp.from(Instant.now())
+        );
+
+        int antall = oppfolgingsStatusRepository.hentAntallUnderOppfolgingMedIserv();
+
+        assertEquals(1, antall);
     }
 
 }
