@@ -87,6 +87,23 @@ class KandidatForUtmeldingRepository(
             .firstOrNull()
     }
 
+    fun hentAktiveKandidater(offset: Int, batchSize: Int): List<KandidatForUtmeldingHendelse> {
+        return db.query(
+            """
+            SELECT kfuh.*
+            FROM kandidater_for_utmelding kfu
+            JOIN kandidater_for_utmelding_hendelser kfuh ON kfu.siste_utmeldingshendelse_id = kfuh.utmeldingshendelse_id
+            WHERE kfu.forlenget_til IS NULL
+            ORDER BY kfu.created_at
+            OFFSET :offset ROWS FETCH NEXT :batchSize ROWS ONLY
+            """.trimIndent(),
+            mapOf(
+                "offset" to offset,
+                "batchSize" to batchSize
+            ),
+        ) { rs, _ -> map(rs) }
+    }
+
     fun hentEllerOpprettFilterhendelseId(oppfolgingsperiodeId: UUID): UUID {
         val sql = """
             INSERT INTO filterkategori_id_mapping(kategori, oppfolgingsperiode_id, filterkategori_person_id)
