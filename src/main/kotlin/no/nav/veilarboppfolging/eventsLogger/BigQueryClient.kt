@@ -31,7 +31,7 @@ enum class BigQueryEventType {
 
 data class UtmeldingsAntall(
     val personerIUtemelding: Int,
-    val personIUtmeldingSomErUnderOppfolging: Int,
+    val personIUtmeldingSomErUnderOppfolgingOgIserv: Int,
 )
 
 interface BigQueryClient {
@@ -126,7 +126,7 @@ class BigQueryClientImplementation(private val bigQuery: BigQuery): BigQueryClie
         insertIntoOppfolgingEvents(utmeldingCountsTable) {
             mapOf(
                 "personerIUtmelding" to utmelding.personerIUtemelding,
-                "personIUtmeldingSomErUnderOppfolging" to utmelding.personIUtmeldingSomErUnderOppfolging,
+                "personIUtmeldingSomErUnderOppfolging" to utmelding.personIUtmeldingSomErUnderOppfolgingOgIserv,
                 "timestamp" to ZonedDateTime.now().toOffsetDateTime().toString()
             )
         }
