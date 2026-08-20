@@ -1,5 +1,6 @@
 package no.nav.veilarboppfolging.kandidatForUtmelding
 
+import java.time.ZonedDateTime
 import java.util.UUID
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
@@ -128,6 +129,7 @@ class KandidatForUtmeldingRepositoryTest {
         utfortAv = "A123123",
         kandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
         avslutningsarsak = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString(),
-        kilde = "kilde"
+        kilde = "kilde",
+        hendelseTidspunkt = ZonedDateTime.now().toInstant(),
     )
 }
