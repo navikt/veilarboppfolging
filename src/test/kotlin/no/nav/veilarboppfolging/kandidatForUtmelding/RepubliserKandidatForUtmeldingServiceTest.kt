@@ -43,7 +43,6 @@ class RepubliserKandidatForUtmeldingServiceTest : IntegrationTest() {
         assertThat(kafkaPubliseringer).hasSize(1)
         val kafkaPublisering = kafkaPubliseringer.first()
         assertThat(kafkaPublisering.status).isEqualTo(KandidatForUtmeldingKafkaPubliseringStatus.SENDT)
-        assertThat(kafkaPublisering.publiseringstype).isEqualTo(KandidatForUtmeldingKafkaPubliseringstype.REPUBLISERING)
         assertThat(kafkaPublisering.kafkaOffset).isNotNull()
     }
 
@@ -79,7 +78,6 @@ class RepubliserKandidatForUtmeldingServiceTest : IntegrationTest() {
         assertThat(kafkaPubliseringer).hasSize(1)
         val kafkaPublisering = kafkaPubliseringer.first()
         assertThat(kafkaPublisering.status).isEqualTo(KandidatForUtmeldingKafkaPubliseringStatus.SENDT)
-        assertThat(kafkaPublisering.publiseringstype).isEqualTo(KandidatForUtmeldingKafkaPubliseringstype.REPUBLISERING)
         assertThat(kafkaPublisering.kafkaOffset).isNotNull()
     }
 

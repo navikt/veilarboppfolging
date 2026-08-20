@@ -53,7 +53,6 @@ class RepubliserKandidatForUtmeldingService(
             }
             publiseringsdata?.let {
                 kandidatForUtmeldingKafkaPubliseringService.publiserOgLoggKafkaMelding(
-                    publiseringstype = KandidatForUtmeldingKafkaPubliseringstype.REPUBLISERING,
                     utmeldingshendelseId = it.utmeldingshendelseId,
                     filterkategoriPersonId = it.filterkategoriPersonId,
                     filterhendelse = it.filterhendelseRecord,

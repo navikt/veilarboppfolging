@@ -155,7 +155,6 @@ class KandidatForUtmeldingRepository(
             INSERT INTO kandidater_for_utmelding_kafka_logg(
               id,
               utmeldingshendelse_id,
-              publiseringstype,
               status,
               kafka_topic,
               kafka_partition,
@@ -164,7 +163,6 @@ class KandidatForUtmeldingRepository(
             ) VALUES (
               gen_random_uuid(),
               :utmeldingshendelseId,
-              :publiseringstype,
               :status,
               :kafkaTopic,
               :kafkaPartition,
@@ -177,7 +175,6 @@ class KandidatForUtmeldingRepository(
             sql,
             mapOf(
                 "utmeldingshendelseId" to logg.utmeldingshendelseId,
-                "publiseringstype" to logg.publiseringstype.name,
                 "status" to logg.status.name,
                 "kafkaTopic" to logg.kafkaTopic,
                 "kafkaPartition" to logg.kafkaPartition,
@@ -190,7 +187,7 @@ class KandidatForUtmeldingRepository(
     fun hentKafkaPubliseringer(utmeldingshendelseId: UUID): List<KandidatForUtmeldingKafkaPublisering> {
         return db.query(
             """
-            SELECT utmeldingshendelse_id, publiseringstype, status, kafka_topic, kafka_partition, kafka_offset, feilmelding
+            SELECT utmeldingshendelse_id, status, kafka_topic, kafka_partition, kafka_offset, feilmelding
             FROM kandidater_for_utmelding_kafka_logg
             WHERE utmeldingshendelse_id = :utmeldingshendelseId
             ORDER BY opprettet_tidspunkt ASC
@@ -199,7 +196,6 @@ class KandidatForUtmeldingRepository(
         ) { rs, _ ->
             KandidatForUtmeldingKafkaPublisering(
                 utmeldingshendelseId = UUID.fromString(rs.getString("utmeldingshendelse_id")),
-                publiseringstype = KandidatForUtmeldingKafkaPubliseringstype.valueOf(rs.getString("publiseringstype")),
                 status = KandidatForUtmeldingKafkaPubliseringStatus.valueOf(rs.getString("status")),
                 kafkaTopic = rs.getString("kafka_topic"),
                 kafkaPartition = rs.getInt("kafka_partition").let { partition ->

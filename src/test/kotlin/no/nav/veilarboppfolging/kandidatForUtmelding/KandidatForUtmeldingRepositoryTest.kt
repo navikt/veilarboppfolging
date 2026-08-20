@@ -122,7 +122,6 @@ class KandidatForUtmeldingRepositoryTest {
         kandidatForUtmeldingRepository.lagreKafkaPublisering(
             KandidatForUtmeldingKafkaPublisering(
                 utmeldingshendelseId = utmeldingshendelseId,
-                publiseringstype = KandidatForUtmeldingKafkaPubliseringstype.NY_KANDIDAT,
                 status = KandidatForUtmeldingKafkaPubliseringStatus.SENDT,
                 kafkaTopic = "topic",
                 kafkaPartition = 1,

@@ -56,7 +56,6 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
         assertThat(kafkaPubliseringer).hasSize(1)
         val kafkaPublisering = kafkaPubliseringer.first()
         assertThat(kafkaPublisering.status).isEqualTo(KandidatForUtmeldingKafkaPubliseringStatus.SENDT)
-        assertThat(kafkaPublisering.publiseringstype).isEqualTo(KandidatForUtmeldingKafkaPubliseringstype.NY_KANDIDAT)
         assertThat(kafkaPublisering.kafkaOffset).isNotNull()
     }
 

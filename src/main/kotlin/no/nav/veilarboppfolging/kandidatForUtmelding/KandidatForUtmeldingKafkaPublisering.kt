@@ -4,18 +4,12 @@ import java.util.UUID
 
 data class KandidatForUtmeldingKafkaPublisering(
     val utmeldingshendelseId: UUID,
-    val publiseringstype: KandidatForUtmeldingKafkaPubliseringstype,
     val status: KandidatForUtmeldingKafkaPubliseringStatus,
     val kafkaTopic: String,
     val kafkaPartition: Int?,
     val kafkaOffset: Long?,
     val feilmelding: String?,
 )
-
-enum class KandidatForUtmeldingKafkaPubliseringstype {
-    NY_KANDIDAT,
-    REPUBLISERING,
-}
 
 enum class KandidatForUtmeldingKafkaPubliseringStatus {
     SENDT,
