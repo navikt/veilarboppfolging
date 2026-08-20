@@ -49,6 +49,16 @@ class AdminV2Controller(
         }
     }
 
+    @PostMapping("/republiser/utmeldingskandidater/aktive")
+    fun republiserAktiveUtmeldingskandidater(): String {
+        sjekkTilgangTilAdmin()
+        return JobRunner.runAsync(
+            "republiser-aktive-utmeldingskandidater"
+        ) {
+            republiserKandidatForUtmeldingService.republiserAlleAktiveUtmeldingskandidater()
+        }
+    }
+
     private fun sjekkTilgangTilAdmin() {
         authService.sjekkAtApplikasjonErIAllowList(listOf(POAO_ADMIN))
         if (!authService.erInternBruker()) throw ForbiddenException("Må være internbruker")

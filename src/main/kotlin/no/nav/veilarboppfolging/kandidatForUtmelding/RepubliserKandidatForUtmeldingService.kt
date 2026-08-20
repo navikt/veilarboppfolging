@@ -4,6 +4,7 @@ import java.util.UUID
 import kotlin.jvm.optionals.getOrElse
 import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.types.identer.AktorId
+import no.nav.common.types.identer.Fnr
 import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.FilterhendelseRecord
 import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.Operasjon
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
@@ -22,16 +23,47 @@ class RepubliserKandidatForUtmeldingService(
     @Value("\${app.sendUtmeldingskandidaterTilObo}") private val sendUtmeldingskandidaterTilObo: Boolean,
 ) {
     private val logger = LoggerFactory.getLogger(this::class.java)
+    val BATCH_SIZE = 1000
+
+    fun republiserAlleAktiveUtmeldingskandidater() {
+        if (sendUtmeldingskandidaterTilObo) {
+            var currentOffset = 0
+
+            while (true) {
+                val aktiveKandidater = kandidatForUtmeldingRepository.hentAktiveKandidater(
+                    offset = currentOffset,
+                    batchSize = BATCH_SIZE,
+                )
+
+                if (aktiveKandidater.isEmpty()) {
+                    break
+                }
+
+                currentOffset += aktiveKandidater.size
+
+                logger.info(
+                    "Republiserer aktive kandidater for utmelding. CurrentOffset={} BatchSize={}",
+                    currentOffset,
+                    aktiveKandidater.size
+                )
+
+                aktiveKandidater.forEach {
+                    republiserKandidatForUtmelding(it.oppfolgingsperiodeUuid)
+                }
+            }
+            logger.info("Ferdig med å republisere alle aktive kandidater for utmelding til OBO")
+        } else {
+            logger.info("Sender ikke aktive kandidater for utmelding til OBO på nytt fordi sending til OBO er togglet av")
+        }
+    }
 
     fun republiserKandidatForUtmelding(oppfolgingsperiodeId: UUID) {
         if (sendUtmeldingskandidaterTilObo) {
             val publiseringsdata = transactor.execute {
-                val aktorId = oppfolgingsPeriodeRepository.hentOppfolgingsperiode(oppfolgingsperiodeId.toString())
-                    .getOrElse { throw IllegalStateException("Oppfølgingsperiode med id $oppfolgingsperiodeId finnes ikke") }?.aktorId
-                val fnr = aktorOppslagClient.hentFnr(AktorId(aktorId))
+                val fnr = finnFnrForOppfolgingsperiode(oppfolgingsperiodeId)
                 val filterkategoriPersonId = kandidatForUtmeldingRepository.hentEllerOpprettFilterhendelseId(oppfolgingsperiodeId)
                 val aktivKandidat = kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeId)
-                val publisering = if (aktivKandidat != null) {
+                if (aktivKandidat != null) {
                     val kandidat = kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeId)
                         ?: throw IllegalStateException("Fant ikke aktiv kandidat for oppfølgingsperiode $oppfolgingsperiodeId")
                     Republiseringsdata(
@@ -48,9 +80,8 @@ class RepubliserKandidatForUtmeldingService(
                         filterhendelseRecord = sisteUtmeldingshendelse.hendelse.tilFilterhendelseRecord(fnr, Operasjon.STOPP),
                     )
                 }
-                logger.info("Republiserer kandidat for utmelding til OBO med key=$filterkategoriPersonId for oppfølgingsperiode $oppfolgingsperiodeId")
-                publisering
             }
+            logger.info("Republiserer kandidat for utmelding til OBO med key=${publiseringsdata?.filterkategoriPersonId} for oppfølgingsperiode $oppfolgingsperiodeId")
             publiseringsdata?.let {
                 kandidatForUtmeldingKafkaPubliseringService.publiserOgLoggKafkaMelding(
                     utmeldingshendelseId = it.utmeldingshendelseId,
@@ -61,6 +92,12 @@ class RepubliserKandidatForUtmeldingService(
         } else {
             logger.info("Sender ikke kandidat for utmelding til OBO for oppfølgingsperiode $oppfolgingsperiodeId på nytt fordi sending til OBO er togglet av")
         }
+    }
+
+    private fun finnFnrForOppfolgingsperiode(oppfolgingsperiodeId: UUID): Fnr {
+        val aktorId = oppfolgingsPeriodeRepository.hentOppfolgingsperiode(oppfolgingsperiodeId.toString())
+            .getOrElse { throw IllegalStateException("Oppfølgingsperiode med id $oppfolgingsperiodeId finnes ikke") }?.aktorId
+        return aktorOppslagClient.hentFnr(AktorId(aktorId))
     }
 }
 

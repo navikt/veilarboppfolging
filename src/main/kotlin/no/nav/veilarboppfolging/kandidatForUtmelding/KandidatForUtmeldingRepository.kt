@@ -110,7 +110,7 @@ class KandidatForUtmeldingRepository(
             """
             SELECT *
             FROM kandidater_for_utmelding_hendelser
-            WHERE oppfolgingsperiode_uuid = :oppfolgingsperiodeId order by created_at desc
+            WHERE oppfolgingsperiode_uuid = :oppfolgingsperiodeId ORDER BY created_at DESC
             LIMIT 1
             """.trimIndent(),
             mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeId.toString()),
@@ -120,6 +120,23 @@ class KandidatForUtmeldingRepository(
                 hendelse = map(rs)
             )
         }.firstOrNull()
+    }
+
+    fun hentAktiveKandidater(offset: Int, batchSize: Int): List<KandidatForUtmeldingHendelse> {
+        return db.query(
+            """
+            SELECT kfuh.*
+            FROM kandidater_for_utmelding kfu
+            JOIN kandidater_for_utmelding_hendelser kfuh ON kfu.siste_utmeldingshendelse_id = kfuh.utmeldingshendelse_id
+            WHERE kfu.forlenget_til IS NULL
+            ORDER BY kfu.created_at
+            OFFSET :offset ROWS FETCH NEXT :batchSize ROWS ONLY
+            """.trimIndent(),
+            mapOf(
+                "offset" to offset,
+                "batchSize" to batchSize
+            ),
+        ) { rs, _ -> map(rs) }
     }
 
     fun hentEllerOpprettFilterhendelseId(oppfolgingsperiodeId: UUID): UUID {
