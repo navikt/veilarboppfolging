@@ -19,7 +19,7 @@ class UtmeldingCountsCron(
     private val leaderElectionClient: LeaderElectionClient,
 ) {
 
-    @Scheduled(cron = "0 0 0 * * *")
+    @Scheduled(cron = "0 0 * * * *")
     fun målOgLoggUtmeldingCounts() {
         if (!leaderElectionClient.isLeader) {
             return
@@ -34,7 +34,7 @@ class UtmeldingCountsCron(
         val antallUnderOppfolgingMedIserv = oppfolgingsStatusRepository.hentAntallUnderOppfolgingMedIserv()
         val utmeldingsAntall = UtmeldingsAntall(
             personerIUtemelding = antallKandidaterForUtmelding,
-            personIUtmeldingSomErUnderOppfolging = antallUnderOppfolgingMedIserv,
+            personIUtmeldingSomErUnderOppfolgingOgIserv = antallUnderOppfolgingMedIserv,
         )
         bigQueryClient.loggUtmeldingsCount(utmeldingsAntall)
     }
