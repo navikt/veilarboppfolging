@@ -1,7 +1,8 @@
 package no.nav.veilarboppfolging.kandidatForUtmelding
 
 import java.net.URI
-import java.time.ZonedDateTime
+import java.time.Instant
+import java.time.ZoneId
 import java.util.UUID
 import kotlin.jvm.optionals.getOrElse
 import no.nav.common.json.JsonUtils
@@ -19,6 +20,7 @@ sealed class KandidatForUtmeldingHendelse(
     val utfortAvType: KandidatForUtmeldingHendelseUtfortAvType,
     val utfortAv: String?,
     val kilde: String,
+    val hendelseTidspunkt: Instant,
 ) {
     abstract val type: KandidatForUtmeldingHendelseType
     abstract val hendelseDataJson: PGobject?
@@ -58,12 +60,14 @@ class ArbeidssøkerPeriodeAvsluttet(
     utfortAv: String?,
     kilde: String,
     kandidatForUtmeldingHendelseType: KandidatForUtmeldingHendelseType,
-    val avslutningsarsak: String?
+    val avslutningsarsak: String?,
+    hendelseTidspunkt: Instant,
 ) : KandidatForUtmeldingHendelse(
     oppfolgingsperiodeUuid,
     utfortAvType,
     utfortAv,
     kilde,
+    hendelseTidspunkt,
 ) {
     override val type: KandidatForUtmeldingHendelseType = kandidatForUtmeldingHendelseType
     override val hendelseDataJson: PGobject? = avslutningsarsak?.let {
@@ -93,7 +97,7 @@ class ArbeidssøkerPeriodeAvsluttet(
                     KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_SVARTE_NEI_I_BEKREFTELSE -> BeskrivelseEnum.ARBEIDSSOKERPERIODE_AVSLUTTET_SVARTE_NEI_I_BEKREFTELSE
                     KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET -> BeskrivelseEnum.ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET
                 }.name,
-                dato = ZonedDateTime.now(),
+                dato = hendelseTidspunkt.atZone(ZoneId.of("Europe/Oslo")),
                 lenke = URI("${baseUrlVeilarbpersonflate()}/aktivitetsplan").toURL(),
                 detaljer = null,
             )

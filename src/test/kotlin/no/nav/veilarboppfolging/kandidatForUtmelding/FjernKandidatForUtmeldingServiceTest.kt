@@ -1,5 +1,6 @@
 package no.nav.veilarboppfolging.kandidatForUtmelding
 
+import java.time.ZonedDateTime
 import java.util.UUID
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
@@ -32,6 +33,7 @@ class FjernKandidatForUtmeldingServiceTest : IntegrationTest() {
                 utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
                 utfortAv = "A123123",
                 kilde = "kilde",
+                hendelseTidspunkt = ZonedDateTime.now().toInstant(),
                 kandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
                 avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString(),
                 oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
