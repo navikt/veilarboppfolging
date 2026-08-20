@@ -1,6 +1,9 @@
 package no.nav.veilarboppfolging.kandidatForUtmelding
 
 import java.sql.ResultSet
+import java.sql.Timestamp
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 import java.util.UUID
 import no.nav.common.json.JsonUtils
 import no.nav.veilarboppfolging.repository.getStringOrNull
@@ -31,8 +34,8 @@ class KandidatForUtmeldingRepository(
 
     private fun insertUtmeldingsHendelse(hendelse: KandidatForUtmeldingHendelse): UUID {
         val sql = """
-            INSERT INTO kandidater_for_utmelding_hendelser(utmeldingshendelse_id, hendelse, hendelse_data, utfort_av, utfort_av_type, kilde, oppfolgingsperiode_uuid)
-            VALUES (gen_random_uuid(), :hendelse, :hendelseData::jsonb, :utfortAv, :utfortAvType, :kilde, :oppfolgingsperiode_uuid)
+            INSERT INTO kandidater_for_utmelding_hendelser(utmeldingshendelse_id, hendelse, hendelse_data, utfort_av, utfort_av_type, kilde, oppfolgingsperiode_uuid, hendelse_tidspunkt)
+            VALUES (gen_random_uuid(), :hendelse, :hendelseData::jsonb, :utfortAv, :utfortAvType, :kilde, :oppfolgingsperiode_uuid, :hendelseTidspunkt)
             RETURNING utmeldingshendelse_id
         """.trimIndent()
         return db.queryForObject(
@@ -42,7 +45,10 @@ class KandidatForUtmeldingRepository(
                 "utfortAv" to hendelse.utfortAv,
                 "utfortAvType" to hendelse.utfortAvType.name,
                 "kilde" to hendelse.kilde,
-                "oppfolgingsperiode_uuid" to hendelse.oppfolgingsperiodeUuid
+                "oppfolgingsperiode_uuid" to hendelse.oppfolgingsperiodeUuid,
+                "hendelseTidspunkt" to Timestamp.valueOf(
+                    LocalDateTime.ofInstant(hendelse.hendelseTidspunkt, ZoneOffset.UTC)
+                )
             )
         ) { rs, _ -> UUID.fromString(rs.getString("utmeldingshendelse_id")) }!!
     }
@@ -124,6 +130,7 @@ fun ResultSet.toArbeidssøkerPeriodeAvsluttet() = ArbeidssøkerPeriodeAvsluttet(
     utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.valueOf(getString("utfort_av_type")),
     utfortAv = getString("utfort_av"),
     kilde = getString("kilde"),
+    hendelseTidspunkt = getTimestamp("hendelse_tidspunkt").toLocalDateTime().toInstant(ZoneOffset.UTC),
     avslutningsarsak = getStringOrNull("hendelse_data")?.let { JsonUtils.fromJson(it, ArbeidssøkerPeriodeAvsluttet.Detaljer::class.java).avslutningsarsak },
     kandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.valueOf(getString("hendelse"))
 )

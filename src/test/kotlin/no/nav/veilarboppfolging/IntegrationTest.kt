@@ -283,7 +283,8 @@ open class IntegrationTest {
             utfortAv = "A123123",
             kilde = "arbeidssøkerregisteret",
             kandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
-            avslutningsarsak = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
+            avslutningsarsak = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString(),
+            hendelseTidspunkt = ZonedDateTime.now().toInstant(),
         )
         kandidatForUtmeldingService.lagreKandidatForUtmelding(fnr,kandidat)
     }

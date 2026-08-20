@@ -1,5 +1,6 @@
 package no.nav.veilarboppfolging.kandidatForUtmelding
 
+import java.time.ZonedDateTime
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.paw.arbeidssokerregisteret.api.v1.AvsluttetAarsakType
@@ -21,6 +22,7 @@ class KandidatForUtmeldingHendelseTest {
             utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
             utfortAv = "A123123",
             kilde = "test",
+            hendelseTidspunkt = ZonedDateTime.now().toInstant(),
             kandidatForUtmeldingHendelseType = kandidatForUtmeldingHendelseType,
             avslutningsarsak = aarsakType.toString()
         )
