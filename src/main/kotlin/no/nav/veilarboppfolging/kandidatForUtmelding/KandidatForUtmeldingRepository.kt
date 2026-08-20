@@ -15,7 +15,7 @@ class KandidatForUtmeldingRepository(
     private val db: NamedParameterJdbcTemplate
 ) {
 
-    fun lagreKandidat(hendelse: KandidatForUtmeldingHendelse) {
+    fun lagreKandidat(hendelse: KandidatForUtmeldingHendelse): UUID {
         val hendelseId = insertUtmeldingsHendelse(hendelse)
         val sql = """
             INSERT INTO kandidater_for_utmelding(siste_utmeldingshendelse_id, oppfolgingsperiode_uuid, forlenget_til)
@@ -30,6 +30,7 @@ class KandidatForUtmeldingRepository(
                 "avsluttetAv" to hendelse.utfortAvType.name,
             )
         )
+        return hendelseId
     }
 
     private fun insertUtmeldingsHendelse(hendelse: KandidatForUtmeldingHendelse): UUID {
@@ -74,6 +75,23 @@ class KandidatForUtmeldingRepository(
             .firstOrNull()
     }
 
+    fun hentAktivKandidat(oppfolgingsperiodeId: UUID): AktivKandidatForUtmelding? {
+        return db.query(
+            """
+            SELECT oppfolgingsperiode_uuid, siste_utmeldingshendelse_id
+            FROM kandidater_for_utmelding
+            WHERE oppfolgingsperiode_uuid = :oppfolgingsperiodeId
+              AND forlenget_til IS NULL
+            """.trimIndent(),
+            mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeId.toString()),
+        ) { rs, _ ->
+            AktivKandidatForUtmelding(
+                oppfolgingsperiodeUuid = UUID.fromString(rs.getString("oppfolgingsperiode_uuid")),
+                sisteUtmeldingshendelseId = UUID.fromString(rs.getString("siste_utmeldingshendelse_id"))
+            )
+        }.firstOrNull()
+    }
+
     fun hentSisteKandidatForUtmeldingHendelse(oppfolgingsperiodeId: UUID): KandidatForUtmeldingHendelse? {
         return db.query(
             """
@@ -85,6 +103,23 @@ class KandidatForUtmeldingRepository(
             mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeId.toString()),
         ) { rs, _ -> map(rs) }
             .firstOrNull()
+    }
+
+    fun hentSisteKandidatForUtmeldingHendelseMedId(oppfolgingsperiodeId: UUID): KandidatForUtmeldingHendelseMedId? {
+        return db.query(
+            """
+            SELECT *
+            FROM kandidater_for_utmelding_hendelser
+            WHERE oppfolgingsperiode_uuid = :oppfolgingsperiodeId order by created_at desc
+            LIMIT 1
+            """.trimIndent(),
+            mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeId.toString()),
+        ) { rs, _ ->
+            KandidatForUtmeldingHendelseMedId(
+                utmeldingshendelseId = UUID.fromString(rs.getString("utmeldingshendelse_id")),
+                hendelse = map(rs)
+            )
+        }.firstOrNull()
     }
 
     fun hentEllerOpprettFilterhendelseId(oppfolgingsperiodeId: UUID): UUID {
@@ -113,6 +148,69 @@ class KandidatForUtmeldingRepository(
                 "oppfolgingsperiodeId" to oppfolgingsperiodeId.toString(),
             ),
         ) { rs, _ -> UUID.fromString(rs.getString("filterkategori_person_id")) }.firstOrNull()
+    }
+
+    fun lagreKafkaPublisering(logg: KandidatForUtmeldingKafkaPublisering) {
+        val sql = """
+            INSERT INTO kandidater_for_utmelding_kafka_logg(
+              id,
+              utmeldingshendelse_id,
+              publiseringstype,
+              status,
+              kafka_topic,
+              kafka_partition,
+              kafka_offset,
+              feilmelding
+            ) VALUES (
+              gen_random_uuid(),
+              :utmeldingshendelseId,
+              :publiseringstype,
+              :status,
+              :kafkaTopic,
+              :kafkaPartition,
+              :kafkaOffset,
+              :feilmelding
+            )
+        """.trimIndent()
+
+        db.update(
+            sql,
+            mapOf(
+                "utmeldingshendelseId" to logg.utmeldingshendelseId,
+                "publiseringstype" to logg.publiseringstype.name,
+                "status" to logg.status.name,
+                "kafkaTopic" to logg.kafkaTopic,
+                "kafkaPartition" to logg.kafkaPartition,
+                "kafkaOffset" to logg.kafkaOffset,
+                "feilmelding" to logg.feilmelding,
+            )
+        )
+    }
+
+    fun hentKafkaPubliseringer(utmeldingshendelseId: UUID): List<KandidatForUtmeldingKafkaPublisering> {
+        return db.query(
+            """
+            SELECT utmeldingshendelse_id, publiseringstype, status, kafka_topic, kafka_partition, kafka_offset, feilmelding
+            FROM kandidater_for_utmelding_kafka_logg
+            WHERE utmeldingshendelse_id = :utmeldingshendelseId
+            ORDER BY opprettet_tidspunkt ASC
+            """.trimIndent(),
+            mapOf("utmeldingshendelseId" to utmeldingshendelseId),
+        ) { rs, _ ->
+            KandidatForUtmeldingKafkaPublisering(
+                utmeldingshendelseId = UUID.fromString(rs.getString("utmeldingshendelse_id")),
+                publiseringstype = KandidatForUtmeldingKafkaPubliseringstype.valueOf(rs.getString("publiseringstype")),
+                status = KandidatForUtmeldingKafkaPubliseringStatus.valueOf(rs.getString("status")),
+                kafkaTopic = rs.getString("kafka_topic"),
+                kafkaPartition = rs.getInt("kafka_partition").let { partition ->
+                    if (rs.wasNull()) null else partition
+                },
+                kafkaOffset = rs.getLong("kafka_offset").let { offset ->
+                    if (rs.wasNull()) null else offset
+                },
+                feilmelding = rs.getString("feilmelding"),
+            )
+        }
     }
 
     fun map(resultSet: ResultSet): KandidatForUtmeldingHendelse {

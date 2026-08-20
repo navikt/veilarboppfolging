@@ -6,8 +6,6 @@ import no.nav.common.types.identer.Fnr
 import no.nav.paw.arbeidssokerregisteret.api.v1.AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.veilarboppfolging.IntegrationTest
-import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.Kategori
-import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.Operasjon
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
@@ -26,7 +24,7 @@ class RepubliserKandidatForUtmeldingServiceTest : IntegrationTest() {
         mockAap(FNR, harAap = false)
         startOppfolgingSomArbeidsoker(AKTOR_ID, FNR)
         val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(FNR).get().uuid
-        kandidatForUtmeldingRepository.lagreKandidat(
+        val utmeldingshendelseId = kandidatForUtmeldingRepository.lagreKandidat(
             ArbeidssøkerPeriodeAvsluttet(
                 utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
                 utfortAv = "A123123",
@@ -37,14 +35,16 @@ class RepubliserKandidatForUtmeldingServiceTest : IntegrationTest() {
                 oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
             )
         )
-        val filterkategoriPersonId = kandidatForUtmeldingRepository.hentEllerOpprettFilterhendelseId(oppfolgingsperiodeUuid)
         assertThat(kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeUuid)).isNotNull()
 
         republiserKandidatForUtmeldingService.republiserKandidatForUtmelding(oppfolgingsperiodeUuid)
 
-        val filterhendelse = getFilterhendelseRecordsStoredInKafkaOutbox(kafkaProperties.portefoljeHendelsesfilterTopic, filterkategoriPersonId.toString()).first()
-        assertThat(filterhendelse.operasjon).isEqualTo(Operasjon.START)
-        assertThat(filterhendelse.kategori).isEqualTo(Kategori.KANDIDAT_FOR_UTMELDING)
+        val kafkaPubliseringer = kandidatForUtmeldingRepository.hentKafkaPubliseringer(utmeldingshendelseId)
+        assertThat(kafkaPubliseringer).hasSize(1)
+        val kafkaPublisering = kafkaPubliseringer.first()
+        assertThat(kafkaPublisering.status).isEqualTo(KandidatForUtmeldingKafkaPubliseringStatus.SENDT)
+        assertThat(kafkaPublisering.publiseringstype).isEqualTo(KandidatForUtmeldingKafkaPubliseringstype.REPUBLISERING)
+        assertThat(kafkaPublisering.kafkaOffset).isNotNull()
     }
 
     @Test
@@ -58,7 +58,7 @@ class RepubliserKandidatForUtmeldingServiceTest : IntegrationTest() {
         mockAap(FNR, harAap = false)
         startOppfolgingSomArbeidsoker(AKTOR_ID, FNR)
         val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(FNR).get().uuid
-        kandidatForUtmeldingRepository.lagreKandidat(
+        val utmeldingshendelseId = kandidatForUtmeldingRepository.lagreKandidat(
             ArbeidssøkerPeriodeAvsluttet(
                 utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
                 utfortAv = "A123123",
@@ -69,15 +69,18 @@ class RepubliserKandidatForUtmeldingServiceTest : IntegrationTest() {
                 oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
             )
         )
-        val filterkategoriPersonId = kandidatForUtmeldingRepository.hentEllerOpprettFilterhendelseId(oppfolgingsperiodeUuid)
         kandidatForUtmeldingRepository.fjernKandidat(oppfolgingsperiodeUuid)
         assertThat(kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeUuid)).isNull()
         assertThat(kandidatForUtmeldingRepository.hentSisteKandidatForUtmeldingHendelse(oppfolgingsperiodeUuid)).isNotNull()
 
         republiserKandidatForUtmeldingService.republiserKandidatForUtmelding(oppfolgingsperiodeUuid)
 
-        val filterhendelse = getFilterhendelseRecordsStoredInKafkaOutbox(kafkaProperties.portefoljeHendelsesfilterTopic, filterkategoriPersonId.toString()).first()
-        assertThat(filterhendelse.operasjon).isEqualTo(Operasjon.STOPP)
-        assertThat(filterhendelse.kategori).isEqualTo(Kategori.KANDIDAT_FOR_UTMELDING)
+        val kafkaPubliseringer = kandidatForUtmeldingRepository.hentKafkaPubliseringer(utmeldingshendelseId)
+        assertThat(kafkaPubliseringer).hasSize(1)
+        val kafkaPublisering = kafkaPubliseringer.first()
+        assertThat(kafkaPublisering.status).isEqualTo(KandidatForUtmeldingKafkaPubliseringStatus.SENDT)
+        assertThat(kafkaPublisering.publiseringstype).isEqualTo(KandidatForUtmeldingKafkaPubliseringstype.REPUBLISERING)
+        assertThat(kafkaPublisering.kafkaOffset).isNotNull()
     }
+
 }
