@@ -22,7 +22,6 @@ import no.nav.veilarboppfolging.kafka.dto.OppfolgingsperiodeDTO
 import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.hendelser.OppfolgingStartetHendelseDto
 import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.hendelser.OppfolgingsAvsluttetHendelseDto
 import org.apache.kafka.clients.producer.ProducerRecord
-import org.apache.kafka.clients.producer.RecordMetadata
 import org.apache.kafka.common.serialization.LongSerializer
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -37,13 +36,10 @@ import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.Filterhendel
 class KafkaProducerService @Autowired constructor(
     private val authContextHolder: AuthContextHolder,
     private val producerRecordStorage: KafkaProducerRecordStorage,
-    private val filterhendelsePublisher: FilterhendelsePublisher,
     private val kafkaProperties: KafkaProperties,
     @param:Value("\${app.kafka.enabled}") private val kafkaEnabled: Boolean,
 ) {
     private val logger = LoggerFactory.getLogger(this::class.java)
-    val portefoljeHendelsesfilterTopic: String
-        get() = kafkaProperties.portefoljeHendelsesfilterTopic
 
     fun publiserValgtOppfolgingsperiode(oppfolgingsperiode: OppfolgingsperiodeDTO) {
         oppfolgingsperiode(oppfolgingsperiode)
@@ -68,17 +64,6 @@ class KafkaProducerService @Autowired constructor(
 
     fun publiserFilterhendelse(hendelseId: UUID, filterhendelseRecord: FilterhendelseRecord) {
         store(kafkaProperties.portefoljeHendelsesfilterTopic, hendelseId.toString(), filterhendelseRecord)
-    }
-
-    fun publiserFilterhendelseSynkront(hendelseId: UUID, filterhendelseRecord: FilterhendelseRecord): RecordMetadata {
-        if (!kafkaEnabled) {
-            throw RuntimeException("Kafka er disabled, men noe gjør at man forsøker å publisere meldinger")
-        }
-        return filterhendelsePublisher.publiser(
-            portefoljeHendelsesfilterTopic,
-            hendelseId.toString(),
-            filterhendelseRecord
-        )
     }
 
     private fun sisteOppfolgingsPeriode(sisteOppfolgingsperiodeV1: SisteOppfolgingsperiodeV1) {

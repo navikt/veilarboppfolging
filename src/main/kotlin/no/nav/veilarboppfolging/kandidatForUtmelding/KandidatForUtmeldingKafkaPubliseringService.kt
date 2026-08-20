@@ -1,13 +1,15 @@
 package no.nav.veilarboppfolging.kandidatForUtmelding
 
 import java.util.UUID
+import no.nav.veilarboppfolging.config.KafkaProperties
 import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.FilterhendelseRecord
-import no.nav.veilarboppfolging.service.KafkaProducerService
+import no.nav.veilarboppfolging.service.FilterhendelsePublisher
 import org.springframework.stereotype.Service
 
 @Service
 class KandidatForUtmeldingKafkaPubliseringService(
-    private val kafkaProducerService: KafkaProducerService,
+    private val filterhendelsePublisher: FilterhendelsePublisher,
+    private val kafkaProperties: KafkaProperties,
     private val kandidatForUtmeldingRepository: KandidatForUtmeldingRepository,
 ) {
     fun publiserOgLoggKafkaMelding(
@@ -15,9 +17,9 @@ class KandidatForUtmeldingKafkaPubliseringService(
         filterkategoriPersonId: UUID,
         filterhendelse: FilterhendelseRecord,
     ) {
-        val topic = kafkaProducerService.portefoljeHendelsesfilterTopic
+        val topic = kafkaProperties.portefoljeHendelsesfilterTopic
         try {
-            val metadata = kafkaProducerService.publiserFilterhendelseSynkront(filterkategoriPersonId, filterhendelse)
+            val metadata = filterhendelsePublisher.publiser(topic, filterkategoriPersonId.toString(), filterhendelse)
             kandidatForUtmeldingRepository.lagreKafkaPublisering(
                 KandidatForUtmeldingKafkaPublisering(
                     utmeldingshendelseId = utmeldingshendelseId,
