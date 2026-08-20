@@ -197,4 +197,52 @@ class AdminV2ControllerTest {
             verify(republiserKandidatForUtmeldingService, times(1)).republiserKandidatForUtmelding(oppfolgingsperiodeId)
         }
     }
+
+    @Test
+    fun republiserAktiveUtmeldingskandidater__should_return_403_if_role_missing() {
+        `when`(authContextHolder.subject).thenReturn(Optional.of("srvpto-admin"))
+        `when`(authContextHolder.role).thenReturn(Optional.empty())
+
+        mockMvc.perform(
+            MockMvcRequestBuilders.post("/api/v2/admin/republiser/utmeldingskandidater/aktive")
+        )
+            .andExpect(MockMvcResultMatchers.status().`is`(403))
+    }
+
+    @Test
+    fun republiserAktiveUtmeldingskandidater__should_return_403_if_not_pto_admin() {
+        `when`(authContextHolder.subject).thenReturn(Optional.of("srvmyapp"))
+        `when`(authContextHolder.role).thenReturn(Optional.of(UserRole.SYSTEM))
+
+        mockMvc.perform(
+            MockMvcRequestBuilders.post("/api/v2/admin/republiser/utmeldingskandidater/aktive")
+        )
+            .andExpect(MockMvcResultMatchers.status().`is`(403))
+    }
+
+    @Test
+    fun republiserAktiveUtmeldingskandidater__should_return_403_if_not_system_user() {
+        `when`(authContextHolder.subject).thenReturn(Optional.of("srvpto-admin"))
+        `when`(authContextHolder.role).thenReturn(Optional.of(UserRole.EKSTERN))
+
+        mockMvc.perform(
+            MockMvcRequestBuilders.post("/api/v2/admin/republiser/utmeldingskandidater/aktive")
+        )
+            .andExpect(MockMvcResultMatchers.status().`is`(403))
+    }
+
+    @Test
+    fun republiserAktiveUtmeldingskandidater__should_return_job_id_and_republish() {
+        `when`(authContextHolder.subject).thenReturn(Optional.of(POAO_ADMIN))
+        `when`(authService.erInternBruker()).thenReturn(true)
+
+        mockMvc.perform(
+            MockMvcRequestBuilders.post("/api/v2/admin/republiser/utmeldingskandidater/aktive")
+        )
+            .andExpect(MockMvcResultMatchers.status().`is`(200))
+
+        TestUtils.verifiserAsynkront(3, TimeUnit.SECONDS) {
+            verify(republiserKandidatForUtmeldingService, times(1)).republiserAlleAktiveUtmeldingskandidater()
+        }
+    }
 }
