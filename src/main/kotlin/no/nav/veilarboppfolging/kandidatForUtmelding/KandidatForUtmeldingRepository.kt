@@ -7,6 +7,7 @@ import java.time.ZoneOffset
 import java.util.UUID
 import no.nav.common.json.JsonUtils
 import no.nav.veilarboppfolging.repository.getStringOrNull
+import org.jetbrains.annotations.TestOnly
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Repository
 
@@ -74,7 +75,7 @@ class KandidatForUtmeldingRepository(
             .firstOrNull()
     }
 
-    // for tester
+    @TestOnly
     fun hentKandidatMedForlengelse(oppfolgingsperiodeId: UUID): KandidatForUtmeldingHendelse? {
         return db.query(
             """
