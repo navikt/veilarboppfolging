@@ -1,17 +1,12 @@
 package no.nav.veilarboppfolging.kandidatForUtmelding
 
 import java.time.ZonedDateTime
-import no.nav.common.types.identer.AktorId
-import no.nav.common.types.identer.Fnr
+import java.util.UUID
 import no.nav.paw.arbeidssokerregisteret.api.v1.AvsluttetAarsakType
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import java.util.UUID
 
 class KandidatForUtmeldingHendelseTest {
-
-    private val aktorId = AktorId.of("1234567890")
-    private val fnr = Fnr.of("12345678901")
 
     private fun arbeidssøkerPeriodeAvsluttet(
         kandidatForUtmeldingHendelseType: KandidatForUtmeldingHendelseType,
