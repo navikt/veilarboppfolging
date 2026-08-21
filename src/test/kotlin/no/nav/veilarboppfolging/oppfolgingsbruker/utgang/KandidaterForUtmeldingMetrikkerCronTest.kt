@@ -7,9 +7,9 @@ import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingReposit
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import org.mockito.ArgumentCaptor
 import org.mockito.Mockito
-import org.mockito.Mockito.verify
+import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.verify
 
 class KandidaterForUtmeldingMetrikkerCronTest {
     private val bigQueryClient: BigQueryClient = Mockito.mock(BigQueryClient::class.java)
@@ -33,9 +33,9 @@ class KandidaterForUtmeldingMetrikkerCronTest {
 
         cron.loggKandidaterForUtmeldingMetrikker()
 
-        val captor = ArgumentCaptor.forClass(KandidaterForUtmeldingMetrikker::class.java)
+        val captor = argumentCaptor<KandidaterForUtmeldingMetrikker>()
         verify(bigQueryClient).loggKandidaterForUtmeldingMetrikker(captor.capture())
-        assertThat(captor.value).isEqualTo(
+        assertThat(captor.firstValue).isEqualTo(
             KandidaterForUtmeldingMetrikker(
                 antallKandidaterForUtmelding = 10,
                 antallUnderOppfolgingMedIserv = 4,
