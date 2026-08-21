@@ -87,13 +87,13 @@ class OppfolgingsStatusRepository(private val db: NamedParameterJdbcTemplate) {
             .toMutableList()
     }
 
-    // Antall brukere som er under oppfølging og har ISERV-dato
+    // Antall brukere som er under oppfølging og har formidlingsgruppe ISERV
     fun hentAntallUnderOppfolgingMedIserv(): Int {
         val sql = """
             SELECT COUNT(*) AS antall
             FROM OPPFOLGINGSTATUS
             WHERE under_oppfolging = 1
-              AND iserv_fra_dato IS NOT NULL
+              AND formidlingsgruppe = 'ISERV'
         """.trimIndent()
         return db.queryForObject(sql, emptyMap<String, Any>()) { rs, _ -> rs.getInt("antall") } ?: 0
     }

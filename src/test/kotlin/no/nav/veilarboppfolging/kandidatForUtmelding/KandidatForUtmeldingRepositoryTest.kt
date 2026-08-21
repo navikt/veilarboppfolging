@@ -167,6 +167,55 @@ class KandidatForUtmeldingRepositoryTest {
         assertThat(kandidatForUtmeldingRepository.hentAntallKandidaterForUtmelding()).isEqualTo(1)
     }
 
+    @Test
+    fun `hentAntallKandidaterForUtmeldingForlenget - returnerer antall forlengede kandidater`() {
+        val oppfolgingsbruker = arbeidssokerRegistrering(fnr, aktorId, BrukerRegistrant(fnr))
+        oppfolgingsStatusRepository.opprettOppfolging(aktorId)
+        oppfolgingsPeriodeRepository.start(oppfolgingsbruker)
+        val oppfolgingsperiodeUuid = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId).first().uuid
+
+        kandidatForUtmeldingRepository.lagreKandidat(arbeidssøkerPeriodeAvsluttet(oppfolgingsperiodeUuid))
+        namedJdbcTemplate.update(
+            """
+            UPDATE kandidater_for_utmelding
+            SET forlenget_til = CURRENT_TIMESTAMP + INTERVAL '1 day'
+            WHERE oppfolgingsperiode_uuid = :oppfolgingsperiodeId
+            """.trimIndent(),
+            mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeUuid.toString())
+        )
+
+        assertThat(kandidatForUtmeldingRepository.hentAntallKandidaterForUtmeldingForlenget()).isEqualTo(1)
+    }
+
+    @Test
+    fun `hentAntallKandidaterForUtmeldingIkkeForlenget - returnerer antall kandidater uten forlenget_til`() {
+        val oppfolgingsbruker = arbeidssokerRegistrering(fnr, aktorId, BrukerRegistrant(fnr))
+        val aktorId2 = AktorId.of("9876")
+        val fnr2 = Fnr.of("2222229999")
+        val oppfolgingsbruker2 = arbeidssokerRegistrering(fnr2, aktorId2, BrukerRegistrant(fnr2))
+
+        oppfolgingsStatusRepository.opprettOppfolging(aktorId)
+        oppfolgingsStatusRepository.opprettOppfolging(aktorId2)
+        oppfolgingsPeriodeRepository.start(oppfolgingsbruker)
+        oppfolgingsPeriodeRepository.start(oppfolgingsbruker2)
+
+        val oppfolgingsperiodeUuid = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId).first().uuid
+        val oppfolgingsperiodeUuid2 = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId2).first().uuid
+
+        kandidatForUtmeldingRepository.lagreKandidat(arbeidssøkerPeriodeAvsluttet(oppfolgingsperiodeUuid))
+        kandidatForUtmeldingRepository.lagreKandidat(arbeidssøkerPeriodeAvsluttet(oppfolgingsperiodeUuid2))
+        namedJdbcTemplate.update(
+            """
+            UPDATE kandidater_for_utmelding
+            SET forlenget_til = CURRENT_TIMESTAMP + INTERVAL '1 day'
+            WHERE oppfolgingsperiode_uuid = :oppfolgingsperiodeId
+            """.trimIndent(),
+            mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeUuid2.toString())
+        )
+
+        assertThat(kandidatForUtmeldingRepository.hentAntallKandidaterForUtmeldingIkkeForlenget()).isEqualTo(1)
+    }
+
     fun arbeidssøkerPeriodeAvsluttet(oppfolgingsperiodeUuid: UUID) = ArbeidssøkerPeriodeAvsluttet(
         oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
         utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
