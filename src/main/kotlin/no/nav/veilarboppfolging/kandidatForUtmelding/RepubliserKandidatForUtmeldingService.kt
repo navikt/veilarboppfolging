@@ -59,7 +59,7 @@ class RepubliserKandidatForUtmeldingService(
 
     fun republiserKandidatForUtmelding(oppfolgingsperiodeId: UUID) {
         if (sendUtmeldingskandidaterTilObo) {
-            val publiseringsdata = transactor.execute {
+            val publiseringsdata = requireNotNull(transactor.execute<Republiseringsdata> {
                 val fnr = finnFnrForOppfolgingsperiode(oppfolgingsperiodeId)
                 val filterkategoriPersonId = kandidatForUtmeldingRepository.hentEllerOpprettFilterhendelseId(oppfolgingsperiodeId)
                 val aktivKandidat = kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeId)
@@ -80,15 +80,14 @@ class RepubliserKandidatForUtmeldingService(
                         filterhendelseRecord = sisteUtmeldingshendelse.hendelse.tilFilterhendelseRecord(fnr, Operasjon.STOPP),
                     )
                 }
-            }
-            logger.info("Republiserer kandidat for utmelding til OBO med key=${publiseringsdata?.filterkategoriPersonId} for oppfølgingsperiode $oppfolgingsperiodeId")
-            publiseringsdata?.let {
-                kandidatForUtmeldingKafkaPubliseringService.publiserOgLoggKafkaMelding(
-                    utmeldingshendelseId = it.utmeldingshendelseId,
-                    filterkategoriPersonId = it.filterkategoriPersonId,
-                    filterhendelse = it.filterhendelseRecord,
-                )
-            }
+            }) { "Fant ingen publiseringsdata for oppfølgingsperiode $oppfolgingsperiodeId" }
+
+            logger.info("Republiserer kandidat for utmelding til OBO med key=${publiseringsdata.filterkategoriPersonId} for oppfølgingsperiode $oppfolgingsperiodeId")
+            kandidatForUtmeldingKafkaPubliseringService.publiserOgLoggKafkaMelding(
+                utmeldingshendelseId = publiseringsdata.utmeldingshendelseId,
+                filterkategoriPersonId = publiseringsdata.filterkategoriPersonId,
+                filterhendelse = publiseringsdata.filterhendelseRecord,
+            )
         } else {
             logger.info("Sender ikke kandidat for utmelding til OBO for oppfølgingsperiode $oppfolgingsperiodeId på nytt fordi sending til OBO er togglet av")
         }
