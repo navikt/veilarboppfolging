@@ -11,7 +11,7 @@ class KandidatForUtmeldingCron(
     private val leaderElectionClient: LeaderElectionClient,
     private val kandidatForUtmeldingService: KandidatForUtmeldingService,
 ) {
-    @Scheduled(cron = "0 30 * * * *")
+    @Scheduled(cron = "0 0 5 * * *")
     fun behandleKandidaterMedUtloptForlengelse() {
         if (!leaderElectionClient.isLeader) {
             return
