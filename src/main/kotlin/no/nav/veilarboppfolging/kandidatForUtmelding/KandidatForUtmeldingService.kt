@@ -4,7 +4,6 @@ import java.util.UUID
 import kotlin.jvm.optionals.getOrNull
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
-import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.FilterhendelseRecord
 import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.Operasjon
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.service.AvsluttOppfolgingService
@@ -38,7 +37,7 @@ class KandidatForUtmeldingService(
                     val filterkategoriPersonId = kandidatForUtmeldingRepository.hentEllerOpprettFilterhendelseId(kandidatForUtmeldingHendelse.oppfolgingsperiodeUuid)
                     logger.info("Sender kandidat for utmelding til OBO med key=$filterkategoriPersonId for oppfølgingsperiode ${kandidatForUtmeldingHendelse.oppfolgingsperiodeUuid}")
                     val filterhendelse = kandidatForUtmeldingHendelse.tilFilterhendelseRecord(fnr, Operasjon.START)
-                    Publiseringsdata(
+                    UtmeldingskandidatKafkaPubliseringData(
                         utmeldingshendelseId = utmeldingshendelseId,
                         filterkategoriPersonId = filterkategoriPersonId,
                         filterhendelse = filterhendelse,
@@ -71,9 +70,3 @@ class KandidatForUtmeldingService(
         return hentKandidatForUtmeldingTag(oppfolgingsperiodeId)
     }
 }
-
-private data class Publiseringsdata(
-    val utmeldingshendelseId: UUID,
-    val filterkategoriPersonId: UUID,
-    val filterhendelse: FilterhendelseRecord,
-)

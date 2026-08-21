@@ -5,7 +5,6 @@ import kotlin.jvm.optionals.getOrElse
 import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
-import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.FilterhendelseRecord
 import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.Operasjon
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import org.slf4j.LoggerFactory
@@ -23,7 +22,9 @@ class RepubliserKandidatForUtmeldingService(
     @Value("\${app.sendUtmeldingskandidaterTilObo}") private val sendUtmeldingskandidaterTilObo: Boolean,
 ) {
     private val logger = LoggerFactory.getLogger(this::class.java)
-    val BATCH_SIZE = 1000
+    private companion object {
+        private const val BATCH_SIZE = 1000
+    }
 
     fun republiserAlleAktiveUtmeldingskandidater() {
         if (sendUtmeldingskandidaterTilObo) {
@@ -59,25 +60,25 @@ class RepubliserKandidatForUtmeldingService(
 
     fun republiserKandidatForUtmelding(oppfolgingsperiodeId: UUID) {
         if (sendUtmeldingskandidaterTilObo) {
-            val publiseringsdata = requireNotNull(transactor.execute<Republiseringsdata> {
+            val publiseringsdata = requireNotNull(transactor.execute<UtmeldingskandidatKafkaPubliseringData> {
                 val fnr = finnFnrForOppfolgingsperiode(oppfolgingsperiodeId)
                 val filterkategoriPersonId = kandidatForUtmeldingRepository.hentEllerOpprettFilterhendelseId(oppfolgingsperiodeId)
                 val aktivKandidat = kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeId)
                 if (aktivKandidat != null) {
                     val kandidat = kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeId)
                         ?: throw IllegalStateException("Fant ikke aktiv kandidat for oppfølgingsperiode $oppfolgingsperiodeId")
-                    Republiseringsdata(
+                    UtmeldingskandidatKafkaPubliseringData(
                         utmeldingshendelseId = aktivKandidat.sisteUtmeldingshendelseId,
                         filterkategoriPersonId = filterkategoriPersonId,
-                        filterhendelseRecord = kandidat.tilFilterhendelseRecord(fnr, Operasjon.START),
+                        filterhendelse = kandidat.tilFilterhendelseRecord(fnr, Operasjon.START),
                     )
                 } else {
                     val sisteUtmeldingshendelse = kandidatForUtmeldingRepository.hentSisteKandidatForUtmeldingHendelseMedId(oppfolgingsperiodeId)
                         ?: throw IllegalStateException("Fant ingen kandidat for utmelding-hendelser for oppfølgingsperiode $oppfolgingsperiodeId")
-                    Republiseringsdata(
+                    UtmeldingskandidatKafkaPubliseringData(
                         utmeldingshendelseId = sisteUtmeldingshendelse.utmeldingshendelseId,
                         filterkategoriPersonId = filterkategoriPersonId,
-                        filterhendelseRecord = sisteUtmeldingshendelse.hendelse.tilFilterhendelseRecord(fnr, Operasjon.STOPP),
+                        filterhendelse = sisteUtmeldingshendelse.hendelse.tilFilterhendelseRecord(fnr, Operasjon.STOPP),
                     )
                 }
             }) { "Fant ingen publiseringsdata for oppfølgingsperiode $oppfolgingsperiodeId" }
@@ -86,7 +87,7 @@ class RepubliserKandidatForUtmeldingService(
             kandidatForUtmeldingKafkaPubliseringService.publiserOgLoggKafkaMelding(
                 utmeldingshendelseId = publiseringsdata.utmeldingshendelseId,
                 filterkategoriPersonId = publiseringsdata.filterkategoriPersonId,
-                filterhendelse = publiseringsdata.filterhendelseRecord,
+                filterhendelse = publiseringsdata.filterhendelse,
             )
         } else {
             logger.info("Sender ikke kandidat for utmelding til OBO for oppfølgingsperiode $oppfolgingsperiodeId på nytt fordi sending til OBO er togglet av")
@@ -99,9 +100,3 @@ class RepubliserKandidatForUtmeldingService(
         return aktorOppslagClient.hentFnr(AktorId(aktorId))
     }
 }
-
-private data class Republiseringsdata(
-    val utmeldingshendelseId: UUID,
-    val filterkategoriPersonId: UUID,
-    val filterhendelseRecord: FilterhendelseRecord,
-)
