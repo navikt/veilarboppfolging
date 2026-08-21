@@ -7,6 +7,7 @@ import java.time.ZoneOffset
 import java.util.UUID
 import no.nav.common.json.JsonUtils
 import no.nav.veilarboppfolging.repository.getStringOrNull
+import org.jetbrains.annotations.TestOnly
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Repository
 
@@ -74,6 +75,20 @@ class KandidatForUtmeldingRepository(
             .firstOrNull()
     }
 
+    @TestOnly
+    fun hentKandidatMedForlengelse(oppfolgingsperiodeId: UUID): KandidatForUtmeldingHendelse? {
+        return db.query(
+            """
+            SELECT kfuh.*
+            FROM kandidater_for_utmelding kfu
+            JOIN kandidater_for_utmelding_hendelser kfuh ON kfu.siste_utmeldingshendelse_id = kfuh.utmeldingshendelse_id
+            WHERE kfu.oppfolgingsperiode_uuid = :oppfolgingsperiodeId AND kfu.forlenget_til IS NOT NULL
+            """.trimIndent(),
+            mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeId.toString()),
+        ) { rs, _ -> map(rs) }
+            .firstOrNull()
+    }
+
     fun hentSisteKandidatForUtmeldingHendelse(oppfolgingsperiodeId: UUID): KandidatForUtmeldingHendelse? {
         return db.query(
             """
@@ -102,6 +117,26 @@ class KandidatForUtmeldingRepository(
                 "batchSize" to batchSize
             ),
         ) { rs, _ -> map(rs) }
+    }
+
+    fun hentKandidaterMedUtloptForlengelse(): List<KandidatForUtmeldingHendelse> {
+        return db.query(
+            """
+            SELECT kfuh.*
+            FROM kandidater_for_utmelding kfu
+            JOIN kandidater_for_utmelding_hendelser kfuh ON kfu.siste_utmeldingshendelse_id = kfuh.utmeldingshendelse_id
+            WHERE kfu.forlenget_til IS NOT NULL AND kfu.forlenget_til < current_timestamp
+            """.trimIndent(),
+        ) { rs, _ -> map(rs) }
+    }
+
+    fun nullstillForlengetTil(oppfolgingsperiodeId: UUID) {
+        val sql = """
+            UPDATE kandidater_for_utmelding
+            SET forlenget_til = NULL
+            WHERE oppfolgingsperiode_uuid = :oppfolgingsperiodeId
+        """.trimIndent()
+        db.update(sql, mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeId.toString()))
     }
 
     fun hentAntallKandidaterForUtmelding(): Int {

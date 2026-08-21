@@ -87,6 +87,50 @@ class KandidatForUtmeldingRepositoryTest {
     }
 
     @Test
+    fun `hentKandidaterMedUtloptForlengelse - returnerer kandidat med utløpt forlengelse`() {
+        val oppfolgingsbruker = arbeidssokerRegistrering(fnr, aktorId, BrukerRegistrant(fnr))
+        oppfolgingsStatusRepository.opprettOppfolging(aktorId)
+        oppfolgingsPeriodeRepository.start(oppfolgingsbruker)
+        val oppfolgingsperiodeUuid = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId).first().uuid
+        val avsluttet = arbeidssøkerPeriodeAvsluttet(oppfolgingsperiodeUuid)
+        kandidatForUtmeldingRepository.lagreKandidat(avsluttet)
+        namedJdbcTemplate.update("""
+            UPDATE kandidater_for_utmelding SET forlenget_til = CURRENT_TIMESTAMP - INTERVAL '1 hour' WHERE oppfolgingsperiode_uuid = :oppfolgingsperiodeId
+        """.trimIndent(), mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeUuid.toString()))
+
+        val kandidater = kandidatForUtmeldingRepository.hentKandidaterMedUtloptForlengelse()
+
+        assertThat(kandidater.size).isEqualTo(1)
+        assertThat(kandidater.first().oppfolgingsperiodeUuid).isEqualTo(oppfolgingsperiodeUuid)
+    }
+
+    @Test
+    fun `hentKandidaterMedUtloptForlengelse - returnerer ikke kandidater uten utløpt forlengelse`() {
+        val oppfolgingsbruker = arbeidssokerRegistrering(fnr, aktorId, BrukerRegistrant(fnr))
+        oppfolgingsStatusRepository.opprettOppfolging(aktorId)
+        oppfolgingsPeriodeRepository.start(oppfolgingsbruker)
+        val oppfolgingsperiodeUuid = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId).first().uuid
+        val avsluttet = arbeidssøkerPeriodeAvsluttet(oppfolgingsperiodeUuid)
+        kandidatForUtmeldingRepository.lagreKandidat(avsluttet)
+        namedJdbcTemplate.update("""
+            UPDATE kandidater_for_utmelding SET forlenget_til = CURRENT_TIMESTAMP + INTERVAL '1 hour' WHERE oppfolgingsperiode_uuid = :oppfolgingsperiodeId
+        """.trimIndent(), mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeUuid.toString()))
+
+        val aktorId2 = AktorId.of("5678")
+        val fnr2 = Fnr.of("1111118899")
+        val oppfolgingsbruker2 = arbeidssokerRegistrering(fnr2, aktorId2, BrukerRegistrant(fnr2))
+        oppfolgingsStatusRepository.opprettOppfolging(aktorId2)
+        oppfolgingsPeriodeRepository.start(oppfolgingsbruker2)
+        val oppfolgingsperiodeUuid2 = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId2).first().uuid
+        val avsluttet2 = arbeidssøkerPeriodeAvsluttet(oppfolgingsperiodeUuid2)
+        kandidatForUtmeldingRepository.lagreKandidat(avsluttet2)
+
+        val kandidater = kandidatForUtmeldingRepository.hentKandidaterMedUtloptForlengelse()
+
+        assertThat(kandidater.size).isEqualTo(0)
+    }
+
+    @Test
     fun `hentEllerOpprettFilterhendelseId - oppretter og returnerer id hvis den ikke finnes`() {
         val oppfolgingsbruker = arbeidssokerRegistrering(fnr, aktorId, BrukerRegistrant(fnr))
         oppfolgingsStatusRepository.opprettOppfolging(aktorId)
