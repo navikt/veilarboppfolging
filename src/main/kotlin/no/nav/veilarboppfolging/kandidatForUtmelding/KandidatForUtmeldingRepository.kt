@@ -112,6 +112,15 @@ class KandidatForUtmeldingRepository(
         return db.queryForObject(sql, emptyMap<String, Any>()) { rs, _ -> rs.getInt("antall") } ?: 0
     }
 
+    fun hentAntallKandidaterForUtmeldingForlenget(): Int {
+        val sql = """
+            SELECT COUNT(*) AS antall
+            FROM kandidater_for_utmelding
+            WHERE forlenget_til IS NOT NULL
+        """.trimIndent()
+        return db.queryForObject(sql, emptyMap<String, Any>()) { rs, _ -> rs.getInt("antall") } ?: 0
+    }
+
     fun hentEllerOpprettFilterhendelseId(oppfolgingsperiodeId: UUID): UUID {
         val sql = """
             INSERT INTO filterkategori_id_mapping(kategori, oppfolgingsperiode_id, filterkategori_person_id)
