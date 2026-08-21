@@ -143,6 +143,18 @@ class KandidatForUtmeldingRepositoryTest {
         assertThat(kandidatForUtmeldingRepository.hentAntallKandidaterForUtmeldingForlenget()).isEqualTo(1)
     }
 
+    @Test
+    fun `hentAntallKandidaterForUtmeldingIkkeForlenget - returnerer antall kandidater uten forlenget_til`() {
+        val oppfolgingsbruker = arbeidssokerRegistrering(fnr, aktorId, BrukerRegistrant(fnr))
+        oppfolgingsStatusRepository.opprettOppfolging(aktorId)
+        oppfolgingsPeriodeRepository.start(oppfolgingsbruker)
+        val oppfolgingsperiodeUuid = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId).first().uuid
+
+        kandidatForUtmeldingRepository.lagreKandidat(arbeidssøkerPeriodeAvsluttet(oppfolgingsperiodeUuid))
+
+        assertThat(kandidatForUtmeldingRepository.hentAntallKandidaterForUtmeldingIkkeForlenget()).isEqualTo(1)
+    }
+
     fun arbeidssøkerPeriodeAvsluttet(oppfolgingsperiodeUuid: UUID) = ArbeidssøkerPeriodeAvsluttet(
         oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
         utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,

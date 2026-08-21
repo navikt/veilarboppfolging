@@ -32,6 +32,7 @@ enum class BigQueryEventType {
 data class KandidaterForUtmeldingMetrikker(
     val antallKandidaterForUtmelding: Int,
     val antallUnderOppfolgingMedIserv: Int,
+    val antallKandidaterForUtmeldingIkkeForlenget: Int,
     val antallKandidaterForUtmeldingForlenget: Int,
 )
 
@@ -128,6 +129,7 @@ class BigQueryClientImplementation(private val bigQuery: BigQuery): BigQueryClie
             mapOf(
                 "antallKandidaterForUtmelding" to metrikker.antallKandidaterForUtmelding,
                 "antallUnderOppfolgingMedIserv" to metrikker.antallUnderOppfolgingMedIserv,
+                "antallKandidaterForUtmeldingIkkeForlenget" to metrikker.antallKandidaterForUtmeldingIkkeForlenget,
                 "antallKandidaterForUtmeldingForlenget" to metrikker.antallKandidaterForUtmeldingForlenget,
                 "timestamp" to ZonedDateTime.now().toOffsetDateTime().toString()
             )
