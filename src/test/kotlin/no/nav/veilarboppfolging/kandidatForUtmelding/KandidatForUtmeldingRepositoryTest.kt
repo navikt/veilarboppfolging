@@ -112,14 +112,37 @@ class KandidatForUtmeldingRepositoryTest {
     }
 
     @Test
+    fun `lagreKafkaPublisering lagrer publiseringslogg for utmeldingshendelse`() {
+        val oppfolgingsbruker = arbeidssokerRegistrering(fnr, aktorId, BrukerRegistrant(fnr))
+        oppfolgingsStatusRepository.opprettOppfolging(aktorId)
+        oppfolgingsPeriodeRepository.start(oppfolgingsbruker)
+        val oppfolgingsperiodeUuid = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId).first().uuid
+        val utmeldingshendelseId = kandidatForUtmeldingRepository.lagreKandidat(arbeidssøkerPeriodeAvsluttet(oppfolgingsperiodeUuid))
+
+        kandidatForUtmeldingRepository.lagreKafkaPublisering(
+            KandidatForUtmeldingKafkaPublisering(
+                utmeldingshendelseId = utmeldingshendelseId,
+                status = KandidatForUtmeldingKafkaPubliseringStatus.SENDT,
+                kafkaTopic = "topic",
+                kafkaPartition = 1,
+                kafkaOffset = 10L,
+                feilmelding = null,
+            )
+        )
+
+        val kafkaPubliseringer = kandidatForUtmeldingRepository.hentKafkaPubliseringer(utmeldingshendelseId)
+        assertThat(kafkaPubliseringer).hasSize(1)
+        assertThat(kafkaPubliseringer.first().status).isEqualTo(KandidatForUtmeldingKafkaPubliseringStatus.SENDT)
+        assertThat(kafkaPubliseringer.first().kafkaOffset).isEqualTo(10L)
+    }
+
+    @Test
     fun `finnAntallKandidaterForUtmelding - returnerer antall kandidater`() {
         val oppfolgingsbruker = arbeidssokerRegistrering(fnr, aktorId, BrukerRegistrant(fnr))
         oppfolgingsStatusRepository.opprettOppfolging(aktorId)
         oppfolgingsPeriodeRepository.start(oppfolgingsbruker)
         val oppfolgingsperiodeUuid = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId).first().uuid
-
         kandidatForUtmeldingRepository.lagreKandidat(arbeidssøkerPeriodeAvsluttet(oppfolgingsperiodeUuid))
-
         assertThat(kandidatForUtmeldingRepository.hentAntallKandidaterForUtmelding()).isEqualTo(1)
     }
 

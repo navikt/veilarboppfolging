@@ -19,9 +19,12 @@ import no.nav.common.kafka.spring.PostgresJdbcTemplateConsumerRepository;
 import no.nav.common.kafka.spring.PostgresJdbcTemplateProducerRepository;
 import no.nav.common.kafka.util.KafkaPropertiesBuilder;
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
+import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.FilterhendelseRecord;
 import no.nav.veilarboppfolging.service.KafkaConsumerService;
+import no.nav.veilarboppfolging.service.FilterhendelsePublisher;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
+import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,6 +34,9 @@ import org.springframework.kafka.test.context.EmbeddedKafka;
 
 import java.util.List;
 import java.util.Properties;
+import no.nav.common.json.JsonUtils;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.producer.RecordMetadata;
 
 import static no.nav.common.kafka.consumer.util.ConsumerUtils.findConsumerConfigsWithStoreOnFailure;
 
@@ -48,6 +54,8 @@ public class KafkaTestConfig {
     private final KafkaProducerRecordProcessor producerRecordProcessor;
 
     private final KafkaProducerRecordStorage producerRecordStorage;
+    private final KafkaProducerClient<String, String> filterhendelseProducerClient;
+    private final FilterhendelsePublisher filterhendelsePublisher;
 
     public KafkaTestConfig(
             LeaderElectionClient leaderElectionClient,
@@ -98,11 +106,24 @@ public class KafkaTestConfig {
                 .build();
 
         producerRecordProcessor = new KafkaProducerRecordProcessor(producerRepository, producerClient, leaderElectionClient);
+
+        filterhendelseProducerClient = KafkaProducerClientBuilder.<String, String>builder()
+                .withProperties(filterhendelseProducerProperties(kafkaContainer))
+                .build();
+        filterhendelsePublisher = (topic, key, filterhendelseRecord) -> {
+            String payload = JsonUtils.getMapper().writeValueAsString(filterhendelseRecord);
+            return filterhendelseProducerClient.sendSync(new ProducerRecord<>(topic, key, payload));
+        };
     }
 
     @Bean
     public KafkaProducerRecordStorage producerRecordStorage() {
         return producerRecordStorage;
+    }
+
+    @Bean
+    public FilterhendelsePublisher filterhendelsePublisher() {
+        return filterhendelsePublisher;
     }
 
     private Properties producerProperties(EmbeddedKafkaBroker kafkaContainer) {
@@ -111,6 +132,15 @@ public class KafkaTestConfig {
                 .withProducerId("veilarboppfolging-producer")
                 .withBrokerUrl(kafkaContainer.getBrokersAsString())
                 .withSerializers(ByteArraySerializer.class, ByteArraySerializer.class)
+                .build();
+    }
+
+    private Properties filterhendelseProducerProperties(EmbeddedKafkaBroker kafkaContainer) {
+        return KafkaPropertiesBuilder.producerBuilder()
+                .withBaseProperties()
+                .withProducerId("veilarboppfolging-filterhendelse-producer")
+                .withBrokerUrl(kafkaContainer.getBrokersAsString())
+                .withSerializers(StringSerializer.class, StringSerializer.class)
                 .build();
     }
 
@@ -123,6 +153,7 @@ public class KafkaTestConfig {
 
     @PreDestroy
     public void stop() {
+        filterhendelseProducerClient.close();
         producerRecordProcessor.close();
         consumerRecordProcessor.stop();
         consumerClient.stop();

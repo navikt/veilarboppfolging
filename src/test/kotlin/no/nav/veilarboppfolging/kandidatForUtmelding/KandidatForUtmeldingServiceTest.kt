@@ -8,9 +8,6 @@ import no.nav.common.types.identer.Fnr
 import no.nav.paw.arbeidssokerregisteret.api.v1.AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.veilarboppfolging.IntegrationTest
-import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.BeskrivelseEnum
-import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.Kategori
-import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.Operasjon
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
@@ -53,12 +50,13 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
             JsonUtils.getMapper()
                 .writeValueAsString(ArbeidssøkerPeriodeAvsluttet.Detaljer(BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()))
         )
-        val filterhendelseId = kandidatForUtmeldingRepository.hentFilterhendelseId(oppfolgingsperiodeUuid)
-        assertThat(filterhendelseId).isNotNull
-        val filterhendelse = getFilterhendelseRecordsStoredInKafkaOutbox(kafkaProperties.portefoljeHendelsesfilterTopic, filterhendelseId.toString()).first()
-        assertThat(filterhendelse.operasjon).isEqualTo(Operasjon.START)
-        assertThat(filterhendelse.kategori).isEqualTo(Kategori.KANDIDAT_FOR_UTMELDING)
-        assertThat(filterhendelse.hendelse.beskrivelseEnum).isEqualTo(BeskrivelseEnum.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT.name)
+        val aktivKandidat = kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeUuid)
+        assertThat(aktivKandidat).isNotNull
+        val kafkaPubliseringer = kandidatForUtmeldingRepository.hentKafkaPubliseringer(aktivKandidat!!.sisteUtmeldingshendelseId)
+        assertThat(kafkaPubliseringer).hasSize(1)
+        val kafkaPublisering = kafkaPubliseringer.first()
+        assertThat(kafkaPublisering.status).isEqualTo(KandidatForUtmeldingKafkaPubliseringStatus.SENDT)
+        assertThat(kafkaPublisering.kafkaOffset).isNotNull()
     }
 
     @Test
@@ -117,4 +115,3 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
         assertThat(kandidatForUtmeldingRepository.hentFilterhendelseId(oppfolgingsperiodeId)).isNull()
     }
 }
-
