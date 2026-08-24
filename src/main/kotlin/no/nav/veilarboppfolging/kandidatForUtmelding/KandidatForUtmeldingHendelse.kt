@@ -5,7 +5,6 @@ import java.time.Instant
 import java.time.ZoneId
 import java.util.UUID
 import kotlin.jvm.optionals.getOrElse
-import no.nav.common.json.JsonUtils
 import no.nav.common.types.identer.Fnr
 import no.nav.common.types.identer.NorskIdent
 import no.nav.common.utils.EnvironmentUtils
@@ -32,11 +31,13 @@ sealed class KandidatForUtmeldingHendelse(
     fun baseUrlVeilarbpersonflate() =
         if (erProd) "https://veilarbpersonflate.intern.nav.no" else "https://veilarbpersonflate.ansatt.dev.nav.no"
 
-    fun mapTilTag(): KandidatForUtmeldingTag {
+    fun mapTilTag(): KandidatForUtmeldingTag? {
         return when (type) {
             KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT -> KandidatForUtmeldingTag.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT
             KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_SVARTE_NEI_I_BEKREFTELSE -> KandidatForUtmeldingTag.ARBEIDSSOKERPERIODE_AVSLUTTET_SVARTE_NEI_I_BEKREFTELSE
             KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET -> KandidatForUtmeldingTag.ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET
+            KandidatForUtmeldingHendelseType.FORLENGELSE_UTLOPT -> KandidatForUtmeldingTag.FORLENGELSE_UTLOPT
+            KandidatForUtmeldingHendelseType.FORLENGELSE_OPPRETTET, KandidatForUtmeldingHendelseType.FORLENGELSE_ENDRET -> null
         }
     }
 }
@@ -45,6 +46,9 @@ enum class KandidatForUtmeldingHendelseType {
     ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
     ARBEIDSSOKERPERIODE_AVSLUTTET_SVARTE_NEI_I_BEKREFTELSE,
     ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET,
+    FORLENGELSE_OPPRETTET,
+    FORLENGELSE_ENDRET,
+    FORLENGELSE_UTLOPT
 }
 
 enum class KandidatForUtmeldingHendelseUtfortAvType {
@@ -54,13 +58,12 @@ enum class KandidatForUtmeldingHendelseUtfortAvType {
     UKJENT
 }
 
-class ArbeidssøkerPeriodeAvsluttet(
+class ForlengelseHendelse(
     oppfolgingsperiodeUuid: UUID,
     utfortAvType: KandidatForUtmeldingHendelseUtfortAvType,
     utfortAv: String?,
     kilde: String,
-    kandidatForUtmeldingHendelseType: KandidatForUtmeldingHendelseType,
-    val avslutningsarsak: String?,
+    val forlengelseHendelseType: KandidatForUtmeldingHendelseType,
     hendelseTidspunkt: Instant,
 ) : KandidatForUtmeldingHendelse(
     oppfolgingsperiodeUuid,
@@ -69,17 +72,8 @@ class ArbeidssøkerPeriodeAvsluttet(
     kilde,
     hendelseTidspunkt,
 ) {
-    override val type: KandidatForUtmeldingHendelseType = kandidatForUtmeldingHendelseType
-    override val hendelseDataJson: PGobject? = avslutningsarsak?.let {
-        PGobject().apply {
-            type = "jsonb"
-            value = JsonUtils.getMapper().writeValueAsString(Detaljer(it))
-        }
-    }
-
-    data class Detaljer(
-        val avslutningsarsak: String?
-    )
+    override val type: KandidatForUtmeldingHendelseType = forlengelseHendelseType
+    override val hendelseDataJson: PGobject? = null
 
     override fun tilFilterhendelseRecord(fnr: Fnr, operasjon: Operasjon): FilterhendelseRecord {
         return FilterhendelseRecord(
@@ -88,14 +82,12 @@ class ArbeidssøkerPeriodeAvsluttet(
             operasjon = operasjon,
             hendelse = FilterhendelseRecord.HendelseInnhold(
                 beskrivelse = when (type) {
-                    KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT -> "Arbeidssøkerperiode avsluttet: Ikke levert meldekort"
-                    KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_SVARTE_NEI_I_BEKREFTELSE -> "Arbeidssøkerperiode avsluttet: Svarte nei i bekreftelse"
-                    KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET -> "Arbeidssøkerperiode avsluttet"
+                    KandidatForUtmeldingHendelseType.FORLENGELSE_UTLOPT -> "Forlengelse utløpt"
+                    else -> throw IllegalArgumentException("Ugyldig forlengelseshendelsestype for filterhendelser")
                 },
                 beskrivelseEnum = when (type) {
-                    KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT -> BeskrivelseEnum.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT
-                    KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_SVARTE_NEI_I_BEKREFTELSE -> BeskrivelseEnum.ARBEIDSSOKERPERIODE_AVSLUTTET_SVARTE_NEI_I_BEKREFTELSE
-                    KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET -> BeskrivelseEnum.ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET
+                    KandidatForUtmeldingHendelseType.FORLENGELSE_UTLOPT -> BeskrivelseEnum.FORLENGELSE_UTLOPT
+                    else -> throw IllegalArgumentException("Ugyldig forlengelseshendelsestype for filterhendelser")
                 }.name,
                 dato = hendelseTidspunkt.atZone(ZoneId.of("Europe/Oslo")),
                 lenke = URI("${baseUrlVeilarbpersonflate()}/aktivitetsplan").toURL(),
@@ -104,4 +96,5 @@ class ArbeidssøkerPeriodeAvsluttet(
         )
     }
 }
+)
 
