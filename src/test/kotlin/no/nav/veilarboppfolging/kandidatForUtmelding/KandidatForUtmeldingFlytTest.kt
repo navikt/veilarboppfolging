@@ -336,16 +336,25 @@ class KandidatForUtmeldingFlytTest(
     fun `skal kunne opprette forlengelse`() {
         mockInternBrukerAuthOk(UUID.randomUUID(), aktorId, Fnr.of(fnr))
         startOppfolgingSomArbeidsoker(aktorId, Fnr.of(fnr))
-        val forlengelse = ForlengelseHendelse(
-            oppfolgingsperiodeUuid = UUID.randomUUID(),
+        setLocalArenaOppfolging(aktorId, Formidlingsgruppe.ARBS)
+        mockTiltakshistorikk(Fnr.of(fnr), harAktiveDeltakelser = false)
+        mockUngdomsprogram(Fnr.of(fnr), erDeltaker = false)
+        mockArbeidssoekerregisteret(Fnr.of(fnr), erArbeidssoeker = false)
+        mockAap(Fnr.of(fnr), harAap = false)
+        val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(Fnr.of(fnr)).get().uuid
+        kandidatForUtmeldingRepository.lagreKandidat(ArbeidssøkerPeriodeAvsluttet(
+            oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
             utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
             utfortAv = "A123123",
-            kilde = "kilde",
+            kilde ="kilde",
             hendelseTidspunkt = ZonedDateTime.now().toInstant(),
-            forlengelseHendelseType = ForlengelseHendelseType.FORLENGELSE_OPPRETTET,
-            forlengetTil = LocalDate.now().plusDays(30),
-        )
-        forlengKandidatForUtmelding()
+            arbeidssokerperiodeAvsluttetHendelseType = ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
+            avslutningsarsak = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
+        ))
+
+        forlengKandidatForUtmelding(fnr = Fnr.of(fnr), forlengTil = LocalDate.now().plusDays(30))
+
+        assertThat()
     }
 
     private fun arbeidssokerperiode(

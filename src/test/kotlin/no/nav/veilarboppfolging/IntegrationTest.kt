@@ -105,6 +105,8 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.web.context.WebApplicationContext
 import java.time.temporal.ChronoUnit
 import no.nav.veilarboppfolging.kandidatForUtmelding.FjernKandidatForUtmeldingService
+import no.nav.veilarboppfolging.kandidatForUtmelding.ForlengelseDTO
+import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingController
 import no.nav.veilarboppfolging.kandidatForUtmelding.RepubliserKandidatForUtmeldingService
 import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.FilterhendelseRecord
 
@@ -184,6 +186,9 @@ open class IntegrationTest {
 
     @Autowired
     lateinit var sakController: SakController
+
+    @Autowired
+    lateinit var kandidatForUtmeldingController: KandidatForUtmeldingController
 
     @Autowired
     lateinit var arenaOppfolgingService: ArenaOppfolgingService
@@ -290,8 +295,9 @@ open class IntegrationTest {
         kandidatForUtmeldingService.lagreKandidatForUtmelding(fnr,kandidat)
     }
 
-    fun forlengKandidatForUtmelding(oppfolgingsperiodeUuid: UUID) {
-
+    fun forlengKandidatForUtmelding(fnr: Fnr, forlengTil: LocalDate) {
+        val forlengelseDTO = ForlengelseDTO(fnr, forlengTil)
+        kandidatForUtmeldingController.opprettForlengelse(forlengelseDTO)
     }
 
     fun setTilordnetVeileder(aktorId: AktorId, veilederIdent: NavIdent) {
