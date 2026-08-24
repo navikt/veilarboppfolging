@@ -39,7 +39,7 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
                 kilde = "kilde",
                 hendelseTidspunkt = ZonedDateTime.now().toInstant(),
                 oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
-                kandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
+                arbeidssokerperiodeAvsluttetHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
                 avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
             )
         )
@@ -79,7 +79,7 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
                 utfortAv = "A123123",
                 kilde = "kilde",
                 hendelseTidspunkt = ZonedDateTime.now().toInstant(),
-                kandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
+                arbeidssokerperiodeAvsluttetHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
                 avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString(),
                 oppfolgingsperiodeUuid = oppfolgingsperiodeId,
             )
@@ -107,7 +107,7 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
                 utfortAv = "A123123",
                 kilde = "kilde",
                 hendelseTidspunkt = ZonedDateTime.now().toInstant(),
-                kandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
+                arbeidssokerperiodeAvsluttetHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
                 avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString(),
                 oppfolgingsperiodeUuid = oppfolgingsperiodeId,
             )
@@ -134,7 +134,7 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
                 kilde = "kilde",
                 hendelseTidspunkt = ZonedDateTime.now().toInstant(),
                 oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
-                kandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
+                arbeidssokerperiodeAvsluttetHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
                 avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
             )
         kandidatForUtmeldingRepository.lagreKandidat(lagretKandidat)
@@ -171,7 +171,7 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
             kilde = "kilde",
             hendelseTidspunkt = ZonedDateTime.now().toInstant(),
             oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
-            kandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
+            arbeidssokerperiodeAvsluttetHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
             avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
         )
         kandidatForUtmeldingRepository.lagreKandidat(lagretKandidat)

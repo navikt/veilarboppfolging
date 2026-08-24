@@ -18,7 +18,7 @@ class KandidatForUtmeldingHendelseTest {
             utfortAv = "A123123",
             kilde = "test",
             hendelseTidspunkt = ZonedDateTime.now().toInstant(),
-            kandidatForUtmeldingHendelseType = kandidatForUtmeldingHendelseType,
+            arbeidssokerperiodeAvsluttetHendelseType = kandidatForUtmeldingHendelseType,
             avslutningsarsak = aarsakType.toString()
         )
 

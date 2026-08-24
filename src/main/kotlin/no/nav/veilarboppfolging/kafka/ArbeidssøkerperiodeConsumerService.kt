@@ -107,7 +107,7 @@ open class ArbeidssøkerperiodeConsumerService(
                         kilde = kilde,
                         avslutningsarsak = avsluttetAarsakType.toString(),
                         hendelseTidspunkt = arbeidssøkerperiode.avsluttet.tidspunkt,
-                        kandidatForUtmeldingHendelseType = type,
+                        arbeidssokerperiodeAvsluttetHendelseType = type,
                     )
                 )
             }

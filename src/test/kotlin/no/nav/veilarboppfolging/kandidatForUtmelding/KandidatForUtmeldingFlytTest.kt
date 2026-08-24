@@ -144,7 +144,7 @@ class KandidatForUtmeldingFlytTest(
             utfortAv = "A123123",
             kilde = "arbeidssøkerregisteret",
             hendelseTidspunkt = ZonedDateTime.now().toInstant(),
-            kandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
+            arbeidssokerperiodeAvsluttetHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
             avslutningsarsak = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
         ))
         avsluttOppfolgingManueltSomVeileder(aktorId)
@@ -174,7 +174,7 @@ class KandidatForUtmeldingFlytTest(
             utfortAv = "A123123",
             kilde ="kilde",
             hendelseTidspunkt = ZonedDateTime.now().toInstant(),
-            kandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
+            arbeidssokerperiodeAvsluttetHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
             avslutningsarsak = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
         ))
         avsluttOppfolgingManueltSomVeileder(aktorId)
@@ -204,7 +204,7 @@ class KandidatForUtmeldingFlytTest(
             utfortAv = "A123123",
             kilde ="kilde",
             hendelseTidspunkt = ZonedDateTime.now().toInstant(),
-            kandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
+            arbeidssokerperiodeAvsluttetHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
             avslutningsarsak = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString())
         )
 
@@ -226,7 +226,7 @@ class KandidatForUtmeldingFlytTest(
             utfortAv = "A123123",
             kilde ="kilde",
             hendelseTidspunkt = ZonedDateTime.now().toInstant(),
-            kandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
+            arbeidssokerperiodeAvsluttetHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
             avslutningsarsak = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
         ))
         assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId)).isNotNull()
@@ -259,7 +259,7 @@ class KandidatForUtmeldingFlytTest(
             utfortAv = "A123123",
             kilde ="kilde",
             hendelseTidspunkt = ZonedDateTime.now().toInstant(),
-            kandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
+            arbeidssokerperiodeAvsluttetHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
             avslutningsarsak = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
         ))
         avsluttOppfolgingManueltSomVeileder(aktorId)
@@ -284,7 +284,7 @@ class KandidatForUtmeldingFlytTest(
             utfortAv = "A123123",
             kilde ="kilde",
             hendelseTidspunkt = ZonedDateTime.now().toInstant(),
-            kandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
+            arbeidssokerperiodeAvsluttetHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
             avslutningsarsak = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
         ))
         assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId)).isNotNull()

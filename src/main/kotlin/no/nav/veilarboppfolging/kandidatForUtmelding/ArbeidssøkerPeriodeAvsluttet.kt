@@ -18,7 +18,7 @@ class ArbeidssøkerPeriodeAvsluttet(
     utfortAvType: KandidatForUtmeldingHendelseUtfortAvType,
     utfortAv: String?,
     kilde: String,
-    kandidatForUtmeldingHendelseType: KandidatForUtmeldingHendelseType,
+    arbeidssokerperiodeAvsluttetHendelseType: KandidatForUtmeldingHendelseType.ArbeidssokerperiodeAvsluttetHendelseType,
     val avslutningsarsak: String?,
     hendelseTidspunkt: Instant,
 ) : KandidatForUtmeldingHendelse(
@@ -28,7 +28,7 @@ class ArbeidssøkerPeriodeAvsluttet(
     kilde,
     hendelseTidspunkt,
 ) {
-    override val type: KandidatForUtmeldingHendelseType = kandidatForUtmeldingHendelseType
+    override val type: KandidatForUtmeldingHendelseType.ArbeidssokerperiodeAvsluttetHendelseType = arbeidssokerperiodeAvsluttetHendelseType
     override val hendelseDataJson: PGobject? = avslutningsarsak?.let {
         PGobject().apply {
             type = "jsonb"
