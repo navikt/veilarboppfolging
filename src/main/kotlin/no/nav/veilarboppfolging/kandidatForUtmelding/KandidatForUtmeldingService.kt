@@ -93,8 +93,8 @@ class KandidatForUtmeldingService(
         return aktorOppslagClient.hentFnr(AktorId(aktorId))
     }
 
-    fun forlengKandidat() {
-        
-        kandidatForUtmeldingRepository.lagreKandidat()
+    fun forlengKandidat(hendelse: ForlengelseHendelse) {
+        logger.info("Lagrer forlengelse for oppfølgingsperiode ${hendelse.oppfolgingsperiodeUuid}")
+        kandidatForUtmeldingRepository.lagreKandidat(hendelse)
     }
 }

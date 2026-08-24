@@ -12,6 +12,15 @@ class KandidatForUtmeldingController(
 
     @PostMapping
     fun opprettForlengelse() {
+        val forlengelseHendelse = ForlengelseHendelse(
+            oppfolgingsperiodeUuid = ,
+            utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
+            utfortAv = ,
+            kilde = ,
+            forlengelseHendelseType = ForlengelseHendelseType.FORLENGELSE_OPPRETTET,
+            hendelseTidspunkt = ,
+            forlengetTilTidspunkt =,
+        )
         kandidatForUtmeldingService.forlengKandidat()
     }
 

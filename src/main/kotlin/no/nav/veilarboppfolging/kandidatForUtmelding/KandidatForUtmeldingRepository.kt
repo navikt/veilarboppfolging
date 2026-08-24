@@ -27,7 +27,7 @@ class KandidatForUtmeldingRepository(
             INSERT INTO kandidater_for_utmelding(siste_utmeldingshendelse_id, oppfolgingsperiode_uuid, forlenget_til)
             VALUES (:hendelseId, :oppfolgingsperiodeId, :forlengetTil)
             ON CONFLICT (oppfolgingsperiode_uuid) 
-            DO UPDATE SET updated_at = current_timestamp, siste_utmeldingshendelse_id = :hendelseId
+            DO UPDATE SET updated_at = current_timestamp, siste_utmeldingshendelse_id = :hendelseId, forlenget_til = :forlengetTil
         """.trimIndent()
         db.update(
             sql, mapOf(
@@ -238,5 +238,5 @@ fun ResultSet.toForlengelseHendelse() = ForlengelseHendelse(
     kilde = getString("kilde"),
     hendelseTidspunkt = getTimestamp("hendelse_tidspunkt").toLocalDateTime().toInstant(ZoneOffset.UTC),
     forlengelseHendelseType = ForlengelseHendelseType.valueOf(getString("hendelse")),
-    forlengetTilTidspunkt = getTimestamp("forlenget_til").toLocalDateTime().atZone(ZoneOffset.UTC)
+    forlengetTilTidspunkt = getStringOrNull("hendelse_data")?.let { JsonUtils.fromJson(it, ForlengelseHendelse.Detaljer::class.java).forlengetTil },
 )
