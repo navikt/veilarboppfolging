@@ -290,6 +290,10 @@ open class IntegrationTest {
         kandidatForUtmeldingService.lagreKandidatForUtmelding(fnr,kandidat)
     }
 
+    fun forlengKandidatForUtmelding(oppfolgingsperiodeUuid: UUID) {
+
+    }
+
     fun setTilordnetVeileder(aktorId: AktorId, veilederIdent: NavIdent) {
         veilederTilordningerRepository.upsertVeilederTilordning(aktorId, veilederIdent.get())
     }

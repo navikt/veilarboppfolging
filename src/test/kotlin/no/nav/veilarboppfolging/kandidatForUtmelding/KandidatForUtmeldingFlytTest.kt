@@ -334,6 +334,7 @@ class KandidatForUtmeldingFlytTest(
 
     @Test
     fun `skal kunne opprette forlengelse`() {
+        mockInternBrukerAuthOk(UUID.randomUUID(), aktorId, Fnr.of(fnr))
         val forlengelse = ForlengelseHendelse(
             oppfolgingsperiodeUuid = UUID.randomUUID(),
             utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
