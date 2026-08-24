@@ -20,7 +20,7 @@ class KandidatForUtmeldingRepository(
         val hendelseId = insertUtmeldingsHendelse(hendelse)
 
         val forlengetTil = when (hendelse) {
-            is ForlengelseHendelse -> hendelse.getForlengetTil()
+            is ForlengelseHendelse -> hendelse.hentForlengetTil()
             else -> null
         }
         val sql = """

@@ -42,7 +42,7 @@ class ForlengelseHendelse(
         val forlengetTil: LocalDate?,
     )
 
-    fun getForlengetTil(): LocalDate? {
+    fun hentForlengetTil(): LocalDate? {
         return when (forlengelseHendelseType) {
             ForlengelseHendelseType.FORLENGELSE_OPPRETTET,
             ForlengelseHendelseType.FORLENGELSE_ENDRET -> forlengetTil
