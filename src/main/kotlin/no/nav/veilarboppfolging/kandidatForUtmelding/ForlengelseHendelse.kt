@@ -11,6 +11,7 @@ import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.Filterhendel
 import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.Kategori
 import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.Operasjon
 import org.postgresql.util.PGobject
+import java.time.ZonedDateTime
 
 class ForlengelseHendelse(
     oppfolgingsperiodeUuid: UUID,
@@ -19,7 +20,7 @@ class ForlengelseHendelse(
     kilde: String,
     val forlengelseHendelseType: ForlengelseHendelseType,
     hendelseTidspunkt: Instant,
-    forlengetTilTidspunkt: Instant,
+    forlengetTilTidspunkt: ZonedDateTime,
 ) : KandidatForUtmeldingHendelse(
     oppfolgingsperiodeUuid,
     utfortAvType,

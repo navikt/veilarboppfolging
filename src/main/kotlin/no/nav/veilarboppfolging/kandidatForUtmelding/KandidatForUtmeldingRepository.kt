@@ -197,7 +197,7 @@ class KandidatForUtmeldingRepository(
         val hendelsetype = resultSet.getString("hendelse")
         val type = when (hendelsetype) {
             is ArbeidssokerperiodeAvsluttetHendelseType -> resultSet.toArbeidssøkerPeriodeAvsluttet()
-            is ForlengelseHendelse ->
+            is ForlengelseHendelse -> resultSet.toForlengelseHendelse()
         }
         val type = KandidatForUtmeldingHendelseType.valueOf(resultSet.getString("hendelse"))
         return when (type) {
@@ -215,5 +215,15 @@ fun ResultSet.toArbeidssøkerPeriodeAvsluttet() = ArbeidssøkerPeriodeAvsluttet(
     kilde = getString("kilde"),
     hendelseTidspunkt = getTimestamp("hendelse_tidspunkt").toLocalDateTime().toInstant(ZoneOffset.UTC),
     avslutningsarsak = getStringOrNull("hendelse_data")?.let { JsonUtils.fromJson(it, ArbeidssøkerPeriodeAvsluttet.Detaljer::class.java).avslutningsarsak },
-    arbeidssokerperiodeAvsluttetHendelseType = KandidatForUtmeldingHendelseType.valueOf(getString("hendelse"))
+    arbeidssokerperiodeAvsluttetHendelseType = ArbeidssokerperiodeAvsluttetHendelseType.valueOf(getString("hendelse"))
+)
+
+fun ResultSet.toForlengelseHendelse() = ForlengelseHendelse(
+    oppfolgingsperiodeUuid = UUID.fromString(getString("oppfolgingsperiode_uuid")),
+    utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.valueOf(getString("utfort_av_type")),
+    utfortAv = getString("utfort_av"),
+    kilde = getString("kilde"),
+    hendelseTidspunkt = getTimestamp("hendelse_tidspunkt").toLocalDateTime().toInstant(ZoneOffset.UTC),
+    forlengelseHendelseType = ForlengelseHendelseType.valueOf(getString("hendelse")),
+    forlengetTilTidspunkt = getTimestamp("forlenget_til").toLocalDateTime().atZone(ZoneOffset.UTC)
 )
