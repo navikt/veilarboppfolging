@@ -148,7 +148,7 @@ class KandidatForUtmeldingRepository(
             SELECT COUNT(*) AS antall
             FROM kandidater_for_utmelding
         """.trimIndent()
-        return db.queryForObject(sql, emptyMap<String, Any>()) { rs, _ -> rs.getInt("antall") } ?: 0
+        return db.queryForObject(sql, emptyMap<String, Any>()) { rs, _ -> rs.getInt("antall") }
     }
 
     fun hentAntallKandidaterForUtmeldingForlenget(): Int {
@@ -157,7 +157,7 @@ class KandidatForUtmeldingRepository(
             FROM kandidater_for_utmelding
             WHERE forlenget_til IS NOT NULL
         """.trimIndent()
-        return db.queryForObject(sql, emptyMap<String, Any>()) { rs, _ -> rs.getInt("antall") } ?: 0
+        return db.queryForObject(sql, emptyMap<String, Any>()) { rs, _ -> rs.getInt("antall") }
     }
 
     fun hentAntallKandidaterForUtmeldingIkkeForlenget(): Int {
@@ -166,7 +166,7 @@ class KandidatForUtmeldingRepository(
             FROM kandidater_for_utmelding
             WHERE forlenget_til IS NULL
         """.trimIndent()
-        return db.queryForObject(sql, emptyMap<String, Any>()) { rs, _ -> rs.getInt("antall") } ?: 0
+        return db.queryForObject(sql, emptyMap<String, Any>()) { rs, _ -> rs.getInt("antall") }
     }
 
     fun hentEllerOpprettFilterhendelseId(oppfolgingsperiodeId: UUID): UUID {

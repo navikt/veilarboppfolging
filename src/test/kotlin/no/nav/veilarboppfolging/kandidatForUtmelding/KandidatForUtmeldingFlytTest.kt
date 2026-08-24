@@ -332,6 +332,19 @@ class KandidatForUtmeldingFlytTest(
             KandidatForUtmeldingTag.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT)
     }
 
+    @Test
+    fun `skal kunne opprette forlengelse`() {
+        val forlengelse = ForlengelseHendelse(
+            oppfolgingsperiodeUuid = UUID.randomUUID(),
+            utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
+            utfortAv = "A123123",
+            kilde = "kilde",
+            hendelseTidspunkt = ZonedDateTime.now().toInstant(),
+            forlengelseHendelseType = ForlengelseHendelseType.FORLENGELSE_OPPRETTET,
+            forlengetTilTidspunkt = ZonedDateTime.now().plusDays(30),
+        )
+    }
+
     private fun arbeidssokerperiode(
         fodselsnummer: String,
         periodeAvsluttet: Boolean = false,
