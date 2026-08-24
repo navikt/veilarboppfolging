@@ -18,9 +18,14 @@ class KandidatForUtmeldingRepository(
 
     fun lagreKandidat(hendelse: KandidatForUtmeldingHendelse) {
         val hendelseId = insertUtmeldingsHendelse(hendelse)
+
+        val forlengetTil = when (hendelse) {
+            is ForlengelseHendelse -> hendelse.getForlengetTil()
+            else -> null
+        }
         val sql = """
             INSERT INTO kandidater_for_utmelding(siste_utmeldingshendelse_id, oppfolgingsperiode_uuid, forlenget_til)
-            VALUES (:hendelseId, :oppfolgingsperiodeId, null)
+            VALUES (:hendelseId, :oppfolgingsperiodeId, :forlengetTil)
             ON CONFLICT (oppfolgingsperiode_uuid) 
             DO UPDATE SET updated_at = current_timestamp, siste_utmeldingshendelse_id = :hendelseId
         """.trimIndent()
@@ -28,7 +33,7 @@ class KandidatForUtmeldingRepository(
             sql, mapOf(
                 "oppfolgingsperiodeId" to hendelse.oppfolgingsperiodeUuid,
                 "hendelseId" to hendelseId,
-                "avsluttetAv" to hendelse.utfortAvType.name,
+                "forlengetTil" to forlengetTil
             )
         )
     }

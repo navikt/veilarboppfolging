@@ -92,4 +92,9 @@ class KandidatForUtmeldingService(
             .getOrElse { throw IllegalStateException("Oppfølgingsperiode med id $oppfolgingsperiodeId finnes ikke") }?.aktorId
         return aktorOppslagClient.hentFnr(AktorId(aktorId))
     }
+
+    fun forlengKandidat() {
+        
+        kandidatForUtmeldingRepository.lagreKandidat()
+    }
 }

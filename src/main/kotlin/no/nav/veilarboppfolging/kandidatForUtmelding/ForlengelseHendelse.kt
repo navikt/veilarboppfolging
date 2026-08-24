@@ -20,7 +20,7 @@ class ForlengelseHendelse(
     kilde: String,
     val forlengelseHendelseType: ForlengelseHendelseType,
     hendelseTidspunkt: Instant,
-    forlengetTilTidspunkt: ZonedDateTime,
+    val forlengetTilTidspunkt: ZonedDateTime,
 ) : KandidatForUtmeldingHendelse(
     oppfolgingsperiodeUuid,
     utfortAvType,
@@ -30,6 +30,14 @@ class ForlengelseHendelse(
 ) {
     override val type: KandidatForUtmeldingHendelseType = forlengelseHendelseType
     override val hendelseDataJson: PGobject? = null
+
+    fun getForlengetTil(): ZonedDateTime? {
+        return when (forlengelseHendelseType) {
+            ForlengelseHendelseType.FORLENGELSE_OPPRETTET,
+            ForlengelseHendelseType.FORLENGELSE_ENDRET -> forlengetTilTidspunkt
+            ForlengelseHendelseType.FORLENGELSE_UTLOPT -> null
+        }
+    }
 
     override fun tilFilterhendelseRecord(fnr: Fnr, operasjon: Operasjon): FilterhendelseRecord {
         return FilterhendelseRecord(
