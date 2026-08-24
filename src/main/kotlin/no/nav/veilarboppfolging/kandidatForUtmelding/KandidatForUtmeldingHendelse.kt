@@ -28,28 +28,27 @@ sealed class KandidatForUtmeldingHendelse(
 
     fun mapTilTag(): KandidatForUtmeldingTag? {
         return when (type) {
-            KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT -> KandidatForUtmeldingTag.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT
-            KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_SVARTE_NEI_I_BEKREFTELSE -> KandidatForUtmeldingTag.ARBEIDSSOKERPERIODE_AVSLUTTET_SVARTE_NEI_I_BEKREFTELSE
-            KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET -> KandidatForUtmeldingTag.ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET
-            KandidatForUtmeldingHendelseType.FORLENGELSE_UTLOPT -> KandidatForUtmeldingTag.FORLENGELSE_UTLOPT
-            KandidatForUtmeldingHendelseType.FORLENGELSE_OPPRETTET, KandidatForUtmeldingHendelseType.FORLENGELSE_ENDRET -> null
+            ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT -> KandidatForUtmeldingTag.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT
+            ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_SVARTE_NEI_I_BEKREFTELSE -> KandidatForUtmeldingTag.ARBEIDSSOKERPERIODE_AVSLUTTET_SVARTE_NEI_I_BEKREFTELSE
+            ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET -> KandidatForUtmeldingTag.ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET
+            ForlengelseHendelseType.FORLENGELSE_UTLOPT -> KandidatForUtmeldingTag.FORLENGELSE_UTLOPT
+            ForlengelseHendelseType.FORLENGELSE_OPPRETTET, ForlengelseHendelseType.FORLENGELSE_ENDRET -> null
         }
     }
 }
 
-enum class KandidatForUtmeldingHendelseType {
-    ;
+sealed interface KandidatForUtmeldingHendelseType
 
-    enum class ArbeidssokerperiodeAvsluttetHendelseType {
-        ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
-        ARBEIDSSOKERPERIODE_AVSLUTTET_SVARTE_NEI_I_BEKREFTELSE,
-        ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET
-    }
-    enum class ForlengelseHendelseType {
-        FORLENGELSE_OPPRETTET,
-        FORLENGELSE_ENDRET,
-        FORLENGELSE_UTLOPT
-    }
+enum class ArbeidssokerperiodeAvsluttetHendelseType : KandidatForUtmeldingHendelseType {
+    ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
+    ARBEIDSSOKERPERIODE_AVSLUTTET_SVARTE_NEI_I_BEKREFTELSE,
+    ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET
+}
+
+enum class ForlengelseHendelseType : KandidatForUtmeldingHendelseType{
+    FORLENGELSE_OPPRETTET,
+    FORLENGELSE_ENDRET,
+    FORLENGELSE_UTLOPT
 }
 
 enum class KandidatForUtmeldingHendelseUtfortAvType {
@@ -58,6 +57,3 @@ enum class KandidatForUtmeldingHendelseUtfortAvType {
     BRUKER,
     UKJENT
 }
-
-)
-

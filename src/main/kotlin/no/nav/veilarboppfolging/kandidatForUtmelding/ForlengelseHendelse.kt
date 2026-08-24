@@ -1,5 +1,9 @@
 package no.nav.veilarboppfolging.kandidatForUtmelding
 
+import java.net.URI
+import java.time.Instant
+import java.time.ZoneId
+import java.util.UUID
 import no.nav.common.types.identer.Fnr
 import no.nav.common.types.identer.NorskIdent
 import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.BeskrivelseEnum
@@ -7,17 +11,13 @@ import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.Filterhendel
 import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.Kategori
 import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.Operasjon
 import org.postgresql.util.PGobject
-import java.net.URI
-import java.time.Instant
-import java.time.ZoneId
-import java.util.UUID
 
 class ForlengelseHendelse(
     oppfolgingsperiodeUuid: UUID,
     utfortAvType: KandidatForUtmeldingHendelseUtfortAvType,
     utfortAv: String?,
     kilde: String,
-    val forlengelseHendelseType: KandidatForUtmeldingHendelseType,
+    val forlengelseHendelseType: ForlengelseHendelseType,
     hendelseTidspunkt: Instant,
     forlengetTilTidspunkt: Instant,
 ) : KandidatForUtmeldingHendelse(
@@ -37,11 +37,11 @@ class ForlengelseHendelse(
             operasjon = operasjon,
             hendelse = FilterhendelseRecord.HendelseInnhold(
                 beskrivelse = when (type) {
-                    KandidatForUtmeldingHendelseType.FORLENGELSE_UTLOPT -> "Forlengelse utløpt"
+                    ForlengelseHendelseType.FORLENGELSE_UTLOPT -> "Forlengelse utløpt"
                     else -> throw IllegalArgumentException("Ugyldig forlengelseshendelsestype for filterhendelser")
                 },
                 beskrivelseEnum = when (type) {
-                    KandidatForUtmeldingHendelseType.FORLENGELSE_UTLOPT -> BeskrivelseEnum.FORLENGELSE_UTLOPT
+                    ForlengelseHendelseType.FORLENGELSE_UTLOPT -> BeskrivelseEnum.FORLENGELSE_UTLOPT
                     else -> throw IllegalArgumentException("Ugyldig forlengelseshendelsestype for filterhendelser")
                 }.name,
                 dato = hendelseTidspunkt.atZone(ZoneId.of("Europe/Oslo")),

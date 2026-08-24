@@ -194,6 +194,11 @@ class KandidatForUtmeldingRepository(
     }
 
     fun map(resultSet: ResultSet): KandidatForUtmeldingHendelse {
+        val hendelsetype = resultSet.getString("hendelse")
+        val type = when (hendelsetype) {
+            is ArbeidssokerperiodeAvsluttetHendelseType -> resultSet.toArbeidssøkerPeriodeAvsluttet()
+            is ForlengelseHendelse ->
+        }
         val type = KandidatForUtmeldingHendelseType.valueOf(resultSet.getString("hendelse"))
         return when (type) {
             KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET,
