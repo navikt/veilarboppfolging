@@ -238,5 +238,5 @@ fun ResultSet.toForlengelseHendelse() = ForlengelseHendelse(
     kilde = getString("kilde"),
     hendelseTidspunkt = getTimestamp("hendelse_tidspunkt").toLocalDateTime().toInstant(ZoneOffset.UTC),
     forlengelseHendelseType = ForlengelseHendelseType.valueOf(getString("hendelse")),
-    forlengetTilTidspunkt = getStringOrNull("hendelse_data")?.let { JsonUtils.fromJson(it, ForlengelseHendelse.Detaljer::class.java).forlengetTil },
+    forlengetTil = getStringOrNull("hendelse_data")?.let { JsonUtils.fromJson(it, ForlengelseHendelse.Detaljer::class.java).forlengetTil },
 )

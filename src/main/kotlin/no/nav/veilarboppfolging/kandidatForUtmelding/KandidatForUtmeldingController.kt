@@ -1,8 +1,17 @@
 package no.nav.veilarboppfolging.kandidatForUtmelding
 
+import no.nav.common.types.identer.Fnr
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.RequestBody
+import java.time.LocalDate
+import java.time.ZonedDateTime
+
+data class ForlengelseDTO(
+    val fnr: Fnr,
+    val forlengetTil: LocalDate
+)
 
 @RestController
 @RequestMapping("/api/forlengelse")
@@ -11,15 +20,15 @@ class KandidatForUtmeldingController(
 ) {
 
     @PostMapping
-    fun opprettForlengelse() {
+    fun opprettForlengelse(@RequestBody forlengelseDTO: ForlengelseDTO ) {
         val forlengelseHendelse = ForlengelseHendelse(
-            oppfolgingsperiodeUuid = ,
+            oppfolgingsperiodeUuid =  ,
             utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
             utfortAv = ,
-            kilde = ,
+            kilde = "veilarboppfolging",
             forlengelseHendelseType = ForlengelseHendelseType.FORLENGELSE_OPPRETTET,
-            hendelseTidspunkt = ,
-            forlengetTilTidspunkt =,
+            hendelseTidspunkt = ZonedDateTime.now().toInstant(),
+            forlengetTil = forlengelseDTO.forlengetTil,
         )
         kandidatForUtmeldingService.forlengKandidat()
     }

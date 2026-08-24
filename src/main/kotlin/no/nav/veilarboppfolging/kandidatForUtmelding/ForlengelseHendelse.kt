@@ -13,6 +13,7 @@ import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.Operasjon
 import org.postgresql.util.PGobject
 import java.time.ZonedDateTime
 import no.nav.common.json.JsonUtils
+import java.time.LocalDate
 
 class ForlengelseHendelse(
     oppfolgingsperiodeUuid: UUID,
@@ -21,7 +22,7 @@ class ForlengelseHendelse(
     kilde: String,
     val forlengelseHendelseType: ForlengelseHendelseType,
     hendelseTidspunkt: Instant,
-    val forlengetTilTidspunkt: ZonedDateTime?,
+    val forlengetTil: LocalDate?,
 ) : KandidatForUtmeldingHendelse(
     oppfolgingsperiodeUuid,
     utfortAvType,
@@ -30,7 +31,7 @@ class ForlengelseHendelse(
     hendelseTidspunkt,
 ) {
     override val type: KandidatForUtmeldingHendelseType = forlengelseHendelseType
-    override val hendelseDataJson: PGobject? = forlengetTilTidspunkt?.let {
+    override val hendelseDataJson: PGobject? = forlengetTil?.let {
         PGobject().apply {
             type = "jsonb"
             value = JsonUtils.getMapper().writeValueAsString(Detaljer(it))
@@ -38,13 +39,13 @@ class ForlengelseHendelse(
     }
 
     data class Detaljer(
-        val forlengetTil: ZonedDateTime?,
+        val forlengetTil: LocalDate?,
     )
 
-    fun getForlengetTil(): ZonedDateTime? {
+    fun getForlengetTil(): LocalDate? {
         return when (forlengelseHendelseType) {
             ForlengelseHendelseType.FORLENGELSE_OPPRETTET,
-            ForlengelseHendelseType.FORLENGELSE_ENDRET -> forlengetTilTidspunkt
+            ForlengelseHendelseType.FORLENGELSE_ENDRET -> forlengetTil
             ForlengelseHendelseType.FORLENGELSE_UTLOPT -> null
         }
     }

@@ -342,7 +342,7 @@ class KandidatForUtmeldingFlytTest(
             kilde = "kilde",
             hendelseTidspunkt = ZonedDateTime.now().toInstant(),
             forlengelseHendelseType = ForlengelseHendelseType.FORLENGELSE_OPPRETTET,
-            forlengetTilTidspunkt = ZonedDateTime.now().plusDays(30),
+            forlengetTil = ZonedDateTime.now().plusDays(30),
         )
     }
 
