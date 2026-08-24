@@ -335,6 +335,7 @@ class KandidatForUtmeldingFlytTest(
     @Test
     fun `skal kunne opprette forlengelse`() {
         mockInternBrukerAuthOk(UUID.randomUUID(), aktorId, Fnr.of(fnr))
+        startOppfolgingSomArbeidsoker(aktorId, Fnr.of(fnr))
         val forlengelse = ForlengelseHendelse(
             oppfolgingsperiodeUuid = UUID.randomUUID(),
             utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
@@ -344,6 +345,7 @@ class KandidatForUtmeldingFlytTest(
             forlengelseHendelseType = ForlengelseHendelseType.FORLENGELSE_OPPRETTET,
             forlengetTil = LocalDate.now().plusDays(30),
         )
+        forlengKandidatForUtmelding()
     }
 
     private fun arbeidssokerperiode(

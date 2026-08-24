@@ -33,7 +33,7 @@ class KandidatForUtmeldingRepository(
             sql, mapOf(
                 "oppfolgingsperiodeId" to hendelse.oppfolgingsperiodeUuid,
                 "hendelseId" to hendelseId,
-                "forlengetTil" to forlengetTil
+                "forlengetTil" to forlengetTil?.let { Timestamp.valueOf(it.atTime(4, 0)) },
             )
         )
     }
