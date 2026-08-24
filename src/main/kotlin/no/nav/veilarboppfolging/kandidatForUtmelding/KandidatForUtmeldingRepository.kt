@@ -195,15 +195,26 @@ class KandidatForUtmeldingRepository(
 
     fun map(resultSet: ResultSet): KandidatForUtmeldingHendelse {
         val hendelsetype = resultSet.getString("hendelse")
+
         val type = when (hendelsetype) {
             is ArbeidssokerperiodeAvsluttetHendelseType -> resultSet.toArbeidssøkerPeriodeAvsluttet()
-            is ForlengelseHendelse -> resultSet.toForlengelseHendelse()
+            is ForlengelseHendelseType -> resultSet.toForlengelseHendelse()
         }
-        val type = KandidatForUtmeldingHendelseType.valueOf(resultSet.getString("hendelse"))
+
         return when (type) {
             KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET,
             KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
             KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_SVARTE_NEI_I_BEKREFTELSE -> resultSet.toArbeidssøkerPeriodeAvsluttet()
+        }
+    }
+
+    fun getEnumType(hendelse: String) : KandidatForUtmeldingHendelseType {
+        return when (hendelse) {
+            in ArbeidssokerperiodeAvsluttetHendelseType.entries.map { it.name } -> ArbeidssokerperiodeAvsluttetHendelseType.valueOf(hendelse)
+            in ForlengelseHendelseType.entries.map { it.name } -> ForlengelseHendelseType.valueOf(hendelse)
+            else -> {
+                throw IllegalArgumentException("Ugyldig hendelse type: $hendelse")
+            }
         }
     }
 }
