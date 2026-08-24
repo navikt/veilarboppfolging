@@ -1,13 +1,13 @@
 package no.nav.veilarboppfolging.kandidatForUtmelding
 
-import no.nav.common.client.aktoroppslag.BrukerIdenter
-import no.nav.common.json.JsonUtils
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.UUID
+import no.nav.common.client.aktoroppslag.BrukerIdenter
+import no.nav.common.json.JsonUtils
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.common.types.identer.NavIdent
@@ -351,7 +351,7 @@ class KandidatForUtmeldingFlytTest(
             kilde ="kilde",
             hendelseTidspunkt = ZonedDateTime.now().toInstant(),
             arbeidssokerperiodeAvsluttetHendelseType = ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
-            avslutningsarsak = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
+            avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
         ))
 
         val forlengelseDato = LocalDate.now().plusDays(30)
@@ -360,12 +360,12 @@ class KandidatForUtmeldingFlytTest(
 
         val kandidat = kandidatForUtmeldingRepository.hentKandidatMedForlengelse(oppfolgingsperiodeUuid)
         assertThat(kandidat).isNotNull
-        assertThat(kandidat?.utfortAv).isEqualTo("A123123")
+        assertThat(kandidat?.utfortAv).isEqualTo("A123456")
+        assertThat(kandidat?.type).isEqualTo(ForlengelseHendelseType.FORLENGELSE_OPPRETTET)
         assertThat(kandidat?.hendelseDataJson?.value).isEqualTo(
             JsonUtils.getMapper()
                 .writeValueAsString(ForlengelseHendelse.Detaljer(forlengelseDato))
         )
-
     }
 
     private fun arbeidssokerperiode(
