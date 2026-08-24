@@ -39,9 +39,13 @@ class KandidatForUtmeldingRepository(
             VALUES (gen_random_uuid(), :hendelse, :hendelseData::jsonb, :utfortAv, :utfortAvType, :kilde, :oppfolgingsperiode_uuid, :hendelseTidspunkt)
             RETURNING utmeldingshendelse_id
         """.trimIndent()
+        val type = hendelse.type
         return db.queryForObject(
             sql, mapOf(
-                "hendelse" to hendelse.type.name,
+                "hendelse" to when (type) {
+                    is ArbeidssokerperiodeAvsluttetHendelseType -> type.name
+                    is ForlengelseHendelseType -> type.name
+                },
                 "hendelseData" to hendelse.hendelseDataJson,
                 "utfortAv" to hendelse.utfortAv,
                 "utfortAvType" to hendelse.utfortAvType.name,
@@ -195,16 +199,9 @@ class KandidatForUtmeldingRepository(
 
     fun map(resultSet: ResultSet): KandidatForUtmeldingHendelse {
         val hendelsetype = resultSet.getString("hendelse")
-
-        val type = when (hendelsetype) {
+        return when (getEnumType(hendelsetype)) {
             is ArbeidssokerperiodeAvsluttetHendelseType -> resultSet.toArbeidssøkerPeriodeAvsluttet()
             is ForlengelseHendelseType -> resultSet.toForlengelseHendelse()
-        }
-
-        return when (type) {
-            KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET,
-            KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
-            KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_SVARTE_NEI_I_BEKREFTELSE -> resultSet.toArbeidssøkerPeriodeAvsluttet()
         }
     }
 

@@ -34,7 +34,7 @@ class FjernKandidatForUtmeldingServiceTest : IntegrationTest() {
                 utfortAv = "A123123",
                 kilde = "kilde",
                 hendelseTidspunkt = ZonedDateTime.now().toInstant(),
-                arbeidssokerperiodeAvsluttetHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
+                arbeidssokerperiodeAvsluttetHendelseType = ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
                 avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString(),
                 oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
             )

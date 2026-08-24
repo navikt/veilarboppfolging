@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test
 class KandidatForUtmeldingHendelseTest {
 
     private fun arbeidssøkerPeriodeAvsluttet(
-        kandidatForUtmeldingHendelseType: KandidatForUtmeldingHendelseType,
+        kandidatForUtmeldingHendelseType: ArbeidssokerperiodeAvsluttetHendelseType,
         aarsakType: AvsluttetAarsakType
     ): ArbeidssøkerPeriodeAvsluttet =
         ArbeidssøkerPeriodeAvsluttet(
@@ -24,7 +24,7 @@ class KandidatForUtmeldingHendelseTest {
 
     @Test
     fun `mapTilTag mapper BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST til riktig tag`() {
-        val hendelse = arbeidssøkerPeriodeAvsluttet(KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT, AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST)
+        val hendelse = arbeidssøkerPeriodeAvsluttet(ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT, AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST)
 
         assertThat(hendelse.mapTilTag())
             .isEqualTo(KandidatForUtmeldingTag.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT)
@@ -32,7 +32,7 @@ class KandidatForUtmeldingHendelseTest {
 
     @Test
     fun `mapTilTag mapper SVARTE_NEI_I_BEKREFTELSE til riktig tag`() {
-        val hendelse = arbeidssøkerPeriodeAvsluttet(KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_SVARTE_NEI_I_BEKREFTELSE, AvsluttetAarsakType.SVARTE_NEI_I_BEKREFTELSE)
+        val hendelse = arbeidssøkerPeriodeAvsluttet(ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_SVARTE_NEI_I_BEKREFTELSE, AvsluttetAarsakType.SVARTE_NEI_I_BEKREFTELSE)
 
         assertThat(hendelse.mapTilTag())
             .isEqualTo(KandidatForUtmeldingTag.ARBEIDSSOKERPERIODE_AVSLUTTET_SVARTE_NEI_I_BEKREFTELSE)
@@ -40,7 +40,7 @@ class KandidatForUtmeldingHendelseTest {
 
     @Test
     fun `mapTilTag mapper ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET til riktig tag`() {
-        val hendelse = arbeidssøkerPeriodeAvsluttet(KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET, AvsluttetAarsakType.UKJENT_VERDI)
+        val hendelse = arbeidssøkerPeriodeAvsluttet(ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET, AvsluttetAarsakType.UKJENT_VERDI)
 
         assertThat(hendelse.mapTilTag())
             .isEqualTo(KandidatForUtmeldingTag.ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET)
