@@ -7,6 +7,7 @@ import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.Operasjon
+import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.hendelser.HendelseType
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.service.AvsluttOppfolgingService
 import no.nav.veilarboppfolging.service.KafkaProducerService
@@ -115,6 +116,12 @@ class KandidatForUtmeldingService(
     }
 
     fun hentForlengelseType(oppfolgingsperiodeId: UUID): ForlengelseHendelseType {
-        val kandidatForUtmeldingRepository.hentSisteKandidatForUtmeldingHendelse(oppfolgingsperiodeId)
+        val hendelseType = kandidatForUtmeldingRepository.hentSisteHendelseForAktivKandidat(oppfolgingsperiodeId)?.type
+            ?: throw IllegalStateException("Fant ingen kandidat for utmelding-hendelser for oppfølgingsperiode $oppfolgingsperiodeId")
+        return if (hendelseType == ForlengelseHendelseType.FORLENGELSE_OPPRETTET || hendelseType == ForlengelseHendelseType.FORLENGELSE_ENDRET) {
+            ForlengelseHendelseType.FORLENGELSE_ENDRET
+        } else {
+            ForlengelseHendelseType.FORLENGELSE_OPPRETTET
+        }
     }
 }

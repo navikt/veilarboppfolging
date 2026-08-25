@@ -99,6 +99,19 @@ class KandidatForUtmeldingRepository(
             .firstOrNull()
     }
 
+    fun hentSisteHendelseForAktivKandidat(oppfolgingsperiodeId: UUID): KandidatForUtmeldingHendelse? {
+        return db.query(
+            """
+            SELECT kfuh.*
+            FROM kandidater_for_utmelding kfu
+            JOIN kandidater_for_utmelding_hendelser kfuh ON kfu.siste_utmeldingshendelse_id = kfuh.utmeldingshendelse_id
+            WHERE kfu.oppfolgingsperiode_uuid = :oppfolgingsperiodeId
+            """.trimIndent(),
+            mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeId.toString()),
+        ) { rs, _ -> map(rs) }
+            .firstOrNull()
+    }
+
     @TestOnly
     fun hentForlengetTil(oppfolgingsperiodeId: UUID): Timestamp? {
         return db.query(
