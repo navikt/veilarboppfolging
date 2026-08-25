@@ -367,6 +367,8 @@ class KandidatForUtmeldingFlytTest(
         forlengKandidatForUtmelding(fnr = Fnr.of(fnr), forlengTil = forlengelseDato)
 
         val kandidat = kandidatForUtmeldingRepository.hentKandidatMedForlengelse(oppfolgingsperiodeUuid)
+        val forlengetTil = kandidatForUtmeldingRepository.hentForlengetTil(oppfolgingsperiodeUuid)
+        assertThat(forlengetTil?.toLocalDateTime()?.toLocalDate()).isEqualTo(forlengelseDato)
         assertThat(kandidat).isNotNull
         assertThat(kandidat?.utfortAv).isEqualTo("A123456")
         assertThat(kandidat?.type).isEqualTo(ForlengelseHendelseType.FORLENGELSE_OPPRETTET)

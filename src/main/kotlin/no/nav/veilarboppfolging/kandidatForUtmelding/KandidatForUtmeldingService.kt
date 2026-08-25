@@ -48,7 +48,8 @@ class KandidatForUtmeldingService(
     }
 
     fun hentKandidatForUtmeldingTag(aktorId: AktorId): KandidatForUtmeldingTag? {
-        val oppfolgingsperiodeId = oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId)?.getOrNull()?.uuid ?: return null
+        val oppfolgingsperiodeId =
+            oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId)?.getOrNull()?.uuid ?: return null
         return hentKandidatForUtmeldingTag(oppfolgingsperiodeId)
     }
 
@@ -84,6 +85,18 @@ class KandidatForUtmeldingService(
             kafkaProducerService.publiserFilterhendelse(filterkategoriPersonId, filterhendelse)
         } else {
             logger.info("Sender ikke kandidat for utmelding til OBO for oppfølgingsperiode ${kandidat.oppfolgingsperiodeUuid} fordi sending til OBO er togglet av")
+        }
+    }
+
+    private fun sendStoppUtmeldingskandidatTilObo(kandidat: KandidatForUtmeldingHendelse, fnr: Fnr) {
+        if (sendUtmeldingskandidaterTilObo) {
+            val filterkategoriPersonId =
+                kandidatForUtmeldingRepository.hentEllerOpprettFilterhendelseId(kandidat.oppfolgingsperiodeUuid)
+            logger.info("Sender stopp-melding for kandidat for utmelding til OBO med key=$filterkategoriPersonId for oppfølgingsperiode ${kandidat.oppfolgingsperiodeUuid}")
+            val filterhendelse = kandidat.tilFilterhendelseRecord(fnr, Operasjon.STOPP)
+            kafkaProducerService.publiserFilterhendelse(filterkategoriPersonId, filterhendelse)
+        } else {
+            logger.info("Sender ikke stopp-melding for kandidat for utmelding til OBO for oppfølgingsperiode ${kandidat.oppfolgingsperiodeUuid} fordi sending til OBO er togglet av")
         }
     }
 
