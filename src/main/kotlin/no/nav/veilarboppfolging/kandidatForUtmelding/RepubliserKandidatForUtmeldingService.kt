@@ -68,6 +68,10 @@ class RepubliserKandidatForUtmeldingService(
                 } else {
                     val sisteUtmeldingshendelse = kandidatForUtmeldingRepository.hentSisteKandidatForUtmeldingHendelse(oppfolgingsperiodeId)
                         ?: throw IllegalStateException("Fant ingen kandidat for utmelding-hendelser for oppfølgingsperiode $oppfolgingsperiodeId")
+                    if(sisteUtmeldingshendelse.type == ForlengelseHendelseType.FORLENGELSE_ENDRET) {
+                        logger.info("Sender ikke kandidat for utmelding til OBO for oppfølgingsperiode: $oppfolgingsperiodeId på nytt fordi siste hendelse er FORLENGELSE_ENDRET")
+                        return@executeWithoutResult
+                    }
                     sisteUtmeldingshendelse.tilFilterhendelseRecord(fnr, Operasjon.STOPP)
                 }
                 logger.info("Republiserer kandidat for utmelding til OBO med key=$filterkategoriPersonId for oppfølgingsperiode $oppfolgingsperiodeId")

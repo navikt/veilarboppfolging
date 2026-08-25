@@ -1,28 +1,23 @@
 package no.nav.veilarboppfolging.kandidatForUtmelding
 
 import no.nav.common.client.aktoroppslag.BrukerIdenter
-import java.time.Instant
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.ZoneId
-import java.time.ZonedDateTime
-import java.util.UUID
+import no.nav.common.json.JsonUtils
 import no.nav.common.types.identer.AktorId
+import no.nav.common.types.identer.EnhetId
 import no.nav.common.types.identer.Fnr
 import no.nav.common.types.identer.NavIdent
-import no.nav.paw.arbeidssokerregisteret.api.v1.Aarsaksinformasjon
-import no.nav.paw.arbeidssokerregisteret.api.v1.AvslutningsInfo
-import no.nav.paw.arbeidssokerregisteret.api.v1.AvsluttetAarsakType
-import no.nav.paw.arbeidssokerregisteret.api.v1.AvviksType
-import no.nav.paw.arbeidssokerregisteret.api.v1.Bruker
-import no.nav.paw.arbeidssokerregisteret.api.v1.BrukerType
-import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
-import no.nav.paw.arbeidssokerregisteret.api.v1.TidspunktFraKilde
+import no.nav.paw.arbeidssokerregisteret.api.v1.*
+import no.nav.paw.arbeidssokerregisteret.api.v1.AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST
+import no.nav.poao_tilgang.client.Decision
+import no.nav.poao_tilgang.client.TilgangType
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
 import no.nav.veilarboppfolging.IntegrationTest
 import no.nav.veilarboppfolging.kafka.ArbeidssøkerperiodeConsumerService
 import no.nav.veilarboppfolging.kafka.TestUtils
+import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.BeskrivelseEnum
+import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.Kategori
+import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.Operasjon
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering.Companion.arbeidssokerRegistrering
@@ -37,6 +32,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
+import java.time.*
+import java.util.*
 import no.nav.paw.arbeidssokerregisteret.api.v1.Metadata as MetaData
 
 class KandidatForUtmeldingFlytTest(
@@ -144,7 +141,7 @@ class KandidatForUtmeldingFlytTest(
             utfortAv = "A123123",
             kilde = "arbeidssøkerregisteret",
             hendelseTidspunkt = ZonedDateTime.now().toInstant(),
-            kandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
+            arbeidssokerperiodeAvsluttetHendelseType = ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
             avslutningsarsak = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
         ))
         avsluttOppfolgingManueltSomVeileder(aktorId)
@@ -174,7 +171,7 @@ class KandidatForUtmeldingFlytTest(
             utfortAv = "A123123",
             kilde ="kilde",
             hendelseTidspunkt = ZonedDateTime.now().toInstant(),
-            kandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
+            arbeidssokerperiodeAvsluttetHendelseType = ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
             avslutningsarsak = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
         ))
         avsluttOppfolgingManueltSomVeileder(aktorId)
@@ -204,7 +201,7 @@ class KandidatForUtmeldingFlytTest(
             utfortAv = "A123123",
             kilde ="kilde",
             hendelseTidspunkt = ZonedDateTime.now().toInstant(),
-            kandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
+            arbeidssokerperiodeAvsluttetHendelseType = ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
             avslutningsarsak = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString())
         )
 
@@ -226,7 +223,7 @@ class KandidatForUtmeldingFlytTest(
             utfortAv = "A123123",
             kilde ="kilde",
             hendelseTidspunkt = ZonedDateTime.now().toInstant(),
-            kandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
+            arbeidssokerperiodeAvsluttetHendelseType = ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
             avslutningsarsak = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
         ))
         assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId)).isNotNull()
@@ -259,8 +256,8 @@ class KandidatForUtmeldingFlytTest(
             utfortAv = "A123123",
             kilde ="kilde",
             hendelseTidspunkt = ZonedDateTime.now().toInstant(),
-            kandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
-            avslutningsarsak = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
+            arbeidssokerperiodeAvsluttetHendelseType = ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
+            avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
         ))
         avsluttOppfolgingManueltSomVeileder(aktorId)
 
@@ -284,7 +281,7 @@ class KandidatForUtmeldingFlytTest(
             utfortAv = "A123123",
             kilde ="kilde",
             hendelseTidspunkt = ZonedDateTime.now().toInstant(),
-            kandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
+            arbeidssokerperiodeAvsluttetHendelseType = ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
             avslutningsarsak = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
         ))
         assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId)).isNotNull()
@@ -330,6 +327,91 @@ class KandidatForUtmeldingFlytTest(
 
         assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId))!!.isEqualTo(
             KandidatForUtmeldingTag.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT)
+    }
+
+    @Test
+    fun `skal kunne opprette forlengelse`() {
+        val veilederId = UUID.randomUUID()
+        val enhetId = EnhetId("1234")
+        mockInternBrukerAuthOk(veilederId, aktorId, Fnr.of(fnr))
+        mockPoaoTilgangHarTilgangTilBruker(veilederId, Fnr.of(fnr), Decision.Permit, TilgangType.SKRIVE)
+        mockPoaoTilgangHarTilgangTilEnhet(veilederId, enhetId)
+        startOppfolgingSomArbeidsoker(aktorId, Fnr.of(fnr))
+        setLocalArenaOppfolging(aktorId, Formidlingsgruppe.ARBS)
+        setAoKontor(Fnr.of(fnr), aktorId, enhetId.get())
+        mockTiltakshistorikk(Fnr.of(fnr), harAktiveDeltakelser = false)
+        mockUngdomsprogram(Fnr.of(fnr), erDeltaker = false)
+        mockArbeidssoekerregisteret(Fnr.of(fnr), erArbeidssoeker = false)
+        mockAap(Fnr.of(fnr), harAap = false)
+        val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(Fnr.of(fnr)).get().uuid
+        kandidatForUtmeldingRepository.lagreKandidat(ArbeidssøkerPeriodeAvsluttet(
+            oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
+            utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
+            utfortAv = "A123123",
+            kilde ="kilde",
+            hendelseTidspunkt = ZonedDateTime.now().toInstant(),
+            arbeidssokerperiodeAvsluttetHendelseType = ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
+            avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
+        ))
+
+        val forlengelseDato = LocalDate.now().plusDays(30)
+
+        forlengKandidatForUtmelding(fnr = Fnr.of(fnr), forlengTil = forlengelseDato)
+
+        val kandidat = kandidatForUtmeldingRepository.hentKandidatMedForlengelse(oppfolgingsperiodeUuid)
+        val forlengetTil = kandidatForUtmeldingRepository.hentForlengetTil(oppfolgingsperiodeUuid)
+        assertThat(forlengetTil?.toLocalDateTime()?.toLocalDate()).isEqualTo(forlengelseDato)
+        assertThat(kandidat).isNotNull
+        assertThat(kandidat?.utfortAv).isEqualTo("A123456")
+        assertThat(kandidat?.type).isEqualTo(ForlengelseHendelseType.FORLENGELSE_OPPRETTET)
+        assertThat(kandidat?.hendelseDataJson?.value).isEqualTo(
+            JsonUtils.getMapper()
+                .writeValueAsString(ForlengelseHendelse.Detaljer(forlengelseDato))
+        )
+        val filterhendelseId = kandidatForUtmeldingRepository.hentFilterhendelseId(oppfolgingsperiodeUuid)
+        assertThat(filterhendelseId).isNotNull
+        val filterhendelse = getFilterhendelseRecordsStoredInKafkaOutbox(kafkaProperties.portefoljeHendelsesfilterTopic, filterhendelseId.toString()).first()
+        assertThat(filterhendelse.operasjon).isEqualTo(Operasjon.STOPP)
+        assertThat(filterhendelse.kategori).isEqualTo(Kategori.KANDIDAT_FOR_UTMELDING)
+        assertThat(filterhendelse.hendelse.beskrivelseEnum).isEqualTo(BeskrivelseEnum.FORLENGELSE_OPPRETTET.name)
+    }
+
+    @Test
+    fun `skal kunne forlenge forlengelsen`() {
+        val veilederId = UUID.randomUUID()
+        val enhetId = EnhetId("1234")
+        mockInternBrukerAuthOk(veilederId, aktorId, Fnr.of(fnr))
+        mockPoaoTilgangHarTilgangTilBruker(veilederId, Fnr.of(fnr), Decision.Permit, TilgangType.SKRIVE)
+        mockPoaoTilgangHarTilgangTilEnhet(veilederId, enhetId)
+        startOppfolgingSomArbeidsoker(aktorId, Fnr.of(fnr))
+        setLocalArenaOppfolging(aktorId, Formidlingsgruppe.ARBS)
+        setAoKontor(Fnr.of(fnr), aktorId, enhetId.get())
+        mockTiltakshistorikk(Fnr.of(fnr), harAktiveDeltakelser = false)
+        mockUngdomsprogram(Fnr.of(fnr), erDeltaker = false)
+        mockArbeidssoekerregisteret(Fnr.of(fnr), erArbeidssoeker = false)
+        mockAap(Fnr.of(fnr), harAap = false)
+        val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(Fnr.of(fnr)).get().uuid
+        kandidatForUtmeldingRepository.lagreKandidat(ArbeidssøkerPeriodeAvsluttet(
+            oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
+            utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
+            utfortAv = "A123123",
+            kilde ="kilde",
+            hendelseTidspunkt = ZonedDateTime.now().toInstant(),
+            arbeidssokerperiodeAvsluttetHendelseType = ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
+            avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
+        ))
+
+        val forlengelseDato = LocalDate.now().plusDays(30)
+        forlengKandidatForUtmelding(fnr = Fnr.of(fnr), forlengTil = forlengelseDato)
+
+        val nyForlengelseDato = LocalDate.now().plusDays(60)
+        forlengKandidatForUtmelding(fnr = Fnr.of(fnr), forlengTil = nyForlengelseDato)
+
+        val forlengetTil = kandidatForUtmeldingRepository.hentForlengetTil(oppfolgingsperiodeUuid)
+        assertThat(forlengetTil?.toLocalDateTime()?.toLocalDate()).isEqualTo(nyForlengelseDato)
+
+        val kandidat = kandidatForUtmeldingRepository.hentKandidatMedForlengelse(oppfolgingsperiodeUuid)
+        assertThat(kandidat?.type).isEqualTo(ForlengelseHendelseType.FORLENGELSE_ENDRET)
     }
 
     private fun arbeidssokerperiode(
