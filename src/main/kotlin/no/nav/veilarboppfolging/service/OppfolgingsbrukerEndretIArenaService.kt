@@ -1,8 +1,7 @@
 package no.nav.veilarboppfolging.service
 
-import kotlin.jvm.optionals.getOrNull
 import no.nav.common.types.identer.Fnr
-import no.nav.veilarboppfolging.client.pdl.PdlFolkeregisterStatusClient
+import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.EndringPaaOppfolgingsBruker
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.LocalArenaOppfolging
@@ -15,6 +14,7 @@ import no.nav.veilarboppfolging.utils.ArenaUtils
 import no.nav.veilarboppfolging.utils.SecureLog.secureLog
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import kotlin.jvm.optionals.getOrNull
 
 @Service
 class OppfolgingsbrukerEndretIArenaService(
@@ -24,7 +24,7 @@ class OppfolgingsbrukerEndretIArenaService(
     private val arenaOppfolgingService: ArenaOppfolgingService,
     private val metricsService: MetricsService,
     private val oppfolgingsStatusRepository: OppfolgingsStatusRepository,
-    private val pdlFolkeregisterStatusClient: PdlFolkeregisterStatusClient,
+    private val kandidatForUtmeldingService: KandidatForUtmeldingService,
 ){
     val log = LoggerFactory.getLogger(this.javaClass)
 
@@ -62,11 +62,6 @@ class OppfolgingsbrukerEndretIArenaService(
                     "Starter oppfølging på bruker som er under oppfølging i Arena, men ikke i veilarboppfolging. aktorId={}",
                     endringOppfolgingsbruker.aktorId
                 )
-                if (erUnder18(fnr)) {
-                    secureLog.info("Bruker er under 18 år, starter ikke oppfølging. aktorId={}", endringOppfolgingsbruker.aktorId)
-                    log.info("Bruker er under 18 år, starter ikke oppfølging.")
-                    return
-                }
                 startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(
                     arenaSyncOppfolgingBrukerRegistrering(
                         fnr,
@@ -106,10 +101,5 @@ class OppfolgingsbrukerEndretIArenaService(
             endringOppfolgingsbruker.aktorId, erBrukerUnderOppfolgingLokalt,
             erInaktivIArena, formidlingsgruppe, kvalifiseringsgruppe
         )
-    }
-
-    private fun erUnder18(fnr: Fnr): Boolean {
-        val folkeregisterstatus = pdlFolkeregisterStatusClient.hentFolkeregisterStatus(fnr)
-        return folkeregisterstatus.under18
     }
 }
