@@ -111,6 +111,7 @@ class KandidatForUtmeldingService(
         logger.info("Lagrer forlengelse for oppfølgingsperiode ${hendelse.oppfolgingsperiodeUuid}")
         transactor.executeWithoutResult { _ ->
             kandidatForUtmeldingRepository.lagreKandidat(hendelse)
+            if(hendelse.type == ForlengelseHendelseType.FORLENGELSE_ENDRET) return@executeWithoutResult
             sendStoppUtmeldingskandidatTilObo(hendelse, fnr)
         }
     }
