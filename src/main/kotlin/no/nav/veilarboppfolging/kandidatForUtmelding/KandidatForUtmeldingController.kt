@@ -4,7 +4,7 @@ import no.nav.common.types.identer.Fnr
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
 import no.nav.veilarboppfolging.service.AuthService
 import no.nav.veilarboppfolging.service.OppfolgingService
-import no.nav.veilarboppfolging.utils.SecureLog.secureLog
+import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -28,31 +28,32 @@ class KandidatForUtmeldingController(
     val oppfolgingsStatusRepository: OppfolgingsStatusRepository
 ) {
 
+    private val logger = LoggerFactory.getLogger(KandidatForUtmeldingController::class.java)
+
     @PostMapping
     fun opprettForlengelse(@RequestBody forlengelseDTO: ForlengelseDTO) {
+        val aktorId = authService.getAktorIdOrThrow(forlengelseDTO.fnr)
+        val oppfolgingsperiodeId = oppfolgingService.hentGjeldendeOppfolgingsperiode(forlengelseDTO.fnr)
+            .orElse(null)?.uuid ?: throw ResponseStatusException(
+            HttpStatus.BAD_REQUEST,
+            "Ingen gjeldende oppfølgingsperiode funnet for bruker"
+        )
         val oppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId).orElse(null)
 
         if (authService.erInternBruker()) {
-            authService.sjekkSkriveTilgangMedFnr(fnr)
+            authService.sjekkSkriveTilgangMedFnr(forlengelseDTO.fnr)
             oppfolging?.oppfolgingsEnhet
                 ?.let { enhet -> authService.sjekkTilgangTilEnhet(enhet.get()) }
-            secureLog.info(
-                "Veileder: {} forsøker å forlenge oppfølging for fnr: {}",
-                authService.innloggetBrukerIdent,
-                fnr.get()
+            logger.info(
+                "Veileder forsøker å forlenge oppfølging for oppfølgingsperiodeId: {}",
+                oppfolgingsperiodeId
             )
-        }
-        else if (authService.erEksternBruker()) {
-            throw IllegalStateException("Vi støtter ikke at eksternbrukere kan forlenge oppfølging")
         } else {
-            secureLog.info("Forsøker å forlenge oppfølging for fnr: {} som systembruker", fnr.get())
+            throw IllegalStateException("Kun veileder kan forlenge oppfølging")
         }
+
         val forlengelseHendelse = ForlengelseHendelse(
-            oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(forlengelseDTO.fnr)
-                .orElse(null)?.uuid ?: throw ResponseStatusException(
-                HttpStatus.BAD_REQUEST,
-                "Ingen gjeldende oppfølgingsperiode funnet for bruker"
-            ),
+            oppfolgingsperiodeUuid = oppfolgingsperiodeId,
             utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
             utfortAv = authService.innloggetVeilederIdent,
             kilde = "veilarboppfolging",
