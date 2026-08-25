@@ -61,6 +61,6 @@ class KandidatForUtmeldingController(
             hendelseTidspunkt = ZonedDateTime.now().toInstant(),
             forlengetTil = forlengelseDTO.forlengetTil,
         )
-        kandidatForUtmeldingService.forlengKandidat(forlengelseHendelse)
+        kandidatForUtmeldingService.forlengKandidat(forlengelseHendelse, forlengelseDTO.fnr)
     }
 }
