@@ -20,6 +20,8 @@ import no.nav.paw.arbeidssokerregisteret.api.v1.Bruker
 import no.nav.paw.arbeidssokerregisteret.api.v1.BrukerType
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.arbeidssokerregisteret.api.v1.TidspunktFraKilde
+import no.nav.poao_tilgang.client.Decision
+import no.nav.poao_tilgang.client.TilgangType
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
 import no.nav.veilarboppfolging.IntegrationTest
@@ -262,7 +264,7 @@ class KandidatForUtmeldingFlytTest(
             kilde ="kilde",
             hendelseTidspunkt = ZonedDateTime.now().toInstant(),
             arbeidssokerperiodeAvsluttetHendelseType = ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
-            avslutningsarsak = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
+            avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
         ))
         avsluttOppfolgingManueltSomVeileder(aktorId)
 
@@ -336,7 +338,10 @@ class KandidatForUtmeldingFlytTest(
 
     @Test
     fun `skal kunne opprette forlengelse`() {
-        mockInternBrukerAuthOk(UUID.randomUUID(), aktorId, Fnr.of(fnr))
+        val veilederId = UUID.randomUUID()
+        mockInternBrukerAuthOk(veilederId, aktorId, Fnr.of(fnr))
+        mockPoaoTilgangHarTilgangTilBruker(veilederId, Fnr.of(fnr), Decision.Permit, TilgangType.SKRIVE)
+        mockPoaoTilgangHarTilgangTilEnhet(veilederId, )
         startOppfolgingSomArbeidsoker(aktorId, Fnr.of(fnr))
         setLocalArenaOppfolging(aktorId, Formidlingsgruppe.ARBS)
         mockTiltakshistorikk(Fnr.of(fnr), harAktiveDeltakelser = false)
