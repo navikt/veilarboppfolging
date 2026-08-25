@@ -1,1 +1,2 @@
+ALTER TABLE kandidat_for_utmelding DROP CONSTRAINT oppfolgingsperiode_uuid_fk;
 DROP TABLE kandidat_for_utmelding;
