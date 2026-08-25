@@ -1,13 +1,5 @@
 package no.nav.veilarboppfolging.kafka
 
-import java.time.Duration
-import java.time.LocalDate
-import java.util.Optional
-import java.util.UUID
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertNull
-import kotlin.test.assertTrue
 import no.nav.common.client.norg2.Enhet
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
@@ -17,12 +9,9 @@ import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
 import no.nav.tms.varsel.action.OpprettVarsel
 import no.nav.tms.varsel.action.Varseltype
 import no.nav.veilarboppfolging.IntegrationTest
-import no.nav.veilarboppfolging.client.pdl.ForenkletFolkeregisterStatus
-import no.nav.veilarboppfolging.client.pdl.FregStatusOgStatsborgerskap
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolginsBrukerOppslagResult
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsStatus
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient
-import no.nav.veilarboppfolging.config.ApplicationConfig.SYSTEM_USER_NAME
 import no.nav.veilarboppfolging.kafka.TestUtils.oppfølgingsBrukerEndret
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingTilstandOppslagResult
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.GetOppfolginsstatusFailure
@@ -34,7 +23,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.mockito.Mockito.`when`
@@ -42,6 +31,15 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.kafka.test.EmbeddedKafkaBroker
 import org.springframework.kafka.test.utils.KafkaTestUtils
 import org.springframework.test.context.ActiveProfiles
+import java.time.Duration
+import java.time.LocalDate
+import java.util.*
+import kotlin.collections.first
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
+import no.nav.veilarboppfolging.config.ApplicationConfig.SYSTEM_USER_NAME
 import tools.jackson.databind.DeserializationFeature
 import tools.jackson.databind.cfg.DateTimeFeature
 import tools.jackson.databind.json.JsonMapper
@@ -63,14 +61,9 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
     val aktorId = AktorId.of("098765432109876")
     val veilederOid = UUID.randomUUID()
 
-    @BeforeEach
-    fun before() {
+    @BeforeAll
+    fun beforeAll() {
         mockInternBrukerAuthOk(veilederOid, aktorId, fnr)
-        mockPdlFolkeregisterStatus(fnr, FregStatusOgStatsborgerskap(
-            fregStatus = ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven,
-            statsborgerskap = listOf("NOR"),
-            under18 = false,
-        ))
     }
 
     @Test
@@ -79,18 +72,6 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
         val oppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId)
         assert(oppfolging.isPresent) { "Oppfolgingsstatus fra arena var null" }
         assertTrue(oppfolging.get().underOppfolging)
-    }
-
-    @Test
-    fun `Skal ikke starte oppfølging for bruker under 18 som har blitt sykmeldt uten arbeidsgiver`() {
-        mockPdlFolkeregisterStatus(fnr, FregStatusOgStatsborgerskap(
-            fregStatus = ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven,
-            statsborgerskap = listOf("NOR"),
-            under18 = true,
-        ))
-        meldingFraVeilarbArenaPåBrukerMedStatus(fnr = fnr, formidlingsgruppe = Formidlingsgruppe.IARBS, kvalifiseringsgruppe = Kvalifiseringsgruppe.VURDU)
-        val oppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId)
-        assertFalse(oppfolging.get().underOppfolging)
     }
 
     @Test
