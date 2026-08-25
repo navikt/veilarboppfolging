@@ -146,6 +146,7 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
 
         val kandidat = kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeUuid)
         assertThat(kandidat).isNotNull
+        assertThat(kandidat?.type).isEqualTo(ForlengelseHendelseType.FORLENGELSE_UTLOPT)
         assertThat(kandidatForUtmeldingRepository.hentKandidatMedForlengelse(oppfolgingsperiodeUuid)).isNull()
         val filterhendelseId = kandidatForUtmeldingRepository.hentFilterhendelseId(oppfolgingsperiodeUuid)
         assertThat(filterhendelseId).isNotNull
