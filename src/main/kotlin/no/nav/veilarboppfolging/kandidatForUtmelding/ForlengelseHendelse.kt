@@ -58,10 +58,12 @@ class ForlengelseHendelse(
             hendelse = FilterhendelseRecord.HendelseInnhold(
                 beskrivelse = when (type) {
                     ForlengelseHendelseType.FORLENGELSE_UTLOPT -> "Forlengelse utløpt"
+                    ForlengelseHendelseType.FORLENGELSE_OPPRETTET -> "Forlengelse opprettet"
                     else -> throw IllegalArgumentException("Ugyldig forlengelseshendelsestype for filterhendelser")
                 },
                 beskrivelseEnum = when (type) {
                     ForlengelseHendelseType.FORLENGELSE_UTLOPT -> BeskrivelseEnum.FORLENGELSE_UTLOPT
+                    ForlengelseHendelseType.FORLENGELSE_OPPRETTET -> BeskrivelseEnum.FORLENGELSE_OPPRETTET
                     else -> throw IllegalArgumentException("Ugyldig forlengelseshendelsestype for filterhendelser")
                 }.name,
                 dato = hendelseTidspunkt.atZone(ZoneId.of("Europe/Oslo")),

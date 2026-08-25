@@ -108,6 +108,8 @@ class KandidatForUtmeldingService(
 
     fun forlengKandidat(hendelse: ForlengelseHendelse) {
         logger.info("Lagrer forlengelse for oppfølgingsperiode ${hendelse.oppfolgingsperiodeUuid}")
-        kandidatForUtmeldingRepository.lagreKandidat(hendelse)
+        transactor.executeWithoutResult { _ ->
+            kandidatForUtmeldingRepository.lagreKandidat(hendelse)
+        }
     }
 }
