@@ -9,6 +9,7 @@ import java.util.UUID
 import no.nav.common.client.aktoroppslag.BrukerIdenter
 import no.nav.common.json.JsonUtils
 import no.nav.common.types.identer.AktorId
+import no.nav.common.types.identer.EnhetId
 import no.nav.common.types.identer.Fnr
 import no.nav.common.types.identer.NavIdent
 import no.nav.paw.arbeidssokerregisteret.api.v1.Aarsaksinformasjon
@@ -339,11 +340,13 @@ class KandidatForUtmeldingFlytTest(
     @Test
     fun `skal kunne opprette forlengelse`() {
         val veilederId = UUID.randomUUID()
+        val enhetId = EnhetId("1234")
         mockInternBrukerAuthOk(veilederId, aktorId, Fnr.of(fnr))
         mockPoaoTilgangHarTilgangTilBruker(veilederId, Fnr.of(fnr), Decision.Permit, TilgangType.SKRIVE)
-        mockPoaoTilgangHarTilgangTilEnhet(veilederId, )
+        mockPoaoTilgangHarTilgangTilEnhet(veilederId, enhetId)
         startOppfolgingSomArbeidsoker(aktorId, Fnr.of(fnr))
         setLocalArenaOppfolging(aktorId, Formidlingsgruppe.ARBS)
+        setAoKontor(Fnr.of(fnr), aktorId, enhetId.get())
         mockTiltakshistorikk(Fnr.of(fnr), harAktiveDeltakelser = false)
         mockUngdomsprogram(Fnr.of(fnr), erDeltaker = false)
         mockArbeidssoekerregisteret(Fnr.of(fnr), erArbeidssoeker = false)

@@ -10,6 +10,7 @@ import no.nav.veilarboppfolging.repository.getStringOrNull
 import org.jetbrains.annotations.TestOnly
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Repository
+import kotlin.collections.firstOrNull
 
 @Repository
 class KandidatForUtmeldingRepository(
@@ -99,17 +100,15 @@ class KandidatForUtmeldingRepository(
     }
 
     @TestOnly
-    fun hentForlengetTil(oppfolgingsperiodeId: UUID): KandidatForUtmeldingHendelse? {
+    fun hentForlengetTil(oppfolgingsperiodeId: UUID): Timestamp? {
         return db.query(
             """
-            SELECT kfuh.*
-            FROM kandidater_for_utmelding kfu
-            JOIN kandidater_for_utmelding_hendelser kfuh ON kfu.siste_utmeldingshendelse_id = kfuh.utmeldingshendelse_id
-            WHERE kfu.oppfolgingsperiode_uuid = :oppfolgingsperiodeId AND kfu.forlenget_til IS NOT NULL
+            SELECT forlenget_til
+            FROM kandidater_for_utmelding
+            WHERE oppfolgingsperiode_uuid = :oppfolgingsperiodeId
             """.trimIndent(),
             mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeId.toString()),
-        ) { rs, _ -> map(rs) }
-            .firstOrNull()
+        ) { rs, _ -> rs.getTimestamp("forlenget_til") }.firstOrNull()
     }
 
     fun hentSisteKandidatForUtmeldingHendelse(oppfolgingsperiodeId: UUID): KandidatForUtmeldingHendelse? {
