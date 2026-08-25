@@ -61,7 +61,6 @@ import no.nav.veilarboppfolging.controller.v3.request.OppfolgingRequest
 import no.nav.veilarboppfolging.kandidatForUtmelding.ArbeidssokerperiodeAvsluttetHendelseType
 import no.nav.veilarboppfolging.kandidatForUtmelding.ArbeidssøkerPeriodeAvsluttet
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingHendelseUtfortAvType
-import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingHendelseType
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingRepository
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.BrukerRegistrant
@@ -297,7 +296,7 @@ open class IntegrationTest {
 
     fun forlengKandidatForUtmelding(fnr: Fnr, forlengTil: LocalDate) {
         val forlengelseDTO = ForlengelseDTO(fnr, forlengTil)
-        kandidatForUtmeldingController.opprettForlengelse(forlengelseDTO)
+        kandidatForUtmeldingController.forlengOppfolging(forlengelseDTO)
     }
 
     fun setTilordnetVeileder(aktorId: AktorId, veilederIdent: NavIdent) {

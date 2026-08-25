@@ -31,7 +31,7 @@ class KandidatForUtmeldingController(
     private val logger = LoggerFactory.getLogger(KandidatForUtmeldingController::class.java)
 
     @PostMapping
-    fun opprettForlengelse(@RequestBody forlengelseDTO: ForlengelseDTO) {
+    fun forlengOppfolging(@RequestBody forlengelseDTO: ForlengelseDTO) {
         val aktorId = authService.getAktorIdOrThrow(forlengelseDTO.fnr)
         val oppfolgingsperiodeId = oppfolgingService.hentGjeldendeOppfolgingsperiode(forlengelseDTO.fnr)
             .orElse(null)?.uuid ?: throw ResponseStatusException(
@@ -52,15 +52,18 @@ class KandidatForUtmeldingController(
             throw IllegalStateException("Kun veileder kan forlenge oppfølging")
         }
 
+        val forlengelseType = kandidatForUtmeldingService.hentForlengelseType(oppfolgingsperiodeId)
+
         val forlengelseHendelse = ForlengelseHendelse(
             oppfolgingsperiodeUuid = oppfolgingsperiodeId,
             utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
             utfortAv = authService.innloggetVeilederIdent,
             kilde = "veilarboppfolging",
-            forlengelseHendelseType = ForlengelseHendelseType.FORLENGELSE_OPPRETTET,
+            forlengelseHendelseType = forlengelseType,
             hendelseTidspunkt = ZonedDateTime.now().toInstant(),
             forlengetTil = forlengelseDTO.forlengetTil,
         )
+
         kandidatForUtmeldingService.forlengKandidat(forlengelseHendelse, forlengelseDTO.fnr)
     }
 }

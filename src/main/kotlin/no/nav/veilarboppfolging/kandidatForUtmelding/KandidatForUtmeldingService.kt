@@ -113,4 +113,8 @@ class KandidatForUtmeldingService(
             sendStoppUtmeldingskandidatTilObo(hendelse, fnr)
         }
     }
+
+    fun hentForlengelseType(oppfolgingsperiodeId: UUID): ForlengelseHendelseType {
+        val kandidatForUtmeldingRepository.hentSisteKandidatForUtmeldingHendelse(oppfolgingsperiodeId)
+    }
 }
