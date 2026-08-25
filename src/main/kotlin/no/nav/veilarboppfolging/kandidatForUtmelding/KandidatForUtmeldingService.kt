@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.support.TransactionTemplate
+import java.time.Instant
 
 @Service
 class KandidatForUtmeldingService(
@@ -66,8 +67,17 @@ class KandidatForUtmeldingService(
 
                 if (avslutningsstatus.kanAvslutte) {
                     logger.info("Kandidat for utmelding med oppfølgingsperiode $oppfolgingsperiodeId har utløpt forlengelse og kan avsluttes")
+                    val forlengelseUtloptHendelse = ForlengelseHendelse(
+                        oppfolgingsperiodeUuid = kandidat.oppfolgingsperiodeUuid,
+                        utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.SYSTEM,
+                        utfortAv = "SYSTEM",
+                        kilde = "veilarboppfolging",
+                        forlengelseHendelseType = ForlengelseHendelseType.FORLENGELSE_UTLOPT,
+                        hendelseTidspunkt = Instant.now(),
+                        forlengetTil = null
+                    )
+                    kandidatForUtmeldingRepository.lagreKandidat(forlengelseUtloptHendelse)
                     sendUtmeldingskandidatTilObo(kandidat, fnr)
-                    kandidatForUtmeldingRepository.nullstillForlengetTil(oppfolgingsperiodeId)
                 } else {
                     logger.info("Kandidat for utmelding med oppfølgingsperiode $oppfolgingsperiodeId har utløpt forlengelse, men kan ikke avsluttes")
                     kandidatForUtmeldingRepository.fjernKandidat(oppfolgingsperiodeId)

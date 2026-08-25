@@ -165,15 +165,6 @@ class KandidatForUtmeldingRepository(
         ) { rs, _ -> map(rs) }
     }
 
-    fun nullstillForlengetTil(oppfolgingsperiodeId: UUID) {
-        val sql = """
-            UPDATE kandidater_for_utmelding
-            SET forlenget_til = NULL
-            WHERE oppfolgingsperiode_uuid = :oppfolgingsperiodeId
-        """.trimIndent()
-        db.update(sql, mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeId.toString()))
-    }
-
     fun hentAntallKandidaterForUtmelding(): Int {
         val sql = """
             SELECT COUNT(*) AS antall
