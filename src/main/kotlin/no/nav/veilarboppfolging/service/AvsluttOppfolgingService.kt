@@ -2,6 +2,7 @@ package no.nav.veilarboppfolging.service
 
 import java.time.ZonedDateTime
 import java.util.UUID
+import kotlin.jvm.optionals.getOrNull
 import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
@@ -85,6 +86,7 @@ class AvsluttOppfolgingService(
             secureLog.info("Forsøker å avslutte oppfølging for fnr: {} som systembruker", fnr.get())
         }
 
+        //kun her
         val kanAvslutte: KunneAvsluttesResultat = samleDataSynkrontOgSjekkOmOppfolgingKanAvsluttes(avregistrering, fnr, oppfolging)
         when (kanAvslutte) {
             is KunneAvsluttes -> {
@@ -201,6 +203,10 @@ class AvsluttOppfolgingService(
         val erArbeidssoeker = erArbeidssoeker(fnr)
         val harAap = harAap(fnr)
         val underKvp = kvpService.erUnderKvp(avregistrering.aktorId)
+        val oppfolgingsperiodeId =
+            oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(avregistrering.aktorId)?.getOrNull()?.uuid
+                ?: throw IllegalStateException("Fant ikke gjeldende oppfølgingsperiode")
+        val erOppfolgingForlenget = fjernKandidatForUtmeldingService.erOppfolgingForlenget(oppfolgingsperiodeId)
         return kanAvsluttes(
             avregistrering,
             KanAvsluttesInput(
@@ -210,7 +216,8 @@ class AvsluttOppfolgingService(
                 erDeltakerIUngdomsprogrammet = erDeltakerIUngdomsprogrammet,
                 erArbeidssoeker = erArbeidssoeker,
                 harAap = harAap,
-                underKvp = underKvp
+                underKvp = underKvp,
+                erOppfolgingForlenget = erOppfolgingForlenget,
             )
         )
     }
