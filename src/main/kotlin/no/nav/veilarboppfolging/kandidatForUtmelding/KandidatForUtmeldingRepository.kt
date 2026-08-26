@@ -10,6 +10,7 @@ import no.nav.veilarboppfolging.repository.getStringOrNull
 import org.jetbrains.annotations.TestOnly
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Repository
+import kotlin.collections.firstOrNull
 
 @Repository
 class KandidatForUtmeldingRepository(
@@ -18,17 +19,22 @@ class KandidatForUtmeldingRepository(
 
     fun lagreKandidat(hendelse: KandidatForUtmeldingHendelse) {
         val hendelseId = insertUtmeldingsHendelse(hendelse)
+
+        val forlengetTil = when (hendelse) {
+            is ForlengelseHendelse -> hendelse.hentForlengetTil()
+            else -> null
+        }
         val sql = """
             INSERT INTO kandidater_for_utmelding(siste_utmeldingshendelse_id, oppfolgingsperiode_uuid, forlenget_til)
-            VALUES (:hendelseId, :oppfolgingsperiodeId, null)
+            VALUES (:hendelseId, :oppfolgingsperiodeId, :forlengetTil)
             ON CONFLICT (oppfolgingsperiode_uuid) 
-            DO UPDATE SET updated_at = current_timestamp, siste_utmeldingshendelse_id = :hendelseId
+            DO UPDATE SET updated_at = current_timestamp, siste_utmeldingshendelse_id = :hendelseId, forlenget_til = :forlengetTil
         """.trimIndent()
         db.update(
             sql, mapOf(
                 "oppfolgingsperiodeId" to hendelse.oppfolgingsperiodeUuid,
                 "hendelseId" to hendelseId,
-                "avsluttetAv" to hendelse.utfortAvType.name,
+                "forlengetTil" to forlengetTil?.let { Timestamp.valueOf(it.atTime(4, 0)) },
             )
         )
     }
@@ -39,9 +45,13 @@ class KandidatForUtmeldingRepository(
             VALUES (gen_random_uuid(), :hendelse, :hendelseData::jsonb, :utfortAv, :utfortAvType, :kilde, :oppfolgingsperiode_uuid, :hendelseTidspunkt)
             RETURNING utmeldingshendelse_id
         """.trimIndent()
+        val type = hendelse.type
         return db.queryForObject(
             sql, mapOf(
-                "hendelse" to hendelse.type.name,
+                "hendelse" to when (type) {
+                    is ArbeidssokerperiodeAvsluttetHendelseType -> type.name
+                    is ForlengelseHendelseType -> type.name
+                },
                 "hendelseData" to hendelse.hendelseDataJson,
                 "utfortAv" to hendelse.utfortAv,
                 "utfortAvType" to hendelse.utfortAvType.name,
@@ -89,6 +99,31 @@ class KandidatForUtmeldingRepository(
             .firstOrNull()
     }
 
+    fun hentSisteHendelseForAktivKandidat(oppfolgingsperiodeId: UUID): KandidatForUtmeldingHendelse? {
+        return db.query(
+            """
+            SELECT kfuh.*
+            FROM kandidater_for_utmelding kfu
+            JOIN kandidater_for_utmelding_hendelser kfuh ON kfu.siste_utmeldingshendelse_id = kfuh.utmeldingshendelse_id
+            WHERE kfu.oppfolgingsperiode_uuid = :oppfolgingsperiodeId
+            """.trimIndent(),
+            mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeId.toString()),
+        ) { rs, _ -> map(rs) }
+            .firstOrNull()
+    }
+
+    @TestOnly
+    fun hentForlengetTil(oppfolgingsperiodeId: UUID): Timestamp? {
+        return db.query(
+            """
+            SELECT forlenget_til
+            FROM kandidater_for_utmelding
+            WHERE oppfolgingsperiode_uuid = :oppfolgingsperiodeId
+            """.trimIndent(),
+            mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeId.toString()),
+        ) { rs, _ -> rs.getTimestamp("forlenget_til") }.firstOrNull()
+    }
+
     fun hentSisteKandidatForUtmeldingHendelse(oppfolgingsperiodeId: UUID): KandidatForUtmeldingHendelse? {
         return db.query(
             """
@@ -130,21 +165,12 @@ class KandidatForUtmeldingRepository(
         ) { rs, _ -> map(rs) }
     }
 
-    fun nullstillForlengetTil(oppfolgingsperiodeId: UUID) {
-        val sql = """
-            UPDATE kandidater_for_utmelding
-            SET forlenget_til = NULL
-            WHERE oppfolgingsperiode_uuid = :oppfolgingsperiodeId
-        """.trimIndent()
-        db.update(sql, mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeId.toString()))
-    }
-
     fun hentAntallKandidaterForUtmelding(): Int {
         val sql = """
             SELECT COUNT(*) AS antall
             FROM kandidater_for_utmelding
         """.trimIndent()
-        return db.queryForObject(sql, emptyMap<String, Any>()) { rs, _ -> rs.getInt("antall") } ?: 0
+        return db.queryForObject(sql, emptyMap<String, Any>()) { rs, _ -> rs.getInt("antall") }
     }
 
     fun hentAntallKandidaterForUtmeldingForlenget(): Int {
@@ -153,7 +179,7 @@ class KandidatForUtmeldingRepository(
             FROM kandidater_for_utmelding
             WHERE forlenget_til IS NOT NULL
         """.trimIndent()
-        return db.queryForObject(sql, emptyMap<String, Any>()) { rs, _ -> rs.getInt("antall") } ?: 0
+        return db.queryForObject(sql, emptyMap<String, Any>()) { rs, _ -> rs.getInt("antall") }
     }
 
     fun hentAntallKandidaterForUtmeldingIkkeForlenget(): Int {
@@ -162,7 +188,7 @@ class KandidatForUtmeldingRepository(
             FROM kandidater_for_utmelding
             WHERE forlenget_til IS NULL
         """.trimIndent()
-        return db.queryForObject(sql, emptyMap<String, Any>()) { rs, _ -> rs.getInt("antall") } ?: 0
+        return db.queryForObject(sql, emptyMap<String, Any>()) { rs, _ -> rs.getInt("antall") }
     }
 
     fun hentEllerOpprettFilterhendelseId(oppfolgingsperiodeId: UUID): UUID {
@@ -194,11 +220,20 @@ class KandidatForUtmeldingRepository(
     }
 
     fun map(resultSet: ResultSet): KandidatForUtmeldingHendelse {
-        val type = KandidatForUtmeldingHendelseType.valueOf(resultSet.getString("hendelse"))
-        return when (type) {
-            KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET,
-            KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
-            KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_SVARTE_NEI_I_BEKREFTELSE -> resultSet.toArbeidssøkerPeriodeAvsluttet()
+        val hendelsetype = resultSet.getString("hendelse")
+        return when (getEnumType(hendelsetype)) {
+            is ArbeidssokerperiodeAvsluttetHendelseType -> resultSet.toArbeidssøkerPeriodeAvsluttet()
+            is ForlengelseHendelseType -> resultSet.toForlengelseHendelse()
+        }
+    }
+
+    fun getEnumType(hendelse: String) : KandidatForUtmeldingHendelseType {
+        return when (hendelse) {
+            in ArbeidssokerperiodeAvsluttetHendelseType.entries.map { it.name } -> ArbeidssokerperiodeAvsluttetHendelseType.valueOf(hendelse)
+            in ForlengelseHendelseType.entries.map { it.name } -> ForlengelseHendelseType.valueOf(hendelse)
+            else -> {
+                throw IllegalArgumentException("Ugyldig hendelse type: $hendelse")
+            }
         }
     }
 }
@@ -210,5 +245,15 @@ fun ResultSet.toArbeidssøkerPeriodeAvsluttet() = ArbeidssøkerPeriodeAvsluttet(
     kilde = getString("kilde"),
     hendelseTidspunkt = getTimestamp("hendelse_tidspunkt").toLocalDateTime().toInstant(ZoneOffset.UTC),
     avslutningsarsak = getStringOrNull("hendelse_data")?.let { JsonUtils.fromJson(it, ArbeidssøkerPeriodeAvsluttet.Detaljer::class.java).avslutningsarsak },
-    kandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.valueOf(getString("hendelse"))
+    arbeidssokerperiodeAvsluttetHendelseType = ArbeidssokerperiodeAvsluttetHendelseType.valueOf(getString("hendelse"))
+)
+
+fun ResultSet.toForlengelseHendelse() = ForlengelseHendelse(
+    oppfolgingsperiodeUuid = UUID.fromString(getString("oppfolgingsperiode_uuid")),
+    utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.valueOf(getString("utfort_av_type")),
+    utfortAv = getString("utfort_av"),
+    kilde = getString("kilde"),
+    hendelseTidspunkt = getTimestamp("hendelse_tidspunkt").toLocalDateTime().toInstant(ZoneOffset.UTC),
+    forlengelseHendelseType = ForlengelseHendelseType.valueOf(getString("hendelse")),
+    forlengetTil = getStringOrNull("hendelse_data")?.let { JsonUtils.fromJson(it, ForlengelseHendelse.Detaljer::class.java).forlengetTil },
 )
