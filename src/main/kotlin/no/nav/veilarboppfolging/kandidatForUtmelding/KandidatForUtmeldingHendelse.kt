@@ -1,6 +1,8 @@
 package no.nav.veilarboppfolging.kandidatForUtmelding
 
 import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 import java.util.UUID
 import kotlin.jvm.optionals.getOrElse
 import no.nav.common.types.identer.Fnr
@@ -15,9 +17,33 @@ sealed class KandidatForUtmeldingHendelse(
     val utfortAv: String?,
     val kilde: String,
     val hendelseTidspunkt: Instant,
+    // Persistert verdi ved lesing fra DB. Ved skriving beregnes verdien av repositoryet via [beregnAvsluttesAutomatiskDato].
+    val avsluttesAutomatiskDato: LocalDateTime? = null,
 ) {
     abstract val type: KandidatForUtmeldingHendelseType
     abstract val hendelseDataJson: PGobject?
+
+    /**
+     * Datoen kandidaten skal avsluttes automatisk fra oppfølging, gitt denne hendelsen.
+     * Kandidaten skal avsluttes automatisk [KARENSTID_DAGER] dager etter at de først ble kandidat for utmelding,
+     * eller [KARENSTID_DAGER] dager etter at en eventuell forlengelse utløp.
+     * Mens en forlengelse er aktiv (FORLENGELSE_OPPRETTET/FORLENGELSE_ENDRET) er datoen pauset (null).
+     */
+    fun beregnAvsluttesAutomatiskDato(): LocalDateTime? {
+        val hendelseTid = LocalDateTime.ofInstant(hendelseTidspunkt, ZoneOffset.UTC)
+        return when (val t = type) {
+            is ArbeidssokerperiodeAvsluttetHendelseType -> hendelseTid.plusDays(KARENSTID_DAGER)
+            is ForlengelseHendelseType -> when (t) {
+                ForlengelseHendelseType.FORLENGELSE_OPPRETTET,
+                ForlengelseHendelseType.FORLENGELSE_ENDRET -> null
+                ForlengelseHendelseType.FORLENGELSE_UTLOPT -> hendelseTid.plusDays(KARENSTID_DAGER)
+            }
+        }
+    }
+
+    companion object {
+        const val KARENSTID_DAGER = 28L
+    }
 
     abstract fun tilFilterhendelseRecord(fnr: Fnr, operasjon: Operasjon): FilterhendelseRecord
 

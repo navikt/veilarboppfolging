@@ -63,6 +63,13 @@ class RepubliserKandidatForUtmeldingService(
                 val kandidat = kandidatForUtmeldingHendelse ?: kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeId)
                 val fnr = finnFnrForOppfolgingsperiode(oppfolgingsperiodeId)
                 val filterkategoriPersonId = kandidatForUtmeldingRepository.hentEllerOpprettFilterhendelseId(oppfolgingsperiodeId)
+
+                if (kandidat != null && kandidat.avsluttesAutomatiskDato == null) {
+                    kandidat.beregnAvsluttesAutomatiskDato()?.let { dato ->
+                        kandidatForUtmeldingRepository.settAvsluttesAutomatiskDatoHvisMangler(oppfolgingsperiodeId, dato)
+                    }
+                }
+
                 val filterhendelseRecord = if (kandidat != null) {
                     kandidat.tilFilterhendelseRecord(fnr, Operasjon.START)
                 } else {
