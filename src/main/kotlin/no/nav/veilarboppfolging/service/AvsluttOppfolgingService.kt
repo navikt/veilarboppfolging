@@ -86,7 +86,6 @@ class AvsluttOppfolgingService(
             secureLog.info("Forsøker å avslutte oppfølging for fnr: {} som systembruker", fnr.get())
         }
 
-        //kun her
         val kanAvslutte: KunneAvsluttesResultat = samleDataSynkrontOgSjekkOmOppfolgingKanAvsluttes(avregistrering, fnr, oppfolging)
         when (kanAvslutte) {
             is KunneAvsluttes -> {
@@ -117,7 +116,7 @@ class AvsluttOppfolgingService(
     private fun getAvslutningStatusForManuellAvslutning(fnr: Fnr): AvslutningStatusData {
         val aktorId = authService.getAktorIdOrThrow(fnr)
         val arenaOppfolgingResult = arenaOppfolgingService.hentArenaOppfolgingTilstand(fnr)
-        val inaktiveringsDato = when(arenaOppfolgingResult) {
+        val inaktiveringsDato = when (arenaOppfolgingResult) {
             is ArenaOppfolgingTilstandOppslagResult.Fail, is ArenaOppfolgingTilstandOppslagResult.NotFound -> null
             is ArenaOppfolgingTilstandOppslagResult.Success -> arenaOppfolgingResult.arenaOppfolgingTilstand.inaktiveringsdato
         }
@@ -203,10 +202,14 @@ class AvsluttOppfolgingService(
         val erArbeidssoeker = erArbeidssoeker(fnr)
         val harAap = harAap(fnr)
         val underKvp = kvpService.erUnderKvp(avregistrering.aktorId)
-        val oppfolgingsperiodeId =
-            oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(avregistrering.aktorId)?.getOrNull()?.uuid
-                ?: throw IllegalStateException("Fant ikke gjeldende oppfølgingsperiode")
-        val erOppfolgingForlenget = fjernKandidatForUtmeldingService.erOppfolgingForlenget(oppfolgingsperiodeId)
+        val erOppfolgingForlenget = if (oppfolging?.underOppfolging == true) {
+            val oppfolgingsperiodeId =
+                oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(avregistrering.aktorId)?.getOrNull()?.uuid
+                    ?: throw IllegalStateException("Fant ikke gjeldende oppfølgingsperiode for bruker som er under oppfølging")
+            fjernKandidatForUtmeldingService.erOppfolgingForlenget(oppfolgingsperiodeId)
+        } else {
+            false
+        }
         return kanAvsluttes(
             avregistrering,
             KanAvsluttesInput(

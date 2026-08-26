@@ -186,7 +186,8 @@ class OppfolgingsbrukerEndretIArenaServiceTest {
                     erDeltakerIUngdomsprogrammet = false,
                     erArbeidssoeker = false,
                     harAap = false,
-                    underKvp = false
+                    underKvp = false,
+                    erOppfolgingForlenget = false,
                 )
             ))
     }
