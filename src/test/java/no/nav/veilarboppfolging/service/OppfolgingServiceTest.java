@@ -341,6 +341,42 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     }
 
     @Test
+    public void skal_ikke_kunne_avslutte_oppfolging_hvis_oppfolging_er_forlenget() {
+        when(fjernKandidatForUtmeldingService.erOppfolgingForlenget(any())).thenReturn(true);
+        settTilstandFormidlingsgruppe("IARBS");
+        oppfolgingsStatusRepository.opprettOppfolging(aktorId);
+        startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.Companion.arbeidssokerRegistrering(fnr, aktorId, new BrukerRegistrant(fnr)));
+
+        assertUnderOppfolgingLagret(aktorId);
+
+        settTilstandFormidlingsgruppe("ISERV");
+
+        reset(kafkaProducerService);
+        avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(new ArenaIservKanIkkeReaktiveres(aktorId));
+
+        verify(kafkaProducerService, never()).publiserOppfolgingsperiode(any(OppfolgingsperiodeDTO.class));
+        assertHarGjeldendeOppfolgingsperiode(aktorId);
+    }
+
+    @Test
+    public void veileder_skal_kunne_avslutte_oppfolging_hvis_oppfolging_er_forlenget() {
+        when(fjernKandidatForUtmeldingService.erOppfolgingForlenget(any())).thenReturn(true);
+        settTilstandFormidlingsgruppe("IARBS");
+        oppfolgingsStatusRepository.opprettOppfolging(aktorId);
+        startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.Companion.arbeidssokerRegistrering(fnr, aktorId, new BrukerRegistrant(fnr)));
+
+        assertUnderOppfolgingLagret(aktorId);
+
+        settTilstandFormidlingsgruppe("ISERV");
+
+        reset(kafkaProducerService);
+        avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(new ManuellAvregistrering(aktorId, new VeilederRegistrant(new NavIdent(VEILEDER)), ""));
+
+        verify(kafkaProducerService).publiserOppfolgingsperiode(any(OppfolgingsperiodeDTO.class));
+        assertFalse(harGjeldendeOppfolgingsperiode(aktorId));
+    }
+
+    @Test
     public void harVeilederTilgang__medEnhetTilgangTilBrukersEnhet() {
         when(authService.harTilgangTilEnhet(any())).thenReturn(true);
         when(authService.evaluerNavAnsattTilgangTilBruker(fnr, TilgangType.LESE)).thenReturn(Decision.Permit.INSTANCE);
