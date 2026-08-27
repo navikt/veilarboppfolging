@@ -99,6 +99,19 @@ class KandidatForUtmeldingRepository(
             .firstOrNull()
     }
 
+    fun hentKandidatMedIkkeUtloptForlengelse(oppfolgingsperiodeId: UUID): KandidatForUtmeldingHendelse? {
+        return db.query(
+            """
+            SELECT kfuh.*
+            FROM kandidater_for_utmelding kfu
+            JOIN kandidater_for_utmelding_hendelser kfuh ON kfu.siste_utmeldingshendelse_id = kfuh.utmeldingshendelse_id
+            WHERE kfu.oppfolgingsperiode_uuid = :oppfolgingsperiodeId AND kfu.forlenget_til IS NOT NULL and kfu.forlenget_til >= current_timestamp
+            """.trimIndent(),
+            mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeId.toString()),
+        ) { rs, _ -> map(rs) }
+            .firstOrNull()
+    }
+
     fun hentSisteHendelseForAktivKandidat(oppfolgingsperiodeId: UUID): KandidatForUtmeldingHendelse? {
         return db.query(
             """
