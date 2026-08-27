@@ -7,7 +7,6 @@ import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.Operasjon
-import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.hendelser.HendelseType
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.service.AvsluttOppfolgingService
 import no.nav.veilarboppfolging.service.KafkaProducerService
@@ -86,6 +85,38 @@ class KandidatForUtmeldingService(
         }
         logger.info("Ferdig med å behandle kandidater med utløpt forlengelse")
     }
+
+    fun avsluttOppfolgingForKandidaterSomSkalAutomatiskAvsluttes() {
+        val kandidaterSomSkalAvsluttes = kandidatForUtmeldingRepository.hentKandidaterSomSkalAutomatiskAvsluttes()
+        logger.info("Behandler ${kandidaterSomSkalAvsluttes.size} kandidater som skal automatisk avsluttes")
+
+        kandidaterSomSkalAvsluttes.forEach { kandidat ->
+            transactor.executeWithoutResult { _ ->
+                val oppfolgingsperiodeId = kandidat.oppfolgingsperiodeUuid
+//                val fnr = finnFnrForOppfolgingsperiode(oppfolgingsperiodeId)
+                val avslutningsstatus = avsluttOppfolgingService.hentAvslutningstatusForManuellAvslutning(fnr)
+
+                if (avslutningsstatus.kanAvslutte) {
+                    logger.info("Kandidat for utmelding med oppfølgingsperiode $oppfolgingsperiodeId skal automatisk avsluttes")
+                    val oppfolgingAvsluttetHendelse = OppfolgingAvsluttetHendelse(
+                        oppfolgingsperiodeUuid = kandidat.oppfolgingsperiodeUuid,
+                        utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.SYSTEM,
+                        utfortAv = "SYSTEM",
+                        kilde = "veilarboppfolging",
+                        hendelseTidspunkt = Instant.now(),
+                        oppfolgingAvsluttetHendelseType = OppfolgingAvsluttetHendelseType.OPPFOLGING_AVSLUTTET_AUTOMATISK
+                    )
+                    // TODO: faktisk avslutte oppfølging
+                    // TODO: insert hendelse
+                    // TODO: fjerne kandidat fra liste
+                    // TODO: sende stopp-melding til OBO
+                    kandidatForUtmeldingRepository.lagreKandidat(oppfolgingAvsluttetHendelse)
+//                    sendStoppUtmeldingskandidatTilObo(kandidat, fnr)
+                } else {
+                    logger.info("Kandidat for utmelding med oppfølgingsperiode $oppfolgingsperiodeId skal ikke automatisk avsluttes")
+                }
+            }
+        }
 
     private fun sendUtmeldingskandidatTilObo(kandidat: KandidatForUtmeldingHendelse, fnr: Fnr) {
         if (sendUtmeldingskandidaterTilObo) {

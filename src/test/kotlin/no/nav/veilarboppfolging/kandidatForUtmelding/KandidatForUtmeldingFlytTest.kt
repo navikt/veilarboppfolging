@@ -497,7 +497,7 @@ class KandidatForUtmeldingFlytTest(
         assertThat(avslutningsDato).isBefore(ZonedDateTime.now())
 
         val kandidatHendelse = kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeUuid)
-        assertThat(kandidatHendelse).
+        assertThat(kandidatHendelse?.type).isEqualTo(OppfolgingAvsluttetHendelseType.OPPFOLGING_AVSLUTTET_AUTOMATISK)
     }
 
     private fun arbeidssokerperiode(

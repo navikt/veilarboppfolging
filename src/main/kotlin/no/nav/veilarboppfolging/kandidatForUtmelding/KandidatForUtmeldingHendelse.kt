@@ -34,7 +34,13 @@ sealed class KandidatForUtmeldingHendelse(
             is ForlengelseHendelseType -> when (t) {
                 ForlengelseHendelseType.FORLENGELSE_OPPRETTET,
                 ForlengelseHendelseType.FORLENGELSE_ENDRET -> null
+
                 ForlengelseHendelseType.FORLENGELSE_UTLOPT -> hendelseTid.plusDays(KARENSTID_DAGER)
+            }
+
+            is OppfolgingAvsluttetHendelseType -> when (t) {
+                OppfolgingAvsluttetHendelseType.OPPFOLGING_AVSLUTTET_AUTOMATISK,
+                OppfolgingAvsluttetHendelseType.OPPFOLGING_AVSLUTTET_MANUELT -> null
             }
         }
     }
@@ -56,7 +62,8 @@ sealed class KandidatForUtmeldingHendelse(
             ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_SVARTE_NEI_I_BEKREFTELSE -> KandidatForUtmeldingTag.ARBEIDSSOKERPERIODE_AVSLUTTET_SVARTE_NEI_I_BEKREFTELSE
             ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET -> KandidatForUtmeldingTag.ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET
             ForlengelseHendelseType.FORLENGELSE_UTLOPT -> KandidatForUtmeldingTag.FORLENGELSE_UTLOPT
-            ForlengelseHendelseType.FORLENGELSE_OPPRETTET, ForlengelseHendelseType.FORLENGELSE_ENDRET -> null
+            ForlengelseHendelseType.FORLENGELSE_OPPRETTET, ForlengelseHendelseType.FORLENGELSE_ENDRET,
+            OppfolgingAvsluttetHendelseType.OPPFOLGING_AVSLUTTET_AUTOMATISK, OppfolgingAvsluttetHendelseType.OPPFOLGING_AVSLUTTET_MANUELT -> null
         }
     }
 }
@@ -69,7 +76,7 @@ enum class ArbeidssokerperiodeAvsluttetHendelseType : KandidatForUtmeldingHendel
     ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET
 }
 
-enum class ForlengelseHendelseType : KandidatForUtmeldingHendelseType{
+enum class ForlengelseHendelseType : KandidatForUtmeldingHendelseType {
     FORLENGELSE_OPPRETTET,
     FORLENGELSE_ENDRET,
     FORLENGELSE_UTLOPT
