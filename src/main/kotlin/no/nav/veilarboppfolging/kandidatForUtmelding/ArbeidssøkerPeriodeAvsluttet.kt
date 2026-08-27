@@ -10,7 +10,6 @@ import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.Operasjon
 import org.postgresql.util.PGobject
 import java.net.URI
 import java.time.Instant
-import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.UUID
 
@@ -22,14 +21,12 @@ class ArbeidssøkerPeriodeAvsluttet(
     arbeidssokerperiodeAvsluttetHendelseType: ArbeidssokerperiodeAvsluttetHendelseType,
     val avslutningsarsak: String?,
     hendelseTidspunkt: Instant,
-    avsluttesAutomatiskDato: LocalDateTime? = null,
 ) : KandidatForUtmeldingHendelse(
     oppfolgingsperiodeUuid,
     utfortAvType,
     utfortAv,
     kilde,
     hendelseTidspunkt,
-    avsluttesAutomatiskDato,
 ) {
     override val type: ArbeidssokerperiodeAvsluttetHendelseType = arbeidssokerperiodeAvsluttetHendelseType
     override val hendelseDataJson: PGobject? = avslutningsarsak?.let {

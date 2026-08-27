@@ -92,7 +92,7 @@ class RepubliserKandidatForUtmeldingService(
     }
 
     private fun settAvsluttesAutomatiskDatoHvisMangler(oppfolgingsperiodeId: UUID, kandidat: KandidatForUtmeldingHendelse?) {
-        if (kandidat == null || kandidat.avsluttesAutomatiskDato != null) return
+        if (kandidat == null) return
 
         kandidat.beregnAvsluttesAutomatiskDato()?.let { dato ->
             kandidatForUtmeldingRepository.settAvsluttesAutomatiskDatoHvisMangler(oppfolgingsperiodeId, dato)

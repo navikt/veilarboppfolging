@@ -2,7 +2,6 @@ package no.nav.veilarboppfolging.kandidatForUtmelding
 
 import java.net.URI
 import java.time.Instant
-import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.UUID
 import no.nav.common.types.identer.Fnr
@@ -24,14 +23,12 @@ class ForlengelseHendelse(
     val forlengelseHendelseType: ForlengelseHendelseType,
     hendelseTidspunkt: Instant,
     val forlengetTil: LocalDate?,
-    avsluttesAutomatiskDato: LocalDateTime? = null,
 ) : KandidatForUtmeldingHendelse(
     oppfolgingsperiodeUuid,
     utfortAvType,
     utfortAv,
     kilde,
     hendelseTidspunkt,
-    avsluttesAutomatiskDato,
 ) {
     override val type: KandidatForUtmeldingHendelseType = forlengelseHendelseType
     override val hendelseDataJson: PGobject? = forlengetTil?.let {

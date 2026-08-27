@@ -2,6 +2,8 @@ package no.nav.veilarboppfolging.kandidatForUtmelding
 
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.util.UUID
 import no.nav.paw.arbeidssokerregisteret.api.v1.AvsluttetAarsakType
@@ -73,7 +75,7 @@ class KandidatForUtmeldingHendelseTest {
             hendelseTidspunkt = hendelseTidspunkt,
         )
 
-        val forventetDato = java.time.LocalDateTime.ofInstant(hendelseTidspunkt, java.time.ZoneOffset.UTC)
+        val forventetDato = LocalDateTime.ofInstant(hendelseTidspunkt, ZoneOffset.UTC)
             .plusDays(KandidatForUtmeldingHendelse.KARENSTID_DAGER)
 
         assertThat(hendelse.beregnAvsluttesAutomatiskDato()).isEqualTo(forventetDato)
@@ -102,7 +104,7 @@ class KandidatForUtmeldingHendelseTest {
             forlengetTil = null,
         )
 
-        val forventetDato = java.time.LocalDateTime.ofInstant(hendelseTidspunkt, java.time.ZoneOffset.UTC)
+        val forventetDato = LocalDateTime.ofInstant(hendelseTidspunkt, ZoneOffset.UTC)
             .plusDays(KandidatForUtmeldingHendelse.KARENSTID_DAGER)
 
         assertThat(hendelse.beregnAvsluttesAutomatiskDato()).isEqualTo(forventetDato)

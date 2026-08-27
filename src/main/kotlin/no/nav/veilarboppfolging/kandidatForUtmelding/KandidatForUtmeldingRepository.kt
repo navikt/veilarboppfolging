@@ -95,7 +95,7 @@ class KandidatForUtmeldingRepository(
     fun hentKandidat(oppfolgingsperiodeId: UUID): KandidatForUtmeldingHendelse? {
         return db.query(
             """
-            SELECT kfuh.*, kfu.avsluttes_automatisk_dato
+            SELECT kfuh.*
             FROM kandidater_for_utmelding kfu
             JOIN kandidater_for_utmelding_hendelser kfuh ON kfu.siste_utmeldingshendelse_id = kfuh.utmeldingshendelse_id
             WHERE kfu.oppfolgingsperiode_uuid = :oppfolgingsperiodeId AND kfu.forlenget_til IS NULL
@@ -109,7 +109,7 @@ class KandidatForUtmeldingRepository(
     fun hentKandidatMedForlengelse(oppfolgingsperiodeId: UUID): KandidatForUtmeldingHendelse? {
         return db.query(
             """
-            SELECT kfuh.*, kfu.avsluttes_automatisk_dato
+            SELECT kfuh.*
             FROM kandidater_for_utmelding kfu
             JOIN kandidater_for_utmelding_hendelser kfuh ON kfu.siste_utmeldingshendelse_id = kfuh.utmeldingshendelse_id
             WHERE kfu.oppfolgingsperiode_uuid = :oppfolgingsperiodeId AND kfu.forlenget_til IS NOT NULL
@@ -122,7 +122,7 @@ class KandidatForUtmeldingRepository(
     fun hentKandidatMedIkkeUtloptForlengelse(oppfolgingsperiodeId: UUID): KandidatForUtmeldingHendelse? {
         return db.query(
             """
-            SELECT kfuh.*, kfu.avsluttes_automatisk_dato
+            SELECT kfuh.*
             FROM kandidater_for_utmelding kfu
             JOIN kandidater_for_utmelding_hendelser kfuh ON kfu.siste_utmeldingshendelse_id = kfuh.utmeldingshendelse_id
             WHERE kfu.oppfolgingsperiode_uuid = :oppfolgingsperiodeId AND kfu.forlenget_til IS NOT NULL and kfu.forlenget_til >= current_timestamp
@@ -135,7 +135,7 @@ class KandidatForUtmeldingRepository(
     fun hentSisteHendelseForAktivKandidat(oppfolgingsperiodeId: UUID): KandidatForUtmeldingHendelse? {
         return db.query(
             """
-            SELECT kfuh.*, kfu.avsluttes_automatisk_dato
+            SELECT kfuh.*
             FROM kandidater_for_utmelding kfu
             JOIN kandidater_for_utmelding_hendelser kfuh ON kfu.siste_utmeldingshendelse_id = kfuh.utmeldingshendelse_id
             WHERE kfu.oppfolgingsperiode_uuid = :oppfolgingsperiodeId
@@ -172,10 +172,9 @@ class KandidatForUtmeldingRepository(
     fun hentSisteKandidatForUtmeldingHendelse(oppfolgingsperiodeId: UUID): KandidatForUtmeldingHendelse? {
         return db.query(
             """
-            SELECT kfuh.*, kfu.avsluttes_automatisk_dato
-            FROM kandidater_for_utmelding_hendelser kfuh
-            LEFT JOIN kandidater_for_utmelding kfu ON kfu.oppfolgingsperiode_uuid = kfuh.oppfolgingsperiode_uuid
-            WHERE kfuh.oppfolgingsperiode_uuid = :oppfolgingsperiodeId order by kfuh.created_at desc
+            SELECT *
+            FROM kandidater_for_utmelding_hendelser
+            WHERE oppfolgingsperiode_uuid = :oppfolgingsperiodeId order by created_at desc
             LIMIT 1
             """.trimIndent(),
             mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeId.toString()),
@@ -186,7 +185,7 @@ class KandidatForUtmeldingRepository(
     fun hentAktiveKandidater(offset: Int, batchSize: Int): List<KandidatForUtmeldingHendelse> {
         return db.query(
             """
-            SELECT kfuh.*, kfu.avsluttes_automatisk_dato
+            SELECT kfuh.*
             FROM kandidater_for_utmelding kfu
             JOIN kandidater_for_utmelding_hendelser kfuh ON kfu.siste_utmeldingshendelse_id = kfuh.utmeldingshendelse_id
             WHERE kfu.forlenget_til IS NULL
@@ -203,7 +202,7 @@ class KandidatForUtmeldingRepository(
     fun hentKandidaterMedUtloptForlengelse(): List<KandidatForUtmeldingHendelse> {
         return db.query(
             """
-            SELECT kfuh.*, kfu.avsluttes_automatisk_dato
+            SELECT kfuh.*
             FROM kandidater_for_utmelding kfu
             JOIN kandidater_for_utmelding_hendelser kfuh ON kfu.siste_utmeldingshendelse_id = kfuh.utmeldingshendelse_id
             WHERE kfu.forlenget_til IS NOT NULL AND kfu.forlenget_til < current_timestamp
@@ -292,7 +291,6 @@ fun ResultSet.toArbeidssøkerPeriodeAvsluttet() = ArbeidssøkerPeriodeAvsluttet(
     hendelseTidspunkt = getTimestamp("hendelse_tidspunkt").toLocalDateTime().toInstant(ZoneOffset.UTC),
     avslutningsarsak = getStringOrNull("hendelse_data")?.let { JsonUtils.fromJson(it, ArbeidssøkerPeriodeAvsluttet.Detaljer::class.java).avslutningsarsak },
     arbeidssokerperiodeAvsluttetHendelseType = ArbeidssokerperiodeAvsluttetHendelseType.valueOf(getString("hendelse")),
-    avsluttesAutomatiskDato = getTimestamp("avsluttes_automatisk_dato")?.toLocalDateTime(),
 )
 
 fun ResultSet.toForlengelseHendelse() = ForlengelseHendelse(
@@ -303,5 +301,4 @@ fun ResultSet.toForlengelseHendelse() = ForlengelseHendelse(
     hendelseTidspunkt = getTimestamp("hendelse_tidspunkt").toLocalDateTime().toInstant(ZoneOffset.UTC),
     forlengelseHendelseType = ForlengelseHendelseType.valueOf(getString("hendelse")),
     forlengetTil = getStringOrNull("hendelse_data")?.let { JsonUtils.fromJson(it, ForlengelseHendelse.Detaljer::class.java).forlengetTil },
-    avsluttesAutomatiskDato = getTimestamp("avsluttes_automatisk_dato")?.toLocalDateTime(),
 )
