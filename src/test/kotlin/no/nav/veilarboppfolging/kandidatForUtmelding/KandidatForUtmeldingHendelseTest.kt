@@ -74,29 +74,34 @@ class KandidatForUtmeldingHendelseTest {
             AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST,
             hendelseTidspunkt = hendelseTidspunkt,
         )
-
         val forventetDato = LocalDateTime.ofInstant(hendelseTidspunkt, ZoneOffset.UTC)
             .plusDays(KandidatForUtmeldingHendelse.KARENSTID_DAGER)
 
-        assertThat(hendelse.beregnAvsluttesAutomatiskDato()).isEqualTo(forventetDato)
+        val automatiskAvslutningDato = hendelse.beregnAvsluttesAutomatiskDato()
+
+        assertThat(automatiskAvslutningDato).isEqualTo(forventetDato)
     }
 
     @Test
-    fun `beregnAvsluttesAutomatiskDato - er null nar forlengelse opprettes`() {
+    fun `beregnAvsluttesAutomatiskDato - er null når forlengelse opprettes`() {
         val hendelse = forlengelseHendelse(ForlengelseHendelseType.FORLENGELSE_OPPRETTET)
 
-        assertThat(hendelse.beregnAvsluttesAutomatiskDato()).isNull()
+        val automatiskAvslutningDato = hendelse.beregnAvsluttesAutomatiskDato()
+
+        assertThat(automatiskAvslutningDato).isNull()
     }
 
     @Test
-    fun `beregnAvsluttesAutomatiskDato - er null nar forlengelse endres`() {
+    fun `beregnAvsluttesAutomatiskDato - er null når forlengelse endres`() {
         val hendelse = forlengelseHendelse(ForlengelseHendelseType.FORLENGELSE_ENDRET)
 
-        assertThat(hendelse.beregnAvsluttesAutomatiskDato()).isNull()
+        val automatiskAvslutningDato = hendelse.beregnAvsluttesAutomatiskDato()
+
+        assertThat(automatiskAvslutningDato).isNull()
     }
 
     @Test
-    fun `beregnAvsluttesAutomatiskDato - settes til 28 dager etter utlopstidspunkt nar forlengelse utloper`() {
+    fun `beregnAvsluttesAutomatiskDato - settes til 28 dager etter utlopstidspunkt når forlengelse utloper`() {
         val hendelseTidspunkt = ZonedDateTime.now().toInstant()
         val hendelse = forlengelseHendelse(
             ForlengelseHendelseType.FORLENGELSE_UTLOPT,
@@ -107,6 +112,8 @@ class KandidatForUtmeldingHendelseTest {
         val forventetDato = LocalDateTime.ofInstant(hendelseTidspunkt, ZoneOffset.UTC)
             .plusDays(KandidatForUtmeldingHendelse.KARENSTID_DAGER)
 
-        assertThat(hendelse.beregnAvsluttesAutomatiskDato()).isEqualTo(forventetDato)
+        val automatiskAvslutningDato = hendelse.beregnAvsluttesAutomatiskDato()
+
+        assertThat(automatiskAvslutningDato).isEqualTo(forventetDato)
     }
 }
