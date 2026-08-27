@@ -137,6 +137,7 @@ class AvsluttOppfolgingServiceTest {
         `when`(ungdomsprogramClient.erDeltakerIUngdomsprogrammet(TEST_FNR)).thenReturn(false)
         `when`(arbeidssokerRegisterClient.erArbeidssoeker(TEST_FNR.get())).thenReturn(false)
         `when`(aapClient.harAap(TEST_FNR.get())).thenReturn(false)
+        `when`(fjernKandidatForUtmeldingService.erOppfolgingForlenget(any())).thenReturn(false)
 
         val brukverV2 = arenaIservAvregistrering()
 
@@ -158,6 +159,7 @@ class AvsluttOppfolgingServiceTest {
         `when`(ungdomsprogramClient.erDeltakerIUngdomsprogrammet(TEST_FNR)).thenReturn(false)
         `when`(arbeidssokerRegisterClient.erArbeidssoeker(TEST_FNR.get())).thenReturn(false)
         `when`(aapClient.harAap(TEST_FNR.get())).thenReturn(false)
+        `when`(fjernKandidatForUtmeldingService.erOppfolgingForlenget(any())).thenReturn(false)
 
         val brukverV2 = arenaIservAvregistrering()
 
@@ -177,6 +179,7 @@ class AvsluttOppfolgingServiceTest {
         `when`(ungdomsprogramClient.erDeltakerIUngdomsprogrammet(TEST_FNR)).thenReturn(true)
         `when`(arbeidssokerRegisterClient.erArbeidssoeker(TEST_FNR.get())).thenReturn(false)
         `when`(aapClient.harAap(TEST_FNR.get())).thenReturn(false)
+        `when`(fjernKandidatForUtmeldingService.erOppfolgingForlenget(any())).thenReturn(false)
         val brukverV2 = arenaIservAvregistrering()
 
         val result = avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(brukverV2)
@@ -192,6 +195,27 @@ class AvsluttOppfolgingServiceTest {
         `when`(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(listOf(TEST_FNR))).thenReturn(false)
         `when`(ungdomsprogramClient.erDeltakerIUngdomsprogrammet(TEST_FNR)).thenReturn(false)
         `when`(arbeidssokerRegisterClient.erArbeidssoeker(TEST_FNR.get())).thenReturn(true)
+        `when`(fjernKandidatForUtmeldingService.erOppfolgingForlenget(any())).thenReturn(false)
+
+        val brukverV2 = arenaIservAvregistrering()
+
+        val result = avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(brukverV2)
+
+        verify(startOppfolgingService, never()).startOppfolgingHvisIkkeAlleredeStartet(any())
+        assertInstanceOf<KunneIkkeAvsluttes>(result)
+    }
+
+    @Test
+    fun `skal ikke avslutte oppfolging pa bruker som har forlenget oppfolging`() {
+        brukerErUnderOppfolgingLokalt()
+        kanIkkeReaktiveres()
+        mockBrukerIdenter()
+        `when`(kvpService.erUnderKvp(TEST_AKTOR_ID)).thenReturn(false)
+        `when`(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(listOf(TEST_FNR))).thenReturn(false)
+        `when`(ungdomsprogramClient.erDeltakerIUngdomsprogrammet(TEST_FNR)).thenReturn(false)
+        `when`(arbeidssokerRegisterClient.erArbeidssoeker(TEST_FNR.get())).thenReturn(false)
+        `when`(aapClient.harAap(TEST_FNR.get())).thenReturn(false)
+        `when`(fjernKandidatForUtmeldingService.erOppfolgingForlenget(any())).thenReturn(true)
 
         val brukverV2 = arenaIservAvregistrering()
 
