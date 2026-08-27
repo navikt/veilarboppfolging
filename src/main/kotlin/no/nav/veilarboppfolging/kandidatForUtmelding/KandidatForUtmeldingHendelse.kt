@@ -17,7 +17,6 @@ sealed class KandidatForUtmeldingHendelse(
     val utfortAv: String?,
     val kilde: String,
     val hendelseTidspunkt: Instant,
-    // Persistert verdi ved lesing fra DB. Ved skriving beregnes verdien av repositoryet via [beregnAvsluttesAutomatiskDato].
     val avsluttesAutomatiskDato: LocalDateTime? = null,
 ) {
     abstract val type: KandidatForUtmeldingHendelseType
