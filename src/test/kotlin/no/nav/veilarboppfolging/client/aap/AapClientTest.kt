@@ -15,6 +15,41 @@ import org.junit.jupiter.api.assertThrows
 class AapClientTest {
 
     @Test
+    fun `harAap - har aktiv Arena-periode nå - returnerer true`(wmRuntimeInfo: WireMockRuntimeInfo) {
+        val apiUrl = "http://localhost:" + wmRuntimeInfo.httpPort
+        val fraOgMed = LocalDate.now().minusWeeks(1)
+        val tilOgMed = LocalDate.now().plusMonths(6)
+        @Language("JSON")
+        val response = """
+            {
+              "saker": [
+                {
+                  "sakId": "123",
+                  "statusKode": "IVERK",
+                  "periode": {
+                    "fraOgMedDato": "$fraOgMed",
+                    "tilOgMedDato": "$tilOgMed"
+                  },
+                  "kilde": "ARENA"
+                }
+              ]
+            }
+        """.trimIndent()
+        givenThat(
+            WireMock.post("/dab/sakerByFnr")
+                .willReturn(
+                    WireMock.aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(response)
+                )
+        )
+        val client = AapClient(apiUrl, { "token" }, OkHttpClient.Builder().build())
+
+        assertEquals(true, client.harAap("12345678910"))
+    }
+
+    @Test
     fun `harAap - har aktiv Arena-periode i fremtiden - returnerer true`(wmRuntimeInfo: WireMockRuntimeInfo) {
         val apiUrl = "http://localhost:" + wmRuntimeInfo.httpPort
         val fraOgMed = LocalDate.now().plusDays(1)
@@ -119,6 +154,39 @@ class AapClientTest {
     }
 
     @Test
+    fun `harAap - tom Arena-periode men status OPPRE - returnerer true`(wmRuntimeInfo: WireMockRuntimeInfo) {
+        val apiUrl = "http://localhost:" + wmRuntimeInfo.httpPort
+        @Language("JSON")
+        val response = """
+            {
+              "saker": [
+                {
+                  "sakId": "123",
+                  "statusKode": "OPPRE",
+                  "periode": {
+                    "fraOgMedDato": null,
+                    "tilOgMedDato": null
+                  },
+                  "kilde": "ARENA"
+                }
+              ]
+            }
+        """.trimIndent()
+        givenThat(
+            WireMock.post("/dab/sakerByFnr")
+                .willReturn(
+                    WireMock.aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(response)
+                )
+        )
+        val client = AapClient(apiUrl, { "token" }, OkHttpClient.Builder().build())
+
+        assertEquals(true, client.harAap("12345678910"))
+    }
+
+    @Test
     fun `harAap - har aktiv Kelvin-periode i fremtiden - returnerer true`(wmRuntimeInfo: WireMockRuntimeInfo) {
         val apiUrl = "http://localhost:" + wmRuntimeInfo.httpPort
         val fraOgMed = LocalDate.now().plusDays(1)
@@ -157,9 +225,10 @@ class AapClientTest {
     }
 
     @Test
-    fun `harAap - har aktiv Kelvin-periode med tilOgMedDato null - returnerer true`(wmRuntimeInfo: WireMockRuntimeInfo) {
+    fun `harAap - har aktiv Kelvin-periode nå - returnerer true`(wmRuntimeInfo: WireMockRuntimeInfo) {
         val apiUrl = "http://localhost:" + wmRuntimeInfo.httpPort
-        val fraOgMed = LocalDate.now().plusDays(1)
+        val fraOgMed = LocalDate.now().minusDays(1)
+        val tilOgMed = LocalDate.now().plusMonths(6)
         @Language("JSON")
         val response = """
             {
@@ -170,7 +239,7 @@ class AapClientTest {
                   "perioder": [
                     {
                       "fraOgMedDato": "$fraOgMed",
-                      "tilOgMedDato": null
+                      "tilOgMedDato": "$tilOgMed"
                     }
                   ],
                   "ytelsesstatus": "LOPENDE",
@@ -252,12 +321,7 @@ class AapClientTest {
                 {
                   "sakId": "123",
                   "statuskode": "SOKNAD_UNDER_BEHANDLING",
-                  "perioder": [
-                    {
-                      "fraOgMedDato": null,
-                      "tilOgMedDato": null
-                    }
-                  ],
+                  "perioder": [],
                   "ytelsesstatus": "FOR_VEDTAK",
                   "kilde": "KELVIN"
                 }

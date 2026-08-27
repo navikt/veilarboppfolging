@@ -87,14 +87,19 @@ sealed interface DabSak {
     data class Arena(
         override val sakId: String,
         val statusKode: ArenaStatus,
-        val periode: AapPeriode,
+        val periode: Periode,
     ) : DabSak {
+        data class Periode(
+            val fraOgMedDato: LocalDate?,
+            val tilOgMedDato: LocalDate?
+        )
+
         override val kilde: Kilde = Kilde.ARENA
 
         override fun mottarEllerHarSoktAAP(): Boolean {
             val idag = LocalDate.now()
             val harAktivAap = periode.tilOgMedDato == null || periode.tilOgMedDato.isAfter(idag)
-            return harAktivAap
+            return harAktivAap || statusKode == ArenaStatus.MOTAT || statusKode == ArenaStatus.OPPRE || statusKode == ArenaStatus.REGIS
         }
     }
 
@@ -102,14 +107,19 @@ sealed interface DabSak {
     data class Kelvin(
         override val sakId: String,
         val statuskode: KelvinStatus,
-        val perioder: List<AapPeriode>,
+        val perioder: List<Periode>,
         val ytelsesstatus: YtelseStatus,
     ) : DabSak {
+        data class Periode(
+            val fraOgMedDato: LocalDate,
+            val tilOgMedDato: LocalDate,
+        )
+
         override val kilde: Kilde = Kilde.KELVIN
 
         override fun mottarEllerHarSoktAAP(): Boolean {
             val idag = LocalDate.now()
-            val harAktivAap = perioder.any { it.tilOgMedDato == null || it.tilOgMedDato.isAfter(idag) }
+            val harAktivAap = perioder.any { !it.tilOgMedDato.isBefore(idag) }
             return harAktivAap || statuskode == KelvinStatus.SOKNAD_UNDER_BEHANDLING
         }
     }
