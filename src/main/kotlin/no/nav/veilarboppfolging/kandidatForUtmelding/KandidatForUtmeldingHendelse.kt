@@ -16,7 +16,7 @@ sealed class KandidatForUtmeldingHendelse(
     val utfortAvType: KandidatForUtmeldingHendelseUtfortAvType,
     val utfortAv: String?,
     val kilde: String,
-    val     hendelseTidspunkt: Instant,
+    val hendelseTidspunkt: Instant,
 ) {
     abstract val type: KandidatForUtmeldingHendelseType
     abstract val hendelseDataJson: PGobject?

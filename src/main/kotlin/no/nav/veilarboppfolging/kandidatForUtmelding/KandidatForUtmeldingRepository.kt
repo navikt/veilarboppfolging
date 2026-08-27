@@ -145,6 +145,18 @@ class KandidatForUtmeldingRepository(
             .firstOrNull()
     }
 
+    fun hentSisteHendelseForKandidat(oppfolgingsperiodeId: UUID): KandidatForUtmeldingHendelse? {
+        return db.query(
+            """
+            SELECT *
+            FROM kandidater_for_utmelding_hendelser
+            WHERE oppfolgingsperiode_uuid = :oppfolgingsperiodeId
+            """.trimIndent(),
+            mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeId.toString()),
+        ) { rs, _ -> map(rs) }
+            .firstOrNull()
+    }
+
     @TestOnly
     fun hentForlengetTil(oppfolgingsperiodeId: UUID): Timestamp? {
         return db.query(
@@ -269,6 +281,7 @@ class KandidatForUtmeldingRepository(
         return when (getEnumType(hendelsetype)) {
             is ArbeidssokerperiodeAvsluttetHendelseType -> resultSet.toArbeidssøkerPeriodeAvsluttet()
             is ForlengelseHendelseType -> resultSet.toForlengelseHendelse()
+            is OppfolgingAvsluttetHendelseType -> resultSet.toOppfolgingAvsluttetHendelse()
         }
     }
 
@@ -302,3 +315,5 @@ fun ResultSet.toForlengelseHendelse() = ForlengelseHendelse(
     forlengelseHendelseType = ForlengelseHendelseType.valueOf(getString("hendelse")),
     forlengetTil = getStringOrNull("hendelse_data")?.let { JsonUtils.fromJson(it, ForlengelseHendelse.Detaljer::class.java).forlengetTil },
 )
+
+fun ResultSet.toOppfolgingAvsluttetHendelse() = OppfolgingAvsluttetHendelse()
