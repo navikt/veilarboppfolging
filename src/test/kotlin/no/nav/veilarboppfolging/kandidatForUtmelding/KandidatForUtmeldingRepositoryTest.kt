@@ -317,7 +317,7 @@ class KandidatForUtmeldingRepositoryTest {
     }
 
     @Test
-    fun `hentAktiveKandidater - returnerer ikke kandidater som er forlenget`() {
+    fun `hentAktiveKandidater - returnerer kandidater som ikke er forlenget`() {
         val fnr2 = Fnr.of("2222229999")
         val aktorId2 = AktorId.of("8765")
         oppfolgingsStatusRepository.opprettOppfolging(aktorId)
