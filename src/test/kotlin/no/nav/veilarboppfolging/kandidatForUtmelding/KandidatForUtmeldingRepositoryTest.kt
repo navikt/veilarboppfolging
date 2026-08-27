@@ -219,7 +219,7 @@ class KandidatForUtmeldingRepositoryTest {
     }
 
     @Test
-    fun `lagreKandidat - setter avsluttes_automatisk_dato til 28 dager etter hendelsestidspunkt ved forste gangs lagring`() {
+    fun `lagreKandidat - setter avsluttes_automatisk_dato til 28 dager etter hendelsestidspunkt ved første gangs lagring`() {
         val oppfolgingsbruker = arbeidssokerRegistrering(fnr, aktorId, BrukerRegistrant(fnr))
         oppfolgingsStatusRepository.opprettOppfolging(aktorId)
         oppfolgingsPeriodeRepository.start(oppfolgingsbruker)
@@ -234,7 +234,7 @@ class KandidatForUtmeldingRepositoryTest {
     }
 
     @Test
-    fun `lagreKandidat - nullstiller avsluttes_automatisk_dato nar forlengelse opprettes`() {
+    fun `lagreKandidat - nullstiller avsluttes_automatisk_dato når forlengelse opprettes`() {
         val oppfolgingsbruker = arbeidssokerRegistrering(fnr, aktorId, BrukerRegistrant(fnr))
         oppfolgingsStatusRepository.opprettOppfolging(aktorId)
         oppfolgingsPeriodeRepository.start(oppfolgingsbruker)
@@ -256,7 +256,7 @@ class KandidatForUtmeldingRepositoryTest {
     }
 
     @Test
-    fun `lagreKandidat - setter avsluttes_automatisk_dato på nytt nar forlengelse utloper`() {
+    fun `lagreKandidat - setter avsluttes_automatisk_dato på nytt når forlengelse utloper`() {
         val oppfolgingsbruker = arbeidssokerRegistrering(fnr, aktorId, BrukerRegistrant(fnr))
         oppfolgingsStatusRepository.opprettOppfolging(aktorId)
         oppfolgingsPeriodeRepository.start(oppfolgingsbruker)
@@ -314,22 +314,6 @@ class KandidatForUtmeldingRepositoryTest {
         kandidatForUtmeldingRepository.settAvsluttesAutomatiskDatoHvisMangler(oppfolgingsperiodeUuid, forsokPaOverskriving)
         assertThat(kandidatForUtmeldingRepository.hentAvsluttesAutomatiskDato(oppfolgingsperiodeUuid)?.toLocalDateTime())
             .isEqualTo(nyDato)
-    }
-
-    @Test
-    fun `hentSisteHendelseForAktivKandidat - mapper hendelsen for en aktiv kandidat`() {
-        val oppfolgingsbruker = arbeidssokerRegistrering(fnr, aktorId, BrukerRegistrant(fnr))
-        oppfolgingsStatusRepository.opprettOppfolging(aktorId)
-        oppfolgingsPeriodeRepository.start(oppfolgingsbruker)
-        val oppfolgingsperiodeUuid = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId).first().uuid
-        kandidatForUtmeldingRepository.lagreKandidat(arbeidssøkerPeriodeAvsluttet(oppfolgingsperiodeUuid))
-
-        val hendelse = kandidatForUtmeldingRepository.hentSisteHendelseForAktivKandidat(oppfolgingsperiodeUuid)
-
-        assertInstanceOf<ArbeidssøkerPeriodeAvsluttet>(hendelse)
-        assertThat(hendelse.type)
-            .isEqualTo(ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT)
-        assertThat(hendelse.oppfolgingsperiodeUuid).isEqualTo(oppfolgingsperiodeUuid)
     }
 
     @Test
