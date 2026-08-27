@@ -64,11 +64,7 @@ class RepubliserKandidatForUtmeldingService(
                 val fnr = finnFnrForOppfolgingsperiode(oppfolgingsperiodeId)
                 val filterkategoriPersonId = kandidatForUtmeldingRepository.hentEllerOpprettFilterhendelseId(oppfolgingsperiodeId)
 
-                if (kandidat != null && kandidat.avsluttesAutomatiskDato == null) {
-                    kandidat.beregnAvsluttesAutomatiskDato()?.let { dato ->
-                        kandidatForUtmeldingRepository.settAvsluttesAutomatiskDatoHvisMangler(oppfolgingsperiodeId, dato)
-                    }
-                }
+                settAvsluttesAutomatiskDatoHvisMangler(oppfolgingsperiodeId, kandidat)
 
                 val filterhendelseRecord = if (kandidat != null) {
                     kandidat.tilFilterhendelseRecord(fnr, Operasjon.START)
@@ -93,5 +89,13 @@ class RepubliserKandidatForUtmeldingService(
         val aktorId = oppfolgingsPeriodeRepository.hentOppfolgingsperiode(oppfolgingsperiodeId.toString())
             .getOrElse { throw IllegalStateException("Oppfølgingsperiode med id $oppfolgingsperiodeId finnes ikke") }?.aktorId
         return aktorOppslagClient.hentFnr(AktorId(aktorId))
+    }
+
+    private fun settAvsluttesAutomatiskDatoHvisMangler(oppfolgingsperiodeId: UUID, kandidat: KandidatForUtmeldingHendelse?) {
+        if (kandidat == null || kandidat.avsluttesAutomatiskDato != null) return
+
+        kandidat.beregnAvsluttesAutomatiskDato()?.let { dato ->
+            kandidatForUtmeldingRepository.settAvsluttesAutomatiskDatoHvisMangler(oppfolgingsperiodeId, dato)
+        }
     }
 }

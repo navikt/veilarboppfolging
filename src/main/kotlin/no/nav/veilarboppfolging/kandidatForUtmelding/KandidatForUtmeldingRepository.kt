@@ -159,9 +159,10 @@ class KandidatForUtmeldingRepository(
     fun hentSisteKandidatForUtmeldingHendelse(oppfolgingsperiodeId: UUID): KandidatForUtmeldingHendelse? {
         return db.query(
             """
-            SELECT *, NULL::timestamp AS avsluttes_automatisk_dato
-            FROM kandidater_for_utmelding_hendelser
-            WHERE oppfolgingsperiode_uuid = :oppfolgingsperiodeId order by created_at desc
+            SELECT kfuh.*, kfu.avsluttes_automatisk_dato
+            FROM kandidater_for_utmelding_hendelser kfuh
+            LEFT JOIN kandidater_for_utmelding kfu ON kfu.oppfolgingsperiode_uuid = kfuh.oppfolgingsperiode_uuid
+            WHERE kfuh.oppfolgingsperiode_uuid = :oppfolgingsperiodeId order by kfuh.created_at desc
             LIMIT 1
             """.trimIndent(),
             mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeId.toString()),
