@@ -122,7 +122,7 @@ class KandidatForUtmeldingRepository(
     fun hentKandidatMedIkkeUtloptForlengelse(oppfolgingsperiodeId: UUID): KandidatForUtmeldingHendelse? {
         return db.query(
             """
-            SELECT kfuh.*
+            SELECT kfuh.*, kfu.avsluttes_automatisk_dato
             FROM kandidater_for_utmelding kfu
             JOIN kandidater_for_utmelding_hendelser kfuh ON kfu.siste_utmeldingshendelse_id = kfuh.utmeldingshendelse_id
             WHERE kfu.oppfolgingsperiode_uuid = :oppfolgingsperiodeId AND kfu.forlenget_til IS NOT NULL and kfu.forlenget_til >= current_timestamp
