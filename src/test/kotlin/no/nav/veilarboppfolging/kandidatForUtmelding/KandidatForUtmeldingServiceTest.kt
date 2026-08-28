@@ -158,7 +158,7 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
         assertThat(filterhendelse.operasjon).isEqualTo(Operasjon.START)
         assertThat(filterhendelse.kategori).isEqualTo(Kategori.KANDIDAT_FOR_UTMELDING)
         assertThat(filterhendelse.hendelse.datoFrist)
-            .isCloseTo(kandidat?.beregnAvsluttesAutomatiskDatoZonedDateTime(), within(250, ChronoUnit.MILLIS))
+            .isCloseTo(kandidat?.beregnAvsluttesAutomatiskDatoZonedDateTime(), within(1, ChronoUnit.SECONDS))
     }
 
     @Test

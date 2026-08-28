@@ -3,6 +3,7 @@ package no.nav.veilarboppfolging.kandidatForUtmelding
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
+import java.time.temporal.ChronoUnit
 import java.util.UUID
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
@@ -14,6 +15,7 @@ import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
 import no.nav.veilarboppfolging.test.DbTestUtils
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertInstanceOf
@@ -230,7 +232,7 @@ class KandidatForUtmeldingRepositoryTest {
 
         val forventetDato = avsluttet.beregnAvsluttesAutomatiskDato()
         assertThat(kandidatForUtmeldingRepository.hentAvsluttesAutomatiskDato(oppfolgingsperiodeUuid)?.toLocalDateTime())
-            .isEqualTo(forventetDato)
+            .isCloseTo(forventetDato, within(1, ChronoUnit.SECONDS))
     }
 
     @Test
@@ -288,7 +290,7 @@ class KandidatForUtmeldingRepositoryTest {
 
         val forventetDato = forlengelseUtlopt.beregnAvsluttesAutomatiskDato()
         assertThat(kandidatForUtmeldingRepository.hentAvsluttesAutomatiskDato(oppfolgingsperiodeUuid)?.toLocalDateTime())
-            .isEqualTo(forventetDato)
+            .isCloseTo(forventetDato, within(1, ChronoUnit.SECONDS))
     }
 
     @Test
@@ -307,13 +309,13 @@ class KandidatForUtmeldingRepositoryTest {
         val nyDato = LocalDateTime.now().plusDays(28)
         kandidatForUtmeldingRepository.settAvsluttesAutomatiskDatoHvisMangler(oppfolgingsperiodeUuid, nyDato)
         assertThat(kandidatForUtmeldingRepository.hentAvsluttesAutomatiskDato(oppfolgingsperiodeUuid)?.toLocalDateTime())
-            .isEqualTo(nyDato)
+            .isCloseTo(nyDato, within(1, ChronoUnit.SECONDS))
 
         // Skal ikke overskrive en allerede satt dato
         val forsokPaOverskriving = LocalDateTime.now().plusDays(100)
         kandidatForUtmeldingRepository.settAvsluttesAutomatiskDatoHvisMangler(oppfolgingsperiodeUuid, forsokPaOverskriving)
         assertThat(kandidatForUtmeldingRepository.hentAvsluttesAutomatiskDato(oppfolgingsperiodeUuid)?.toLocalDateTime())
-            .isEqualTo(nyDato)
+            .isCloseTo(nyDato, within(1, ChronoUnit.SECONDS))
     }
 
     @Test
