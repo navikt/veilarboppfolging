@@ -38,7 +38,7 @@ sealed class KunneAvsluttesResultat(val kanAvsluttesInput: KanAvsluttesInput) {
             if (input.harAktiveTiltaksdeltakelser) return "bruker hadde aktive tiltaksdeltakelser"
             if (input.erDeltakerIUngdomsprogrammet) return "bruker er deltaker i ungdomsprogrammet"
             if (input.erArbeidssoeker) return "bruker er registrert som arbeidssøker"
-            if (input.harAap) return  "bruker har AAP"
+            if (input.harAap) return  "bruker mottar eller har søkt om AAP"
             if (!avregistreringsType.erManuellAvregistrering() && input.erOppfolgingForlenget) return "oppfølgingen er forlenget"
             return null
         }
