@@ -87,17 +87,17 @@ open class ArbeidssøkerperiodeConsumerService(
             val gjeldendePeriode = oppfolgingsperioder.firstOrNull { it.sluttDato == null }
             if (gjeldendePeriode != null) {
                 val kilde = arbeidssøkerperiode.avsluttet?.kilde ?: "arbeidssøkerregisteret"
-                val avsluttetAarsakType = arbeidssøkerperiode.avslutningsInfo.aarsaksinformasjon.type
+                val avsluttetAarsakType = arbeidssøkerperiode.avslutningsInfo?.aarsaksinformasjon?.type
                 val avsluttetAv = when(arbeidssøkerperiode.avsluttet?.utfoertAv?.type) {
                     BrukerType.UKJENT_VERDI, BrukerType.UDEFINERT, null -> KandidatForUtmeldingHendelseUtfortAvType.UKJENT
                     BrukerType.VEILEDER -> KandidatForUtmeldingHendelseUtfortAvType.VEILEDER
                     BrukerType.SYSTEM -> KandidatForUtmeldingHendelseUtfortAvType.SYSTEM
                     BrukerType.SLUTTBRUKER -> KandidatForUtmeldingHendelseUtfortAvType.BRUKER
                 }
-                val type = when (arbeidssøkerperiode.avslutningsInfo.aarsaksinformasjon.type) {
+                val type = when (avsluttetAarsakType) {
                     AvsluttetAarsakType.SVARTE_NEI_I_BEKREFTELSE -> ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_SVARTE_NEI_I_BEKREFTELSE
                     AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST -> ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT
-                    AvsluttetAarsakType.UDEFINERT, AvsluttetAarsakType.UKJENT_VERDI -> ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET
+                    AvsluttetAarsakType.UDEFINERT, AvsluttetAarsakType.UKJENT_VERDI, null -> ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET
                 }
                 kandidatForUtmeldingService.lagreKandidatForUtmelding(
                     fnr,
@@ -106,7 +106,7 @@ open class ArbeidssøkerperiodeConsumerService(
                         utfortAvType = avsluttetAv,
                         utfortAv = arbeidssøkerperiode.avsluttet?.utfoertAv?.id,
                         kilde = kilde,
-                        avslutningsarsak = avsluttetAarsakType.toString(),
+                        avslutningsarsak = avsluttetAarsakType?.toString(),
                         hendelseTidspunkt = arbeidssøkerperiode.avsluttet.tidspunkt,
                         arbeidssokerperiodeAvsluttetHendelseType = type,
                     )
