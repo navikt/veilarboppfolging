@@ -423,6 +423,7 @@ class KandidatForUtmeldingFlytTest(
         assertThat(filterhendelse.operasjon).isEqualTo(Operasjon.STOPP)
         assertThat(filterhendelse.kategori).isEqualTo(Kategori.KANDIDAT_FOR_UTMELDING)
         assertThat(filterhendelse.hendelse.beskrivelseEnum).isEqualTo(BeskrivelseEnum.FORLENGELSE_OPPRETTET.name)
+        assertThat(filterhendelse.hendelse.datoFrist).isNull()
     }
 
     @Test
