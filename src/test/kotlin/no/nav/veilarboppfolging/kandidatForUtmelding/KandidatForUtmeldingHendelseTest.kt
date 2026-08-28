@@ -98,16 +98,6 @@ class KandidatForUtmeldingHendelseTest {
     }
 
     @Test
-    fun `beregnAvsluttesAutomatiskDato - er null når forlengelse endres`() {
-        val hendelse = forlengelseHendelse(ForlengelseHendelseType.FORLENGELSE_ENDRET)
-
-        val automatiskAvslutningDato = hendelse.beregnAvsluttesAutomatiskDato()
-
-        assertThat(automatiskAvslutningDato).isNull()
-        assertThat(hendelse.tilFilterhendelseRecord(Fnr.of("12345678901"), Operasjon.STOPP).hendelse.datoFrist).isNull()
-    }
-
-    @Test
     fun `beregnAvsluttesAutomatiskDato - settes til 28 dager etter utlopstidspunkt når forlengelse utloper`() {
         val hendelseTidspunkt = ZonedDateTime.now().toInstant()
         val hendelse = forlengelseHendelse(

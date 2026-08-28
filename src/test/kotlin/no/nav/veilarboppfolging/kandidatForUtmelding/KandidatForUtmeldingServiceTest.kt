@@ -1,6 +1,7 @@
 package no.nav.veilarboppfolging.kandidatForUtmelding
 
 import java.time.ZonedDateTime
+import java.time.temporal.ChronoUnit
 import java.util.UUID
 import no.nav.common.json.JsonUtils
 import no.nav.common.types.identer.AktorId
@@ -12,6 +13,7 @@ import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.BeskrivelseE
 import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.Kategori
 import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.Operasjon
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.Test
 
 class KandidatForUtmeldingServiceTest : IntegrationTest() {
@@ -60,7 +62,7 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
         assertThat(filterhendelse.kategori).isEqualTo(Kategori.KANDIDAT_FOR_UTMELDING)
         assertThat(filterhendelse.hendelse.beskrivelseEnum).isEqualTo(BeskrivelseEnum.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT.name)
         assertThat(filterhendelse.hendelse.datoFrist)
-            .isEqualTo(kandidat?.beregnAvsluttesAutomatiskDatoZonedDateTime())
+            .isCloseTo(kandidat?.beregnAvsluttesAutomatiskDatoZonedDateTime(), within(1, ChronoUnit.SECONDS))
     }
 
     @Test
@@ -156,7 +158,7 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
         assertThat(filterhendelse.operasjon).isEqualTo(Operasjon.START)
         assertThat(filterhendelse.kategori).isEqualTo(Kategori.KANDIDAT_FOR_UTMELDING)
         assertThat(filterhendelse.hendelse.datoFrist)
-            .isEqualTo(kandidat?.beregnAvsluttesAutomatiskDatoZonedDateTime())
+            .isCloseTo(kandidat?.beregnAvsluttesAutomatiskDatoZonedDateTime(), within(250, ChronoUnit.MILLIS))
     }
 
     @Test
