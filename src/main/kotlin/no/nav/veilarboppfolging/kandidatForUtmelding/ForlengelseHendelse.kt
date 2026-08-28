@@ -14,6 +14,7 @@ import org.postgresql.util.PGobject
 import java.time.ZonedDateTime
 import no.nav.common.json.JsonUtils
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 class ForlengelseHendelse(
     oppfolgingsperiodeUuid: UUID,
@@ -22,7 +23,7 @@ class ForlengelseHendelse(
     kilde: String,
     val forlengelseHendelseType: ForlengelseHendelseType,
     hendelseTidspunkt: Instant,
-    val forlengetTil: LocalDate?,
+    val forlengetTil: LocalDate?
 ) : KandidatForUtmeldingHendelse(
     oppfolgingsperiodeUuid,
     utfortAvType,
@@ -30,7 +31,8 @@ class ForlengelseHendelse(
     kilde,
     hendelseTidspunkt,
 ) {
-    override val type: KandidatForUtmeldingHendelseType = forlengelseHendelseType
+    override val type: ForlengelseHendelseType = forlengelseHendelseType
+    val avsluttesAutomatiskDato: ZonedDateTime? = beregnAvsluttesAutomatiskDatoZonedDateTime()
     override val hendelseDataJson: PGobject? = forlengetTil?.let {
         PGobject().apply {
             type = "jsonb"
@@ -69,6 +71,11 @@ class ForlengelseHendelse(
                 dato = hendelseTidspunkt.atZone(ZoneId.of("Europe/Oslo")),
                 lenke = URI("${baseUrlVeilarbpersonflate()}/aktivitetsplan").toURL(),
                 detaljer = null,
+                datoFrist = when(type) {
+                    ForlengelseHendelseType.FORLENGELSE_UTLOPT -> avsluttesAutomatiskDato
+                    ForlengelseHendelseType.FORLENGELSE_OPPRETTET,
+                    ForlengelseHendelseType.FORLENGELSE_ENDRET -> null
+                }
             )
         )
     }

@@ -17,6 +17,7 @@ data class FilterhendelseRecord(
         val dato: ZonedDateTime,
         val lenke: URL,
         val detaljer: String?,
+        val datoFrist: ZonedDateTime?
     )
 }
 

@@ -9,7 +9,9 @@ import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.Operasjon
 import org.postgresql.util.PGobject
 import java.net.URI
 import java.time.Instant
+import java.time.LocalDateTime
 import java.time.ZoneId
+import java.time.ZonedDateTime
 import java.util.UUID
 
 class OppfolgingAvsluttetHendelse(
@@ -18,7 +20,7 @@ class OppfolgingAvsluttetHendelse(
     utfortAv: String?,
     kilde: String,
     hendelseTidspunkt: Instant,
-    val oppfolgingAvsluttetHendelseType: OppfolgingAvsluttetHendelseType
+    val oppfolgingAvsluttetHendelseType: OppfolgingAvsluttetHendelseType,
 ) :
     KandidatForUtmeldingHendelse(
         oppfolgingsperiodeUuid,
@@ -48,6 +50,7 @@ class OppfolgingAvsluttetHendelse(
                 dato = hendelseTidspunkt.atZone(ZoneId.of("Europe/Oslo")),
                 lenke = URI("${baseUrlVeilarbpersonflate()}/aktivitetsplan").toURL(),
                 detaljer = null,
+                datoFrist = null
             )
         )
     }

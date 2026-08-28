@@ -11,6 +11,7 @@ import org.postgresql.util.PGobject
 import java.net.URI
 import java.time.Instant
 import java.time.ZoneId
+import java.time.ZonedDateTime
 import java.util.UUID
 
 class ArbeidssøkerPeriodeAvsluttet(
@@ -29,6 +30,7 @@ class ArbeidssøkerPeriodeAvsluttet(
     hendelseTidspunkt,
 ) {
     override val type: ArbeidssokerperiodeAvsluttetHendelseType = arbeidssokerperiodeAvsluttetHendelseType
+    val avsluttesAutomatiskDato: ZonedDateTime? = beregnAvsluttesAutomatiskDatoZonedDateTime()
     override val hendelseDataJson: PGobject? = avslutningsarsak?.let {
         PGobject().apply {
             type = "jsonb"
@@ -59,6 +61,7 @@ class ArbeidssøkerPeriodeAvsluttet(
                 dato = hendelseTidspunkt.atZone(ZoneId.of("Europe/Oslo")),
                 lenke = URI("${baseUrlVeilarbpersonflate()}/aktivitetsplan").toURL(),
                 detaljer = null,
+                datoFrist = avsluttesAutomatiskDato
             )
         )
     }

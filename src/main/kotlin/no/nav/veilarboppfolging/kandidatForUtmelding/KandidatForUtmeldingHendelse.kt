@@ -2,7 +2,9 @@ package no.nav.veilarboppfolging.kandidatForUtmelding
 
 import java.time.Instant
 import java.time.LocalDateTime
+import java.time.ZoneId
 import java.time.ZoneOffset
+import java.time.ZonedDateTime
 import java.util.UUID
 import kotlin.jvm.optionals.getOrElse
 import no.nav.common.types.identer.Fnr
@@ -44,6 +46,13 @@ sealed class KandidatForUtmeldingHendelse(
             }
         }
     }
+
+    /**
+     * Samme dato som [beregnAvsluttesAutomatiskDato], men som [ZonedDateTime] i norsk tidssone.
+     * Brukes som datoFrist i filterhendelser sendt til OBO.
+     */
+    fun beregnAvsluttesAutomatiskDatoZonedDateTime(): ZonedDateTime? =
+        beregnAvsluttesAutomatiskDato()?.atZone(ZoneOffset.UTC)?.withZoneSameInstant(ZoneId.of("Europe/Oslo"))
 
     companion object {
         const val KARENSTID_DAGER = 28L
