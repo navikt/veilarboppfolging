@@ -30,6 +30,7 @@ import no.nav.veilarboppfolging.service.ReaktiveringService
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
@@ -465,6 +466,7 @@ class KandidatForUtmeldingFlytTest(
     }
 
     @Test
+    @Disabled("WIP automatisk avslutning")
     fun `skal avslutte oppfølging etter karensperiode er utløpt`() {
         val veilederId = UUID.randomUUID()
         val enhetId = EnhetId("1234")

@@ -86,85 +86,53 @@ class KandidatForUtmeldingService(
         logger.info("Ferdig med å behandle kandidater med utløpt forlengelse")
     }
 
-    fun hentKandidaterSomSkalAutomatiskAvsluttes(): List<KandidatForUtmeldingHendelse> {
-        val kandidaterSomSkalAvsluttes = kandidatForUtmeldingRepository.hentKandidaterSomSkalAutomatiskAvsluttes()
-        logger.info("Behandler ${kandidaterSomSkalAvsluttes.size} kandidater som skal automatisk avsluttes")
-
-        kandidaterSomSkalAvsluttes.forEach { kandidat ->
-            transactor.executeWithoutResult { _ ->
-                val oppfolgingsperiodeId = kandidat.oppfolgingsperiodeUuid
-//                val fnr = finnFnrForOppfolgingsperiode(oppfolgingsperiodeId)
-                val avslutningsstatus = avsluttOppfolgingService.hentAvslutningstatusForManuellAvslutning(fnr)
-
-                if (avslutningsstatus.kanAvslutte) {
-                    logger.info("Kandidat for utmelding med oppfølgingsperiode $oppfolgingsperiodeId skal automatisk avsluttes")
-                    val oppfolgingAvsluttetHendelse = OppfolgingAvsluttetHendelse(
-                        oppfolgingsperiodeUuid = kandidat.oppfolgingsperiodeUuid,
-                        utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.SYSTEM,
-                        utfortAv = "SYSTEM",
-                        kilde = "veilarboppfolging",
-                        hendelseTidspunkt = Instant.now(),
-                        oppfolgingAvsluttetHendelseType = OppfolgingAvsluttetHendelseType.OPPFOLGING_AVSLUTTET_AUTOMATISK
-                    )
-                    // TODO: faktisk avslutte oppfølging
-                    // TODO: insert hendelse
-                    // TODO: fjerne kandidat fra liste
-                    // TODO: sende stopp-melding til OBO
-                    kandidatForUtmeldingRepository.lagreKandidat(oppfolgingAvsluttetHendelse)
-//                    sendStoppUtmeldingskandidatTilObo(kandidat, fnr)
-                } else {
-                    logger.info("Kandidat for utmelding med oppfølgingsperiode $oppfolgingsperiodeId skal ikke automatisk avsluttes")
-                }
-            }
-        }
-
-        private fun sendUtmeldingskandidatTilObo(kandidat: KandidatForUtmeldingHendelse, fnr: Fnr) {
-            if (sendUtmeldingskandidaterTilObo) {
-                val filterkategoriPersonId =
-                    kandidatForUtmeldingRepository.hentEllerOpprettFilterhendelseId(kandidat.oppfolgingsperiodeUuid)
-                logger.info("Sender kandidat for utmelding til OBO med key=$filterkategoriPersonId for oppfølgingsperiode ${kandidat.oppfolgingsperiodeUuid}")
-                val filterhendelse = kandidat.tilFilterhendelseRecord(fnr, Operasjon.START)
-                kafkaProducerService.publiserFilterhendelse(filterkategoriPersonId, filterhendelse)
-            } else {
-                logger.info("Sender ikke kandidat for utmelding til OBO for oppfølgingsperiode ${kandidat.oppfolgingsperiodeUuid} fordi sending til OBO er togglet av")
-            }
-        }
-
-        private fun sendStoppUtmeldingskandidatTilObo(kandidat: KandidatForUtmeldingHendelse, fnr: Fnr) {
-            if (sendUtmeldingskandidaterTilObo) {
-                val filterkategoriPersonId =
-                    kandidatForUtmeldingRepository.hentEllerOpprettFilterhendelseId(kandidat.oppfolgingsperiodeUuid)
-                logger.info("Sender stopp-melding for kandidat for utmelding til OBO med key=$filterkategoriPersonId for oppfølgingsperiode ${kandidat.oppfolgingsperiodeUuid}")
-                val filterhendelse = kandidat.tilFilterhendelseRecord(fnr, Operasjon.STOPP)
-                kafkaProducerService.publiserFilterhendelse(filterkategoriPersonId, filterhendelse)
-            } else {
-                logger.info("Sender ikke stopp-melding for kandidat for utmelding til OBO for oppfølgingsperiode ${kandidat.oppfolgingsperiodeUuid} fordi sending til OBO er togglet av")
-            }
-        }
-
-        private fun finnFnrForOppfolgingsperiode(oppfolgingsperiodeId: UUID): Fnr {
-            val aktorId = oppfolgingsPeriodeRepository.hentOppfolgingsperiode(oppfolgingsperiodeId.toString())
-                .getOrElse { throw IllegalStateException("Oppfølgingsperiode med id $oppfolgingsperiodeId finnes ikke") }?.aktorId
-            return aktorOppslagClient.hentFnr(AktorId(aktorId))
-        }
-
-        fun forlengKandidat(hendelse: ForlengelseHendelse, fnr: Fnr) {
-            logger.info("Lagrer forlengelse for oppfølgingsperiode ${hendelse.oppfolgingsperiodeUuid}")
-            transactor.executeWithoutResult { _ ->
-                kandidatForUtmeldingRepository.lagreKandidat(hendelse)
-                if (hendelse.type == ForlengelseHendelseType.FORLENGELSE_ENDRET) return@executeWithoutResult
-                sendStoppUtmeldingskandidatTilObo(hendelse, fnr)
-            }
-        }
-
-        fun hentForlengelseType(oppfolgingsperiodeId: UUID): ForlengelseHendelseType {
-            val hendelseType =
-                kandidatForUtmeldingRepository.hentSisteHendelseForAktivKandidat(oppfolgingsperiodeId)?.type
-                    ?: throw IllegalStateException("Fant ingen kandidat for utmelding-hendelser for oppfølgingsperiode $oppfolgingsperiodeId")
-            return if (hendelseType == ForlengelseHendelseType.FORLENGELSE_OPPRETTET || hendelseType == ForlengelseHendelseType.FORLENGELSE_ENDRET) {
-                ForlengelseHendelseType.FORLENGELSE_ENDRET
-            } else {
-                ForlengelseHendelseType.FORLENGELSE_OPPRETTET
-            }
+    private fun sendUtmeldingskandidatTilObo(kandidat: KandidatForUtmeldingHendelse, fnr: Fnr) {
+        if (sendUtmeldingskandidaterTilObo) {
+            val filterkategoriPersonId =
+                kandidatForUtmeldingRepository.hentEllerOpprettFilterhendelseId(kandidat.oppfolgingsperiodeUuid)
+            logger.info("Sender kandidat for utmelding til OBO med key=$filterkategoriPersonId for oppfølgingsperiode ${kandidat.oppfolgingsperiodeUuid}")
+            val filterhendelse = kandidat.tilFilterhendelseRecord(fnr, Operasjon.START)
+            kafkaProducerService.publiserFilterhendelse(filterkategoriPersonId, filterhendelse)
+        } else {
+            logger.info("Sender ikke kandidat for utmelding til OBO for oppfølgingsperiode ${kandidat.oppfolgingsperiodeUuid} fordi sending til OBO er togglet av")
         }
     }
+
+    private fun sendStoppUtmeldingskandidatTilObo(kandidat: KandidatForUtmeldingHendelse, fnr: Fnr) {
+        if (sendUtmeldingskandidaterTilObo) {
+            val filterkategoriPersonId =
+                kandidatForUtmeldingRepository.hentEllerOpprettFilterhendelseId(kandidat.oppfolgingsperiodeUuid)
+            logger.info("Sender stopp-melding for kandidat for utmelding til OBO med key=$filterkategoriPersonId for oppfølgingsperiode ${kandidat.oppfolgingsperiodeUuid}")
+            val filterhendelse = kandidat.tilFilterhendelseRecord(fnr, Operasjon.STOPP)
+            kafkaProducerService.publiserFilterhendelse(filterkategoriPersonId, filterhendelse)
+        } else {
+            logger.info("Sender ikke stopp-melding for kandidat for utmelding til OBO for oppfølgingsperiode ${kandidat.oppfolgingsperiodeUuid} fordi sending til OBO er togglet av")
+        }
+    }
+
+    private fun finnFnrForOppfolgingsperiode(oppfolgingsperiodeId: UUID): Fnr {
+        val aktorId = oppfolgingsPeriodeRepository.hentOppfolgingsperiode(oppfolgingsperiodeId.toString())
+            .getOrElse { throw IllegalStateException("Oppfølgingsperiode med id $oppfolgingsperiodeId finnes ikke") }?.aktorId
+        return aktorOppslagClient.hentFnr(AktorId(aktorId))
+    }
+
+    fun forlengKandidat(hendelse: ForlengelseHendelse, fnr: Fnr) {
+        logger.info("Lagrer forlengelse for oppfølgingsperiode ${hendelse.oppfolgingsperiodeUuid}")
+        transactor.executeWithoutResult { _ ->
+            kandidatForUtmeldingRepository.lagreKandidat(hendelse)
+            if (hendelse.type == ForlengelseHendelseType.FORLENGELSE_ENDRET) return@executeWithoutResult
+            sendStoppUtmeldingskandidatTilObo(hendelse, fnr)
+        }
+    }
+
+    fun hentForlengelseType(oppfolgingsperiodeId: UUID): ForlengelseHendelseType {
+        val hendelseType =
+            kandidatForUtmeldingRepository.hentSisteHendelseForAktivKandidat(oppfolgingsperiodeId)?.type
+                ?: throw IllegalStateException("Fant ingen kandidat for utmelding-hendelser for oppfølgingsperiode $oppfolgingsperiodeId")
+        return if (hendelseType == ForlengelseHendelseType.FORLENGELSE_OPPRETTET || hendelseType == ForlengelseHendelseType.FORLENGELSE_ENDRET) {
+            ForlengelseHendelseType.FORLENGELSE_ENDRET
+        } else {
+            ForlengelseHendelseType.FORLENGELSE_OPPRETTET
+        }
+    }
+}
