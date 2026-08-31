@@ -7,7 +7,6 @@ import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.Operasjon
-import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.hendelser.HendelseType
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.service.AvsluttOppfolgingService
 import no.nav.veilarboppfolging.service.KafkaProducerService
@@ -16,6 +15,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.support.TransactionTemplate
 import java.time.Instant
+import no.nav.veilarboppfolging.kandidatForUtmelding.dto.KandidatForUtmeldingTag
 
 @Service
 class KandidatForUtmeldingService(
@@ -53,6 +53,14 @@ class KandidatForUtmeldingService(
         val oppfolgingsperiodeId =
             oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId)?.getOrNull()?.uuid ?: return null
         return hentKandidatForUtmeldingTag(oppfolgingsperiodeId)
+    }
+
+    fun hentForlengelser(aktorId: AktorId): List<ForlengelseHendelse> {
+        val oppfolgingsperiodeId =
+            oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId)?.getOrNull()?.uuid ?: return emptyList()
+        return kandidatForUtmeldingRepository.hentAlleKandidatForUtmeldingHendelser(oppfolgingsperiodeId)
+            .filterIsInstance<ForlengelseHendelse>()
+            .filter { it.type == ForlengelseHendelseType.FORLENGELSE_OPPRETTET || it.type == ForlengelseHendelseType.FORLENGELSE_ENDRET }
     }
 
     fun behandleKandidaterMedUtloptForlengelse() {

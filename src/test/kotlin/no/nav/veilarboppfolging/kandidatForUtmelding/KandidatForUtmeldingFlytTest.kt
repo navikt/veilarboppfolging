@@ -1,13 +1,26 @@
 package no.nav.veilarboppfolging.kandidatForUtmelding
 
+import java.time.Instant
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.ZonedDateTime
+import java.util.UUID
 import no.nav.common.client.aktoroppslag.BrukerIdenter
 import no.nav.common.json.JsonUtils
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.EnhetId
 import no.nav.common.types.identer.Fnr
 import no.nav.common.types.identer.NavIdent
-import no.nav.paw.arbeidssokerregisteret.api.v1.*
+import no.nav.paw.arbeidssokerregisteret.api.v1.Aarsaksinformasjon
+import no.nav.paw.arbeidssokerregisteret.api.v1.AvslutningsInfo
+import no.nav.paw.arbeidssokerregisteret.api.v1.AvsluttetAarsakType
 import no.nav.paw.arbeidssokerregisteret.api.v1.AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST
+import no.nav.paw.arbeidssokerregisteret.api.v1.AvviksType
+import no.nav.paw.arbeidssokerregisteret.api.v1.Bruker
+import no.nav.paw.arbeidssokerregisteret.api.v1.BrukerType
+import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
+import no.nav.paw.arbeidssokerregisteret.api.v1.TidspunktFraKilde
 import no.nav.poao_tilgang.client.Decision
 import no.nav.poao_tilgang.client.TilgangType
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
@@ -15,16 +28,15 @@ import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
 import no.nav.veilarboppfolging.IntegrationTest
 import no.nav.veilarboppfolging.kafka.ArbeidssøkerperiodeConsumerService
 import no.nav.veilarboppfolging.kafka.TestUtils
+import no.nav.veilarboppfolging.kandidatForUtmelding.dto.KandidatForUtmeldingTag
 import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.BeskrivelseEnum
 import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.Kategori
 import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.Operasjon
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering.Companion.arbeidssokerRegistrering
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.UtmeldingsService
 import no.nav.veilarboppfolging.repository.UtmeldingRepository
 import no.nav.veilarboppfolging.service.KafkaConsumerService
-import no.nav.veilarboppfolging.service.OppfolgingsbrukerEndretIArenaService
 import no.nav.veilarboppfolging.service.ReaktiveringService
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.assertj.core.api.Assertions.assertThat
@@ -32,8 +44,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
-import java.time.*
-import java.util.*
 import no.nav.paw.arbeidssokerregisteret.api.v1.Metadata as MetaData
 
 class KandidatForUtmeldingFlytTest(
@@ -43,10 +53,6 @@ class KandidatForUtmeldingFlytTest(
     val kafkaConsumerService: KafkaConsumerService,
     @Autowired
     val utmeldingRepository: UtmeldingRepository,
-    @Autowired
-    val utmeldingsService: UtmeldingsService,
-    @Autowired
-    val oppfolgingsbrukerEndretIArenaService: OppfolgingsbrukerEndretIArenaService,
     @Autowired
     val reaktiveringService: ReaktiveringService,
 ) : IntegrationTest() {
@@ -142,7 +148,7 @@ class KandidatForUtmeldingFlytTest(
             kilde = "arbeidssøkerregisteret",
             hendelseTidspunkt = ZonedDateTime.now().toInstant(),
             arbeidssokerperiodeAvsluttetHendelseType = ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
-            avslutningsarsak = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
+            avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
         ))
         avsluttOppfolgingManueltSomVeileder(aktorId)
 
@@ -172,7 +178,7 @@ class KandidatForUtmeldingFlytTest(
             kilde ="kilde",
             hendelseTidspunkt = ZonedDateTime.now().toInstant(),
             arbeidssokerperiodeAvsluttetHendelseType = ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
-            avslutningsarsak = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
+            avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
         ))
         avsluttOppfolgingManueltSomVeileder(aktorId)
 
@@ -202,7 +208,7 @@ class KandidatForUtmeldingFlytTest(
             kilde ="kilde",
             hendelseTidspunkt = ZonedDateTime.now().toInstant(),
             arbeidssokerperiodeAvsluttetHendelseType = ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
-            avslutningsarsak = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString())
+            avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString())
         )
 
         avsluttOppfolgingManueltSomVeileder(aktorId)
@@ -224,7 +230,7 @@ class KandidatForUtmeldingFlytTest(
             kilde ="kilde",
             hendelseTidspunkt = ZonedDateTime.now().toInstant(),
             arbeidssokerperiodeAvsluttetHendelseType = ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
-            avslutningsarsak = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
+            avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
         ))
         assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId)).isNotNull()
 
@@ -282,7 +288,7 @@ class KandidatForUtmeldingFlytTest(
             kilde ="kilde",
             hendelseTidspunkt = ZonedDateTime.now().toInstant(),
             arbeidssokerperiodeAvsluttetHendelseType = ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
-            avslutningsarsak = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
+            avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
         ))
         assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId)).isNotNull()
 
@@ -322,7 +328,7 @@ class KandidatForUtmeldingFlytTest(
 
         assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId)).isNull()
 
-        val sluttMelding = ConsumerRecord("topic", 0, 0, "dummyKey", arbeidssokerperiode(fnr, periodeAvsluttet = true, avsluttetAarsakType = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST))
+        val sluttMelding = ConsumerRecord("topic", 0, 0, "dummyKey", arbeidssokerperiode(fnr, periodeAvsluttet = true, avsluttetAarsakType = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST))
         arbeidssoekerperiodeConsumerService.consumeArbeidssøkerperiode(sluttMelding)
 
         assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId))!!.isEqualTo(
@@ -418,7 +424,7 @@ class KandidatForUtmeldingFlytTest(
         fodselsnummer: String,
         periodeAvsluttet: Boolean = false,
         periodeStartet: Instant = Instant.now().minusSeconds(1),
-        avsluttetAarsakType: AvsluttetAarsakType = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST
+        avsluttetAarsakType: AvsluttetAarsakType = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST
     ): Periode {
         val slutt = if (periodeAvsluttet) {
             MetaData().apply {

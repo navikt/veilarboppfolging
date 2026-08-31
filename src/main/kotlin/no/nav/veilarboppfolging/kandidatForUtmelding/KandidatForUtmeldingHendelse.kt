@@ -5,6 +5,7 @@ import java.util.UUID
 import kotlin.jvm.optionals.getOrElse
 import no.nav.common.types.identer.Fnr
 import no.nav.common.utils.EnvironmentUtils
+import no.nav.veilarboppfolging.kandidatForUtmelding.dto.KandidatForUtmeldingTag
 import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.FilterhendelseRecord
 import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.Operasjon
 import org.postgresql.util.PGobject

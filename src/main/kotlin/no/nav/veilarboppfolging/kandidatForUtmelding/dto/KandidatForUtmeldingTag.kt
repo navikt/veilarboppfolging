@@ -1,4 +1,4 @@
-package no.nav.veilarboppfolging.kandidatForUtmelding
+package no.nav.veilarboppfolging.kandidatForUtmelding.dto
 
 enum class KandidatForUtmeldingTag {
     ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,

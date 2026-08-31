@@ -3,6 +3,7 @@ package no.nav.veilarboppfolging.kandidatForUtmelding
 import java.time.ZonedDateTime
 import java.util.UUID
 import no.nav.paw.arbeidssokerregisteret.api.v1.AvsluttetAarsakType
+import no.nav.veilarboppfolging.kandidatForUtmelding.dto.KandidatForUtmeldingTag
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 

@@ -4,6 +4,7 @@ import graphql.GraphQLContext
 import graphql.GraphQLError
 import graphql.execution.DataFetcherResult
 import graphql.schema.DataFetchingEnvironment
+import java.time.ZoneId
 import no.nav.common.auth.context.UserRole
 import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.client.norg2.Norg2Client
@@ -15,7 +16,6 @@ import no.nav.poao_tilgang.client.Decision
 import no.nav.poao_tilgang.client.PoaoTilgangClient
 import no.nav.poao_tilgang.client.TilgangType
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
-import no.nav.veilarboppfolging.ForbiddenException
 import no.nav.veilarboppfolging.client.pdl.PdlFolkeregisterStatusClient
 import no.nav.veilarboppfolging.controller.PoaoTilgangError
 import no.nav.veilarboppfolging.controller.graphql.brukerStatus.*
@@ -23,7 +23,7 @@ import no.nav.veilarboppfolging.controller.graphql.oppfolging.*
 import no.nav.veilarboppfolging.controller.graphql.veilederTilgang.VeilederTilgangDto
 import no.nav.veilarboppfolging.ident.toCommonIdent
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService
-import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingTag
+import no.nav.veilarboppfolging.kandidatForUtmelding.dto.KandidatForUtmeldingTag
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ErBrukerUnderOppfolging
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.KanStarteOppfolgingDto
@@ -49,6 +49,9 @@ import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.jvm.optionals.getOrDefault
 import kotlin.jvm.optionals.getOrNull
+import no.nav.veilarboppfolging.kandidatForUtmelding.ForlengelseHendelseType
+import no.nav.veilarboppfolging.kandidatForUtmelding.dto.Forlengelse
+import no.nav.veilarboppfolging.kandidatForUtmelding.dto.ForlengelseType
 
 enum class TilgangResultat {
     HAR_TILGANG,
@@ -106,6 +109,45 @@ class GraphqlController(
 
         return kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId).let { tag ->
             dataFetchResult.localContext(localContext).data(tag).build()
+        }
+    }
+
+    @QueryMapping
+    fun forlengelser(@Argument fnr: String? = null, environment: DataFetchingEnvironment): DataFetcherResult<List<Forlengelse>> {
+        val dataFetchResult = DataFetcherResult.newResult<List<Forlengelse>>()
+        val tilgang = sjekkTilgang(fnr, EksterneHarIkkeTilgang)
+        if (tilgang is HarIkkeTilgang) {
+            return dataFetchResult
+                .error(GraphQLError.newError()
+                    .message("Ikke tilgang til forlengelser: ${tilgang.message}")
+                    .path(environment.executionStepInfo.path)
+                    .build())
+                .build()
+        }
+
+        val eksternBrukerId = fnrFraContext(fnr)
+
+        val fnr = eksternBrukerId.getFnr()
+        val aktorId = eksternBrukerId.getAktorId()
+
+        val localContext = GraphQLContext.getDefault()
+            .put("fnr", fnr)
+            .put("aktorId", aktorId)
+
+        return kandidatForUtmeldingService.hentForlengelser(aktorId).let { forlengelseHendelser ->
+            val forlengelser = forlengelseHendelser.map {
+                Forlengelse(
+                    opprettetAv = it.utfortAv ?: "ukjent",
+                    opprettetTidspunkt = it.hendelseTidspunkt.atZone(ZoneId.of("Europe/Oslo")).toString(),
+                    forlengelseType = when (it.forlengelseHendelseType) {
+                        ForlengelseHendelseType.FORLENGELSE_OPPRETTET -> ForlengelseType.FORLENGELSE_OPPRETTET
+                        ForlengelseHendelseType.FORLENGELSE_ENDRET -> ForlengelseType.FORLENGELSE_ENDRET
+                        ForlengelseHendelseType.FORLENGELSE_UTLOPT -> throw IllegalArgumentException("Ugyldig forlengelseshendelsestype for forlengelser")
+                    },
+                    forlengetTil = it.hentForlengetTil()?.toString() ?: throw IllegalArgumentException("ForlengelseHendelse som skal vises må ha en forlenget-til-dato")
+                )
+            }
+            dataFetchResult.localContext(localContext).data(forlengelser).build()
         }
     }
 

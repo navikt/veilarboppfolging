@@ -1,5 +1,8 @@
 package no.nav.veilarboppfolging.controller
 
+import java.time.LocalDate
+import java.util.UUID
+import kotlin.test.assertEquals
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.EnhetId
 import no.nav.common.types.identer.Fnr
@@ -14,6 +17,8 @@ import no.nav.veilarboppfolging.controller.graphql.AdGruppeNavn
 import no.nav.veilarboppfolging.controller.graphql.toISOString
 import no.nav.veilarboppfolging.ident.randomAktorId
 import no.nav.veilarboppfolging.ident.randomFnr
+import no.nav.veilarboppfolging.kandidatForUtmelding.dto.Forlengelse
+import no.nav.veilarboppfolging.kandidatForUtmelding.dto.ForlengelseType
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.KanStarteOppfolgingDto
 import no.nav.veilarboppfolging.service.AuthService
 import org.junit.jupiter.api.Test
@@ -22,11 +27,10 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.graphql.execution.DefaultExecutionGraphQlService
 import org.springframework.graphql.execution.GraphQlSource
 import org.springframework.graphql.test.tester.ExecutionGraphQlServiceTester
+import org.springframework.graphql.test.tester.entityList
 import org.springframework.http.HttpStatusCode
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.web.client.RestClient
-import java.util.*
-import kotlin.test.assertEquals
 
 @ActiveProfiles("test")
 class GraphqlControllerTest: IntegrationTest() {
@@ -777,5 +781,57 @@ class GraphqlControllerTest: IntegrationTest() {
         val result = tester.documentName("hentKandidatForUtmeldingTag").variable("fnr", fnr.get()).execute()
         result.errors().verify()
         result.path("utmeldingskandidatTag").equals(null)
+    }
+
+    @Test
+    fun `skal returnere forlengelse`() {
+        val (fnr, aktorId) = defaultBruker()
+        val veilederUuid = UUID.randomUUID()
+        val enhetId = EnhetId("1234")
+        mockPoaoTilgangHarTilgangTilEnhet(veilederUuid, enhetId)
+        mockInternBrukerAuthOk(veilederUuid, aktorId, fnr)
+        mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Permit)
+        mockVeilarbArenaOppfolgingsBruker(fnr, Formidlingsgruppe.ISERV)
+        setBrukerUnderOppfolging(aktorId, fnr)
+        setLocalArenaOppfolging(aktorId, Formidlingsgruppe.ARBS)
+        setAoKontor(fnr, aktorId, enhetId.get())
+        val oppfolgingsperiode = hentOppfolgingsperioder(fnr).first { it.sluttDato == null }
+        lagreKandidatForUtmelding(fnr, oppfolgingsperiode.uuid)
+        mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Permit, tilgangType = TilgangType.SKRIVE)
+        val forlengetTil = LocalDate.now().plusDays(30)
+        forlengKandidatForUtmelding(fnr, forlengetTil)
+
+        val result = tester.documentName("hentForlengelser").variable("fnr", fnr.get()).execute()
+        result.errors().verify()
+        val forlengelser = result.path("forlengelser")
+            .entityList<Forlengelse>()
+            .get()
+
+        assertEquals(forlengelser.size, 1)
+        assertEquals(forlengelser.first().opprettetAv, "A123456")
+        assertEquals(forlengelser.first().forlengelseType, ForlengelseType.FORLENGELSE_OPPRETTET)
+        assertEquals(forlengelser.first().forlengetTil, forlengetTil.toString())
+    }
+
+    @Test
+    fun `ingen forlengelse - returnerer tom liste`() {
+        val (fnr, aktorId) = defaultBruker()
+        val veilederUuid = UUID.randomUUID()
+        val enhetId = EnhetId("1234")
+        mockPoaoTilgangHarTilgangTilEnhet(veilederUuid, enhetId)
+        mockInternBrukerAuthOk(veilederUuid, aktorId, fnr)
+        mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Permit)
+        mockVeilarbArenaOppfolgingsBruker(fnr, Formidlingsgruppe.ISERV)
+        setBrukerUnderOppfolging(aktorId, fnr)
+        setLocalArenaOppfolging(aktorId, Formidlingsgruppe.ARBS)
+        setAoKontor(fnr, aktorId, enhetId.get())
+        val oppfolgingsperiode = hentOppfolgingsperioder(fnr).first { it.sluttDato == null }
+        lagreKandidatForUtmelding(fnr, oppfolgingsperiode.uuid)
+
+        val result = tester.documentName("hentForlengelser").variable("fnr", fnr.get()).execute()
+        result.errors().verify()
+        result.path("forlengelser").matchesJson("""
+            []
+        """.trimIndent())
     }
 }

@@ -6,6 +6,7 @@ type Query {
     veilederTilgang(fnr: String!): VeilederTilgang
     gjeldendeOppfolgingsperiode: Oppfolgingsperiode
     utmeldingskandidatTag(fnr: String!): UtmeldingskandidatTag
+    forlengelser(fnr: String!): [Forlengelse]
 }
 
 type VeilederTilgang {
@@ -23,6 +24,7 @@ enum UtmeldingskandidatTag {
     ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
     ARBEIDSSOKERPERIODE_AVSLUTTET_SVARTE_NEI_I_BEKREFTELSE,
     ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET,
+    FORLENGELSE_UTLOPT,
 }
 
 # Svaret på Evaluerering av Policy-en som heter NavAnsattTilgangTilEksternBruker i POAO-Tilgang
@@ -165,4 +167,16 @@ type Oppfolgingsperiode {
 type KvpPeriode {
     startTidspunkt: String!
     sluttTidspunkt: String
+}
+
+type Forlengelse {
+    opprettetAv: String!
+    opprettetTidspunkt: String!
+    forlengelseType: ForlengelseType!
+    forlengetTil: String!
+}
+
+enum ForlengelseType {
+    FORLENGELSE_OPPRETTET
+    FORLENGELSE_ENDRET
 }

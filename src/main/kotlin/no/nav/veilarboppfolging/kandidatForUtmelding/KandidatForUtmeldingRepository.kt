@@ -150,6 +150,17 @@ class KandidatForUtmeldingRepository(
             .firstOrNull()
     }
 
+    fun hentAlleKandidatForUtmeldingHendelser(oppfolgingsperiodeId: UUID): List<KandidatForUtmeldingHendelse> {
+        return db.query(
+            """
+            SELECT *
+            FROM kandidater_for_utmelding_hendelser
+            WHERE oppfolgingsperiode_uuid = :oppfolgingsperiodeId order by created_at desc
+            """.trimIndent(),
+            mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeId.toString()),
+        ) { rs, _ -> map(rs) }
+    }
+
     fun hentAktiveKandidater(offset: Int, batchSize: Int): List<KandidatForUtmeldingHendelse> {
         return db.query(
             """
