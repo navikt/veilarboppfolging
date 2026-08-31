@@ -1,6 +1,8 @@
 package no.nav.veilarboppfolging.service
 
+import java.time.ZonedDateTime
 import java.util.Optional
+import java.util.UUID
 import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.client.aktoroppslag.BrukerIdenter
 import no.nav.veilarboppfolging.client.aap.AapClient
@@ -18,6 +20,7 @@ import no.nav.veilarboppfolging.repository.ArbeidsoppfolgingskontorRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
 import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity
+import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity
 import no.nav.veilarboppfolging.test.TestData.TEST_AKTOR_ID
 import no.nav.veilarboppfolging.test.TestData.TEST_FNR
 import org.junit.jupiter.api.BeforeEach
@@ -79,6 +82,18 @@ class AvsluttOppfolgingServiceTest {
                 null,
                 Optional.empty()
             )))
+        `when`(oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(TEST_AKTOR_ID))
+            .thenReturn(Optional.of(OppfolgingsperiodeEntity(
+                UUID.randomUUID(),
+                TEST_AKTOR_ID.get(),
+                null,
+                ZonedDateTime.now(),
+                null,
+                null,
+                emptyList(),
+            )
+
+            ))
     }
     private fun kanReaktiveres() {
         `when`(arenaOppfolgingService.kanEnkeltReaktiveres(TEST_FNR)).thenReturn(
@@ -122,6 +137,7 @@ class AvsluttOppfolgingServiceTest {
         `when`(ungdomsprogramClient.erDeltakerIUngdomsprogrammet(TEST_FNR)).thenReturn(false)
         `when`(arbeidssokerRegisterClient.erArbeidssoeker(TEST_FNR.get())).thenReturn(false)
         `when`(aapClient.harAap(TEST_FNR.get())).thenReturn(false)
+        `when`(fjernKandidatForUtmeldingService.erOppfolgingForlenget(any())).thenReturn(false)
 
         val brukverV2 = arenaIservAvregistrering()
 
@@ -143,6 +159,7 @@ class AvsluttOppfolgingServiceTest {
         `when`(ungdomsprogramClient.erDeltakerIUngdomsprogrammet(TEST_FNR)).thenReturn(false)
         `when`(arbeidssokerRegisterClient.erArbeidssoeker(TEST_FNR.get())).thenReturn(false)
         `when`(aapClient.harAap(TEST_FNR.get())).thenReturn(false)
+        `when`(fjernKandidatForUtmeldingService.erOppfolgingForlenget(any())).thenReturn(false)
 
         val brukverV2 = arenaIservAvregistrering()
 
@@ -162,6 +179,7 @@ class AvsluttOppfolgingServiceTest {
         `when`(ungdomsprogramClient.erDeltakerIUngdomsprogrammet(TEST_FNR)).thenReturn(true)
         `when`(arbeidssokerRegisterClient.erArbeidssoeker(TEST_FNR.get())).thenReturn(false)
         `when`(aapClient.harAap(TEST_FNR.get())).thenReturn(false)
+        `when`(fjernKandidatForUtmeldingService.erOppfolgingForlenget(any())).thenReturn(false)
         val brukverV2 = arenaIservAvregistrering()
 
         val result = avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(brukverV2)
@@ -177,6 +195,27 @@ class AvsluttOppfolgingServiceTest {
         `when`(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(listOf(TEST_FNR))).thenReturn(false)
         `when`(ungdomsprogramClient.erDeltakerIUngdomsprogrammet(TEST_FNR)).thenReturn(false)
         `when`(arbeidssokerRegisterClient.erArbeidssoeker(TEST_FNR.get())).thenReturn(true)
+        `when`(fjernKandidatForUtmeldingService.erOppfolgingForlenget(any())).thenReturn(false)
+
+        val brukverV2 = arenaIservAvregistrering()
+
+        val result = avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(brukverV2)
+
+        verify(startOppfolgingService, never()).startOppfolgingHvisIkkeAlleredeStartet(any())
+        assertInstanceOf<KunneIkkeAvsluttes>(result)
+    }
+
+    @Test
+    fun `skal ikke avslutte oppfolging pa bruker som har forlenget oppfolging`() {
+        brukerErUnderOppfolgingLokalt()
+        kanIkkeReaktiveres()
+        mockBrukerIdenter()
+        `when`(kvpService.erUnderKvp(TEST_AKTOR_ID)).thenReturn(false)
+        `when`(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(listOf(TEST_FNR))).thenReturn(false)
+        `when`(ungdomsprogramClient.erDeltakerIUngdomsprogrammet(TEST_FNR)).thenReturn(false)
+        `when`(arbeidssokerRegisterClient.erArbeidssoeker(TEST_FNR.get())).thenReturn(false)
+        `when`(aapClient.harAap(TEST_FNR.get())).thenReturn(false)
+        `when`(fjernKandidatForUtmeldingService.erOppfolgingForlenget(any())).thenReturn(true)
 
         val brukverV2 = arenaIservAvregistrering()
 

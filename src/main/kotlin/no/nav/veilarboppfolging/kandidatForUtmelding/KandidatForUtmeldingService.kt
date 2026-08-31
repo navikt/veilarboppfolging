@@ -7,6 +7,7 @@ import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.Operasjon
+import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.hendelser.HendelseType
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.service.AvsluttOppfolgingService
 import no.nav.veilarboppfolging.service.KafkaProducerService
@@ -14,6 +15,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.support.TransactionTemplate
+import java.time.Instant
 
 @Service
 class KandidatForUtmeldingService(
@@ -48,7 +50,8 @@ class KandidatForUtmeldingService(
     }
 
     fun hentKandidatForUtmeldingTag(aktorId: AktorId): KandidatForUtmeldingTag? {
-        val oppfolgingsperiodeId = oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId)?.getOrNull()?.uuid ?: return null
+        val oppfolgingsperiodeId =
+            oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId)?.getOrNull()?.uuid ?: return null
         return hentKandidatForUtmeldingTag(oppfolgingsperiodeId)
     }
 
@@ -64,8 +67,17 @@ class KandidatForUtmeldingService(
 
                 if (avslutningsstatus.kanAvslutte) {
                     logger.info("Kandidat for utmelding med oppfølgingsperiode $oppfolgingsperiodeId har utløpt forlengelse og kan avsluttes")
+                    val forlengelseUtloptHendelse = ForlengelseHendelse(
+                        oppfolgingsperiodeUuid = kandidat.oppfolgingsperiodeUuid,
+                        utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.SYSTEM,
+                        utfortAv = "SYSTEM",
+                        kilde = "veilarboppfolging",
+                        forlengelseHendelseType = ForlengelseHendelseType.FORLENGELSE_UTLOPT,
+                        hendelseTidspunkt = Instant.now(),
+                        forlengetTil = null
+                    )
+                    kandidatForUtmeldingRepository.lagreKandidat(forlengelseUtloptHendelse)
                     sendUtmeldingskandidatTilObo(kandidat, fnr)
-                    kandidatForUtmeldingRepository.nullstillForlengetTil(oppfolgingsperiodeId)
                 } else {
                     logger.info("Kandidat for utmelding med oppfølgingsperiode $oppfolgingsperiodeId har utløpt forlengelse, men kan ikke avsluttes")
                     kandidatForUtmeldingRepository.fjernKandidat(oppfolgingsperiodeId)
@@ -87,9 +99,40 @@ class KandidatForUtmeldingService(
         }
     }
 
+    private fun sendStoppUtmeldingskandidatTilObo(kandidat: KandidatForUtmeldingHendelse, fnr: Fnr) {
+        if (sendUtmeldingskandidaterTilObo) {
+            val filterkategoriPersonId =
+                kandidatForUtmeldingRepository.hentEllerOpprettFilterhendelseId(kandidat.oppfolgingsperiodeUuid)
+            logger.info("Sender stopp-melding for kandidat for utmelding til OBO med key=$filterkategoriPersonId for oppfølgingsperiode ${kandidat.oppfolgingsperiodeUuid}")
+            val filterhendelse = kandidat.tilFilterhendelseRecord(fnr, Operasjon.STOPP)
+            kafkaProducerService.publiserFilterhendelse(filterkategoriPersonId, filterhendelse)
+        } else {
+            logger.info("Sender ikke stopp-melding for kandidat for utmelding til OBO for oppfølgingsperiode ${kandidat.oppfolgingsperiodeUuid} fordi sending til OBO er togglet av")
+        }
+    }
+
     private fun finnFnrForOppfolgingsperiode(oppfolgingsperiodeId: UUID): Fnr {
         val aktorId = oppfolgingsPeriodeRepository.hentOppfolgingsperiode(oppfolgingsperiodeId.toString())
             .getOrElse { throw IllegalStateException("Oppfølgingsperiode med id $oppfolgingsperiodeId finnes ikke") }?.aktorId
         return aktorOppslagClient.hentFnr(AktorId(aktorId))
+    }
+
+    fun forlengKandidat(hendelse: ForlengelseHendelse, fnr: Fnr) {
+        logger.info("Lagrer forlengelse for oppfølgingsperiode ${hendelse.oppfolgingsperiodeUuid}")
+        transactor.executeWithoutResult { _ ->
+            kandidatForUtmeldingRepository.lagreKandidat(hendelse)
+            if(hendelse.type == ForlengelseHendelseType.FORLENGELSE_ENDRET) return@executeWithoutResult
+            sendStoppUtmeldingskandidatTilObo(hendelse, fnr)
+        }
+    }
+
+    fun hentForlengelseType(oppfolgingsperiodeId: UUID): ForlengelseHendelseType {
+        val hendelseType = kandidatForUtmeldingRepository.hentSisteHendelseForAktivKandidat(oppfolgingsperiodeId)?.type
+            ?: throw IllegalStateException("Fant ingen kandidat for utmelding-hendelser for oppfølgingsperiode $oppfolgingsperiodeId")
+        return if (hendelseType == ForlengelseHendelseType.FORLENGELSE_OPPRETTET || hendelseType == ForlengelseHendelseType.FORLENGELSE_ENDRET) {
+            ForlengelseHendelseType.FORLENGELSE_ENDRET
+        } else {
+            ForlengelseHendelseType.FORLENGELSE_OPPRETTET
+        }
     }
 }

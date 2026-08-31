@@ -27,8 +27,10 @@ public class DbTestUtils {
             "OPPFOLGINGSENHET_ENDRET",
             "KAFKA_PRODUCER_RECORD",
             "ao_kontor",
-            "kandidat_for_utmelding"
-    );
+            "filterkategori_id_mapping",
+            "kandidater_for_utmelding_hendelser",
+            "kandidater_for_utmelding"
+            );
 
     public static void cleanupTestDb() {
         cleanupTestDb(LocalDatabaseSingleton.INSTANCE.getJdbcTemplate());

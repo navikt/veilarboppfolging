@@ -38,4 +38,8 @@ class FjernKandidatForUtmeldingService(
             kandidatForUtmeldingRepository.fjernKandidat(oppfolgingsperiodeId)
         }
     }
+
+    fun erOppfolgingForlenget(oppfolgingsperiodeId: UUID): Boolean {
+        return kandidatForUtmeldingRepository.hentKandidatMedIkkeUtloptForlengelse(oppfolgingsperiodeId) != null
+    }
 }

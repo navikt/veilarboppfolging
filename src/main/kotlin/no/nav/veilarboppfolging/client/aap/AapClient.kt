@@ -1,5 +1,8 @@
 package no.nav.veilarboppfolging.client.aap
 
+import com.fasterxml.jackson.annotation.JsonSubTypes
+import com.fasterxml.jackson.annotation.JsonTypeInfo
+import com.fasterxml.jackson.annotation.JsonTypeName
 import java.time.LocalDate
 import java.util.function.Supplier
 import okhttp3.MediaType.Companion.toMediaType
@@ -13,8 +16,8 @@ import tools.jackson.module.kotlin.KotlinModule
 import tools.jackson.module.kotlin.readValue
 
 /**
- * Klient for å sjekke om en person har ytelsen AAP (arbeidsavklaringspenger).
- * Dokumentasjon: https://aap-api.intern.dev.nav.no/swagger-ui/index.html#/ArenaHistorikk/post_arena_person_saker
+ * Klient for å sjekke om en person har eller har en aktiv søknad om ytelsen AAP (arbeidsavklaringspenger).
+ * Dokumentasjon: https://aap-api.intern.dev.nav.no/swagger-ui/index.html#/DAB/post_dab_sakerByFnr
  */
 class AapClient(
     private val baseUrl: String,
@@ -33,7 +36,7 @@ class AapClient(
         val requestBody = AapPerioderRequest(personidentifikator = personident)
 
         val request = Request.Builder()
-            .url("$baseUrl/perioder")
+            .url("$baseUrl/dab/sakerByFnr")
             .addHeader("Authorization", "Bearer ${tokenProvider.get()}")
             .post(
                 objectMapper.writeValueAsString(requestBody)
@@ -49,12 +52,109 @@ class AapClient(
             val body = response.body?.string()
                 ?: throw RuntimeException("Body mangler i respons fra aap-api")
 
-            val perioder = objectMapper.readValue<AapPerioderResponse>(body).perioder
-            val idag = LocalDate.now()
-            val harAktivAap = perioder.any { it.tilOgMedDato == null || it.tilOgMedDato.isAfter(idag) }
-            logger.info("Sjekket AAP-status, harAap=$harAktivAap, antallPerioder=${perioder.size}")
+            val response = objectMapper.readValue<DabSakerResponse>(body)
+            val harAktivAap = response.mottarEllerHarSoktAAP()
+            logger.info("Sjekket AAP-status, harAap=$harAktivAap, antall saker=${response.saker.size}")
             return harAktivAap
         }
+    }
+}
+
+data class DabSakerResponse(
+    val saker: List<DabSak>,
+) {
+    fun mottarEllerHarSoktAAP(): Boolean {
+        return saker.any { it.mottarEllerHarSoktAAP() }
+    }
+}
+
+@JsonTypeInfo(
+    use = JsonTypeInfo.Id.NAME,
+    include = JsonTypeInfo.As.EXISTING_PROPERTY,
+    property = "kilde",
+)
+@JsonSubTypes(
+    JsonSubTypes.Type(value = DabSak.Arena::class, name = "ARENA"),
+    JsonSubTypes.Type(value = DabSak.Kelvin::class, name = "KELVIN"),
+)
+sealed interface DabSak {
+    val sakId: String
+    val kilde: Kilde
+
+    fun mottarEllerHarSoktAAP(): Boolean
+
+    @JsonTypeName("ARENA")
+    data class Arena(
+        override val sakId: String,
+        val statusKode: ArenaStatus,
+        val periode: Periode,
+    ) : DabSak {
+        data class Periode(
+            val fraOgMedDato: LocalDate?,
+            val tilOgMedDato: LocalDate?
+        )
+
+        override val kilde: Kilde = Kilde.ARENA
+
+        override fun mottarEllerHarSoktAAP(): Boolean {
+            val idag = LocalDate.now()
+            val harAktivAap = periode.fraOgMedDato != null && periode.tilOgMedDato != null && periode.tilOgMedDato.isAfter(idag) && statusKode == ArenaStatus.IVERK
+            val harSoktAAP = statusKode == ArenaStatus.MOTAT || statusKode == ArenaStatus.OPPRE || statusKode == ArenaStatus.REGIS
+            return harAktivAap || harSoktAAP
+        }
+    }
+
+    @JsonTypeName("KELVIN")
+    data class Kelvin(
+        override val sakId: String,
+        val statuskode: KelvinStatus,
+        val perioder: List<Periode>,
+        val ytelsesstatus: YtelseStatus,
+    ) : DabSak {
+        data class Periode(
+            val fraOgMedDato: LocalDate,
+            val tilOgMedDato: LocalDate,
+        )
+
+        override val kilde: Kilde = Kilde.KELVIN
+
+        override fun mottarEllerHarSoktAAP(): Boolean {
+            val idag = LocalDate.now()
+            val harAktivAap = perioder.any { !it.tilOgMedDato.isBefore(idag) }
+            return harAktivAap || statuskode == KelvinStatus.SOKNAD_UNDER_BEHANDLING
+        }
+    }
+
+    enum class Kilde {
+        ARENA,
+        KELVIN
+    }
+
+    enum class ArenaStatus {
+        AVSLU,
+        FORDE,
+        GODKJ,
+        INNST,
+        IVERK,
+        KONT,
+        MOTAT,
+        OPPRE,
+        REGIS,
+        UKJENT,
+    }
+
+    enum class KelvinStatus {
+        OPPRETTET,
+        UTREDES,
+        LØPENDE,
+        AVSLUTTET,
+        SOKNAD_UNDER_BEHANDLING,
+        REVURDERING_UNDER_BEHANDLING,
+        FERDIGBEHANDLET,
+    }
+
+    enum class YtelseStatus {
+        FOR_VEDTAK, LOPENDE, AVSLUTTET
     }
 }
 
@@ -62,11 +162,7 @@ data class AapPerioderRequest(
     val personidentifikator: String,
 )
 
-data class AapPerioderResponse(
-    val perioder: List<AapPeriode>,
-)
-
 data class AapPeriode(
-    val fraOgMedDato: LocalDate,
-    val tilOgMedDato: LocalDate?,
+    val fraOgMedDato: LocalDate?,
+    val tilOgMedDato: LocalDate?
 )
