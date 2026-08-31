@@ -1,6 +1,6 @@
 package no.nav.veilarboppfolging.kandidatForUtmelding.dto
 
-enum class KandidatForUtmeldingTag {
+enum class KandidatForUtmeldingTagDto {
     ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
     ARBEIDSSOKERPERIODE_AVSLUTTET_SVARTE_NEI_I_BEKREFTELSE,
     ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET,

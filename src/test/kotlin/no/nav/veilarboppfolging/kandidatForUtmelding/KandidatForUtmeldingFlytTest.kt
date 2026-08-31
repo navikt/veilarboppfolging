@@ -28,7 +28,7 @@ import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
 import no.nav.veilarboppfolging.IntegrationTest
 import no.nav.veilarboppfolging.kafka.ArbeidssøkerperiodeConsumerService
 import no.nav.veilarboppfolging.kafka.TestUtils
-import no.nav.veilarboppfolging.kandidatForUtmelding.dto.KandidatForUtmeldingTag
+import no.nav.veilarboppfolging.kandidatForUtmelding.dto.KandidatForUtmeldingTagDto
 import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.BeskrivelseEnum
 import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.Kategori
 import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.Operasjon
@@ -313,7 +313,7 @@ class KandidatForUtmeldingFlytTest(
         arbeidssoekerperiodeConsumerService.consumeArbeidssøkerperiode(sluttMelding)
 
         assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId))!!.isEqualTo(
-            KandidatForUtmeldingTag.ARBEIDSSOKERPERIODE_AVSLUTTET_SVARTE_NEI_I_BEKREFTELSE)
+            KandidatForUtmeldingTagDto.ARBEIDSSOKERPERIODE_AVSLUTTET_SVARTE_NEI_I_BEKREFTELSE)
     }
 
     @Test
@@ -332,7 +332,7 @@ class KandidatForUtmeldingFlytTest(
         arbeidssoekerperiodeConsumerService.consumeArbeidssøkerperiode(sluttMelding)
 
         assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId))!!.isEqualTo(
-            KandidatForUtmeldingTag.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT)
+            KandidatForUtmeldingTagDto.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT)
     }
 
     @Test
