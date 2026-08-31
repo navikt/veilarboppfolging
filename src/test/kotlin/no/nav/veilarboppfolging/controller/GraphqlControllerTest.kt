@@ -17,16 +17,18 @@ import no.nav.veilarboppfolging.controller.graphql.AdGruppeNavn
 import no.nav.veilarboppfolging.controller.graphql.toISOString
 import no.nav.veilarboppfolging.ident.randomAktorId
 import no.nav.veilarboppfolging.ident.randomFnr
-import no.nav.veilarboppfolging.kandidatForUtmelding.dto.Forlengelse
-import no.nav.veilarboppfolging.kandidatForUtmelding.dto.ForlengelseType
+import no.nav.veilarboppfolging.kandidatForUtmelding.dto.ForlengelseDto
+import no.nav.veilarboppfolging.kandidatForUtmelding.dto.UtmeldingskandidatDto
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.KanStarteOppfolgingDto
 import no.nav.veilarboppfolging.service.AuthService
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertNotNull
 import org.mockito.Mockito.verifyNoInteractions
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.graphql.execution.DefaultExecutionGraphQlService
 import org.springframework.graphql.execution.GraphQlSource
 import org.springframework.graphql.test.tester.ExecutionGraphQlServiceTester
+import org.springframework.graphql.test.tester.entity
 import org.springframework.graphql.test.tester.entityList
 import org.springframework.http.HttpStatusCode
 import org.springframework.test.context.ActiveProfiles
@@ -784,7 +786,7 @@ class GraphqlControllerTest: IntegrationTest() {
     }
 
     @Test
-    fun `skal returnere forlengelse`() {
+    fun `skal returnere aktiv forlengelse`() {
         val (fnr, aktorId) = defaultBruker()
         val veilederUuid = UUID.randomUUID()
         val enhetId = EnhetId("1234")
@@ -801,16 +803,16 @@ class GraphqlControllerTest: IntegrationTest() {
         val forlengetTil = LocalDate.now().plusDays(30)
         forlengKandidatForUtmelding(fnr, forlengetTil)
 
-        val result = tester.documentName("hentForlengelser").variable("fnr", fnr.get()).execute()
+        val result = tester.documentName("hentUtmeldingskandidat").variable("fnr", fnr.get()).execute()
         result.errors().verify()
-        val forlengelser = result.path("forlengelser")
-            .entityList<Forlengelse>()
+        val kandidat = result.path("utmeldingskandidat")
+            .entity<UtmeldingskandidatDto>()
             .get()
 
-        assertEquals(forlengelser.size, 1)
-        assertEquals(forlengelser.first().opprettetAv, "A123456")
-        assertEquals(forlengelser.first().forlengelseType, ForlengelseType.FORLENGELSE_OPPRETTET)
-        assertEquals(forlengelser.first().forlengetTil, forlengetTil.toString())
+        val forlengelse = kandidat.aktivForlengelse
+        assertNotNull(forlengelse)
+        assertEquals(forlengelse.utfortAv, "A123456")
+        assertEquals(forlengelse.forlengetTil, forlengetTil.toString())
     }
 
     @Test

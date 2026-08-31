@@ -1,8 +1,0 @@
-query testForlengelser($fnr: String!) {
-    forlengelser(fnr: $fnr) {
-        opprettetAv
-        opprettetTidspunkt
-        forlengelseType
-        forlengetTil
-    }
-}
