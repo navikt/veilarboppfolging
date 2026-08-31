@@ -5,8 +5,7 @@ type Query {
     oppfolgingsPerioder(fnr: String!): [Oppfolgingsperiode]
     veilederTilgang(fnr: String!): VeilederTilgang
     gjeldendeOppfolgingsperiode: Oppfolgingsperiode
-    utmeldingskandidatTag(fnr: String!): UtmeldingskandidatTag
-    forlengelser(fnr: String!): [Forlengelse]
+    utmeldingskandidat: Utmeldingskandidat
 }
 
 type VeilederTilgang {
@@ -17,6 +16,11 @@ type VeilederTilgang {
     harVeilederTilgangFlytteBrukerTilEgetKontor: Boolean!
     tilgang: TilgangResultat
     harAktiveTiltaksdeltakelserVedFlyttingTilEgetKontor: Boolean
+}
+
+type Utmeldingskandidat {
+    tag: UtmeldingskandidatTag
+    utmeldingskandidatHendelser(fnr: String!): [UtmeldingskandidatHendelser]
 }
 
 
@@ -169,14 +173,26 @@ type KvpPeriode {
     sluttTidspunkt: String
 }
 
-type Forlengelse {
-    opprettetAv: String!
-    opprettetTidspunkt: String!
-    forlengelseType: ForlengelseType!
-    forlengetTil: String!
+type UtmeldingskandidatHendelser {
+    utfortAvType: KandidatForUtmeldingHendelseUtfortAvType!
+    utfortAv: String
+    hendelseTidspunkt: String!
+    type: KandidatForUtmeldingHendelseType!
+    forlengetTil: String
 }
 
-enum ForlengelseType {
+enum KandidatForUtmeldingHendelseType {
+    ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT
+    ARBEIDSSOKERPERIODE_AVSLUTTET_SVARTE_NEI_I_BEKREFTELSE
+    ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET
     FORLENGELSE_OPPRETTET
     FORLENGELSE_ENDRET
+    FORLENGELSE_UTLOPT
+}
+
+enum KandidatForUtmeldingHendelseUtfortAvType {
+    VEILEDER
+    SYSTEM
+    BRUKER
+    UKJENT
 }
