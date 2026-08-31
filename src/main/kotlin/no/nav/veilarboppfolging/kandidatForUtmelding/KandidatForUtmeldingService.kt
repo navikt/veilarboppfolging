@@ -55,12 +55,14 @@ class KandidatForUtmeldingService(
         return hentKandidatForUtmeldingTag(oppfolgingsperiodeId)
     }
 
-    fun hentForlengelser(aktorId: AktorId): List<ForlengelseHendelse> {
+    fun hentUtmeldingsKandidatHendelser(aktorId: AktorId): List<KandidatForUtmeldingHendelse> {
         val oppfolgingsperiodeId =
             oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId)?.getOrNull()?.uuid ?: return emptyList()
         return kandidatForUtmeldingRepository.hentAlleKandidatForUtmeldingHendelser(oppfolgingsperiodeId)
-            .filterIsInstance<ForlengelseHendelse>()
-            .filter { it.type == ForlengelseHendelseType.FORLENGELSE_OPPRETTET || it.type == ForlengelseHendelseType.FORLENGELSE_ENDRET }
+    }
+
+    fun hentAktivForlengelse(oppfolgingsperiodeId: UUID): KandidatForUtmeldingHendelse? {
+        return kandidatForUtmeldingRepository.hentKandidatMedForlengelse(oppfolgingsperiodeId)
     }
 
     fun behandleKandidaterMedUtloptForlengelse() {

@@ -5,7 +5,8 @@ type Query {
     oppfolgingsPerioder(fnr: String!): [Oppfolgingsperiode]
     veilederTilgang(fnr: String!): VeilederTilgang
     gjeldendeOppfolgingsperiode: Oppfolgingsperiode
-    utmeldingskandidat: Utmeldingskandidat
+    utmeldingskandidatTag(fnr: String!): UtmeldingskandidatTag @deprecated(reason: "Erstattet av utmeldingskandidat som er mer beskrivende")
+    utmeldingskandidat(fnr: String!): Utmeldingskandidat
 }
 
 type VeilederTilgang {
@@ -20,7 +21,8 @@ type VeilederTilgang {
 
 type Utmeldingskandidat {
     tag: UtmeldingskandidatTag
-    utmeldingskandidatHendelser(fnr: String!): [UtmeldingskandidatHendelser]
+    utmeldingskandidatHendelser: [UtmeldingskandidatHendelser]
+    aktivForlengelse: Forlengelse
 }
 
 
@@ -195,4 +197,11 @@ enum KandidatForUtmeldingHendelseUtfortAvType {
     SYSTEM
     BRUKER
     UKJENT
+}
+
+type Forlengelse {
+    utfortAvType: KandidatForUtmeldingHendelseUtfortAvType!
+    utfortAv: String
+    hendelseTidspunkt: String!
+    forlengetTil: String
 }

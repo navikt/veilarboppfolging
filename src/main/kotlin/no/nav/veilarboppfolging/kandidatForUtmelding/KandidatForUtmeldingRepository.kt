@@ -85,7 +85,6 @@ class KandidatForUtmeldingRepository(
             .firstOrNull()
     }
 
-    @TestOnly
     fun hentKandidatMedForlengelse(oppfolgingsperiodeId: UUID): KandidatForUtmeldingHendelse? {
         return db.query(
             """

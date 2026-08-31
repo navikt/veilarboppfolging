@@ -50,8 +50,10 @@ import java.time.format.DateTimeFormatter
 import kotlin.jvm.optionals.getOrDefault
 import kotlin.jvm.optionals.getOrNull
 import no.nav.veilarboppfolging.kandidatForUtmelding.ForlengelseHendelseType
+import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingHendelse
 import no.nav.veilarboppfolging.kandidatForUtmelding.dto.Forlengelse
 import no.nav.veilarboppfolging.kandidatForUtmelding.dto.ForlengelseType
+import java.util.UUID
 
 enum class TilgangResultat {
     HAR_TILGANG,
@@ -113,7 +115,7 @@ class GraphqlController(
     }
 
     @QueryMapping
-    fun forlengelser(@Argument fnr: String? = null, environment: DataFetchingEnvironment): DataFetcherResult<List<Forlengelse>> {
+    fun utmeldingskandidat(@Argument fnr: String? = null, environment: DataFetchingEnvironment): DataFetcherResult<List<Forlengelse>> {
         val dataFetchResult = DataFetcherResult.newResult<List<Forlengelse>>()
         val tilgang = sjekkTilgang(fnr, EksterneHarIkkeTilgang)
         if (tilgang is HarIkkeTilgang) {
@@ -129,26 +131,29 @@ class GraphqlController(
 
         val fnr = eksternBrukerId.getFnr()
         val aktorId = eksternBrukerId.getAktorId()
+        val periodeId = oppfolgingService.hentGjeldendeOppfolgingsperiode(aktorId)
 
         val localContext = GraphQLContext.getDefault()
             .put("fnr", fnr)
             .put("aktorId", aktorId)
+            .put("oppfolgingsPeriodeId", periodeId)
 
-        return kandidatForUtmeldingService.hentForlengelser(aktorId).let { forlengelseHendelser ->
-            val forlengelser = forlengelseHendelser.map {
-                Forlengelse(
-                    opprettetAv = it.utfortAv ?: "ukjent",
-                    opprettetTidspunkt = it.hendelseTidspunkt.atZone(ZoneId.of("Europe/Oslo")).toString(),
-                    forlengelseType = when (it.forlengelseHendelseType) {
-                        ForlengelseHendelseType.FORLENGELSE_OPPRETTET -> ForlengelseType.FORLENGELSE_OPPRETTET
-                        ForlengelseHendelseType.FORLENGELSE_ENDRET -> ForlengelseType.FORLENGELSE_ENDRET
-                        ForlengelseHendelseType.FORLENGELSE_UTLOPT -> throw IllegalArgumentException("Ugyldig forlengelseshendelsestype for forlengelser")
-                    },
-                    forlengetTil = it.hentForlengetTil()?.toString() ?: throw IllegalArgumentException("ForlengelseHendelse som skal vises må ha en forlenget-til-dato")
-                )
-            }
-            dataFetchResult.localContext(localContext).data(forlengelser).build()
-        }
+        return dataFetchResult.localContext(localContext).build()
+    }
+
+    @SchemaMapping("Utmeldingskandidat", field = "aktivForlengelse")
+    fun aktivForlengelse(@LocalContextValue oppfolgingsPeriodeId: UUID): KandidatForUtmeldingHendelse? {
+        return kandidatForUtmeldingService.hentAktivForlengelse(oppfolgingsPeriodeId)
+    }
+
+    @SchemaMapping("Utmeldingskandidat", field = "utmeldingskandidatHendelser")
+    fun utmeldingskandidatHendelser(@LocalContextValue aktorId: AktorId) {
+        val hendelser = kandidatForUtmeldingService.hentUtmeldingsKandidatHendelser(aktorId)
+    }
+
+    @SchemaMapping("Utmeldingskandidat", field = "tag")
+    fun utmeldingskandidatTag(@LocalContextValue oppfolgingsPeriodeId: UUID): KandidatForUtmeldingTag? {
+        return kandidatForUtmeldingService.hentKandidatForUtmeldingTag(oppfolgingsPeriodeId)
     }
 
     @QueryMapping
