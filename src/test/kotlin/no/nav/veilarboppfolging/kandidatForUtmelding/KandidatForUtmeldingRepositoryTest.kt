@@ -8,6 +8,7 @@ import no.nav.paw.arbeidssokerregisteret.api.v1.AvsluttetAarsakType
 import no.nav.veilarboppfolging.LocalDatabaseSingleton
 import no.nav.veilarboppfolging.oppfolgingsbruker.BrukerRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering.Companion.arbeidssokerRegistrering
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvregistreringsType
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
 import no.nav.veilarboppfolging.test.DbTestUtils
@@ -214,6 +215,40 @@ class KandidatForUtmeldingRepositoryTest {
         )
 
         assertThat(kandidatForUtmeldingRepository.hentAntallKandidaterForUtmeldingIkkeForlenget()).isEqualTo(1)
+    }
+
+    @Test
+    fun `hentAlleKandidatForUtmeldingHendelser - returnerer hendelser for alle oppfølgingsperioder`() {
+        val oppfolgingsbruker = arbeidssokerRegistrering(fnr, aktorId, BrukerRegistrant(fnr))
+        oppfolgingsStatusRepository.opprettOppfolging(aktorId)
+        oppfolgingsPeriodeRepository.start(oppfolgingsbruker)
+        val oppfolgingsperiodeUuid = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId).first().uuid
+        val avsluttet = arbeidssøkerPeriodeAvsluttet(oppfolgingsperiodeUuid)
+        kandidatForUtmeldingRepository.lagreKandidat(avsluttet)
+
+        assertThat(kandidatForUtmeldingRepository.hentAlleKandidatForUtmeldingHendelser(aktorId).size).isEqualTo(1)
+
+        oppfolgingsPeriodeRepository.avsluttSistePeriodeOgAvsluttOppfolging(
+            aktorId,
+            "Z123456",
+            "begrunnelse",
+            AvregistreringsType.AdminAvregistrering,
+        )
+        kandidatForUtmeldingRepository.fjernKandidat(oppfolgingsperiodeUuid)
+        assertThat(kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeUuid)).isNull()
+
+        oppfolgingsPeriodeRepository.start(oppfolgingsbruker)
+        val nesteOppfolgingsperiodeUuid = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId).find { it.sluttDato == null }!!.uuid
+        assertThat(oppfolgingsperiodeUuid).isNotEqualTo(nesteOppfolgingsperiodeUuid)
+        val nesteAvsluttet = arbeidssøkerPeriodeAvsluttet(nesteOppfolgingsperiodeUuid)
+        kandidatForUtmeldingRepository.lagreKandidat(nesteAvsluttet)
+        assertThat(kandidatForUtmeldingRepository.hentKandidat(nesteOppfolgingsperiodeUuid)).isNotNull()
+
+        val hendelser = kandidatForUtmeldingRepository.hentAlleKandidatForUtmeldingHendelser(aktorId)
+
+        assertThat(hendelser.size).isEqualTo(2)
+        assertThat { hendelser.first { it.oppfolgingsperiodeUuid == oppfolgingsperiodeUuid } }.isNotNull
+        assertThat { hendelser.first { it.oppfolgingsperiodeUuid == nesteOppfolgingsperiodeUuid } }.isNotNull
     }
 
     fun arbeidssøkerPeriodeAvsluttet(oppfolgingsperiodeUuid: UUID) = ArbeidssøkerPeriodeAvsluttet(
