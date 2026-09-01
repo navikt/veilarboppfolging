@@ -144,12 +144,12 @@ class GraphqlController(
 
         val fnr = eksternBrukerId.getFnr()
         val aktorId = eksternBrukerId.getAktorId()
-        val periodeId = oppfolgingService.hentGjeldendeOppfolgingsperiode(aktorId)
+        val periodeId = oppfolgingService.hentGjeldendeOppfolgingsperiode(aktorId).map { it.uuid }.getOrNull()
 
         val localContext = GraphQLContext.getDefault()
             .put("fnr", fnr)
             .put("aktorId", aktorId)
-            .put("oppfolgingsPeriodeId", periodeId.map { it.uuid }.getOrNull())
+            .apply { periodeId?.let { put("oppfolgingsPeriodeId", it) } }
 
         return dataFetchResult
             .localContext(localContext)
@@ -158,7 +158,7 @@ class GraphqlController(
     }
 
     @SchemaMapping(typeName = "Utmeldingskandidat", field = "aktivForlengelse")
-    fun aktivForlengelse(@LocalContextValue oppfolgingsPeriodeId: UUID?): ForlengelseDto? {
+    fun aktivForlengelse(@LocalContextValue(required = false) oppfolgingsPeriodeId: UUID?): ForlengelseDto? {
         if (oppfolgingsPeriodeId == null) return null
         return kandidatForUtmeldingService.hentAktivForlengelse(oppfolgingsPeriodeId)?.toDto()
     }
@@ -170,7 +170,8 @@ class GraphqlController(
     }
 
     @SchemaMapping(typeName = "Utmeldingskandidat", field = "tag")
-    fun utmeldingskandidatTag(@LocalContextValue oppfolgingsPeriodeId: UUID): KandidatForUtmeldingTagDto? {
+    fun utmeldingskandidatTag(@LocalContextValue(required = false) oppfolgingsPeriodeId: UUID?): KandidatForUtmeldingTagDto? {
+        if (oppfolgingsPeriodeId == null) return null
         return kandidatForUtmeldingService.hentKandidatForUtmeldingTag(oppfolgingsPeriodeId)
     }
 

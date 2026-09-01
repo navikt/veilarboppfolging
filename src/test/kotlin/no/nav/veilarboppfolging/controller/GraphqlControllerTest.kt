@@ -873,4 +873,24 @@ class GraphqlControllerTest: IntegrationTest() {
         result.errors().verify()
         result.path("utmeldingskandidat").equals(null)
     }
+
+    @Test
+    fun `ikke under oppfølging - returnerer null`() {
+        val (fnr, aktorId) = defaultBruker()
+        val veilederUuid = UUID.randomUUID()
+        val enhetId = EnhetId("1234")
+        mockPoaoTilgangHarTilgangTilEnhet(veilederUuid, enhetId)
+        mockInternBrukerAuthOk(veilederUuid, aktorId, fnr)
+        mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Permit)
+
+        val result = tester.documentName("hentUtmeldingskandidat").variable("fnr", fnr.get()).execute()
+        result.errors().verify()
+        result.path("utmeldingskandidat").matchesJson("""
+            {
+              "aktivForlengelse": null,
+              "utmeldingskandidatHendelser": [],
+              "tag": null
+            }
+        """.trimIndent())
+    }
 }
