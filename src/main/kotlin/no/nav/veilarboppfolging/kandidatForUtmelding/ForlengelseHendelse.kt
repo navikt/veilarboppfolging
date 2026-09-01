@@ -14,7 +14,6 @@ import org.postgresql.util.PGobject
 import java.time.ZonedDateTime
 import no.nav.common.json.JsonUtils
 import java.time.LocalDate
-import java.time.LocalDateTime
 
 class ForlengelseHendelse(
     oppfolgingsperiodeUuid: UUID,
@@ -32,7 +31,8 @@ class ForlengelseHendelse(
     hendelseTidspunkt,
 ) {
     override val type: ForlengelseHendelseType = forlengelseHendelseType
-    val avsluttesAutomatiskDato: ZonedDateTime? = beregnAvsluttesAutomatiskDatoZonedDateTime()
+    val avsluttesAutomatiskDato: ZonedDateTime = beregnAvsluttesAutomatiskDato(hendelseTidspunkt)
+
     override val hendelseDataJson: PGobject? = forlengetTil?.let {
         PGobject().apply {
             type = "jsonb"
@@ -61,12 +61,12 @@ class ForlengelseHendelse(
                 beskrivelse = when (type) {
                     ForlengelseHendelseType.FORLENGELSE_UTLOPT -> "Forlengelse utløpt"
                     ForlengelseHendelseType.FORLENGELSE_OPPRETTET -> "Forlengelse opprettet"
-                    else -> throw IllegalArgumentException("Ugyldig forlengelseshendelsestype for filterhendelser")
+                    ForlengelseHendelseType.FORLENGELSE_ENDRET -> "Forlengelse opprettet"
                 },
                 beskrivelseEnum = when (type) {
                     ForlengelseHendelseType.FORLENGELSE_UTLOPT -> BeskrivelseEnum.FORLENGELSE_UTLOPT
                     ForlengelseHendelseType.FORLENGELSE_OPPRETTET -> BeskrivelseEnum.FORLENGELSE_OPPRETTET
-                    else -> throw IllegalArgumentException("Ugyldig forlengelseshendelsestype for filterhendelser")
+                    ForlengelseHendelseType.FORLENGELSE_ENDRET -> BeskrivelseEnum.FORLENGELSE_ENDRET
                 }.name,
                 dato = hendelseTidspunkt.atZone(ZoneId.of("Europe/Oslo")),
                 lenke = URI("${baseUrlVeilarbpersonflate()}/aktivitetsplan").toURL(),

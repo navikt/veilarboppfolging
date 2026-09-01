@@ -91,7 +91,7 @@ class KandidatForUtmeldingRepository(
     fun hentKandidat(oppfolgingsperiodeId: UUID): AktivKandidatForUtmelding? {
         return db.query(
             """
-            SELECT kfuh.*
+            SELECT kfuh.*, kfu.avsluttes_automatisk_dato
             FROM kandidater_for_utmelding kfu
             JOIN kandidater_for_utmelding_hendelser kfuh ON kfu.siste_utmeldingshendelse_id = kfuh.utmeldingshendelse_id
             WHERE kfu.oppfolgingsperiode_uuid = :oppfolgingsperiodeId AND kfu.forlenget_til IS NULL
@@ -332,7 +332,8 @@ fun ResultSet.toForlengelseHendelse() = ForlengelseHendelse(
     kilde = getString("kilde"),
     hendelseTidspunkt = getTimestamp("hendelse_tidspunkt").toLocalDateTime().toInstant(ZoneOffset.UTC),
     forlengelseHendelseType = ForlengelseHendelseType.valueOf(getString("hendelse")),
-    forlengetTil = getStringOrNull("hendelse_data")?.let { JsonUtils.fromJson(it, ForlengelseHendelse.Detaljer::class.java).forlengetTil },
+    forlengetTil = getStringOrNull("hendelse_data")
+        ?.let { JsonUtils.fromJson(it, ForlengelseHendelse.Detaljer::class.java).forlengetTil }
 )
 
 fun ResultSet.toOppfolgingAvsluttetHendelse() = OppfolgingAvsluttetHendelse(

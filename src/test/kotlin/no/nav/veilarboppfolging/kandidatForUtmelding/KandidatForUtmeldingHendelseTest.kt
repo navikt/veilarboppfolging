@@ -77,43 +77,40 @@ class KandidatForUtmeldingHendelseTest {
             ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
             AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST,
             hendelseTidspunkt = hendelseTidspunkt,
-        )
+        ).let { KandidatForUtmelding.fromHendelse(it) as AktivKandidatForUtmelding }
         val forventetDato = LocalDateTime.ofInstant(hendelseTidspunkt, ZoneOffset.UTC)
             .plusDays(KandidatForUtmeldingHendelse.KARENSTID_DAGER)
 
-        val automatiskAvslutningDato = hendelse.beregnAvsluttesAutomatiskDato()
+        val automatiskAvslutningDato = hendelse.avsluttesAutomatiskDato
 
         assertThat(automatiskAvslutningDato).isEqualTo(forventetDato)
-        assertThat(hendelse.tilFilterhendelseRecord(Fnr.of("12345678901"), Operasjon.START).hendelse.datoFrist)
+        assertThat(hendelse.sisteHendelse.tilFilterhendelseRecord(Fnr.of("12345678901"), Operasjon.START).hendelse.datoFrist)
             .isEqualTo(forventetDato.atZone(ZoneOffset.UTC).withZoneSameInstant(ZoneId.of("Europe/Oslo")))
     }
 
     @Test
-    fun `beregnAvsluttesAutomatiskDato - er null når forlengelse opprettes`() {
+    fun `beregnAvsluttesAutomatiskDato - tilFilterhendelseRecord - skal sette datoFrist null forlengelse opprettes`() {
         val hendelse = forlengelseHendelse(ForlengelseHendelseType.FORLENGELSE_OPPRETTET)
 
-        val automatiskAvslutningDato = hendelse.beregnAvsluttesAutomatiskDato()
-
-        assertThat(automatiskAvslutningDato).isNull()
         assertThat(hendelse.tilFilterhendelseRecord(Fnr.of("12345678901"), Operasjon.STOPP).hendelse.datoFrist).isNull()
     }
 
     @Test
     fun `beregnAvsluttesAutomatiskDato - settes til 28 dager etter utlopstidspunkt når forlengelse utloper`() {
         val hendelseTidspunkt = ZonedDateTime.now().toInstant()
-        val hendelse = forlengelseHendelse(
+        val kandidatForUtmelding = forlengelseHendelse(
             ForlengelseHendelseType.FORLENGELSE_UTLOPT,
             hendelseTidspunkt = hendelseTidspunkt,
             forlengetTil = null,
-        )
+        ).let { KandidatForUtmelding.fromHendelse(it) as AktivKandidatForUtmelding }
 
         val forventetDato = LocalDateTime.ofInstant(hendelseTidspunkt, ZoneOffset.UTC)
             .plusDays(KandidatForUtmeldingHendelse.KARENSTID_DAGER)
 
-        val automatiskAvslutningDato = hendelse.beregnAvsluttesAutomatiskDato()
+        val automatiskAvslutningDato = kandidatForUtmelding.avsluttesAutomatiskDato
 
         assertThat(automatiskAvslutningDato).isEqualTo(forventetDato)
-        assertThat(hendelse.tilFilterhendelseRecord(Fnr.of("12345678901"), Operasjon.START).hendelse.datoFrist)
+        assertThat(kandidatForUtmelding.sisteHendelse.tilFilterhendelseRecord(Fnr.of("12345678901"), Operasjon.START).hendelse.datoFrist)
             .isEqualTo(forventetDato.atZone(ZoneOffset.UTC).withZoneSameInstant(ZoneId.of("Europe/Oslo")))
     }
 }

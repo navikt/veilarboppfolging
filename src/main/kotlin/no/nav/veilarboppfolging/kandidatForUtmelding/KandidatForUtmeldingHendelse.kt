@@ -9,6 +9,7 @@ import java.util.UUID
 import kotlin.jvm.optionals.getOrElse
 import no.nav.common.types.identer.Fnr
 import no.nav.common.utils.EnvironmentUtils
+import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingHendelse.Companion.KARENSTID_DAGER
 import no.nav.veilarboppfolging.kandidatForUtmelding.dto.KandidatForUtmeldingTagDto
 import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.FilterhendelseRecord
 import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.Operasjon
@@ -30,7 +31,7 @@ sealed class KandidatForUtmeldingHendelse(
      * eller [KARENSTID_DAGER] dager etter at en eventuell forlengelse utløp.
      * Mens en forlengelse er aktiv (FORLENGELSE_OPPRETTET/FORLENGELSE_ENDRET) er datoen pauset (null).
      */
-    fun beregnAvsluttesAutomatiskDato(): LocalDateTime? {
+    private fun beregnAvsluttesAutomatiskDato(): LocalDateTime? {
         val hendelseTid = LocalDateTime.ofInstant(hendelseTidspunkt, ZoneOffset.UTC)
         return when (this) {
             is ArbeidssøkerPeriodeAvsluttet -> hendelseTid.plusDays(KARENSTID_DAGER)
@@ -45,13 +46,6 @@ sealed class KandidatForUtmeldingHendelse(
             }
         }
     }
-
-    /**
-     * Samme dato som [beregnAvsluttesAutomatiskDato], men som [ZonedDateTime] i norsk tidssone.
-     * Brukes som datoFrist i filterhendelser sendt til OBO.
-     */
-    fun beregnAvsluttesAutomatiskDatoZonedDateTime(): ZonedDateTime? =
-        beregnAvsluttesAutomatiskDato()?.atZone(ZoneOffset.UTC)?.withZoneSameInstant(ZoneId.of("Europe/Oslo"))
 
     companion object {
         const val KARENSTID_DAGER = 28L
@@ -74,6 +68,11 @@ sealed class KandidatForUtmeldingHendelse(
             OppfolgingAvsluttetHendelseType.OPPFOLGING_AVSLUTTET_AUTOMATISK, OppfolgingAvsluttetHendelseType.OPPFOLGING_AVSLUTTET_MANUELT-> null
         }
     }
+}
+
+fun beregnAvsluttesAutomatiskDato(hendelseTidspunkt: Instant): ZonedDateTime {
+    val hendelseTid = LocalDateTime.ofInstant(hendelseTidspunkt, ZoneOffset.UTC)
+    return hendelseTid.plusDays(KARENSTID_DAGER).atZone(ZoneOffset.UTC).withZoneSameInstant(ZoneId.of("Europe/Oslo"))
 }
 
 sealed interface KandidatForUtmeldingHendelseType

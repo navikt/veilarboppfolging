@@ -379,7 +379,7 @@ class KandidatForUtmeldingRepositoryTest {
                 forlengelseHendelseType = ForlengelseHendelseType.FORLENGELSE_OPPRETTET,
                 hendelseTidspunkt = ZonedDateTime.now().toInstant(),
                 forlengetTil = LocalDate.now().plusDays(10),
-            )
+            ).let { KandidatForUtmelding.fromHendelse(it) }
         )
 
         val kandidater = kandidatForUtmeldingRepository.hentAktiveKandidater(offset = 0, batchSize = 10)

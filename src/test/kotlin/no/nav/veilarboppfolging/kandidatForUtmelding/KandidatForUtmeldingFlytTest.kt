@@ -152,7 +152,7 @@ class KandidatForUtmeldingFlytTest(
                 hendelseTidspunkt = ZonedDateTime.now().toInstant(),
                 arbeidssokerperiodeAvsluttetHendelseType = ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
                 avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
-            )
+            ).let { KandidatForUtmelding.fromHendelse(it) }
         )
         avsluttOppfolgingManueltSomVeileder(aktorId)
 
@@ -190,7 +190,7 @@ class KandidatForUtmeldingFlytTest(
                 hendelseTidspunkt = ZonedDateTime.now().toInstant(),
                 arbeidssokerperiodeAvsluttetHendelseType = ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
                 avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
-            )
+            ).let { KandidatForUtmelding.fromHendelse(it) }
         )
 
         avsluttOppfolgingManueltSomVeileder(aktorId)
@@ -223,7 +223,7 @@ class KandidatForUtmeldingFlytTest(
                 hendelseTidspunkt = ZonedDateTime.now().toInstant(),
                 arbeidssokerperiodeAvsluttetHendelseType = ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
                 avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
-            )
+            ).let { KandidatForUtmelding.fromHendelse(it) }
         )
 
         avsluttOppfolgingManueltSomVeileder(aktorId)
@@ -247,7 +247,7 @@ class KandidatForUtmeldingFlytTest(
                 hendelseTidspunkt = ZonedDateTime.now().toInstant(),
                 arbeidssokerperiodeAvsluttetHendelseType = ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
                 avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
-            )
+            ).let { KandidatForUtmelding.fromHendelse(it) }
         )
 
         assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId)).isNotNull()
@@ -283,7 +283,7 @@ class KandidatForUtmeldingFlytTest(
                 hendelseTidspunkt = ZonedDateTime.now().toInstant(),
                 arbeidssokerperiodeAvsluttetHendelseType = ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
                 avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
-            )
+            ).let { KandidatForUtmelding.fromHendelse(it) }
         )
         avsluttOppfolgingManueltSomVeileder(aktorId)
 
@@ -312,7 +312,7 @@ class KandidatForUtmeldingFlytTest(
                 hendelseTidspunkt = ZonedDateTime.now().toInstant(),
                 arbeidssokerperiodeAvsluttetHendelseType = ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
                 avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
-            )
+            ).let { KandidatForUtmelding.fromHendelse(it) }
         )
 
         assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId)).isNotNull()
@@ -405,7 +405,7 @@ class KandidatForUtmeldingFlytTest(
                 hendelseTidspunkt = ZonedDateTime.now().toInstant(),
                 arbeidssokerperiodeAvsluttetHendelseType = ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
                 avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
-            )
+            ).let { KandidatForUtmelding.fromHendelse(it) }
         )
 
         val forlengelseDato = LocalDate.now().plusDays(30)
@@ -458,7 +458,7 @@ class KandidatForUtmeldingFlytTest(
                 hendelseTidspunkt = ZonedDateTime.now().toInstant(),
                 arbeidssokerperiodeAvsluttetHendelseType = ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
                 avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
-            )
+            ).let { KandidatForUtmelding.fromHendelse(it) }
         )
 
         val forlengelseDato = LocalDate.now().plusDays(30)
@@ -501,14 +501,14 @@ class KandidatForUtmeldingFlytTest(
                 hendelseTidspunkt = hendelsetidspunkt.toInstant(),
                 arbeidssokerperiodeAvsluttetHendelseType = ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
                 avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
-            )
+            ).let { KandidatForUtmelding.fromHendelse(it) }
         )
 
         val avslutningsDato = hendelsetidspunkt.plusDays(KARENSTID_DAGER)
         assertThat(avslutningsDato).isBefore(ZonedDateTime.now())
 
         val kandidatHendelse = kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeUuid)
-        assertThat(kandidatHendelse?.type).isEqualTo(OppfolgingAvsluttetHendelseType.OPPFOLGING_AVSLUTTET_AUTOMATISK)
+        assertThat(kandidatHendelse?.sisteHendelse?.type).isEqualTo(OppfolgingAvsluttetHendelseType.OPPFOLGING_AVSLUTTET_AUTOMATISK)
     }
 
     private fun arbeidssokerperiode(

@@ -15,6 +15,8 @@ import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.Operasjon
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.Test
+import java.time.ZoneId
+import java.time.ZoneOffset
 
 class KandidatForUtmeldingServiceTest : IntegrationTest() {
 
@@ -47,11 +49,12 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
         )
 
         val kandidat = kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeUuid)
-        assertThat(kandidat).isNotNull
-        assertThat(kandidat?.oppfolgingsperiodeUuid).isEqualTo(oppfolgingsperiodeUuid)
-        assertThat(kandidat?.utfortAvType).isEqualTo(KandidatForUtmeldingHendelseUtfortAvType.VEILEDER)
-        assertThat(kandidat?.kilde).isEqualTo("kilde")
-        assertThat(kandidat?.hendelseDataJson?.value).isEqualTo(
+        val hendelse = kandidat!!.sisteHendelse
+        assertThat(hendelse).isNotNull
+        assertThat(hendelse?.oppfolgingsperiodeUuid).isEqualTo(oppfolgingsperiodeUuid)
+        assertThat(hendelse?.utfortAvType).isEqualTo(KandidatForUtmeldingHendelseUtfortAvType.VEILEDER)
+        assertThat(hendelse?.kilde).isEqualTo("kilde")
+        assertThat(hendelse?.hendelseDataJson?.value).isEqualTo(
             JsonUtils.getMapper()
                 .writeValueAsString(ArbeidssøkerPeriodeAvsluttet.Detaljer(BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()))
         )
@@ -62,7 +65,10 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
         assertThat(filterhendelse.kategori).isEqualTo(Kategori.KANDIDAT_FOR_UTMELDING)
         assertThat(filterhendelse.hendelse.beskrivelseEnum).isEqualTo(BeskrivelseEnum.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT.name)
         assertThat(filterhendelse.hendelse.datoFrist)
-            .isCloseTo(kandidat?.beregnAvsluttesAutomatiskDatoZonedDateTime(), within(1, ChronoUnit.SECONDS))
+            .isCloseTo(
+                kandidat.avsluttesAutomatiskDato.atZone(ZoneOffset.UTC)?.withZoneSameInstant(ZoneId.of("Europe/Oslo")),
+                within(1, ChronoUnit.SECONDS)
+            )
     }
 
     @Test
@@ -140,7 +146,7 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
                 oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
                 arbeidssokerperiodeAvsluttetHendelseType = ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
                 avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
-            )
+            ).let { KandidatForUtmelding.fromHendelse(it) }
         kandidatForUtmeldingRepository.lagreKandidat(lagretKandidat)
         namedParameterJdbcTemplate.update("""
             UPDATE kandidater_for_utmelding SET forlenget_til = CURRENT_TIMESTAMP - INTERVAL '1 hour' WHERE oppfolgingsperiode_uuid = :oppfolgingsperiodeId
@@ -149,8 +155,9 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
         kandidatForUtmeldingService.behandleKandidaterMedUtloptForlengelse()
 
         val kandidat = kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeUuid)
-        assertThat(kandidat).isNotNull
-        assertThat(kandidat?.type).isEqualTo(ForlengelseHendelseType.FORLENGELSE_UTLOPT)
+        val hendelse = kandidat!!.sisteHendelse
+        assertThat(hendelse).isNotNull
+        assertThat(hendelse.type).isEqualTo(ForlengelseHendelseType.FORLENGELSE_UTLOPT)
         assertThat(kandidatForUtmeldingRepository.hentKandidatMedForlengelse(oppfolgingsperiodeUuid)).isNull()
         val filterhendelseId = kandidatForUtmeldingRepository.hentFilterhendelseId(oppfolgingsperiodeUuid)
         assertThat(filterhendelseId).isNotNull
@@ -158,7 +165,10 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
         assertThat(filterhendelse.operasjon).isEqualTo(Operasjon.START)
         assertThat(filterhendelse.kategori).isEqualTo(Kategori.KANDIDAT_FOR_UTMELDING)
         assertThat(filterhendelse.hendelse.datoFrist)
-            .isCloseTo(kandidat?.beregnAvsluttesAutomatiskDatoZonedDateTime(), within(1, ChronoUnit.SECONDS))
+            .isCloseTo(
+                kandidat.avsluttesAutomatiskDato.atZone(ZoneOffset.UTC)?.withZoneSameInstant(ZoneId.of("Europe/Oslo")),
+                within(1, ChronoUnit.SECONDS)
+            )
     }
 
     @Test
@@ -180,7 +190,7 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
             oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
             arbeidssokerperiodeAvsluttetHendelseType = ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
             avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
-        )
+        ).let { KandidatForUtmelding.fromHendelse(it) }
         kandidatForUtmeldingRepository.lagreKandidat(lagretKandidat)
         namedParameterJdbcTemplate.update("""
             UPDATE kandidater_for_utmelding SET forlenget_til = CURRENT_TIMESTAMP - INTERVAL '1 hour' WHERE oppfolgingsperiode_uuid = :oppfolgingsperiodeId

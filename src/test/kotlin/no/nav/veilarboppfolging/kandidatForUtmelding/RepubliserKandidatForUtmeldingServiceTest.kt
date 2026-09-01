@@ -36,7 +36,7 @@ class RepubliserKandidatForUtmeldingServiceTest : IntegrationTest() {
                 arbeidssokerperiodeAvsluttetHendelseType = ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
                 avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString(),
                 oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
-            )
+            ).let { KandidatForUtmelding.fromHendelse(it) }
         )
         val filterkategoriPersonId = kandidatForUtmeldingRepository.hentEllerOpprettFilterhendelseId(oppfolgingsperiodeUuid)
         assertThat(kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeUuid)).isNotNull()
@@ -68,7 +68,7 @@ class RepubliserKandidatForUtmeldingServiceTest : IntegrationTest() {
                 arbeidssokerperiodeAvsluttetHendelseType = ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
                 avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString(),
                 oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
-            )
+            ).let { KandidatForUtmelding.fromHendelse(it) }
         )
         val filterkategoriPersonId = kandidatForUtmeldingRepository.hentEllerOpprettFilterhendelseId(oppfolgingsperiodeUuid)
         kandidatForUtmeldingRepository.fjernKandidat(oppfolgingsperiodeUuid)
@@ -102,7 +102,7 @@ class RepubliserKandidatForUtmeldingServiceTest : IntegrationTest() {
                 oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
                 forlengelseHendelseType = ForlengelseHendelseType.FORLENGELSE_ENDRET,
                 forlengetTil = LocalDateTime.now().plusDays(30).toLocalDate()
-            )
+            ).let { KandidatForUtmelding.fromHendelse(it) }
         )
         val filterkategoriPersonId = kandidatForUtmeldingRepository.hentEllerOpprettFilterhendelseId(oppfolgingsperiodeUuid)
         assertThat(kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeUuid)).isNull()
