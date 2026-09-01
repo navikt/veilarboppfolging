@@ -232,6 +232,7 @@ class KandidatForUtmeldingRepositoryTest {
         kandidatForUtmeldingRepository.lagreKandidat(avsluttet)
 
         val forventetDato = avsluttet.beregnAvsluttesAutomatiskDato()
+        val hendelse = kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeUuid)
         assertThat(kandidatForUtmeldingRepository.hentAvsluttesAutomatiskDato(oppfolgingsperiodeUuid)?.toLocalDateTime())
             .isCloseTo(forventetDato, within(1, ChronoUnit.SECONDS))
     }

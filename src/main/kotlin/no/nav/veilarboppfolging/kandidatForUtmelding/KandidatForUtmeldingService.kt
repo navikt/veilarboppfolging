@@ -36,7 +36,8 @@ class KandidatForUtmeldingService(
             val avslutningsstatus = avsluttOppfolgingService.hentAvslutningstatusForManuellAvslutning(fnr)
 
             if (avslutningsstatus.kanAvslutte) {
-                kandidatForUtmeldingRepository.lagreKandidat(kandidatForUtmeldingHendelse)
+                val kandidat = KandidatForUtmelding.fromHendelse(kandidatForUtmeldingHendelse)
+                kandidatForUtmeldingRepository.lagreKandidat(kandidat)
                 logger.info("Kandidat ble lagret fordi arbeidssøkerperiode ble avsluttet, oppfølgingsperiode ${kandidatForUtmeldingHendelse.oppfolgingsperiodeUuid}")
                 sendUtmeldingskandidatTilObo(kandidatForUtmeldingHendelse, fnr)
             } else {
@@ -46,7 +47,7 @@ class KandidatForUtmeldingService(
     }
 
     fun hentKandidatForUtmeldingTag(oppfolgingsperiodeId: UUID): KandidatForUtmeldingTagDto? {
-        return kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeId)?.mapTilTag()
+        return kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeId)?.sisteHendelse?.mapTilTag()
     }
 
     fun hentKandidatForUtmeldingTag(aktorId: AktorId): KandidatForUtmeldingTagDto? {
@@ -73,7 +74,7 @@ class KandidatForUtmeldingService(
                 val fnr = finnFnrForOppfolgingsperiode(oppfolgingsperiodeId)
                 val avslutningsstatus = avsluttOppfolgingService.hentAvslutningstatusForManuellAvslutning(fnr)
 
-                val forlengelseUtloptHendelse = ForlengelseHendelse(
+                val utløptHendelse = ForlengelseHendelse(
                     oppfolgingsperiodeUuid = kandidat.oppfolgingsperiodeUuid,
                     utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.SYSTEM,
                     utfortAv = "SYSTEM",
@@ -82,6 +83,7 @@ class KandidatForUtmeldingService(
                     hendelseTidspunkt = Instant.now(),
                     forlengetTil = null
                 )
+                val forlengelseUtloptHendelse = KandidatForUtmelding.fromHendelse(utløptHendelse)
                 kandidatForUtmeldingRepository.lagreKandidat(forlengelseUtloptHendelse)
                 if (avslutningsstatus.kanAvslutte) {
                     logger.info("Kandidat for utmelding med oppfølgingsperiode $oppfolgingsperiodeId har utløpt forlengelse og kan avsluttes")
@@ -128,7 +130,7 @@ class KandidatForUtmeldingService(
     fun forlengKandidat(hendelse: ForlengelseHendelse, fnr: Fnr) {
         logger.info("Lagrer forlengelse for oppfølgingsperiode ${hendelse.oppfolgingsperiodeUuid}")
         transactor.executeWithoutResult { _ ->
-            kandidatForUtmeldingRepository.lagreKandidat(hendelse)
+            kandidatForUtmeldingRepository.lagreKandidat(KandidatForUtmelding.fromHendelse(hendelse))
             if (hendelse.type == ForlengelseHendelseType.FORLENGELSE_ENDRET) return@executeWithoutResult
             sendStoppUtmeldingskandidatTilObo(hendelse, fnr)
         }

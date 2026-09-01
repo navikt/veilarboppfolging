@@ -18,14 +18,8 @@ class KandidatForUtmeldingRepository(
     private val db: NamedParameterJdbcTemplate
 ) {
 
-    fun lagreKandidat(hendelse: KandidatForUtmeldingHendelse) {
-        val hendelseId = insertUtmeldingsHendelse(hendelse)
-        val avsluttesAutomatiskDato = hendelse.beregnAvsluttesAutomatiskDato()
-
-        val forlengetTil = when (hendelse) {
-            is ForlengelseHendelse -> hendelse.hentForlengetTil()
-            else -> null
-        }
+    fun lagreKandidat(kandidat: KandidatForUtmelding) {
+        val hendelseId = insertUtmeldingsHendelse(kandidat.sisteHendelse)
         val sql = """
             INSERT INTO kandidater_for_utmelding(siste_utmeldingshendelse_id, oppfolgingsperiode_uuid, forlenget_til, avsluttes_automatisk_dato)
             VALUES (:hendelseId, :oppfolgingsperiodeId, :forlengetTil, :avsluttesAutomatiskDato)
@@ -34,10 +28,10 @@ class KandidatForUtmeldingRepository(
         """.trimIndent()
         db.update(
             sql, mapOf(
-                "oppfolgingsperiodeId" to hendelse.oppfolgingsperiodeUuid,
+                "oppfolgingsperiodeId" to kandidat.sisteHendelse.oppfolgingsperiodeUuid,
                 "hendelseId" to hendelseId,
-                "forlengetTil" to forlengetTil?.let { Timestamp.valueOf(it.atTime(4, 0)) },
-                "avsluttesAutomatiskDato" to avsluttesAutomatiskDato?.let { Timestamp.valueOf(it) },
+                "forlengetTil" to (kandidat as? ForlengetKandidat)?.forlengetTil?.let { Timestamp.valueOf(it.atTime(4, 0)) },
+                "avsluttesAutomatiskDato" to (kandidat as? AktivKandidatForUtmelding)?.avsluttesAutomatiskDato?.let { Timestamp.valueOf(it) },
             )
         )
     }
@@ -94,7 +88,7 @@ class KandidatForUtmeldingRepository(
         db.update(sql, mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeId.toString()))
     }
 
-    fun hentKandidat(oppfolgingsperiodeId: UUID): KandidatForUtmeldingHendelse? {
+    fun hentKandidat(oppfolgingsperiodeId: UUID): AktivKandidatForUtmelding? {
         return db.query(
             """
             SELECT kfuh.*
@@ -103,7 +97,13 @@ class KandidatForUtmeldingRepository(
             WHERE kfu.oppfolgingsperiode_uuid = :oppfolgingsperiodeId AND kfu.forlenget_til IS NULL
             """.trimIndent(),
             mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeId.toString()),
-        ) { rs, _ -> map(rs) }
+        ) { rs, _ ->
+            val sisteHendelse = map(rs)
+            AktivKandidatForUtmelding(
+                sisteHendelse,
+                rs.getTimestamp("avsluttes_automatisk_dato").toLocalDateTime()
+            )
+        }
             .firstOrNull()
     }
 
@@ -301,6 +301,7 @@ class KandidatForUtmeldingRepository(
             is ForlengelseHendelseType -> resultSet.toForlengelseHendelse()
             is OppfolgingAvsluttetHendelseType -> resultSet.toOppfolgingAvsluttetHendelse()
         }
+
     }
 
     fun getEnumType(hendelse: String) : KandidatForUtmeldingHendelseType {

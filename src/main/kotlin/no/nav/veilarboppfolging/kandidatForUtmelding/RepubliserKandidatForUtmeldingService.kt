@@ -60,12 +60,9 @@ class RepubliserKandidatForUtmeldingService(
     fun republiserKandidatForUtmelding(oppfolgingsperiodeId: UUID, kandidatForUtmeldingHendelse: KandidatForUtmeldingHendelse? = null) {
         if (sendUtmeldingskandidaterTilObo) {
             transactor.executeWithoutResult { _ ->
-                val kandidat = kandidatForUtmeldingHendelse ?: kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeId)
+                val kandidat = kandidatForUtmeldingHendelse ?: kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeId)?.sisteHendelse
                 val fnr = finnFnrForOppfolgingsperiode(oppfolgingsperiodeId)
                 val filterkategoriPersonId = kandidatForUtmeldingRepository.hentEllerOpprettFilterhendelseId(oppfolgingsperiodeId)
-
-                settAvsluttesAutomatiskDatoHvisMangler(oppfolgingsperiodeId, kandidat)
-
                 val filterhendelseRecord = if (kandidat != null) {
                     kandidat.tilFilterhendelseRecord(fnr, Operasjon.START)
                 } else {
@@ -89,13 +86,5 @@ class RepubliserKandidatForUtmeldingService(
         val aktorId = oppfolgingsPeriodeRepository.hentOppfolgingsperiode(oppfolgingsperiodeId.toString())
             .getOrElse { throw IllegalStateException("Oppfølgingsperiode med id $oppfolgingsperiodeId finnes ikke") }?.aktorId
         return aktorOppslagClient.hentFnr(AktorId(aktorId))
-    }
-
-    private fun settAvsluttesAutomatiskDatoHvisMangler(oppfolgingsperiodeId: UUID, kandidat: KandidatForUtmeldingHendelse?) {
-        if (kandidat == null) return
-
-        kandidat.beregnAvsluttesAutomatiskDato()?.let { dato ->
-            kandidatForUtmeldingRepository.settAvsluttesAutomatiskDatoHvisMangler(oppfolgingsperiodeId, dato)
-        }
     }
 }

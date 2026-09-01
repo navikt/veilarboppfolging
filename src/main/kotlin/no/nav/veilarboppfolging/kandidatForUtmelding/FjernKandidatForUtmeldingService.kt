@@ -32,7 +32,7 @@ class FjernKandidatForUtmeldingService(
                 val aktorId = oppfolgingsPeriodeRepository.hentOppfolgingsperiode(oppfolgingsperiodeId.toString()).getOrElse { throw IllegalStateException("Oppfølgingsperiode med id $oppfolgingsperiodeId finnes ikke") }?.aktorId
                 val fnr = aktorOppslagClient.hentFnr(AktorId(aktorId))
                 logger.info("Sender stopp-melding til OBO med key=$filterkategoriPersonId for oppfølgingsperiode $oppfolgingsperiodeId")
-                val filterhendelse = kandidat.tilFilterhendelseRecord(fnr, Operasjon.STOPP)
+                val filterhendelse = kandidat.sisteHendelse.tilFilterhendelseRecord(fnr, Operasjon.STOPP)
                 kafkaProducerService.publiserFilterhendelse(filterkategoriPersonId, filterhendelse)
             }
             kandidatForUtmeldingRepository.fjernKandidat(oppfolgingsperiodeId)

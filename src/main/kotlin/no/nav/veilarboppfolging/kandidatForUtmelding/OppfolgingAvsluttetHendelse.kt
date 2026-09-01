@@ -29,7 +29,7 @@ class OppfolgingAvsluttetHendelse(
         kilde,
         hendelseTidspunkt
     ) {
-    override val type: KandidatForUtmeldingHendelseType = oppfolgingAvsluttetHendelseType
+    override val type:  OppfolgingAvsluttetHendelseType = oppfolgingAvsluttetHendelseType
     override val hendelseDataJson: PGobject? = null
     override fun tilFilterhendelseRecord(fnr: Fnr, operasjon: Operasjon): FilterhendelseRecord {
         return FilterhendelseRecord(

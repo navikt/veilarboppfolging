@@ -32,16 +32,14 @@ sealed class KandidatForUtmeldingHendelse(
      */
     fun beregnAvsluttesAutomatiskDato(): LocalDateTime? {
         val hendelseTid = LocalDateTime.ofInstant(hendelseTidspunkt, ZoneOffset.UTC)
-        return when (val t = type) {
-            is ArbeidssokerperiodeAvsluttetHendelseType -> hendelseTid.plusDays(KARENSTID_DAGER)
-            is ForlengelseHendelseType -> when (t) {
+        return when (this) {
+            is ArbeidssøkerPeriodeAvsluttet -> hendelseTid.plusDays(KARENSTID_DAGER)
+            is ForlengelseHendelse -> when (type) {
                 ForlengelseHendelseType.FORLENGELSE_OPPRETTET,
                 ForlengelseHendelseType.FORLENGELSE_ENDRET -> null
-
                 ForlengelseHendelseType.FORLENGELSE_UTLOPT -> hendelseTid.plusDays(KARENSTID_DAGER)
             }
-
-            is OppfolgingAvsluttetHendelseType -> when (t) {
+            is OppfolgingAvsluttetHendelse -> when (type) {
                 OppfolgingAvsluttetHendelseType.OPPFOLGING_AVSLUTTET_AUTOMATISK,
                 OppfolgingAvsluttetHendelseType.OPPFOLGING_AVSLUTTET_MANUELT -> null
             }
