@@ -9,14 +9,23 @@ data class KandidatForUtmeldingHendelseDto(
     val utfortAvType: KandidatForUtmeldingHendelseUtfortAvType,
     val utfortAv: String?,
     val hendelseTidspunkt: String,
-    val type: KandidatForUtmeldingHendelseType,
+    val type: KandidatForUtmeldingHendelseTypeDto,
     val forlengetTil: String?,
 )
+
+enum class KandidatForUtmeldingHendelseTypeDto {
+    ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
+    ARBEIDSSOKERPERIODE_AVSLUTTET_SVARTE_NEI_I_BEKREFTELSE,
+    ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET,
+    FORLENGELSE_OPPRETTET,
+    FORLENGELSE_ENDRET,
+    FORLENGELSE_UTLOPT
+}
 
 fun KandidatForUtmeldingHendelse.toKandidatForUtmeldingHendelseDto() = KandidatForUtmeldingHendelseDto(
     utfortAvType = utfortAvType,
     utfortAv = utfortAv,
     hendelseTidspunkt = hendelseTidspunkt.toString(),
-    type = type,
+    type = KandidatForUtmeldingHendelseTypeDto.valueOf(type.toString()),
     forlengetTil = (this as? ForlengelseHendelse)?.hentForlengetTil()?.toString()
 )

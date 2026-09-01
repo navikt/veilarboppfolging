@@ -151,10 +151,13 @@ class GraphqlController(
             .put("aktorId", aktorId)
             .put("oppfolgingsPeriodeId", periodeId.map { it.uuid }.getOrNull())
 
-        return dataFetchResult.localContext(localContext).build()
+        return dataFetchResult
+            .localContext(localContext)
+            .data(UtmeldingskandidatDto(tag = null, utmeldingskandidatHendelser = null, aktivForlengelse = null))
+            .build()
     }
 
-    @SchemaMapping(value = "", typeName = "Utmeldingskandidat", field = "aktivForlengelse")
+    @SchemaMapping(typeName = "Utmeldingskandidat", field = "aktivForlengelse")
     fun aktivForlengelse(@LocalContextValue oppfolgingsPeriodeId: UUID?): ForlengelseDto? {
         if (oppfolgingsPeriodeId == null) return null
         return kandidatForUtmeldingService.hentAktivForlengelse(oppfolgingsPeriodeId)?.toDto()

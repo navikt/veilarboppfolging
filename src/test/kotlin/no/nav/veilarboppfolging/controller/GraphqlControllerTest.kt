@@ -18,11 +18,14 @@ import no.nav.veilarboppfolging.controller.graphql.toISOString
 import no.nav.veilarboppfolging.ident.randomAktorId
 import no.nav.veilarboppfolging.ident.randomFnr
 import no.nav.veilarboppfolging.kandidatForUtmelding.dto.ForlengelseDto
+import no.nav.veilarboppfolging.kandidatForUtmelding.dto.KandidatForUtmeldingHendelseTypeDto
+import no.nav.veilarboppfolging.kandidatForUtmelding.dto.KandidatForUtmeldingTagDto
 import no.nav.veilarboppfolging.kandidatForUtmelding.dto.UtmeldingskandidatDto
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.KanStarteOppfolgingDto
 import no.nav.veilarboppfolging.service.AuthService
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertNotNull
+import org.junit.jupiter.api.assertNull
 import org.mockito.Mockito.verifyNoInteractions
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.graphql.execution.DefaultExecutionGraphQlService
@@ -786,7 +789,7 @@ class GraphqlControllerTest: IntegrationTest() {
     }
 
     @Test
-    fun `skal returnere aktiv forlengelse`() {
+    fun `aktivForlengelse - skal returnere aktiv forlengelse`() {
         val (fnr, aktorId) = defaultBruker()
         val veilederUuid = UUID.randomUUID()
         val enhetId = EnhetId("1234")
@@ -805,18 +808,17 @@ class GraphqlControllerTest: IntegrationTest() {
 
         val result = tester.documentName("hentUtmeldingskandidat").variable("fnr", fnr.get()).execute()
         result.errors().verify()
-        val kandidat = result.path("utmeldingskandidat")
-            .entity<UtmeldingskandidatDto>()
+        val forlengelse = result.path("utmeldingskandidat.aktivForlengelse")
+            .entity<ForlengelseDto>()
             .get()
 
-        val forlengelse = kandidat.aktivForlengelse
         assertNotNull(forlengelse)
         assertEquals(forlengelse.utfortAv, "A123456")
         assertEquals(forlengelse.forlengetTil, forlengetTil.toString())
     }
 
     @Test
-    fun `ingen forlengelse - returnerer tom liste`() {
+    fun `utmeldingskandidat, ingen forlengelse`() {
         val (fnr, aktorId) = defaultBruker()
         val veilederUuid = UUID.randomUUID()
         val enhetId = EnhetId("1234")
@@ -830,10 +832,18 @@ class GraphqlControllerTest: IntegrationTest() {
         val oppfolgingsperiode = hentOppfolgingsperioder(fnr).first { it.sluttDato == null }
         lagreKandidatForUtmelding(fnr, oppfolgingsperiode.uuid)
 
-        val result = tester.documentName("hentForlengelser").variable("fnr", fnr.get()).execute()
+        val result = tester.documentName("hentUtmeldingskandidat").variable("fnr", fnr.get()).execute()
         result.errors().verify()
-        result.path("forlengelser").matchesJson("""
-            []
-        """.trimIndent())
+        val kandidat = result.path("utmeldingskandidat")
+            .entity<UtmeldingskandidatDto>()
+            .get()
+
+        assertNotNull(kandidat)
+        assertNull(kandidat.aktivForlengelse)
+        assertEquals(kandidat.tag, KandidatForUtmeldingTagDto.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT)
+        assertEquals(kandidat.utmeldingskandidatHendelser?.size, 1)
+        val hendelse = kandidat.utmeldingskandidatHendelser?.first()!!
+        assertEquals(hendelse.utfortAv, "A123456")
+        assertEquals(hendelse.type, KandidatForUtmeldingHendelseTypeDto.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT)
     }
 }
