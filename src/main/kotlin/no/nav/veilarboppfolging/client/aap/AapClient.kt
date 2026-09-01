@@ -99,7 +99,7 @@ sealed interface DabSak {
         override fun mottarEllerHarSoktAAP(): Boolean {
             val idag = LocalDate.now()
             val harAktivAap = periode.fraOgMedDato != null && periode.tilOgMedDato != null && periode.tilOgMedDato.isAfter(idag) && statusKode == ArenaStatus.IVERK
-            val harSoktAAP = statusKode == ArenaStatus.MOTAT || statusKode == ArenaStatus.OPPRE || statusKode == ArenaStatus.REGIS
+            val harSoktAAP = statusKode == ArenaStatus.MOTAT || statusKode == ArenaStatus.OPPRE || statusKode == ArenaStatus.REGIS || statusKode == ArenaStatus.INNST
             return harAktivAap || harSoktAAP
         }
     }
