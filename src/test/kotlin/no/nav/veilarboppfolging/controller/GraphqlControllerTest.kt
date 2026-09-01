@@ -17,12 +17,12 @@ import no.nav.veilarboppfolging.controller.graphql.AdGruppeNavn
 import no.nav.veilarboppfolging.controller.graphql.toISOString
 import no.nav.veilarboppfolging.ident.randomAktorId
 import no.nav.veilarboppfolging.ident.randomFnr
-import no.nav.veilarboppfolging.kandidatForUtmelding.dto.ForlengelseDto
 import no.nav.veilarboppfolging.kandidatForUtmelding.dto.KandidatForUtmeldingHendelseTypeDto
 import no.nav.veilarboppfolging.kandidatForUtmelding.dto.KandidatForUtmeldingTagDto
 import no.nav.veilarboppfolging.kandidatForUtmelding.dto.UtmeldingskandidatDto
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.KanStarteOppfolgingDto
 import no.nav.veilarboppfolging.service.AuthService
+import org.junit.jupiter.api.Assertions.fail
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertNotNull
 import org.junit.jupiter.api.assertNull
@@ -32,7 +32,6 @@ import org.springframework.graphql.execution.DefaultExecutionGraphQlService
 import org.springframework.graphql.execution.GraphQlSource
 import org.springframework.graphql.test.tester.ExecutionGraphQlServiceTester
 import org.springframework.graphql.test.tester.entity
-import org.springframework.graphql.test.tester.entityList
 import org.springframework.http.HttpStatusCode
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.web.client.RestClient
@@ -789,7 +788,7 @@ class GraphqlControllerTest: IntegrationTest() {
     }
 
     @Test
-    fun `aktivForlengelse - skal returnere aktiv forlengelse`() {
+    fun `utmeldingskandidat, aktivForlengelse - skal returnere aktiv forlengelse`() {
         val (fnr, aktorId) = defaultBruker()
         val veilederUuid = UUID.randomUUID()
         val enhetId = EnhetId("1234")
@@ -808,13 +807,22 @@ class GraphqlControllerTest: IntegrationTest() {
 
         val result = tester.documentName("hentUtmeldingskandidat").variable("fnr", fnr.get()).execute()
         result.errors().verify()
-        val forlengelse = result.path("utmeldingskandidat.aktivForlengelse")
-            .entity<ForlengelseDto>()
+        val kandidat = result.path("utmeldingskandidat")
+            .entity<UtmeldingskandidatDto>()
             .get()
 
+        val forlengelse = kandidat.aktivForlengelse
         assertNotNull(forlengelse)
         assertEquals(forlengelse.utfortAv, "A123456")
         assertEquals(forlengelse.forlengetTil, forlengetTil.toString())
+        assertNull(kandidat.tag)
+        assertEquals(kandidat.utmeldingskandidatHendelser?.size, 2)
+        kandidat.utmeldingskandidatHendelser?.find { it.type == KandidatForUtmeldingHendelseTypeDto.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT }?.let { hendelse ->
+            assertEquals(hendelse.utfortAv, "A123123")
+        } ?: fail("Mangler ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT-hendelse")
+        kandidat.utmeldingskandidatHendelser?.find { it.type == KandidatForUtmeldingHendelseTypeDto.FORLENGELSE_OPPRETTET }?.let { hendelse ->
+            assertEquals(hendelse.utfortAv, "A123456")
+        } ?: fail("Mangler FORLENGELSE_OPPRETTET-hendelse")
     }
 
     @Test
@@ -843,7 +851,26 @@ class GraphqlControllerTest: IntegrationTest() {
         assertEquals(kandidat.tag, KandidatForUtmeldingTagDto.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT)
         assertEquals(kandidat.utmeldingskandidatHendelser?.size, 1)
         val hendelse = kandidat.utmeldingskandidatHendelser?.first()!!
-        assertEquals(hendelse.utfortAv, "A123456")
+        assertEquals(hendelse.utfortAv, "A123123")
         assertEquals(hendelse.type, KandidatForUtmeldingHendelseTypeDto.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT)
+    }
+
+    @Test
+    fun `ikke utmeldingskandidat - returnerer null`() {
+        val (fnr, aktorId) = defaultBruker()
+        val veilederUuid = UUID.randomUUID()
+        val enhetId = EnhetId("1234")
+        mockPoaoTilgangHarTilgangTilEnhet(veilederUuid, enhetId)
+        mockInternBrukerAuthOk(veilederUuid, aktorId, fnr)
+        mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Permit)
+        mockVeilarbArenaOppfolgingsBruker(fnr, Formidlingsgruppe.ISERV)
+        setBrukerUnderOppfolging(aktorId, fnr)
+        setLocalArenaOppfolging(aktorId, Formidlingsgruppe.ARBS)
+        setAoKontor(fnr, aktorId, enhetId.get())
+        hentOppfolgingsperioder(fnr).first { it.sluttDato == null }
+
+        val result = tester.documentName("hentUtmeldingskandidat").variable("fnr", fnr.get()).execute()
+        result.errors().verify()
+        result.path("utmeldingskandidat").equals(null)
     }
 }
