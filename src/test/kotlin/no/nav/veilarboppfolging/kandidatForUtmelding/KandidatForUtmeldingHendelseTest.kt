@@ -10,6 +10,7 @@ import java.util.UUID
 import no.nav.common.types.identer.Fnr
 import no.nav.paw.arbeidssokerregisteret.api.v1.AvsluttetAarsakType
 import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.Operasjon
+import no.nav.veilarboppfolging.kandidatForUtmelding.dto.KandidatForUtmeldingTagDto
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
@@ -50,7 +51,7 @@ class KandidatForUtmeldingHendelseTest {
         val hendelse = arbeidssøkerPeriodeAvsluttet(ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT, AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST)
 
         assertThat(hendelse.mapTilTag())
-            .isEqualTo(KandidatForUtmeldingTag.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT)
+            .isEqualTo(KandidatForUtmeldingTagDto.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT)
     }
 
     @Test
@@ -58,7 +59,7 @@ class KandidatForUtmeldingHendelseTest {
         val hendelse = arbeidssøkerPeriodeAvsluttet(ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_SVARTE_NEI_I_BEKREFTELSE, AvsluttetAarsakType.SVARTE_NEI_I_BEKREFTELSE)
 
         assertThat(hendelse.mapTilTag())
-            .isEqualTo(KandidatForUtmeldingTag.ARBEIDSSOKERPERIODE_AVSLUTTET_SVARTE_NEI_I_BEKREFTELSE)
+            .isEqualTo(KandidatForUtmeldingTagDto.ARBEIDSSOKERPERIODE_AVSLUTTET_SVARTE_NEI_I_BEKREFTELSE)
     }
 
     @Test
@@ -66,7 +67,7 @@ class KandidatForUtmeldingHendelseTest {
         val hendelse = arbeidssøkerPeriodeAvsluttet(ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET, AvsluttetAarsakType.UKJENT_VERDI)
 
         assertThat(hendelse.mapTilTag())
-            .isEqualTo(KandidatForUtmeldingTag.ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET)
+            .isEqualTo(KandidatForUtmeldingTagDto.ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET)
     }
 
     @Test

@@ -11,6 +11,7 @@ import org.jetbrains.annotations.TestOnly
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Repository
 import kotlin.collections.firstOrNull
+import no.nav.common.types.identer.AktorId
 
 @Repository
 class KandidatForUtmeldingRepository(
@@ -106,8 +107,7 @@ class KandidatForUtmeldingRepository(
             .firstOrNull()
     }
 
-    @TestOnly
-    fun hentKandidatMedForlengelse(oppfolgingsperiodeId: UUID): KandidatForUtmeldingHendelse? {
+    fun hentKandidatMedForlengelse(oppfolgingsperiodeId: UUID): ForlengelseHendelse? {
         return db.query(
             """
             SELECT kfuh.*
@@ -116,8 +116,14 @@ class KandidatForUtmeldingRepository(
             WHERE kfu.oppfolgingsperiode_uuid = :oppfolgingsperiodeId AND kfu.forlenget_til IS NOT NULL
             """.trimIndent(),
             mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeId.toString()),
-        ) { rs, _ -> map(rs) }
-            .firstOrNull()
+        ) { rs, _ ->
+            val enumType = getEnumType(rs.getString("hendelse"))
+            if (enumType != ForlengelseHendelseType.FORLENGELSE_OPPRETTET && enumType != ForlengelseHendelseType.FORLENGELSE_ENDRET) {
+                throw IllegalArgumentException("Hendelsen må være forlengelse som ikke er utløpt")
+            } else {
+                rs.toForlengelseHendelse()
+            }
+        }.firstOrNull()
     }
 
     fun hentKandidatMedIkkeUtloptForlengelse(oppfolgingsperiodeId: UUID): KandidatForUtmeldingHendelse? {
@@ -181,6 +187,18 @@ class KandidatForUtmeldingRepository(
             mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeId.toString()),
         ) { rs, _ -> map(rs) }
             .firstOrNull()
+    }
+
+    fun hentAlleKandidatForUtmeldingHendelser(aktorId: AktorId): List<KandidatForUtmeldingHendelse> {
+        return db.query(
+            """
+            SELECT *
+            FROM kandidater_for_utmelding_hendelser kufh
+            JOIN oppfolgingsperiode op ON kufh.oppfolgingsperiode_uuid = op.uuid
+            WHERE op.aktor_id = :aktorId order by oppdatert desc
+            """.trimIndent(),
+            mapOf("aktorId" to aktorId.get()),
+        ) { rs, _ -> map(rs) }
     }
 
     fun hentAktiveKandidater(offset: Int, batchSize: Int): List<KandidatForUtmeldingHendelse> {

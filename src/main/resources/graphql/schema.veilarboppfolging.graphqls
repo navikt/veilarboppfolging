@@ -5,7 +5,8 @@ type Query {
     oppfolgingsPerioder(fnr: String!): [Oppfolgingsperiode]
     veilederTilgang(fnr: String!): VeilederTilgang
     gjeldendeOppfolgingsperiode: Oppfolgingsperiode
-    utmeldingskandidatTag(fnr: String!): UtmeldingskandidatTag
+    utmeldingskandidatTag(fnr: String!): UtmeldingskandidatTag @deprecated(reason: "Erstattet av utmeldingskandidat som er mer beskrivende")
+    utmeldingskandidat(fnr: String!): Utmeldingskandidat
 }
 
 type VeilederTilgang {
@@ -18,11 +19,18 @@ type VeilederTilgang {
     harAktiveTiltaksdeltakelserVedFlyttingTilEgetKontor: Boolean
 }
 
+type Utmeldingskandidat {
+    tag: UtmeldingskandidatTag
+    utmeldingskandidatHendelser: [UtmeldingskandidatHendelser]
+    aktivForlengelse: Forlengelse
+}
+
 
 enum UtmeldingskandidatTag {
     ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
     ARBEIDSSOKERPERIODE_AVSLUTTET_SVARTE_NEI_I_BEKREFTELSE,
     ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET,
+    FORLENGELSE_UTLOPT,
 }
 
 # Svaret på Evaluerering av Policy-en som heter NavAnsattTilgangTilEksternBruker i POAO-Tilgang
@@ -165,4 +173,35 @@ type Oppfolgingsperiode {
 type KvpPeriode {
     startTidspunkt: String!
     sluttTidspunkt: String
+}
+
+type UtmeldingskandidatHendelser {
+    utfortAvType: KandidatForUtmeldingHendelseUtfortAvType!
+    utfortAv: String
+    hendelseTidspunkt: String!
+    type: KandidatForUtmeldingHendelseType!
+    forlengetTil: String
+}
+
+enum KandidatForUtmeldingHendelseType {
+    ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT
+    ARBEIDSSOKERPERIODE_AVSLUTTET_SVARTE_NEI_I_BEKREFTELSE
+    ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET
+    FORLENGELSE_OPPRETTET
+    FORLENGELSE_ENDRET
+    FORLENGELSE_UTLOPT
+}
+
+enum KandidatForUtmeldingHendelseUtfortAvType {
+    VEILEDER
+    SYSTEM
+    BRUKER
+    UKJENT
+}
+
+type Forlengelse {
+    utfortAvType: KandidatForUtmeldingHendelseUtfortAvType!
+    utfortAv: String
+    hendelseTidspunkt: String!
+    forlengetTil: String
 }

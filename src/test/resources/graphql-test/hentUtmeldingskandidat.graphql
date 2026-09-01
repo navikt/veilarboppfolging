@@ -1,0 +1,18 @@
+query testUtmeldingskandidater($fnr: String!) {
+    utmeldingskandidat(fnr: $fnr) {
+        aktivForlengelse {
+            utfortAvType
+            utfortAv
+            hendelseTidspunkt
+            forlengetTil
+        }
+        utmeldingskandidatHendelser {
+            utfortAvType
+            utfortAv
+            hendelseTidspunkt
+            type
+            forlengetTil
+        }
+        tag
+    }
+}

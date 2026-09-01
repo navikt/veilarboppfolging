@@ -50,6 +50,41 @@ class AapClientTest {
     }
 
     @Test
+    fun `harAap - har Arena-periode nå, feil status - returnerer false`(wmRuntimeInfo: WireMockRuntimeInfo) {
+        val apiUrl = "http://localhost:" + wmRuntimeInfo.httpPort
+        val fraOgMed = LocalDate.now().minusWeeks(1)
+        val tilOgMed = LocalDate.now().plusMonths(6)
+        @Language("JSON")
+        val response = """
+            {
+              "saker": [
+                {
+                  "sakId": "123",
+                  "statusKode": "AVSLU",
+                  "periode": {
+                    "fraOgMedDato": "$fraOgMed",
+                    "tilOgMedDato": "$tilOgMed"
+                  },
+                  "kilde": "ARENA"
+                }
+              ]
+            }
+        """.trimIndent()
+        givenThat(
+            WireMock.post("/dab/sakerByFnr")
+                .willReturn(
+                    WireMock.aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(response)
+                )
+        )
+        val client = AapClient(apiUrl, { "token" }, OkHttpClient.Builder().build())
+
+        assertEquals(false, client.harAap("12345678910"))
+    }
+
+    @Test
     fun `harAap - har aktiv Arena-periode i fremtiden - returnerer true`(wmRuntimeInfo: WireMockRuntimeInfo) {
         val apiUrl = "http://localhost:" + wmRuntimeInfo.httpPort
         val fraOgMed = LocalDate.now().plusDays(1)
@@ -85,7 +120,7 @@ class AapClientTest {
     }
 
     @Test
-    fun `harAap - har aktiv Arena-periode med tilOgMedDato null - returnerer true`(wmRuntimeInfo: WireMockRuntimeInfo) {
+    fun `harAap - har aktiv Arena-periode med tilOgMedDato null - returnerer false`(wmRuntimeInfo: WireMockRuntimeInfo) {
         val apiUrl = "http://localhost:" + wmRuntimeInfo.httpPort
         val fraOgMed = LocalDate.now().plusDays(1)
         @Language("JSON")
@@ -115,7 +150,7 @@ class AapClientTest {
         )
         val client = AapClient(apiUrl, { "token" }, OkHttpClient.Builder().build())
 
-        assertEquals(true, client.harAap("12345678910"))
+        assertEquals(false, client.harAap("12345678910"))
     }
 
     @Test

@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.support.TransactionTemplate
 import java.time.Instant
+import no.nav.veilarboppfolging.kandidatForUtmelding.dto.KandidatForUtmeldingTagDto
 
 @Service
 class KandidatForUtmeldingService(
@@ -44,14 +45,22 @@ class KandidatForUtmeldingService(
         }
     }
 
-    fun hentKandidatForUtmeldingTag(oppfolgingsperiodeId: UUID): KandidatForUtmeldingTag? {
+    fun hentKandidatForUtmeldingTag(oppfolgingsperiodeId: UUID): KandidatForUtmeldingTagDto? {
         return kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeId)?.mapTilTag()
     }
 
-    fun hentKandidatForUtmeldingTag(aktorId: AktorId): KandidatForUtmeldingTag? {
+    fun hentKandidatForUtmeldingTag(aktorId: AktorId): KandidatForUtmeldingTagDto? {
         val oppfolgingsperiodeId =
             oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId)?.getOrNull()?.uuid ?: return null
         return hentKandidatForUtmeldingTag(oppfolgingsperiodeId)
+    }
+
+    fun hentUtmeldingsKandidatHendelser(aktorId: AktorId): List<KandidatForUtmeldingHendelse> {
+        return kandidatForUtmeldingRepository.hentAlleKandidatForUtmeldingHendelser(aktorId)
+    }
+
+    fun hentAktivForlengelse(oppfolgingsperiodeId: UUID): ForlengelseHendelse? {
+        return kandidatForUtmeldingRepository.hentKandidatMedForlengelse(oppfolgingsperiodeId)
     }
 
     fun behandleKandidaterMedUtloptForlengelse() {

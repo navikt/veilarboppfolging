@@ -1,5 +1,8 @@
 package no.nav.veilarboppfolging.controller
 
+import java.time.LocalDate
+import java.util.UUID
+import kotlin.test.assertEquals
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.EnhetId
 import no.nav.common.types.identer.Fnr
@@ -14,19 +17,24 @@ import no.nav.veilarboppfolging.controller.graphql.AdGruppeNavn
 import no.nav.veilarboppfolging.controller.graphql.toISOString
 import no.nav.veilarboppfolging.ident.randomAktorId
 import no.nav.veilarboppfolging.ident.randomFnr
+import no.nav.veilarboppfolging.kandidatForUtmelding.dto.KandidatForUtmeldingHendelseTypeDto
+import no.nav.veilarboppfolging.kandidatForUtmelding.dto.KandidatForUtmeldingTagDto
+import no.nav.veilarboppfolging.kandidatForUtmelding.dto.UtmeldingskandidatDto
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.KanStarteOppfolgingDto
 import no.nav.veilarboppfolging.service.AuthService
+import org.junit.jupiter.api.Assertions.fail
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertNotNull
+import org.junit.jupiter.api.assertNull
 import org.mockito.Mockito.verifyNoInteractions
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.graphql.execution.DefaultExecutionGraphQlService
 import org.springframework.graphql.execution.GraphQlSource
 import org.springframework.graphql.test.tester.ExecutionGraphQlServiceTester
+import org.springframework.graphql.test.tester.entity
 import org.springframework.http.HttpStatusCode
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.web.client.RestClient
-import java.util.*
-import kotlin.test.assertEquals
 
 @ActiveProfiles("test")
 class GraphqlControllerTest: IntegrationTest() {
@@ -777,5 +785,112 @@ class GraphqlControllerTest: IntegrationTest() {
         val result = tester.documentName("hentKandidatForUtmeldingTag").variable("fnr", fnr.get()).execute()
         result.errors().verify()
         result.path("utmeldingskandidatTag").equals(null)
+    }
+
+    @Test
+    fun `utmeldingskandidat, aktivForlengelse - skal returnere aktiv forlengelse`() {
+        val (fnr, aktorId) = defaultBruker()
+        val veilederUuid = UUID.randomUUID()
+        val enhetId = EnhetId("1234")
+        mockPoaoTilgangHarTilgangTilEnhet(veilederUuid, enhetId)
+        mockInternBrukerAuthOk(veilederUuid, aktorId, fnr)
+        mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Permit)
+        mockVeilarbArenaOppfolgingsBruker(fnr, Formidlingsgruppe.ISERV)
+        setBrukerUnderOppfolging(aktorId, fnr)
+        setLocalArenaOppfolging(aktorId, Formidlingsgruppe.ARBS)
+        setAoKontor(fnr, aktorId, enhetId.get())
+        val oppfolgingsperiode = hentOppfolgingsperioder(fnr).first { it.sluttDato == null }
+        lagreKandidatForUtmelding(fnr, oppfolgingsperiode.uuid)
+        mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Permit, tilgangType = TilgangType.SKRIVE)
+        val forlengetTil = LocalDate.now().plusDays(30)
+        forlengKandidatForUtmelding(fnr, forlengetTil)
+
+        val result = tester.documentName("hentUtmeldingskandidat").variable("fnr", fnr.get()).execute()
+        result.errors().verify()
+        val kandidat = result.path("utmeldingskandidat")
+            .entity<UtmeldingskandidatDto>()
+            .get()
+
+        val forlengelse = kandidat.aktivForlengelse
+        assertNotNull(forlengelse)
+        assertEquals(forlengelse.utfortAv, "A123456")
+        assertEquals(forlengelse.forlengetTil, forlengetTil.toString())
+        assertNull(kandidat.tag)
+        assertEquals(kandidat.utmeldingskandidatHendelser?.size, 2)
+        kandidat.utmeldingskandidatHendelser?.find { it.type == KandidatForUtmeldingHendelseTypeDto.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT }?.let { hendelse ->
+            assertEquals(hendelse.utfortAv, "A123123")
+        } ?: fail("Mangler ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT-hendelse")
+        kandidat.utmeldingskandidatHendelser?.find { it.type == KandidatForUtmeldingHendelseTypeDto.FORLENGELSE_OPPRETTET }?.let { hendelse ->
+            assertEquals(hendelse.utfortAv, "A123456")
+        } ?: fail("Mangler FORLENGELSE_OPPRETTET-hendelse")
+    }
+
+    @Test
+    fun `utmeldingskandidat, ingen forlengelse`() {
+        val (fnr, aktorId) = defaultBruker()
+        val veilederUuid = UUID.randomUUID()
+        val enhetId = EnhetId("1234")
+        mockPoaoTilgangHarTilgangTilEnhet(veilederUuid, enhetId)
+        mockInternBrukerAuthOk(veilederUuid, aktorId, fnr)
+        mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Permit)
+        mockVeilarbArenaOppfolgingsBruker(fnr, Formidlingsgruppe.ISERV)
+        setBrukerUnderOppfolging(aktorId, fnr)
+        setLocalArenaOppfolging(aktorId, Formidlingsgruppe.ARBS)
+        setAoKontor(fnr, aktorId, enhetId.get())
+        val oppfolgingsperiode = hentOppfolgingsperioder(fnr).first { it.sluttDato == null }
+        lagreKandidatForUtmelding(fnr, oppfolgingsperiode.uuid)
+
+        val result = tester.documentName("hentUtmeldingskandidat").variable("fnr", fnr.get()).execute()
+        result.errors().verify()
+        val kandidat = result.path("utmeldingskandidat")
+            .entity<UtmeldingskandidatDto>()
+            .get()
+
+        assertNotNull(kandidat)
+        assertNull(kandidat.aktivForlengelse)
+        assertEquals(kandidat.tag, KandidatForUtmeldingTagDto.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT)
+        assertEquals(kandidat.utmeldingskandidatHendelser?.size, 1)
+        val hendelse = kandidat.utmeldingskandidatHendelser?.first()!!
+        assertEquals(hendelse.utfortAv, "A123123")
+        assertEquals(hendelse.type, KandidatForUtmeldingHendelseTypeDto.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT)
+    }
+
+    @Test
+    fun `ikke utmeldingskandidat - returnerer null`() {
+        val (fnr, aktorId) = defaultBruker()
+        val veilederUuid = UUID.randomUUID()
+        val enhetId = EnhetId("1234")
+        mockPoaoTilgangHarTilgangTilEnhet(veilederUuid, enhetId)
+        mockInternBrukerAuthOk(veilederUuid, aktorId, fnr)
+        mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Permit)
+        mockVeilarbArenaOppfolgingsBruker(fnr, Formidlingsgruppe.ISERV)
+        setBrukerUnderOppfolging(aktorId, fnr)
+        setLocalArenaOppfolging(aktorId, Formidlingsgruppe.ARBS)
+        setAoKontor(fnr, aktorId, enhetId.get())
+        hentOppfolgingsperioder(fnr).first { it.sluttDato == null }
+
+        val result = tester.documentName("hentUtmeldingskandidat").variable("fnr", fnr.get()).execute()
+        result.errors().verify()
+        result.path("utmeldingskandidat").equals(null)
+    }
+
+    @Test
+    fun `ikke under oppfølging - returnerer null`() {
+        val (fnr, aktorId) = defaultBruker()
+        val veilederUuid = UUID.randomUUID()
+        val enhetId = EnhetId("1234")
+        mockPoaoTilgangHarTilgangTilEnhet(veilederUuid, enhetId)
+        mockInternBrukerAuthOk(veilederUuid, aktorId, fnr)
+        mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Permit)
+
+        val result = tester.documentName("hentUtmeldingskandidat").variable("fnr", fnr.get()).execute()
+        result.errors().verify()
+        result.path("utmeldingskandidat").matchesJson("""
+            {
+              "aktivForlengelse": null,
+              "utmeldingskandidatHendelser": [],
+              "tag": null
+            }
+        """.trimIndent())
     }
 }
