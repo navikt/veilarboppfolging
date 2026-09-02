@@ -1,0 +1,2 @@
+ALTER TABLE oppfolging_metrikker.KANDIDATER_FOR_UTMELDING_METRIKKER
+ADD COLUMN IF NOT EXISTS antallKandidaterForUtmeldingIkkeForlenget INT64

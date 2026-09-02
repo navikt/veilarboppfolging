@@ -2,6 +2,7 @@ package no.nav.veilarboppfolging.service
 
 import java.time.ZonedDateTime
 import java.util.UUID
+import kotlin.jvm.optionals.getOrNull
 import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
@@ -115,7 +116,7 @@ class AvsluttOppfolgingService(
     private fun getAvslutningStatusForManuellAvslutning(fnr: Fnr): AvslutningStatusData {
         val aktorId = authService.getAktorIdOrThrow(fnr)
         val arenaOppfolgingResult = arenaOppfolgingService.hentArenaOppfolgingTilstand(fnr)
-        val inaktiveringsDato = when(arenaOppfolgingResult) {
+        val inaktiveringsDato = when (arenaOppfolgingResult) {
             is ArenaOppfolgingTilstandOppslagResult.Fail, is ArenaOppfolgingTilstandOppslagResult.NotFound -> null
             is ArenaOppfolgingTilstandOppslagResult.Success -> arenaOppfolgingResult.arenaOppfolgingTilstand.inaktiveringsdato
         }
@@ -201,6 +202,14 @@ class AvsluttOppfolgingService(
         val erArbeidssoeker = erArbeidssoeker(fnr)
         val harAap = harAap(fnr)
         val underKvp = kvpService.erUnderKvp(avregistrering.aktorId)
+        val erOppfolgingForlenget = if (oppfolging?.underOppfolging == true) {
+            val oppfolgingsperiodeId =
+                oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(avregistrering.aktorId)?.getOrNull()?.uuid
+                    ?: throw IllegalStateException("Fant ikke gjeldende oppfølgingsperiode for bruker som er under oppfølging")
+            fjernKandidatForUtmeldingService.erOppfolgingForlenget(oppfolgingsperiodeId)
+        } else {
+            false
+        }
         return kanAvsluttes(
             avregistrering,
             KanAvsluttesInput(
@@ -210,7 +219,8 @@ class AvsluttOppfolgingService(
                 erDeltakerIUngdomsprogrammet = erDeltakerIUngdomsprogrammet,
                 erArbeidssoeker = erArbeidssoeker,
                 harAap = harAap,
-                underKvp = underKvp
+                underKvp = underKvp,
+                erOppfolgingForlenget = erOppfolgingForlenget,
             )
         )
     }

@@ -1,12 +1,17 @@
 package no.nav.veilarboppfolging.service
 
+import java.time.LocalDate
+import java.time.ZonedDateTime
+import java.util.Optional
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.pto_schema.enums.arena.Hovedmaal
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
+import no.nav.veilarboppfolging.client.pdl.ForenkletFolkeregisterStatus
+import no.nav.veilarboppfolging.client.pdl.FregStatusOgStatsborgerskap
+import no.nav.veilarboppfolging.client.pdl.PdlFolkeregisterStatusClient
 import no.nav.veilarboppfolging.kafka.TestUtils
-import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.EndringPaaOppfolgingsBruker
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.LocalArenaOppfolging
@@ -23,9 +28,6 @@ import org.mockito.Mockito.`when`
 import org.mockito.kotlin.any
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
-import java.time.LocalDate
-import java.time.ZonedDateTime
-import java.util.Optional
 
 class OppfolgingsbrukerEndretIArenaServiceTest {
 
@@ -35,7 +37,7 @@ class OppfolgingsbrukerEndretIArenaServiceTest {
     private val arenaOppfolgingService: ArenaOppfolgingService = mock(ArenaOppfolgingService::class.java)
     private val metricsService: MetricsService = mock(MetricsService::class.java)
     private val oppfolgingsStatusRepository: OppfolgingsStatusRepository = mock(OppfolgingsStatusRepository::class.java)
-    private val kandidatForUtmeldingService: KandidatForUtmeldingService = mock(KandidatForUtmeldingService::class.java)
+    private val pdlFolkeregisterStatusClient: PdlFolkeregisterStatusClient = mock(PdlFolkeregisterStatusClient::class.java)
 
     val oppfolgingsbrukerEndretIArenaService = OppfolgingsbrukerEndretIArenaService(
         oppfolgingService,
@@ -44,7 +46,7 @@ class OppfolgingsbrukerEndretIArenaServiceTest {
         arenaOppfolgingService,
         metricsService,
         oppfolgingsStatusRepository,
-        kandidatForUtmeldingService
+        pdlFolkeregisterStatusClient,
     )
 
     val AKTOR_ID = AktorId("0102030405")
@@ -78,11 +80,26 @@ class OppfolgingsbrukerEndretIArenaServiceTest {
         oppfolgingStatus(underOppfolging = false)
         kanIkkeReaktiveres()
         kanAvsluttes()
+        brukerSomErOver18()
         val melding = meldingFraArena(Formidlingsgruppe.IARBS, Kvalifiseringsgruppe.VURDU)
 
         oppfolgingsbrukerEndretIArenaService.oppdaterOppfolgingMedStatusFraArena(melding)
 
         verify(startOppfolgingService, times(1))
+            .startOppfolgingHvisIkkeAlleredeStartet(any())
+    }
+
+    @Test
+    fun `skal ikke starte oppfølging på bruker under 18 som ble sykmeldt uten arbeidsgiver`() {
+        oppfolgingStatus(underOppfolging = false)
+        kanIkkeReaktiveres()
+        kanAvsluttes()
+        brukerSomErUnder18()
+        val melding = meldingFraArena(Formidlingsgruppe.IARBS, Kvalifiseringsgruppe.VURDU)
+
+        oppfolgingsbrukerEndretIArenaService.oppdaterOppfolgingMedStatusFraArena(melding)
+
+        verify(startOppfolgingService, never())
             .startOppfolgingHvisIkkeAlleredeStartet(any())
     }
 
@@ -169,7 +186,8 @@ class OppfolgingsbrukerEndretIArenaServiceTest {
                     erDeltakerIUngdomsprogrammet = false,
                     erArbeidssoeker = false,
                     harAap = false,
-                    underKvp = false
+                    underKvp = false,
+                    erOppfolgingForlenget = false,
                 )
             ))
     }
@@ -181,4 +199,21 @@ class OppfolgingsbrukerEndretIArenaServiceTest {
         `when`(arenaOppfolgingService.kanEnkeltReaktiveres(FNR)).thenReturn(Optional.of(false))
     }
 
+    private fun brukerSomErOver18() {
+        val pdlFolkeregisterStatus = FregStatusOgStatsborgerskap(
+            fregStatus = ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven,
+            statsborgerskap = listOf("NOR"),
+            under18 = false,
+        )
+        `when`(pdlFolkeregisterStatusClient.hentFolkeregisterStatus(FNR)).thenReturn(pdlFolkeregisterStatus)
+    }
+
+    private fun brukerSomErUnder18() {
+        val pdlFolkeregisterStatus = FregStatusOgStatsborgerskap(
+            fregStatus = ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven,
+            statsborgerskap = listOf("NOR"),
+            under18 = true,
+        )
+        `when`(pdlFolkeregisterStatusClient.hentFolkeregisterStatus(FNR)).thenReturn(pdlFolkeregisterStatus)
+    }
 }

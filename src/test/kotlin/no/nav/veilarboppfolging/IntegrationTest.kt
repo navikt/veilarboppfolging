@@ -58,9 +58,9 @@ import no.nav.veilarboppfolging.config.KafkaProperties
 import no.nav.veilarboppfolging.controller.OppfolgingV3Controller
 import no.nav.veilarboppfolging.controller.SakController
 import no.nav.veilarboppfolging.controller.v3.request.OppfolgingRequest
+import no.nav.veilarboppfolging.kandidatForUtmelding.ArbeidssokerperiodeAvsluttetHendelseType
 import no.nav.veilarboppfolging.kandidatForUtmelding.ArbeidssøkerPeriodeAvsluttet
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingHendelseUtfortAvType
-import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingHendelseType
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingRepository
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.BrukerRegistrant
@@ -104,6 +104,9 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.web.context.WebApplicationContext
 import java.time.temporal.ChronoUnit
 import no.nav.veilarboppfolging.kandidatForUtmelding.FjernKandidatForUtmeldingService
+import no.nav.veilarboppfolging.kandidatForUtmelding.ForlengelseDTO
+import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingController
+import no.nav.veilarboppfolging.kandidatForUtmelding.RepubliserKandidatForUtmeldingService
 import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.FilterhendelseRecord
 
 @EmbeddedKafka(partitions = 1)
@@ -184,6 +187,9 @@ open class IntegrationTest {
     lateinit var sakController: SakController
 
     @Autowired
+    lateinit var kandidatForUtmeldingController: KandidatForUtmeldingController
+
+    @Autowired
     lateinit var arenaOppfolgingService: ArenaOppfolgingService
 
     @Autowired
@@ -250,6 +256,9 @@ open class IntegrationTest {
     lateinit var fjernKandidatForUtmeldingService: FjernKandidatForUtmeldingService
 
     @Autowired
+    lateinit var republiserKandidatForUtmeldingService: RepubliserKandidatForUtmeldingService
+
+    @Autowired
     lateinit var kandidatForUtmeldingRepository: KandidatForUtmeldingRepository
 
     @BeforeEach
@@ -278,10 +287,16 @@ open class IntegrationTest {
             utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
             utfortAv = "A123123",
             kilde = "arbeidssøkerregisteret",
-            kandidatForUtmeldingHendelseType = KandidatForUtmeldingHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
-            avslutningsarsak = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
+            arbeidssokerperiodeAvsluttetHendelseType = ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
+            avslutningsarsak = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString(),
+            hendelseTidspunkt = ZonedDateTime.now().toInstant(),
         )
         kandidatForUtmeldingService.lagreKandidatForUtmelding(fnr,kandidat)
+    }
+
+    fun forlengKandidatForUtmelding(fnr: Fnr, forlengTil: LocalDate) {
+        val forlengelseDTO = ForlengelseDTO(fnr, forlengTil)
+        kandidatForUtmeldingController.forlengOppfolging(forlengelseDTO)
     }
 
     fun setTilordnetVeileder(aktorId: AktorId, veilederIdent: NavIdent) {

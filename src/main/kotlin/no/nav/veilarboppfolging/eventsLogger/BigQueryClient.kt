@@ -29,28 +29,30 @@ enum class BigQueryEventType {
     OPPFOLGINGSPERIODE_SLUTT,
 }
 
-data class UtmeldingsAntall(
-    val personerIUtemelding: Int,
-    val personIUtmeldingSomErUnderOppfolging: Int,
+data class KandidaterForUtmeldingMetrikker(
+    val antallKandidaterForUtmelding: Int,
+    val antallUnderOppfolgingMedIserv: Int,
+    val antallKandidaterForUtmeldingIkkeForlenget: Int,
+    val antallKandidaterForUtmeldingForlenget: Int,
 )
 
 interface BigQueryClient {
     fun loggStartOppfolgingsperiode(startBegrunnelse: OppfolgingStartBegrunnelse, oppfolgingPeriodeId: UUID, startedAvType: StartetAvType, kvalifiseringsgruppe: Optional<Kvalifiseringsgruppe>, manuellSjekkLovligOpphold: Boolean? = null, forrigePeriodeAvsluttet: ZonedDateTime?)
     fun loggAvsluttOppfolgingsperiode(oppfolgingPeriodeId: UUID, avregistrering: Avregistrering, aktivIArena: Boolean? = null)
     fun loggUtmeldingsHendelse(utmelding: UtmeldingsHendelse)
-    fun loggUtmeldingsCount(utmelding: UtmeldingsAntall)
+    fun loggKandidaterForUtmeldingMetrikker(metrikker: KandidaterForUtmeldingMetrikker)
     fun loggUnder18()
 }
 
 class BigQueryClientImplementation(private val bigQuery: BigQuery): BigQueryClient {
     val OPPFOLGING_EVENTS = "OPPFOLGINGSPERIODE_EVENTS"
     val UTMELDING_EVENTS = "UTMELDING_EVENTS"
-    val UTMELDING_COUNTS = "UTMELDING_COUNTS"
+    val KANDIDATER_FOR_UTMELDING_METRIKKER = "KANDIDATER_FOR_UTMELDING_METRIKKER"
     val UNDER18_EVENTS = "UNDER18_EVENTS"
     val DATASET_NAME = "oppfolging_metrikker"
     val oppfolgingsperiodeEventsTable = TableId.of(DATASET_NAME, OPPFOLGING_EVENTS)
     val utmeldingEventsTable = TableId.of(DATASET_NAME, UTMELDING_EVENTS)
-    val utmeldingCountsTable = TableId.of(DATASET_NAME, UTMELDING_COUNTS)
+    val kandidaterForUtmeldingMetrikkerTable = TableId.of(DATASET_NAME, KANDIDATER_FOR_UTMELDING_METRIKKER)
     val under18EventsTable = TableId.of(DATASET_NAME, UNDER18_EVENTS)
 
     private fun TableId.insertRequest(row: Map<String, Any?>): InsertAllRequest {
@@ -122,11 +124,13 @@ class BigQueryClientImplementation(private val bigQuery: BigQuery): BigQueryClie
         }
     }
 
-    override fun loggUtmeldingsCount(utmelding: UtmeldingsAntall) {
-        insertIntoOppfolgingEvents(utmeldingCountsTable) {
+    override fun loggKandidaterForUtmeldingMetrikker(metrikker: KandidaterForUtmeldingMetrikker) {
+        insertIntoOppfolgingEvents(kandidaterForUtmeldingMetrikkerTable) {
             mapOf(
-                "personerIUtmelding" to utmelding.personerIUtemelding,
-                "personIUtmeldingSomErUnderOppfolging" to utmelding.personIUtmeldingSomErUnderOppfolging,
+                "antallKandidaterForUtmelding" to metrikker.antallKandidaterForUtmelding,
+                "antallUnderOppfolgingMedIserv" to metrikker.antallUnderOppfolgingMedIserv,
+                "antallKandidaterForUtmeldingIkkeForlenget" to metrikker.antallKandidaterForUtmeldingIkkeForlenget,
+                "antallKandidaterForUtmeldingForlenget" to metrikker.antallKandidaterForUtmeldingForlenget,
                 "timestamp" to ZonedDateTime.now().toOffsetDateTime().toString()
             )
         }

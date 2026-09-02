@@ -43,4 +43,30 @@ public class OppfolgingsStatusRepositoryTest {
         assertEquals(aktorId3, unikeBrukerePage2.get(1));
     }
 
+    @Test
+    public void hentAntallUnderOppfolgingMedIserv__skal_returnere_antall_under_oppfolging_med_iserv() {
+        jdbcTemplate.update(
+                "INSERT INTO OPPFOLGINGSTATUS(aktor_id, under_oppfolging, formidlingsgruppe, oppdatert) VALUES (?, ?, ?, CURRENT_TIMESTAMP)",
+                "aktorId1",
+                1,
+                "ISERV"
+        );
+        jdbcTemplate.update(
+                "INSERT INTO OPPFOLGINGSTATUS(aktor_id, under_oppfolging, formidlingsgruppe, oppdatert) VALUES (?, ?, ?, CURRENT_TIMESTAMP)",
+                "aktorId2",
+                1,
+                "ARBS"
+        );
+        jdbcTemplate.update(
+                "INSERT INTO OPPFOLGINGSTATUS(aktor_id, under_oppfolging, formidlingsgruppe, oppdatert) VALUES (?, ?, ?, CURRENT_TIMESTAMP)",
+                "aktorId3",
+                0,
+                "ISERV"
+        );
+
+        int antall = oppfolgingsStatusRepository.hentAntallUnderOppfolgingMedIserv();
+
+        assertEquals(1, antall);
+    }
+
 }
