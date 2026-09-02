@@ -1,7 +1,6 @@
 package no.nav.veilarboppfolging.client.tiltakshistorikk
 
 import no.nav.common.types.identer.EksternBrukerId
-import no.nav.common.types.identer.Fnr
 import java.util.function.Supplier
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -13,7 +12,6 @@ import tools.jackson.databind.cfg.DateTimeFeature
 import tools.jackson.databind.json.JsonMapper
 import tools.jackson.module.kotlin.KotlinModule
 import tools.jackson.module.kotlin.readValue
-import java.util.function.Function
 
 // Dokumentasjon: https://github.com/navikt/mulighetsrommet/tree/main/mulighetsrommet-tiltakshistorikk
 class TiltakshistorikkClient(
@@ -42,19 +40,7 @@ class TiltakshistorikkClient(
     }
 
     private fun hentTiltaksdeltakelser(personidenter: List<EksternBrukerId>): List<TiltakshistorikkV1Dto> {
-        val response = hentTiltakshistorikk(personidenter)
-
-        if (response.kunneIkkeHenteDeltakelserFraTeamTiltak()) {
-            logger.warn("Tiltakshistorikk kunne ikke hente tiltak fra Team Tiltak. Prøver på nytt..")
-            val retryResponse = hentTiltakshistorikk(personidenter)
-
-            if (retryResponse.kunneIkkeHenteDeltakelserFraTeamTiltak()) {
-                logger.warn("Tiltakshistorikk kunne ikke hente tiltak fra Team Tiltak med retry, returnerer responsen")
-            }
-            return retryResponse.historikk
-        } else {
-            return response.historikk
-        }
+        return hentTiltakshistorikk(personidenter).historikk
     }
 
     private fun hentTiltakshistorikk(personidenter: List<EksternBrukerId>): TiltakshistorikkResponse {
