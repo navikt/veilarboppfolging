@@ -60,6 +60,13 @@ class RepubliserKandidatForUtmeldingService(
     fun republiserKandidatForUtmelding(oppfolgingsperiodeId: UUID) {
         kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeId)
             ?.let { republiserKandidatForUtmelding(it) }
+                val fnr = finnFnrForOppfolgingsperiode(oppfolgingsperiodeId)
+                val filterkategoriPersonId = kandidatForUtmeldingRepository.hentFilterhendelseId(oppfolgingsperiodeId)
+                val filterHendelseRecord = OppfolgingAvsluttetHendelse(oppfolgingsperiodeId, oppfolgingAvsluttetHendelseType = OppfolgingAvsluttetHendelseType.OPPFOLGING_AVSLUTTET_AUTOMATISK)
+                    .tilFilterhendelseRecord(fnr)
+                if (filterkategoriPersonId != null) {
+                    kafkaProducerService.publiserFilterhendelse(filterkategoriPersonId, filterHendelseRecord)
+                }
     }
 
     fun republiserKandidatForUtmelding(kandidat: KandidatForUtmelding) {
