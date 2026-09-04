@@ -58,15 +58,16 @@ class RepubliserKandidatForUtmeldingService(
     }
 
     fun republiserKandidatForUtmelding(oppfolgingsperiodeId: UUID) {
-        kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeId)
-            ?.let { republiserKandidatForUtmelding(it) }
-                val fnr = finnFnrForOppfolgingsperiode(oppfolgingsperiodeId)
-                val filterkategoriPersonId = kandidatForUtmeldingRepository.hentFilterhendelseId(oppfolgingsperiodeId)
-                val filterHendelseRecord = OppfolgingAvsluttetHendelse(oppfolgingsperiodeId, oppfolgingAvsluttetHendelseType = OppfolgingAvsluttetHendelseType.OPPFOLGING_AVSLUTTET_AUTOMATISK)
-                    .tilFilterhendelseRecord(fnr)
-                if (filterkategoriPersonId != null) {
-                    kafkaProducerService.publiserFilterhendelse(filterkategoriPersonId, filterHendelseRecord)
-                }
+        val aktivKandidat = kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeId)
+        if (aktivKandidat != null) {
+            republiserKandidatForUtmelding(aktivKandidat)
+        } else {
+            val fnr = finnFnrForOppfolgingsperiode(oppfolgingsperiodeId)
+            val filterkategoriPersonId = kandidatForUtmeldingRepository.hentEllerOpprettFilterhendelseId(oppfolgingsperiodeId)
+            val filterHendelseRecord = OppfolgingAvsluttetHendelse(oppfolgingsperiodeId, oppfolgingAvsluttetHendelseType = OppfolgingAvsluttetHendelseType.OPPFOLGING_AVSLUTTET_AUTOMATISK)
+                .tilFilterhendelseRecord(fnr)
+            kafkaProducerService.publiserFilterhendelse(filterkategoriPersonId, filterHendelseRecord)
+        }
     }
 
     fun republiserKandidatForUtmelding(kandidat: KandidatForUtmelding) {
@@ -74,14 +75,9 @@ class RepubliserKandidatForUtmeldingService(
             transactor.executeWithoutResult { _ ->
                 val fnr = finnFnrForOppfolgingsperiode(kandidat.oppfolgingsperiodeId)
                 val filterkategoriPersonId = kandidatForUtmeldingRepository.hentEllerOpprettFilterhendelseId(kandidat.oppfolgingsperiodeId)
-                if(kandidat.sisteHendelse.type == ForlengelseHendelseType.FORLENGELSE_ENDRET) {
-                    logger.info("Sender ikke kandidat for utmelding til OBO for oppfølgingsperiode: ${kandidat.oppfolgingsperiodeId} på nytt fordi siste hendelse er FORLENGELSE_ENDRET")
-                    return@executeWithoutResult
-                } else {
-                    val filterhendelseRecord = kandidat.sisteHendelse.tilFilterhendelseRecord(fnr)
-                    logger.info("Republiserer kandidat for utmelding til OBO med key=$filterkategoriPersonId for oppfølgingsperiode ${kandidat.oppfolgingsperiodeId}")
-                    kafkaProducerService.publiserFilterhendelse(filterkategoriPersonId, filterhendelseRecord)
-                }
+                val filterhendelseRecord = kandidat.sisteHendelse.tilFilterhendelseRecord(fnr)
+                logger.info("Republiserer kandidat for utmelding til OBO med key=$filterkategoriPersonId for oppfølgingsperiode ${kandidat.oppfolgingsperiodeId}")
+                kafkaProducerService.publiserFilterhendelse(filterkategoriPersonId, filterhendelseRecord)
             }
         } else {
             logger.info("Sender ikke kandidat for utmelding til OBO for oppfølgingsperiode ${kandidat.oppfolgingsperiodeId} på nytt fordi sending til OBO er togglet av")

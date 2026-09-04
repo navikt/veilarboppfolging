@@ -15,6 +15,8 @@ import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.Operasjon
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.Test
+import scala.language
+import java.time.LocalDate
 import java.time.ZoneId
 import java.time.ZoneOffset
 
@@ -179,10 +181,10 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
         mockTiltakshistorikk(FNR, harAktiveDeltakelser = false)
         mockUngdomsprogram(FNR, erDeltaker = false)
         mockArbeidssoekerregisteret(FNR, erArbeidssoeker = false)
-        mockAap(FNR, harAap = true)
+        mockAap(FNR, harAap = false)
         startOppfolgingSomArbeidsoker(AKTOR_ID, FNR)
         val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(FNR).get().uuid
-        val lagretKandidat = ArbeidssøkerPeriodeAvsluttet(
+        val arbeidssøkerPeriodeAvsluttet = ArbeidssøkerPeriodeAvsluttet(
             utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
             utfortAv = "A123123",
             kilde = "kilde",
@@ -190,21 +192,29 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
             oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
             arbeidssokerperiodeAvsluttetHendelseType = ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
             avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
-        ).let { KandidatForUtmelding.fromHendelse(it) }
-        kandidatForUtmeldingRepository.lagreKandidat(lagretKandidat)
-        namedParameterJdbcTemplate.update("""
-            UPDATE kandidater_for_utmelding SET forlenget_til = CURRENT_TIMESTAMP - INTERVAL '1 hour' WHERE oppfolgingsperiode_uuid = :oppfolgingsperiodeId
-        """.trimIndent(), mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeUuid.toString()))
+        )
+        kandidatForUtmeldingService.handterUtmeldingsHendelse(FNR, arbeidssøkerPeriodeAvsluttet)
+        kandidatForUtmeldingService.handterUtmeldingsHendelse(FNR, ForlengelseHendelse(
+            oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
+            utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
+            utfortAv = "S112233",
+            kilde = "kilde",
+            forlengelseHendelseType = ForlengelseHendelseType.FORLENGELSE_OPPRETTET,
+            hendelseTidspunkt = ZonedDateTime.now().minusDays(29).toInstant(),
+            forlengetTil = LocalDate.now().minusDays(1)
+        ))
+        mockAap(FNR, harAap = true)
 
         kandidatForUtmeldingService.behandleKandidaterMedUtloptForlengelse()
 
-        val kandidat = kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeUuid)
-        assertThat(kandidat).isNull()
+        assertThat(kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeUuid)).isNull()
         assertThat(kandidatForUtmeldingRepository.hentKandidatMedForlengelse(oppfolgingsperiodeUuid)).isNull()
         val filterhendelseId = kandidatForUtmeldingRepository.hentFilterhendelseId(oppfolgingsperiodeUuid)
-        assertThat(filterhendelseId).isNull()
-        val filterhendelse = getFilterhendelseRecordsStoredInKafkaOutbox(kafkaProperties.portefoljeHendelsesfilterTopic, filterhendelseId.toString()).firstOrNull()
-        assertThat(filterhendelse).isNull()
+        assertThat(filterhendelseId).isNotNull()
+        // Forlengelse-utløpt skal ikke ha blitt sendt på Kafka
+        val filterhendelse = getFilterhendelseRecordsStoredInKafkaOutbox(kafkaProperties.portefoljeHendelsesfilterTopic, filterhendelseId.toString())
+            .filter { it.hendelse?.beskrivelseEnum == BeskrivelseEnum.FORLENGELSE_UTLOPT.name }
+        assertThat(filterhendelse).isEmpty()
     }
 }
 

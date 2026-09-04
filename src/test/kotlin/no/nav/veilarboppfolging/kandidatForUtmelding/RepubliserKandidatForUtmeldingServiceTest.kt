@@ -71,8 +71,8 @@ class RepubliserKandidatForUtmeldingServiceTest : IntegrationTest() {
 
         val filterkategoriPersonId = kandidatForUtmeldingRepository.hentFilterhendelseId(oppfolgingsperiodeUuid)
         val filterhendelse = getFilterhendelseRecordsStoredInKafkaOutbox(kafkaProperties.portefoljeHendelsesfilterTopic, filterkategoriPersonId.toString()).last()
-        assertThat(filterhendelse.hendelse?.beskrivelse).isEqualTo("Arbeidssøkerperiode avsluttet: Ikke levert meldekort")
         assertThat(filterhendelse.operasjon).isEqualTo(Operasjon.STOPP)
+        assertThat(filterhendelse.hendelse).isNull()
         assertThat(filterhendelse.kategori).isEqualTo(Kategori.KANDIDAT_FOR_UTMELDING)
     }
 
