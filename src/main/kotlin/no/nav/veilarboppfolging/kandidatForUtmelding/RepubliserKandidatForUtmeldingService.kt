@@ -60,13 +60,13 @@ class RepubliserKandidatForUtmeldingService(
     fun republiserKandidatForUtmelding(oppfolgingsperiodeId: UUID, kandidatForUtmeldingHendelse: KandidatForUtmeldingHendelse? = null) {
         if (sendUtmeldingskandidaterTilObo) {
             transactor.executeWithoutResult { _ ->
-                val kandidat = kandidatForUtmeldingHendelse ?: kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeId)
+                val kandidat = kandidatForUtmeldingHendelse ?: kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeId)?.sisteHendelse
                 val fnr = finnFnrForOppfolgingsperiode(oppfolgingsperiodeId)
                 val filterkategoriPersonId = kandidatForUtmeldingRepository.hentEllerOpprettFilterhendelseId(oppfolgingsperiodeId)
                 val filterhendelseRecord = if (kandidat != null) {
                     kandidat.tilFilterhendelseRecord(fnr, Operasjon.START)
                 } else {
-                    val sisteUtmeldingshendelse = kandidatForUtmeldingRepository.hentSisteKandidatForUtmeldingHendelse(oppfolgingsperiodeId)
+                    val sisteUtmeldingshendelse = kandidatForUtmeldingRepository.hentSisteHendelseForKandidat(oppfolgingsperiodeId)
                         ?: throw IllegalStateException("Fant ingen kandidat for utmelding-hendelser for oppfølgingsperiode $oppfolgingsperiodeId")
                     if(sisteUtmeldingshendelse.type == ForlengelseHendelseType.FORLENGELSE_ENDRET) {
                         logger.info("Sender ikke kandidat for utmelding til OBO for oppfølgingsperiode: $oppfolgingsperiodeId på nytt fordi siste hendelse er FORLENGELSE_ENDRET")

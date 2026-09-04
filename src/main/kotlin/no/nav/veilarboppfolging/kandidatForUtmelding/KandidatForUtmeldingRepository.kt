@@ -18,24 +18,20 @@ class KandidatForUtmeldingRepository(
     private val db: NamedParameterJdbcTemplate
 ) {
 
-    fun lagreKandidat(hendelse: KandidatForUtmeldingHendelse) {
-        val hendelseId = insertUtmeldingsHendelse(hendelse)
-
-        val forlengetTil = when (hendelse) {
-            is ForlengelseHendelse -> hendelse.hentForlengetTil()
-            else -> null
-        }
+    fun lagreKandidat(kandidat: KandidatForUtmelding) {
+        val hendelseId = insertUtmeldingsHendelse(kandidat.sisteHendelse)
         val sql = """
-            INSERT INTO kandidater_for_utmelding(siste_utmeldingshendelse_id, oppfolgingsperiode_uuid, forlenget_til)
-            VALUES (:hendelseId, :oppfolgingsperiodeId, :forlengetTil)
+            INSERT INTO kandidater_for_utmelding(siste_utmeldingshendelse_id, oppfolgingsperiode_uuid, forlenget_til, avsluttes_automatisk_dato)
+            VALUES (:hendelseId, :oppfolgingsperiodeId, :forlengetTil, :avsluttesAutomatiskDato)
             ON CONFLICT (oppfolgingsperiode_uuid) 
-            DO UPDATE SET updated_at = current_timestamp, siste_utmeldingshendelse_id = :hendelseId, forlenget_til = :forlengetTil
+            DO UPDATE SET updated_at = current_timestamp, siste_utmeldingshendelse_id = :hendelseId, forlenget_til = :forlengetTil, avsluttes_automatisk_dato = :avsluttesAutomatiskDato
         """.trimIndent()
         db.update(
             sql, mapOf(
-                "oppfolgingsperiodeId" to hendelse.oppfolgingsperiodeUuid,
+                "oppfolgingsperiodeId" to kandidat.sisteHendelse.oppfolgingsperiodeUuid,
                 "hendelseId" to hendelseId,
-                "forlengetTil" to forlengetTil?.let { Timestamp.valueOf(it.atTime(4, 0)) },
+                "forlengetTil" to (kandidat as? ForlengetKandidat)?.forlengetTil?.let { Timestamp.valueOf(it.atTime(4, 0)) },
+                "avsluttesAutomatiskDato" to (kandidat as? AktivKandidatForUtmelding)?.avsluttesAutomatiskDato?.let { Timestamp.valueOf(it) },
             )
         )
     }
@@ -52,6 +48,7 @@ class KandidatForUtmeldingRepository(
                 "hendelse" to when (type) {
                     is ArbeidssokerperiodeAvsluttetHendelseType -> type.name
                     is ForlengelseHendelseType -> type.name
+                    is OppfolgingAvsluttetHendelseType -> type.name
                 },
                 "hendelseData" to hendelse.hendelseDataJson,
                 "utfortAv" to hendelse.utfortAv,
@@ -60,9 +57,27 @@ class KandidatForUtmeldingRepository(
                 "oppfolgingsperiode_uuid" to hendelse.oppfolgingsperiodeUuid,
                 "hendelseTidspunkt" to Timestamp.valueOf(
                     LocalDateTime.ofInstant(hendelse.hendelseTidspunkt, ZoneOffset.UTC)
-                )
+                ),
             )
         ) { rs, _ -> UUID.fromString(rs.getString("utmeldingshendelse_id")) }!!
+    }
+
+    /**
+     * Setter avsluttes_automatisk_dato på en kandidat dersom den mangler (f.eks. for kandidater opprettet
+     * før feltet ble innført). Idempotent - overskriver ikke en allerede satt dato.
+     */
+    fun settAvsluttesAutomatiskDatoHvisMangler(oppfolgingsperiodeId: UUID, avsluttesAutomatiskDato: LocalDateTime) {
+        val sql = """
+            UPDATE kandidater_for_utmelding
+            SET avsluttes_automatisk_dato = :avsluttesAutomatiskDato, updated_at = current_timestamp
+            WHERE oppfolgingsperiode_uuid = :oppfolgingsperiodeId AND avsluttes_automatisk_dato IS NULL
+        """.trimIndent()
+        db.update(
+            sql, mapOf(
+                "oppfolgingsperiodeId" to oppfolgingsperiodeId.toString(),
+                "avsluttesAutomatiskDato" to Timestamp.valueOf(avsluttesAutomatiskDato),
+            )
+        )
     }
 
     fun fjernKandidat(oppfolgingsperiodeId: UUID) {
@@ -73,16 +88,22 @@ class KandidatForUtmeldingRepository(
         db.update(sql, mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeId.toString()))
     }
 
-    fun hentKandidat(oppfolgingsperiodeId: UUID): KandidatForUtmeldingHendelse? {
+    fun hentKandidat(oppfolgingsperiodeId: UUID): AktivKandidatForUtmelding? {
         return db.query(
             """
-            SELECT kfuh.*
+            SELECT kfuh.*, kfu.avsluttes_automatisk_dato
             FROM kandidater_for_utmelding kfu
             JOIN kandidater_for_utmelding_hendelser kfuh ON kfu.siste_utmeldingshendelse_id = kfuh.utmeldingshendelse_id
             WHERE kfu.oppfolgingsperiode_uuid = :oppfolgingsperiodeId AND kfu.forlenget_til IS NULL
             """.trimIndent(),
             mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeId.toString()),
-        ) { rs, _ -> map(rs) }
+        ) { rs, _ ->
+            val sisteHendelse = map(rs)
+            AktivKandidatForUtmelding(
+                sisteHendelse,
+                rs.getTimestamp("avsluttes_automatisk_dato").toLocalDateTime()
+            )
+        }
             .firstOrNull()
     }
 
@@ -143,7 +164,19 @@ class KandidatForUtmeldingRepository(
         ) { rs, _ -> rs.getTimestamp("forlenget_til") }.firstOrNull()
     }
 
-    fun hentSisteKandidatForUtmeldingHendelse(oppfolgingsperiodeId: UUID): KandidatForUtmeldingHendelse? {
+    @TestOnly
+    fun hentAvsluttesAutomatiskDato(oppfolgingsperiodeId: UUID): Timestamp? {
+        return db.query(
+            """
+            SELECT avsluttes_automatisk_dato
+            FROM kandidater_for_utmelding
+            WHERE oppfolgingsperiode_uuid = :oppfolgingsperiodeId
+            """.trimIndent(),
+            mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeId.toString()),
+        ) { rs, _ -> rs.getTimestamp("avsluttes_automatisk_dato") }.firstOrNull()
+    }
+
+    fun hentSisteHendelseForKandidat(oppfolgingsperiodeId: UUID): KandidatForUtmeldingHendelse? {
         return db.query(
             """
             SELECT *
@@ -192,6 +225,17 @@ class KandidatForUtmeldingRepository(
             FROM kandidater_for_utmelding kfu
             JOIN kandidater_for_utmelding_hendelser kfuh ON kfu.siste_utmeldingshendelse_id = kfuh.utmeldingshendelse_id
             WHERE kfu.forlenget_til IS NOT NULL AND kfu.forlenget_til < current_timestamp
+            """.trimIndent(),
+        ) { rs, _ -> map(rs) }
+    }
+
+    fun hentKandidaterSomSkalAutomatiskAvsluttes(): List<KandidatForUtmeldingHendelse> {
+        return db.query(
+            """
+            SELECT kfuh.*
+            FROM kandidater_for_utmelding kfu
+            JOIN kandidater_for_utmelding_hendelser kfuh ON kfu.siste_utmeldingshendelse_id = kfuh.utmeldingshendelse_id
+            WHERE kfu.avsluttes_automatisk_dato IS NOT NULL AND kfu.avsluttes_automatisk_dato < current_timestamp
             """.trimIndent(),
         ) { rs, _ -> map(rs) }
     }
@@ -255,7 +299,9 @@ class KandidatForUtmeldingRepository(
         return when (getEnumType(hendelsetype)) {
             is ArbeidssokerperiodeAvsluttetHendelseType -> resultSet.toArbeidssøkerPeriodeAvsluttet()
             is ForlengelseHendelseType -> resultSet.toForlengelseHendelse()
+            is OppfolgingAvsluttetHendelseType -> resultSet.toOppfolgingAvsluttetHendelse()
         }
+
     }
 
     fun getEnumType(hendelse: String) : KandidatForUtmeldingHendelseType {
@@ -276,7 +322,7 @@ fun ResultSet.toArbeidssøkerPeriodeAvsluttet() = ArbeidssøkerPeriodeAvsluttet(
     kilde = getString("kilde"),
     hendelseTidspunkt = getTimestamp("hendelse_tidspunkt").toLocalDateTime().toInstant(ZoneOffset.UTC),
     avslutningsarsak = getStringOrNull("hendelse_data")?.let { JsonUtils.fromJson(it, ArbeidssøkerPeriodeAvsluttet.Detaljer::class.java).avslutningsarsak },
-    arbeidssokerperiodeAvsluttetHendelseType = ArbeidssokerperiodeAvsluttetHendelseType.valueOf(getString("hendelse"))
+    arbeidssokerperiodeAvsluttetHendelseType = ArbeidssokerperiodeAvsluttetHendelseType.valueOf(getString("hendelse")),
 )
 
 fun ResultSet.toForlengelseHendelse() = ForlengelseHendelse(
@@ -286,5 +332,15 @@ fun ResultSet.toForlengelseHendelse() = ForlengelseHendelse(
     kilde = getString("kilde"),
     hendelseTidspunkt = getTimestamp("hendelse_tidspunkt").toLocalDateTime().toInstant(ZoneOffset.UTC),
     forlengelseHendelseType = ForlengelseHendelseType.valueOf(getString("hendelse")),
-    forlengetTil = getStringOrNull("hendelse_data")?.let { JsonUtils.fromJson(it, ForlengelseHendelse.Detaljer::class.java).forlengetTil },
+    forlengetTil = getStringOrNull("hendelse_data")
+        ?.let { JsonUtils.fromJson(it, ForlengelseHendelse.Detaljer::class.java).forlengetTil }
+)
+
+fun ResultSet.toOppfolgingAvsluttetHendelse() = OppfolgingAvsluttetHendelse(
+    oppfolgingsperiodeUuid = UUID.fromString(getString("oppfolgingsperiode_uuid")),
+    utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.valueOf(getString("utfort_av_type")),
+    utfortAv = getString("utfort_av"),
+    kilde = getString("kilde"),
+    hendelseTidspunkt = getTimestamp("hendelse_tidspunkt").toLocalDateTime().toInstant(ZoneOffset.UTC),
+    oppfolgingAvsluttetHendelseType = OppfolgingAvsluttetHendelseType.valueOf(getString("hendelse"))
 )

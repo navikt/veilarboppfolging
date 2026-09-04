@@ -1,6 +1,9 @@
 package no.nav.veilarboppfolging.kandidatForUtmelding
 
+import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.ZonedDateTime
+import java.time.temporal.ChronoUnit
 import java.util.UUID
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
@@ -13,6 +16,7 @@ import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
 import no.nav.veilarboppfolging.test.DbTestUtils
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertInstanceOf
@@ -45,12 +49,14 @@ class KandidatForUtmeldingRepositoryTest {
 
         val kandidat = kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeUuid)
 
-        assertInstanceOf<ArbeidssøkerPeriodeAvsluttet>(kandidat)
-        assertThat(kandidat.avslutningsarsak).isEqualTo(avsluttet.avslutningsarsak)
-        assertThat(kandidat.oppfolgingsperiodeUuid).isEqualTo(oppfolgingsperiodeUuid)
-        assertThat(kandidat.kilde).isEqualTo(avsluttet.kilde)
-        assertThat(kandidat.utfortAv).isEqualTo(avsluttet.utfortAv)
-        assertThat(kandidat.utfortAvType).isEqualTo(avsluttet.utfortAvType)
+        assertThat(kandidat?.sisteHendelse).isNotNull()
+        val sisteHendelse = kandidat?.sisteHendelse
+        assertInstanceOf<ArbeidssøkerPeriodeAvsluttet>(sisteHendelse)
+        assertThat(sisteHendelse.avslutningsarsak).isEqualTo((avsluttet.sisteHendelse as? ArbeidssøkerPeriodeAvsluttet)?.avslutningsarsak)
+        assertThat(sisteHendelse.oppfolgingsperiodeUuid).isEqualTo(oppfolgingsperiodeUuid)
+        assertThat(sisteHendelse.kilde).isEqualTo(avsluttet.sisteHendelse.kilde)
+        assertThat(sisteHendelse.utfortAv).isEqualTo(avsluttet.sisteHendelse.utfortAv)
+        assertThat(sisteHendelse.utfortAvType).isEqualTo(avsluttet.sisteHendelse.utfortAvType)
     }
 
     @Test
@@ -218,6 +224,21 @@ class KandidatForUtmeldingRepositoryTest {
     }
 
     @Test
+    fun `lagreKandidat - setter avsluttes_automatisk_dato til 28 dager etter hendelsestidspunkt ved første gangs lagring`() {
+        val oppfolgingsbruker = arbeidssokerRegistrering(fnr, aktorId, BrukerRegistrant(fnr))
+        oppfolgingsStatusRepository.opprettOppfolging(aktorId)
+        oppfolgingsPeriodeRepository.start(oppfolgingsbruker)
+        val oppfolgingsperiodeUuid = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId).first().uuid
+        val avsluttet = arbeidssøkerPeriodeAvsluttet(oppfolgingsperiodeUuid)
+
+        kandidatForUtmeldingRepository.lagreKandidat(avsluttet)
+
+        val forventetDato = avsluttet.avsluttesAutomatiskDato
+        val kandidat = kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeUuid)
+        assertThat(kandidat?.avsluttesAutomatiskDato).isCloseTo(forventetDato, within(1, ChronoUnit.SECONDS))
+    }
+
+    @Test
     fun `hentAlleKandidatForUtmeldingHendelser - returnerer hendelser for alle oppfølgingsperioder`() {
         val oppfolgingsbruker = arbeidssokerRegistrering(fnr, aktorId, BrukerRegistrant(fnr))
         oppfolgingsStatusRepository.opprettOppfolging(aktorId)
@@ -251,13 +272,132 @@ class KandidatForUtmeldingRepositoryTest {
         assertThat { hendelser.first { it.oppfolgingsperiodeUuid == nesteOppfolgingsperiodeUuid } }.isNotNull
     }
 
-    fun arbeidssøkerPeriodeAvsluttet(oppfolgingsperiodeUuid: UUID) = ArbeidssøkerPeriodeAvsluttet(
-        oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
-        utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
-        utfortAv = "A123123",
-        arbeidssokerperiodeAvsluttetHendelseType = ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
-        avslutningsarsak = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString(),
-        kilde = "kilde",
-        hendelseTidspunkt = ZonedDateTime.now().toInstant(),
-    )
+    @Test
+    fun `lagreKandidat - nullstiller avsluttes_automatisk_dato når forlengelse opprettes`() {
+        val oppfolgingsbruker = arbeidssokerRegistrering(fnr, aktorId, BrukerRegistrant(fnr))
+        oppfolgingsStatusRepository.opprettOppfolging(aktorId)
+        oppfolgingsPeriodeRepository.start(oppfolgingsbruker)
+        val oppfolgingsperiodeUuid = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId).first().uuid
+        kandidatForUtmeldingRepository.lagreKandidat(arbeidssøkerPeriodeAvsluttet(oppfolgingsperiodeUuid))
+
+        val forlengelseHendelse = ForlengelseHendelse(
+            oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
+            utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
+            utfortAv = "A123123",
+            kilde = "kilde",
+            forlengelseHendelseType = ForlengelseHendelseType.FORLENGELSE_OPPRETTET,
+            hendelseTidspunkt = ZonedDateTime.now().toInstant(),
+            forlengetTil = LocalDate.now().plusDays(14),
+        )
+
+        kandidatForUtmeldingRepository.lagreKandidat(KandidatForUtmelding.fromHendelse(forlengelseHendelse))
+
+        assertThat(kandidatForUtmeldingRepository.hentAvsluttesAutomatiskDato(oppfolgingsperiodeUuid)).isNull()
+    }
+
+    @Test
+    fun `lagreKandidat - setter avsluttes_automatisk_dato på nytt når forlengelse utloper`() {
+        val oppfolgingsbruker = arbeidssokerRegistrering(fnr, aktorId, BrukerRegistrant(fnr))
+        oppfolgingsStatusRepository.opprettOppfolging(aktorId)
+        oppfolgingsPeriodeRepository.start(oppfolgingsbruker)
+        val oppfolgingsperiodeUuid = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId).first().uuid
+        kandidatForUtmeldingRepository.lagreKandidat(arbeidssøkerPeriodeAvsluttet(oppfolgingsperiodeUuid))
+        kandidatForUtmeldingRepository.lagreKandidat(
+            KandidatForUtmelding.fromHendelse(
+                ForlengelseHendelse(
+                    oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
+                    utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
+                    utfortAv = "A123123",
+                    kilde = "kilde",
+                    forlengelseHendelseType = ForlengelseHendelseType.FORLENGELSE_OPPRETTET,
+                    hendelseTidspunkt = ZonedDateTime.now().toInstant(),
+                    forlengetTil = LocalDate.now().plusDays(14),
+                )
+            )
+        )
+
+        val utloptHendelseTidspunkt = ZonedDateTime.now().toInstant()
+        val forlengelseUtloptHendelse = ForlengelseHendelse(
+            oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
+            utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.SYSTEM,
+            utfortAv = "SYSTEM",
+            kilde = "kilde",
+            forlengelseHendelseType = ForlengelseHendelseType.FORLENGELSE_UTLOPT,
+            hendelseTidspunkt = utloptHendelseTidspunkt,
+            forlengetTil = null,
+        )
+        val forlengelseUtlopt = KandidatForUtmelding.fromHendelse(forlengelseUtloptHendelse) as AktivKandidatForUtmelding
+        kandidatForUtmeldingRepository.lagreKandidat(forlengelseUtlopt)
+
+        val forventetDato = forlengelseUtlopt.avsluttesAutomatiskDato
+        assertThat(forventetDato).isCloseTo(forventetDato, within(1, ChronoUnit.SECONDS))
+    }
+
+    @Test
+    fun `settAvsluttesAutomatiskDatoHvisMangler - setter dato kun hvis den mangler`() {
+        val oppfolgingsbruker = arbeidssokerRegistrering(fnr, aktorId, BrukerRegistrant(fnr))
+        oppfolgingsStatusRepository.opprettOppfolging(aktorId)
+        oppfolgingsPeriodeRepository.start(oppfolgingsbruker)
+        val oppfolgingsperiodeUuid = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId).first().uuid
+        kandidatForUtmeldingRepository.lagreKandidat(arbeidssøkerPeriodeAvsluttet(oppfolgingsperiodeUuid))
+        // Simulerer en eksisterende kandidat som mangler feltet (opprettet før feltet ble innført)
+        namedJdbcTemplate.update(
+            "UPDATE kandidater_for_utmelding SET avsluttes_automatisk_dato = NULL WHERE oppfolgingsperiode_uuid = :id",
+            mapOf("id" to oppfolgingsperiodeUuid.toString())
+        )
+
+        val nyDato = LocalDateTime.now().plusDays(28)
+        kandidatForUtmeldingRepository.settAvsluttesAutomatiskDatoHvisMangler(oppfolgingsperiodeUuid, nyDato)
+        assertThat(kandidatForUtmeldingRepository.hentAvsluttesAutomatiskDato(oppfolgingsperiodeUuid)?.toLocalDateTime())
+            .isCloseTo(nyDato, within(1, ChronoUnit.SECONDS))
+
+        // Skal ikke overskrive en allerede satt dato
+        val forsokPaOverskriving = LocalDateTime.now().plusDays(100)
+        kandidatForUtmeldingRepository.settAvsluttesAutomatiskDatoHvisMangler(oppfolgingsperiodeUuid, forsokPaOverskriving)
+        assertThat(kandidatForUtmeldingRepository.hentAvsluttesAutomatiskDato(oppfolgingsperiodeUuid)?.toLocalDateTime())
+            .isCloseTo(nyDato, within(1, ChronoUnit.SECONDS))
+    }
+
+    @Test
+    fun `hentAktiveKandidater - returnerer kandidater som ikke er forlenget`() {
+        val fnr2 = Fnr.of("2222229999")
+        val aktorId2 = AktorId.of("8765")
+        oppfolgingsStatusRepository.opprettOppfolging(aktorId)
+        oppfolgingsStatusRepository.opprettOppfolging(aktorId2)
+        oppfolgingsPeriodeRepository.start(arbeidssokerRegistrering(fnr, aktorId, BrukerRegistrant(fnr)))
+        oppfolgingsPeriodeRepository.start(arbeidssokerRegistrering(fnr2, aktorId2, BrukerRegistrant(fnr2)))
+        val aktivPeriode = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId).first().uuid
+        val forlengetPeriode = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId2).first().uuid
+
+        kandidatForUtmeldingRepository.lagreKandidat(arbeidssøkerPeriodeAvsluttet(aktivPeriode))
+        kandidatForUtmeldingRepository.lagreKandidat(
+            ForlengelseHendelse(
+                oppfolgingsperiodeUuid = forlengetPeriode,
+                utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
+                utfortAv = "A123123",
+                kilde = "kilde",
+                forlengelseHendelseType = ForlengelseHendelseType.FORLENGELSE_OPPRETTET,
+                hendelseTidspunkt = ZonedDateTime.now().toInstant(),
+                forlengetTil = LocalDate.now().plusDays(10),
+            ).let { KandidatForUtmelding.fromHendelse(it) }
+        )
+
+        val kandidater = kandidatForUtmeldingRepository.hentAktiveKandidater(offset = 0, batchSize = 10)
+
+        assertThat(kandidater).hasSize(1)
+        assertThat(kandidater.first().oppfolgingsperiodeUuid).isEqualTo(aktivPeriode)
+    }
+
+    fun arbeidssøkerPeriodeAvsluttet(oppfolgingsperiodeUuid: UUID) =
+        ArbeidssøkerPeriodeAvsluttet(
+                oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
+                utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
+                utfortAv = "A123123",
+                arbeidssokerperiodeAvsluttetHendelseType = ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
+                avslutningsarsak = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString(),
+                kilde = "kilde",
+                hendelseTidspunkt = ZonedDateTime.now().toInstant(),
+            ).let {
+                KandidatForUtmelding.fromHendelse(it) as AktivKandidatForUtmelding
+        }
 }
