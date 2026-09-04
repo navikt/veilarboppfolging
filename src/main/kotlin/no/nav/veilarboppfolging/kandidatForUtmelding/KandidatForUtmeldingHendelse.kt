@@ -1,18 +1,12 @@
 package no.nav.veilarboppfolging.kandidatForUtmelding
 
 import java.time.Instant
-import java.time.LocalDateTime
-import java.time.ZoneId
-import java.time.ZoneOffset
-import java.time.ZonedDateTime
 import java.util.UUID
 import kotlin.jvm.optionals.getOrElse
 import no.nav.common.types.identer.Fnr
 import no.nav.common.utils.EnvironmentUtils
-import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingHendelse.Companion.KARENSTID_DAGER
 import no.nav.veilarboppfolging.kandidatForUtmelding.dto.KandidatForUtmeldingTagDto
 import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.FilterhendelseRecord
-import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.Operasjon
 import org.postgresql.util.PGobject
 
 sealed class KandidatForUtmeldingHendelse(
@@ -25,33 +19,7 @@ sealed class KandidatForUtmeldingHendelse(
     abstract val type: KandidatForUtmeldingHendelseType
     abstract val hendelseDataJson: PGobject?
 
-    /**
-     * Datoen kandidaten skal avsluttes automatisk fra oppfølging, gitt denne hendelsen.
-     * Kandidaten skal avsluttes automatisk [KARENSTID_DAGER] dager etter at de først ble kandidat for utmelding,
-     * eller [KARENSTID_DAGER] dager etter at en eventuell forlengelse utløp.
-     * Mens en forlengelse er aktiv (FORLENGELSE_OPPRETTET/FORLENGELSE_ENDRET) er datoen pauset (null).
-     */
-    private fun beregnAvsluttesAutomatiskDato(): LocalDateTime? {
-        val hendelseTid = LocalDateTime.ofInstant(hendelseTidspunkt, ZoneOffset.UTC)
-        return when (this) {
-            is ArbeidssøkerPeriodeAvsluttet -> hendelseTid.plusDays(KARENSTID_DAGER)
-            is ForlengelseHendelse -> when (type) {
-                ForlengelseHendelseType.FORLENGELSE_OPPRETTET,
-                ForlengelseHendelseType.FORLENGELSE_ENDRET -> null
-                ForlengelseHendelseType.FORLENGELSE_UTLOPT -> hendelseTid.plusDays(KARENSTID_DAGER)
-            }
-            is OppfolgingAvsluttetHendelse -> when (type) {
-                OppfolgingAvsluttetHendelseType.OPPFOLGING_AVSLUTTET_AUTOMATISK,
-                OppfolgingAvsluttetHendelseType.OPPFOLGING_AVSLUTTET_MANUELT -> null
-            }
-        }
-    }
-
-    companion object {
-        const val KARENSTID_DAGER = 28L
-    }
-
-    abstract fun tilFilterhendelseRecord(fnr: Fnr, operasjon: Operasjon): FilterhendelseRecord
+    abstract fun tilFilterhendelseRecord(fnr: Fnr): FilterhendelseRecord
 
     private val erProd: Boolean = EnvironmentUtils.isProduction().getOrElse { false }
 
@@ -68,11 +36,6 @@ sealed class KandidatForUtmeldingHendelse(
             OppfolgingAvsluttetHendelseType.OPPFOLGING_AVSLUTTET_AUTOMATISK, OppfolgingAvsluttetHendelseType.OPPFOLGING_AVSLUTTET_MANUELT-> null
         }
     }
-}
-
-fun beregnAvsluttesAutomatiskDato(hendelseTidspunkt: Instant): ZonedDateTime {
-    val hendelseTid = LocalDateTime.ofInstant(hendelseTidspunkt, ZoneOffset.UTC)
-    return hendelseTid.plusDays(KARENSTID_DAGER).atZone(ZoneOffset.UTC).withZoneSameInstant(ZoneId.of("Europe/Oslo"))
 }
 
 sealed interface KandidatForUtmeldingHendelseType

@@ -14,7 +14,6 @@ import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.veilarboppfolging.kandidatForUtmelding.ArbeidssokerperiodeAvsluttetHendelseType
 import no.nav.veilarboppfolging.kandidatForUtmelding.ArbeidssøkerPeriodeAvsluttet
 import no.nav.veilarboppfolging.kandidatForUtmelding.FjernKandidatForUtmeldingService
-import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingHendelseType
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingHendelseUtfortAvType
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.StartetAvType
@@ -99,7 +98,7 @@ open class ArbeidssøkerperiodeConsumerService(
                     AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST -> ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT
                     AvsluttetAarsakType.UDEFINERT, AvsluttetAarsakType.UKJENT_VERDI, null -> ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET
                 }
-                kandidatForUtmeldingService.lagreKandidatForUtmelding(
+                kandidatForUtmeldingService.handterUtmeldingsHendelse(
                     fnr,
                     ArbeidssøkerPeriodeAvsluttet(
                         oppfolgingsperiodeUuid = gjeldendePeriode.uuid,
