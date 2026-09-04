@@ -36,8 +36,9 @@ class KandidatForUtmeldingService(
     fun handterUtmeldingsHendelse(fnr: Fnr, hendelse: KandidatForUtmeldingHendelse) {
         transactor.executeWithoutResult { _ ->
             val avslutningsstatus by lazy { avsluttOppfolgingService.hentAvslutningstatusForManuellAvslutning(fnr) }
-            if ((hendelse is ArbeidssøkerPeriodeAvsluttet || (hendelse is ForlengelseHendelse && hendelse.type == ForlengelseHendelseType.FORLENGELSE_UTLOPT))
-                && !avslutningsstatus.kanAvslutte) {
+            val erHendelseSomSkalTaPersonInnIFilteret = hendelse is ArbeidssøkerPeriodeAvsluttet
+                    || (hendelse is ForlengelseHendelse && hendelse.type == ForlengelseHendelseType.FORLENGELSE_UTLOPT)
+            if (erHendelseSomSkalTaPersonInnIFilteret && !avslutningsstatus.kanAvslutte) {
                 logger.info("Kandidat kunne ikke avsluttes selvom ${hendelse::class.simpleName}, oppfølgingsperiode ${hendelse.oppfolgingsperiodeUuid}")
                 return@executeWithoutResult
             }

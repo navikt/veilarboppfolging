@@ -62,6 +62,7 @@ class RepubliserKandidatForUtmeldingServiceTest : IntegrationTest() {
         kandidatForUtmeldingService.handterUtmeldingsHendelse(FNR,
             OppfolgingAvsluttetHendelse(oppfolgingsperiodeUuid, oppfolgingAvsluttetHendelseType = OppfolgingAvsluttetHendelseType.OPPFOLGING_AVSLUTTET_AUTOMATISK)
         )
+
         assertThat(kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeUuid)).isNull()
         assertThat(kandidatForUtmeldingRepository.hentSisteHendelseForKandidat(oppfolgingsperiodeUuid)?.type)
             .isEqualTo(ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT)

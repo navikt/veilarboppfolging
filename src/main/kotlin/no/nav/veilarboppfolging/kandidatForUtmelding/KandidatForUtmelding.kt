@@ -65,7 +65,3 @@ class ForlengetKandidat(
 class AktivKandidatForUtmelding(sisteHendelse: KandidatForUtmeldingHendelse,
     val avsluttesAutomatiskDato: LocalDateTime
 ): KandidatForUtmelding(sisteHendelse)
-
-//class FjernetKandidat(
-//    val oppfolgingsPeriode: OppfolgingAvsluttetHendelse,
-//)
