@@ -48,7 +48,7 @@ class RepubliserKandidatForUtmeldingService(
                 )
 
                 aktiveKandidater.forEach {
-                    republiserKandidatForUtmelding(it.oppfolgingsperiodeUuid, it)
+                    republiserKandidatForUtmelding(it)
                 }
             }
             logger.info("Ferdig med å republisere alle aktive kandidater for utmelding til OBO")
@@ -57,28 +57,27 @@ class RepubliserKandidatForUtmeldingService(
         }
     }
 
-    fun republiserKandidatForUtmelding(oppfolgingsperiodeId: UUID, kandidatForUtmeldingHendelse: KandidatForUtmeldingHendelse? = null) {
+    fun republiserKandidatForUtmelding(oppfolgingsperiodeId: UUID) {
+        kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeId)
+            ?.let { republiserKandidatForUtmelding(it) }
+    }
+
+    fun republiserKandidatForUtmelding(kandidat: KandidatForUtmelding) {
         if (sendUtmeldingskandidaterTilObo) {
             transactor.executeWithoutResult { _ ->
-                val kandidat = kandidatForUtmeldingHendelse ?: kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeId)?.sisteHendelse
-                val fnr = finnFnrForOppfolgingsperiode(oppfolgingsperiodeId)
-                val filterkategoriPersonId = kandidatForUtmeldingRepository.hentEllerOpprettFilterhendelseId(oppfolgingsperiodeId)
-                val filterhendelseRecord = if (kandidat != null) {
-                    kandidat.tilFilterhendelseRecord(fnr, Operasjon.START)
+                val fnr = finnFnrForOppfolgingsperiode(kandidat.oppfolgingsperiodeId)
+                val filterkategoriPersonId = kandidatForUtmeldingRepository.hentEllerOpprettFilterhendelseId(kandidat.oppfolgingsperiodeId)
+                if(kandidat.sisteHendelse.type == ForlengelseHendelseType.FORLENGELSE_ENDRET) {
+                    logger.info("Sender ikke kandidat for utmelding til OBO for oppfølgingsperiode: ${kandidat.oppfolgingsperiodeId} på nytt fordi siste hendelse er FORLENGELSE_ENDRET")
+                    return@executeWithoutResult
                 } else {
-                    val sisteUtmeldingshendelse = kandidatForUtmeldingRepository.hentSisteHendelseForKandidat(oppfolgingsperiodeId)
-                        ?: throw IllegalStateException("Fant ingen kandidat for utmelding-hendelser for oppfølgingsperiode $oppfolgingsperiodeId")
-                    if(sisteUtmeldingshendelse.type == ForlengelseHendelseType.FORLENGELSE_ENDRET) {
-                        logger.info("Sender ikke kandidat for utmelding til OBO for oppfølgingsperiode: $oppfolgingsperiodeId på nytt fordi siste hendelse er FORLENGELSE_ENDRET")
-                        return@executeWithoutResult
-                    }
-                    sisteUtmeldingshendelse.tilFilterhendelseRecord(fnr, Operasjon.STOPP)
+                    val filterhendelseRecord = kandidat.sisteHendelse.tilFilterhendelseRecord(fnr)
+                    logger.info("Republiserer kandidat for utmelding til OBO med key=$filterkategoriPersonId for oppfølgingsperiode ${kandidat.oppfolgingsperiodeId}")
+                    kafkaProducerService.publiserFilterhendelse(filterkategoriPersonId, filterhendelseRecord)
                 }
-                logger.info("Republiserer kandidat for utmelding til OBO med key=$filterkategoriPersonId for oppfølgingsperiode $oppfolgingsperiodeId")
-                kafkaProducerService.publiserFilterhendelse(filterkategoriPersonId, filterhendelseRecord)
             }
         } else {
-            logger.info("Sender ikke kandidat for utmelding til OBO for oppfølgingsperiode $oppfolgingsperiodeId på nytt fordi sending til OBO er togglet av")
+            logger.info("Sender ikke kandidat for utmelding til OBO for oppfølgingsperiode ${kandidat.oppfolgingsperiodeId} på nytt fordi sending til OBO er togglet av")
         }
     }
 

@@ -44,11 +44,11 @@ class ArbeidssøkerPeriodeAvsluttet(
         val avslutningsarsak: String?
     )
 
-    override fun tilFilterhendelseRecord(fnr: Fnr, operasjon: Operasjon): FilterhendelseRecord {
+    override fun tilFilterhendelseRecord(fnr: Fnr): FilterhendelseRecord {
         return FilterhendelseRecord(
             personID = NorskIdent(fnr.get()),
             kategori = Kategori.KANDIDAT_FOR_UTMELDING,
-            operasjon = operasjon,
+            operasjon = Operasjon.START,
             hendelse = FilterhendelseRecord.HendelseInnhold(
                 beskrivelse = when (type) {
                     ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT -> "Arbeidssøkerperiode avsluttet: Ikke levert meldekort"

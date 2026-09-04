@@ -30,6 +30,20 @@ class ForlengelseHendelse(
     kilde,
     hendelseTidspunkt,
 ) {
+    companion object {
+        fun forlengelseUtløpt(oppfolgingsperiodeUuid: UUID): ForlengelseHendelse {
+            return ForlengelseHendelse(
+                oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
+                utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.SYSTEM,
+                utfortAv = "SYSTEM",
+                kilde = "veilarboppfolging",
+                forlengelseHendelseType = ForlengelseHendelseType.FORLENGELSE_UTLOPT,
+                hendelseTidspunkt = Instant.now(),
+                forlengetTil = null
+            )
+        }
+    }
+
     override val type: ForlengelseHendelseType = forlengelseHendelseType
     val avsluttesAutomatiskDato: ZonedDateTime = beregnAvsluttesAutomatiskDato(hendelseTidspunkt)
 
@@ -52,11 +66,15 @@ class ForlengelseHendelse(
         }
     }
 
-    override fun tilFilterhendelseRecord(fnr: Fnr, operasjon: Operasjon): FilterhendelseRecord {
+    override fun tilFilterhendelseRecord(fnr: Fnr): FilterhendelseRecord {
         return FilterhendelseRecord(
             personID = NorskIdent(fnr.get()),
             kategori = Kategori.KANDIDAT_FOR_UTMELDING,
-            operasjon = operasjon,
+            operasjon = when (type) {
+                ForlengelseHendelseType.FORLENGELSE_OPPRETTET,
+                ForlengelseHendelseType.FORLENGELSE_ENDRET -> Operasjon.STOPP
+                ForlengelseHendelseType.FORLENGELSE_UTLOPT -> Operasjon.START
+            },
             hendelse = FilterhendelseRecord.HendelseInnhold(
                 beskrivelse = when (type) {
                     ForlengelseHendelseType.FORLENGELSE_UTLOPT -> "Forlengelse utløpt"
