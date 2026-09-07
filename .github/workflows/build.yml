@@ -32,7 +32,7 @@ jobs:
           distribution: 'temurin'
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92
+        uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
         with:
           gradle-version: "9.1.0"
           cache-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
@@ -41,7 +41,7 @@ jobs:
         run: ./gradlew build
 
       - name: Generate and output SBOM
-        uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610
+        uses: anchore/sbom-action@3ad7283483fc7af8ff2b4ea19663c2d5ca935e26
         with:
           path: 'build/libs'
           format: 'cyclonedx-json'
@@ -50,7 +50,7 @@ jobs:
           upload-artifact: 'true'
 
       - name: Build and push Docker image
-        uses: nais/docker-build-push@2d2b0a7193e65422b7f0355d4afb445e0a8b2cc3
+        uses: nais/docker-build-push@8e41f1f58749b9248e376c25d33bfbdd2b1163c0
         id: docker-build-push
         with:
           team: poao # This is not app namespace but team which is admin in github

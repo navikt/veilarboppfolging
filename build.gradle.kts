@@ -1,6 +1,6 @@
 val kotlinVersion = "2.4.10"
 val flywayVersion = "13.3.0"
-val commonVersion = "4.2026.08.25_05.34-09cd908e1f27"
+val commonVersion = "4.2026.09.01_09.49-e681e09ca089"
 val ptoSchemaVersion = "2.2026.06.16_10.51-c03b8278b27d"
 val poaoTilgangVersion = "4.2026.08.10_08.30-d5e29542d5bf"
 val wiremockVersion = "3.13.2"
@@ -10,16 +10,16 @@ val springDoc = "3.1.0"
 val tmsMicrofrontendBuilder = "3.0.0"
 val tmsVarselBuilder = "2.2.0"
 val logstashVersion = "9.0"
-val avroVersion = "1.12.1"
+val avroVersion = "1.12.2"
 val confluentKafkaAvroVersion = "8.2.0"
-val okHttpVersion = "5.4.0"
-val dabBigQuerySchemaVersion = "2026.07.30-14.56.9b2500dfe989"
+val okHttpVersion = "5.5.0"
+val dabBigQuerySchemaVersion = "2026.08.13-08.27.6add270b9bee"
 
 plugins {
     val kotlinVersion = "2.4.10"
     kotlin("jvm") version kotlinVersion
     kotlin("plugin.spring") version kotlinVersion
-    id("org.springframework.boot") version "4.1.0"
+    id("org.springframework.boot") version "4.1.1"
     id("io.spring.dependency-management") version "1.1.7"
     id("jacoco")
     id("org.sonarqube") version "7.3.1.8318"
