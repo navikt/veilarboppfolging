@@ -6,7 +6,6 @@ import kotlin.jvm.optionals.getOrNull
 import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
-import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.Operasjon
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.service.AvsluttOppfolgingService
 import no.nav.veilarboppfolging.service.KafkaProducerService
@@ -14,12 +13,8 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.support.TransactionTemplate
-import java.time.Instant
 import no.nav.veilarboppfolging.kandidatForUtmelding.dto.KandidatForUtmeldingTagDto
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.Avregistrering
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.KandidatUtmeldtEtter28Dager
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.KunneAvsluttes
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.KunneIkkeAvsluttes
+import java.time.ZonedDateTime
 
 @Service
 class KandidatForUtmeldingService(
@@ -37,7 +32,7 @@ class KandidatForUtmeldingService(
         transactor.executeWithoutResult { _ ->
             val avslutningsstatus by lazy { avsluttOppfolgingService.hentAvslutningstatusForManuellAvslutning(fnr) }
             val erHendelseSomSkalTaPersonInnIFilteret = hendelse is ArbeidssøkerPeriodeAvsluttet
-                    || (hendelse is ForlengelseHendelse && hendelse.type == ForlengelseHendelseType.FORLENGELSE_UTLOPT)
+                    || hendelse is ForlengelseUtløptHendelse
             if (erHendelseSomSkalTaPersonInnIFilteret && !avslutningsstatus.kanAvslutte) {
                 logger.info("Kandidat kunne ikke avsluttes selvom ${hendelse::class.simpleName}, oppfølgingsperiode ${hendelse.oppfolgingsperiodeUuid}")
                 kandidatForUtmeldingRepository.fjernKandidat(hendelse.oppfolgingsperiodeUuid)
@@ -46,7 +41,8 @@ class KandidatForUtmeldingService(
 
             when (hendelse) {
                 is ArbeidssøkerPeriodeAvsluttet,
-                is ForlengelseHendelse -> {
+                is ForlengelseUtløptHendelse,
+                is ForlengelseOpprettetEllerEndretHendelse -> {
                     val kandidat = KandidatForUtmelding.fromHendelse(hendelse)
                     kandidatForUtmeldingRepository.lagreKandidat(kandidat)
                 }
@@ -73,7 +69,7 @@ class KandidatForUtmeldingService(
         return kandidatForUtmeldingRepository.hentAlleKandidatForUtmeldingHendelser(aktorId)
     }
 
-    fun hentAktivForlengelse(oppfolgingsperiodeId: UUID): ForlengelseHendelse? {
+    fun hentAktivForlengelse(oppfolgingsperiodeId: UUID): ForlengelseOpprettetEllerEndretHendelse? {
         return kandidatForUtmeldingRepository.hentKandidatMedForlengelse(oppfolgingsperiodeId)?.forlengelseHendelse
     }
 
@@ -84,7 +80,8 @@ class KandidatForUtmeldingService(
         kandidaterMedUtloptForlengelse.forEach { kandidat ->
             transactor.executeWithoutResult { _ ->
                 val (fnr) = finnFnrForOppfolgingsperiode(kandidat.oppfolgingsperiodeUuid)
-                val utløptHendelse = ForlengelseHendelse.forlengelseUtløpt(kandidat.oppfolgingsperiodeUuid)
+                val now = ZonedDateTime.now().toInstant()
+                val utløptHendelse = ForlengelseUtløptHendelse(kandidat.oppfolgingsperiodeUuid, now)
                 handterUtmeldingsHendelse(fnr, utløptHendelse)
             }
         }
@@ -109,7 +106,7 @@ class KandidatForUtmeldingService(
         return aktorOppslagClient.hentFnr(AktorId(aktorId)) to AktorId(aktorId)
     }
 
-    fun forlengKandidat(hendelse: ForlengelseHendelse, fnr: Fnr) {
+    fun forlengKandidat(hendelse: ForlengelseOpprettetEllerEndretHendelse, fnr: Fnr) {
         logger.info("Lagrer forlengelse for oppfølgingsperiode ${hendelse.oppfolgingsperiodeUuid}")
         handterUtmeldingsHendelse(fnr, hendelse)
     }

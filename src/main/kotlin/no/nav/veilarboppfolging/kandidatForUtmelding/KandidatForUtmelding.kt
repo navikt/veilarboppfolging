@@ -17,11 +17,11 @@ sealed class KandidatForUtmelding(
         fun fromHendelse(hendelse: KandidatForUtmeldingHendelse): KandidatForUtmelding {
             val avsluttesAutomatiskDato = beregnAvsluttesAutomatiskDato(hendelse)
             val forlengetTil = when (hendelse) {
-                is ForlengelseHendelse -> hendelse.hentForlengetTil()
+                is ForlengelseOpprettetEllerEndretHendelse -> hendelse.forlengetTil
                 else -> null
             }
             return when {
-                forlengetTil != null ->  ForlengetKandidat(hendelse as ForlengelseHendelse, forlengetTil)
+                forlengetTil != null ->  ForlengetKandidat(hendelse as ForlengelseOpprettetEllerEndretHendelse, forlengetTil)
                 avsluttesAutomatiskDato != null -> AktivKandidatForUtmelding(hendelse, avsluttesAutomatiskDato)
                 else -> throw IllegalArgumentException("Hendelse må ha enten forlengetTil eller avsluttesAutomatiskDato")
             }
@@ -37,11 +37,8 @@ sealed class KandidatForUtmelding(
             val hendelseTid = LocalDateTime.ofInstant(hendelse.hendelseTidspunkt, ZoneOffset.UTC)
             return when (hendelse) {
                 is ArbeidssøkerPeriodeAvsluttet -> hendelseTid.plusDays(KARENSTID_DAGER)
-                is ForlengelseHendelse -> when (hendelse.type) {
-                    ForlengelseHendelseType.FORLENGELSE_OPPRETTET,
-                    ForlengelseHendelseType.FORLENGELSE_ENDRET -> null
-                    ForlengelseHendelseType.FORLENGELSE_UTLOPT -> hendelseTid.plusDays(KARENSTID_DAGER)
-                }
+                is ForlengelseOpprettetEllerEndretHendelse ->  null
+                is ForlengelseUtløptHendelse -> hendelseTid.plusDays(KARENSTID_DAGER)
                 is OppfolgingAvsluttetHendelse -> when (hendelse.type) {
                     OppfolgingAvsluttetHendelseType.OPPFOLGING_AVSLUTTET_AUTOMATISK,
                     OppfolgingAvsluttetHendelseType.OPPFOLGING_AVSLUTTET_MANUELT -> null
@@ -59,7 +56,7 @@ fun beregnAvsluttesAutomatiskDato(hendelseTidspunkt: Instant): ZonedDateTime {
 }
 
 class ForlengetKandidat(
-    val forlengelseHendelse: ForlengelseHendelse,
+    val forlengelseHendelse: ForlengelseOpprettetEllerEndretHendelse,
     val forlengetTil: LocalDate): KandidatForUtmelding(forlengelseHendelse)
 
 class AktivKandidatForUtmelding(sisteHendelse: KandidatForUtmeldingHendelse,

@@ -280,7 +280,7 @@ class KandidatForUtmeldingRepositoryTest {
         val oppfolgingsperiodeUuid = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId).first().uuid
         kandidatForUtmeldingRepository.lagreKandidat(arbeidssøkerPeriodeAvsluttet(oppfolgingsperiodeUuid))
 
-        val forlengelseHendelse = ForlengelseHendelse(
+        val forlengelseHendelse = ForlengelseOpprettetEllerEndretHendelse(
             oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
             utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
             utfortAv = "A123123",
@@ -304,7 +304,7 @@ class KandidatForUtmeldingRepositoryTest {
         kandidatForUtmeldingRepository.lagreKandidat(arbeidssøkerPeriodeAvsluttet(oppfolgingsperiodeUuid))
         kandidatForUtmeldingRepository.lagreKandidat(
             KandidatForUtmelding.fromHendelse(
-                ForlengelseHendelse(
+                ForlengelseOpprettetEllerEndretHendelse(
                     oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
                     utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
                     utfortAv = "A123123",
@@ -317,14 +317,9 @@ class KandidatForUtmeldingRepositoryTest {
         )
 
         val utloptHendelseTidspunkt = ZonedDateTime.now().toInstant()
-        val forlengelseUtloptHendelse = ForlengelseHendelse(
+        val forlengelseUtloptHendelse = ForlengelseUtløptHendelse(
             oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
-            utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.SYSTEM,
-            utfortAv = "SYSTEM",
-            kilde = "kilde",
-            forlengelseHendelseType = ForlengelseHendelseType.FORLENGELSE_UTLOPT,
             hendelseTidspunkt = utloptHendelseTidspunkt,
-            forlengetTil = null,
         )
         val forlengelseUtlopt = KandidatForUtmelding.fromHendelse(forlengelseUtloptHendelse) as AktivKandidatForUtmelding
         kandidatForUtmeldingRepository.lagreKandidat(forlengelseUtlopt)
@@ -371,7 +366,7 @@ class KandidatForUtmeldingRepositoryTest {
 
         kandidatForUtmeldingRepository.lagreKandidat(arbeidssøkerPeriodeAvsluttet(aktivPeriode))
         kandidatForUtmeldingRepository.lagreKandidat(
-            ForlengelseHendelse(
+            ForlengelseOpprettetEllerEndretHendelse(
                 oppfolgingsperiodeUuid = forlengetPeriode,
                 utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
                 utfortAv = "A123123",

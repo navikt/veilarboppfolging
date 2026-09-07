@@ -121,10 +121,8 @@ class KandidatForUtmeldingRepository(
             if (enumType != ForlengelseHendelseType.FORLENGELSE_OPPRETTET && enumType != ForlengelseHendelseType.FORLENGELSE_ENDRET) {
                 throw IllegalArgumentException("Hendelsen må være forlengelse som ikke er utløpt men var $enumType")
             } else {
-                val forlengelseHendelse = rs.toForlengelseHendelse()
-                val forlengetTil = forlengelseHendelse.forlengetTil
-                    ?: throw IllegalArgumentException("Hendelse av type FORLENGELSE_OPPRETTET eller FORLENGELSE_ENDRET må ha forlengetTil")
-                ForlengetKandidat(forlengelseHendelse, forlengetTil)
+                val forlengelseHendelse = rs.toForlengelseOpprettetEllerEndretHendelse()
+                ForlengetKandidat(forlengelseHendelse, forlengelseHendelse.forlengetTil)
             }
         }.firstOrNull()
     }
@@ -306,7 +304,14 @@ class KandidatForUtmeldingRepository(
         val hendelsetype = resultSet.getString("hendelse")
         return when (getEnumType(hendelsetype)) {
             is ArbeidssokerperiodeAvsluttetHendelseType -> resultSet.toArbeidssøkerPeriodeAvsluttet()
-            is ForlengelseHendelseType -> resultSet.toForlengelseHendelse()
+            is ForlengelseHendelseType -> {
+                when (hendelsetype) {
+                    ForlengelseHendelseType.FORLENGELSE_OPPRETTET.name,
+                    ForlengelseHendelseType.FORLENGELSE_ENDRET.name -> resultSet.toForlengelseOpprettetEllerEndretHendelse()
+                    ForlengelseHendelseType.FORLENGELSE_UTLOPT.name -> resultSet.toForlengelseUtløptHendelse()
+                    else -> throw IllegalArgumentException("ForlengelseHendelseType $hendelsetype is not supported.")
+                }
+            }
             is OppfolgingAvsluttetHendelseType -> resultSet.toOppfolgingAvsluttetHendelse()
         }
 
@@ -334,7 +339,7 @@ fun ResultSet.toArbeidssøkerPeriodeAvsluttet() = ArbeidssøkerPeriodeAvsluttet(
     arbeidssokerperiodeAvsluttetHendelseType = ArbeidssokerperiodeAvsluttetHendelseType.valueOf(getString("hendelse")),
 )
 
-fun ResultSet.toForlengelseHendelse() = ForlengelseHendelse(
+fun ResultSet.toForlengelseOpprettetEllerEndretHendelse() = ForlengelseOpprettetEllerEndretHendelse(
     oppfolgingsperiodeUuid = UUID.fromString(getString("oppfolgingsperiode_uuid")),
     utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.valueOf(getString("utfort_av_type")),
     utfortAv = getString("utfort_av"),
@@ -342,7 +347,14 @@ fun ResultSet.toForlengelseHendelse() = ForlengelseHendelse(
     hendelseTidspunkt = getTimestamp("hendelse_tidspunkt").toLocalDateTime().toInstant(ZoneOffset.UTC),
     forlengelseHendelseType = ForlengelseHendelseType.valueOf(getString("hendelse")),
     forlengetTil = getStringOrNull("hendelse_data")
-        ?.let { JsonUtils.fromJson(it, ForlengelseHendelse.Detaljer::class.java).forlengetTil }
+        ?.let { JsonUtils.fromJson(it, ForlengelseOpprettetEllerEndretHendelse.Detaljer::class.java).forlengetTil }
+        ?: throw IllegalArgumentException("Hendelse av type FORLENGELSE_OPPRETTET eller FORLENGELSE_ENDRET må ha forlengetTil")
+)
+
+
+fun ResultSet.toForlengelseUtløptHendelse() = ForlengelseUtløptHendelse(
+    oppfolgingsperiodeUuid = UUID.fromString(getString("oppfolgingsperiode_uuid")),
+    hendelseTidspunkt = getTimestamp("hendelse_tidspunkt").toLocalDateTime().toInstant(ZoneOffset.UTC),
 )
 
 fun ResultSet.toOppfolgingAvsluttetHendelse() = OppfolgingAvsluttetHendelse(

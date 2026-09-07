@@ -125,7 +125,7 @@ class FjernKandidatForUtmeldingServiceTest : IntegrationTest() {
         startOppfolgingSomArbeidsoker(AKTOR_ID, FNR)
         val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(FNR).get().uuid
         kandidatForUtmeldingRepository.lagreKandidat(
-            ForlengelseHendelse(
+            ForlengelseOpprettetEllerEndretHendelse(
                 utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
                 utfortAv = "A123123",
                 kilde = "kilde",
@@ -153,7 +153,7 @@ class FjernKandidatForUtmeldingServiceTest : IntegrationTest() {
         startOppfolgingSomArbeidsoker(AKTOR_ID, FNR)
         val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(FNR).get().uuid
         kandidatForUtmeldingRepository.lagreKandidat(
-            ForlengelseHendelse(
+            ForlengelseOpprettetEllerEndretHendelse(
                 utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
                 utfortAv = "A123123",
                 kilde = "kilde",

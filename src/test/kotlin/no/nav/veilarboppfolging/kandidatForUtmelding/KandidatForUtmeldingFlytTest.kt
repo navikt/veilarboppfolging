@@ -444,7 +444,7 @@ class KandidatForUtmeldingFlytTest(
         assertThat(sisteHendelse?.type).isEqualTo(ForlengelseHendelseType.FORLENGELSE_OPPRETTET)
         assertThat(sisteHendelse?.hendelseDataJson?.value).isEqualTo(
             JsonUtils.getMapper()
-                .writeValueAsString(ForlengelseHendelse.Detaljer(forlengelseDato))
+                .writeValueAsString(ForlengelseOpprettetEllerEndretHendelse.Detaljer(forlengelseDato))
         )
         val filterhendelseId = kandidatForUtmeldingRepository.hentFilterhendelseId(oppfolgingsperiodeUuid)
         assertThat(filterhendelseId).isNotNull
@@ -454,8 +454,7 @@ class KandidatForUtmeldingFlytTest(
         ).first()
         assertThat(filterhendelse.operasjon).isEqualTo(Operasjon.STOPP)
         assertThat(filterhendelse.kategori).isEqualTo(Kategori.KANDIDAT_FOR_UTMELDING)
-        assertThat(filterhendelse.hendelse?.beskrivelseEnum).isEqualTo(BeskrivelseEnum.FORLENGELSE_OPPRETTET.name)
-        assertThat(filterhendelse.hendelse?.datoFrist).isNull()
+        assertThat(filterhendelse.hendelse).isNull()
     }
 
     @Test

@@ -89,7 +89,7 @@ class RepubliserKandidatForUtmeldingServiceTest : IntegrationTest() {
         val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(FNR).get().uuid
         val hendelseTidspunkt = ZonedDateTime.now().toInstant()
         kandidatForUtmeldingService.handterUtmeldingsHendelse(FNR,
-            ForlengelseHendelse(
+            ForlengelseOpprettetEllerEndretHendelse(
                 utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
                 utfortAv = "A123123",
                 kilde = "kilde",
@@ -112,14 +112,7 @@ class RepubliserKandidatForUtmeldingServiceTest : IntegrationTest() {
             avsender = "veilarboppfolging",
             kategori = Kategori.KANDIDAT_FOR_UTMELDING,
             operasjon = Operasjon.STOPP,
-            hendelse = FilterhendelseRecord.HendelseInnhold(
-                beskrivelse = "Forlengelse opprettet",
-                beskrivelseEnum = "FORLENGELSE_ENDRET",
-                dato = ikkeSammenlignDato,
-                lenke = URI("https://veilarbpersonflate.ansatt.dev.nav.no/aktivitetsplan").toURL(),
-                detaljer = null,
-                datoFrist = null
-            )
+            hendelse = null
         ))
     }
 

@@ -194,7 +194,7 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
             avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
         )
         kandidatForUtmeldingService.handterUtmeldingsHendelse(FNR, arbeidssøkerPeriodeAvsluttet)
-        kandidatForUtmeldingService.handterUtmeldingsHendelse(FNR, ForlengelseHendelse(
+        kandidatForUtmeldingService.handterUtmeldingsHendelse(FNR, ForlengelseOpprettetEllerEndretHendelse(
             oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
             utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
             utfortAv = "S112233",

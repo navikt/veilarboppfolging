@@ -35,9 +35,9 @@ class KandidatForUtmeldingHendelseTest {
     private fun forlengelseHendelse(
         forlengelseHendelseType: ForlengelseHendelseType,
         hendelseTidspunkt: Instant = ZonedDateTime.now().toInstant(),
-        forlengetTil: LocalDate? = LocalDate.now().plusDays(14),
-    ): ForlengelseHendelse =
-        ForlengelseHendelse(
+        forlengetTil: LocalDate = LocalDate.now().plusDays(14),
+    ): ForlengelseOpprettetEllerEndretHendelse =
+        ForlengelseOpprettetEllerEndretHendelse(
             oppfolgingsperiodeUuid = UUID.randomUUID(),
             utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
             utfortAv = "A123123",
@@ -99,10 +99,9 @@ class KandidatForUtmeldingHendelseTest {
     @Test
     fun `beregnAvsluttesAutomatiskDato - settes til 28 dager etter utlopstidspunkt når forlengelse utloper`() {
         val hendelseTidspunkt = ZonedDateTime.now().toInstant()
-        val kandidatForUtmelding = forlengelseHendelse(
-            ForlengelseHendelseType.FORLENGELSE_UTLOPT,
+        val kandidatForUtmelding = ForlengelseUtløptHendelse(
+            UUID.randomUUID(),
             hendelseTidspunkt = hendelseTidspunkt,
-            forlengetTil = null,
         ).let { KandidatForUtmelding.fromHendelse(it) as AktivKandidatForUtmelding }
 
         val forventetDato = LocalDateTime.ofInstant(hendelseTidspunkt, ZoneOffset.UTC)
