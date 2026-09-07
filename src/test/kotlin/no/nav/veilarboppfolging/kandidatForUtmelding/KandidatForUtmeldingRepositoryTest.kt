@@ -385,7 +385,7 @@ class KandidatForUtmeldingRepositoryTest {
         val kandidater = kandidatForUtmeldingRepository.hentAktiveKandidater(offset = 0, batchSize = 10)
 
         assertThat(kandidater).hasSize(1)
-        assertThat(kandidater.first().oppfolgingsperiodeUuid).isEqualTo(aktivPeriode)
+        assertThat(kandidater.first().oppfolgingsperiodeId).isEqualTo(aktivPeriode)
     }
 
     fun arbeidssøkerPeriodeAvsluttet(oppfolgingsperiodeUuid: UUID) =

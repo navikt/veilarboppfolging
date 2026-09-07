@@ -9,7 +9,7 @@ data class FilterhendelseRecord(
     val avsender: String = "veilarboppfolging",
     val kategori: Kategori,
     val operasjon: Operasjon,
-    val hendelse: HendelseInnhold
+    val hendelse: HendelseInnhold?
 ) {
     data class HendelseInnhold(
         val beskrivelse: String,

@@ -9,6 +9,7 @@ import java.time.ZonedDateTime
 import java.util.UUID
 import no.nav.common.types.identer.Fnr
 import no.nav.paw.arbeidssokerregisteret.api.v1.AvsluttetAarsakType
+import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmelding.Companion.KARENSTID_DAGER
 import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.Operasjon
 import no.nav.veilarboppfolging.kandidatForUtmelding.dto.KandidatForUtmeldingTagDto
 import org.assertj.core.api.Assertions.assertThat
@@ -79,12 +80,12 @@ class KandidatForUtmeldingHendelseTest {
             hendelseTidspunkt = hendelseTidspunkt,
         ).let { KandidatForUtmelding.fromHendelse(it) as AktivKandidatForUtmelding }
         val forventetDato = LocalDateTime.ofInstant(hendelseTidspunkt, ZoneOffset.UTC)
-            .plusDays(KandidatForUtmeldingHendelse.KARENSTID_DAGER)
+            .plusDays(KARENSTID_DAGER)
 
         val automatiskAvslutningDato = hendelse.avsluttesAutomatiskDato
 
         assertThat(automatiskAvslutningDato).isEqualTo(forventetDato)
-        assertThat(hendelse.sisteHendelse.tilFilterhendelseRecord(Fnr.of("12345678901"), Operasjon.START).hendelse.datoFrist)
+        assertThat(hendelse.sisteHendelse.tilFilterhendelseRecord(Fnr.of("12345678901")).hendelse?.datoFrist)
             .isEqualTo(forventetDato.atZone(ZoneOffset.UTC).withZoneSameInstant(ZoneId.of("Europe/Oslo")))
     }
 
@@ -92,7 +93,7 @@ class KandidatForUtmeldingHendelseTest {
     fun `beregnAvsluttesAutomatiskDato - tilFilterhendelseRecord - skal sette datoFrist null forlengelse opprettes`() {
         val hendelse = forlengelseHendelse(ForlengelseHendelseType.FORLENGELSE_OPPRETTET)
 
-        assertThat(hendelse.tilFilterhendelseRecord(Fnr.of("12345678901"), Operasjon.STOPP).hendelse.datoFrist).isNull()
+        assertThat(hendelse.tilFilterhendelseRecord(Fnr.of("12345678901")).hendelse?.datoFrist).isNull()
     }
 
     @Test
@@ -105,12 +106,12 @@ class KandidatForUtmeldingHendelseTest {
         ).let { KandidatForUtmelding.fromHendelse(it) as AktivKandidatForUtmelding }
 
         val forventetDato = LocalDateTime.ofInstant(hendelseTidspunkt, ZoneOffset.UTC)
-            .plusDays(KandidatForUtmeldingHendelse.KARENSTID_DAGER)
+            .plusDays(KARENSTID_DAGER)
 
         val automatiskAvslutningDato = kandidatForUtmelding.avsluttesAutomatiskDato
 
         assertThat(automatiskAvslutningDato).isEqualTo(forventetDato)
-        assertThat(kandidatForUtmelding.sisteHendelse.tilFilterhendelseRecord(Fnr.of("12345678901"), Operasjon.START).hendelse.datoFrist)
+        assertThat(kandidatForUtmelding.sisteHendelse.tilFilterhendelseRecord(Fnr.of("12345678901")).hendelse?.datoFrist)
             .isEqualTo(forventetDato.atZone(ZoneOffset.UTC).withZoneSameInstant(ZoneId.of("Europe/Oslo")))
     }
 }
