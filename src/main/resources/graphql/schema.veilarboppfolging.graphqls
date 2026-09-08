@@ -17,6 +17,7 @@ type VeilederTilgang {
     harVeilederTilgangFlytteBrukerTilEgetKontor: Boolean!
     tilgang: TilgangResultat
     harAktiveTiltaksdeltakelserVedFlyttingTilEgetKontor: Boolean
+    harVeilederTilgangStarteOppfolging: Boolean!
 }
 
 type Utmeldingskandidat {
