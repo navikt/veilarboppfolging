@@ -27,7 +27,7 @@ class FjernKandidatForUtmeldingService(
         transactor.executeWithoutResult { _ ->
             logger.info("Fjerner kandidat for utmelding for oppfølgingsperiode $oppfolgingsperiodeId")
             if (sendUtmeldingskandidaterTilObo) run sendTilObo@{
-                val kandidat = kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeId) ?: return@executeWithoutResult
+                kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeId) ?: return@executeWithoutResult
                 val filterkategoriPersonId = kandidatForUtmeldingRepository.hentFilterhendelseId(oppfolgingsperiodeId) ?: return@sendTilObo
                 val aktorId = oppfolgingsPeriodeRepository.hentOppfolgingsperiode(oppfolgingsperiodeId.toString())
                     .getOrElse { throw IllegalStateException("Oppfølgingsperiode med id $oppfolgingsperiodeId finnes ikke") }?.aktorId
