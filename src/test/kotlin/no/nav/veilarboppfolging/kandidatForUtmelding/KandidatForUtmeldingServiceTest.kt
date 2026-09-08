@@ -15,7 +15,6 @@ import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.Operasjon
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.Test
-import scala.language
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.ZoneOffset
@@ -50,7 +49,7 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
             )
         )
 
-        val kandidat = kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeUuid)
+        val kandidat = kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeUuid)
         val hendelse = kandidat!!.sisteHendelse
         assertThat(hendelse).isNotNull
         assertThat(hendelse?.oppfolgingsperiodeUuid).isEqualTo(oppfolgingsperiodeUuid)
@@ -97,7 +96,7 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
             )
         )
 
-        assertThat(kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeId)).isNull()
+        assertThat(kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeId)).isNull()
         assertThat(kandidatForUtmeldingRepository.hentFilterhendelseId(oppfolgingsperiodeId)).isNull()
     }
 
@@ -125,7 +124,7 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
             )
         )
 
-        assertThat(kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeId)).isNull()
+        assertThat(kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeId)).isNull()
         assertThat(kandidatForUtmeldingRepository.hentFilterhendelseId(oppfolgingsperiodeId)).isNull()
     }
 
@@ -156,7 +155,7 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
 
         kandidatForUtmeldingService.behandleKandidaterMedUtloptForlengelse()
 
-        val kandidat = kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeUuid)
+        val kandidat = kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeUuid)
         val hendelse = kandidat!!.sisteHendelse
         assertThat(hendelse).isNotNull
         assertThat(hendelse.type).isEqualTo(ForlengelseHendelseType.FORLENGELSE_UTLOPT)
@@ -207,7 +206,7 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
 
         kandidatForUtmeldingService.behandleKandidaterMedUtloptForlengelse()
 
-        assertThat(kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeUuid)).isNull()
+        assertThat(kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeUuid)).isNull()
         assertThat(kandidatForUtmeldingRepository.hentKandidatMedForlengelse(oppfolgingsperiodeUuid)).isNull()
         val filterhendelseId = kandidatForUtmeldingRepository.hentFilterhendelseId(oppfolgingsperiodeUuid)
         assertThat(filterhendelseId).isNotNull()

@@ -134,7 +134,14 @@ data class KanskjeIservBrukerMedPresisIservDato(
     val aktorId: AktorId,
     val formidlingsgruppe: Formidlingsgruppe
 ) {
-    fun toKanskjeIservBruker(): KanskjeIservBruker = KanskjeIservBruker(this.iservFraDato, this.aktorId, this.formidlingsgruppe, IservTrigger.ArbeidssøkerRegistreringSync)
+    fun toKanskjeIservBruker(): KanskjeIservBruker = KanskjeIservBruker(
+        this.iservFraDato,
+        this.aktorId,
+        this.formidlingsgruppe,
+        IservTrigger.ArbeidssøkerRegistreringSync,
+        // Denne blir alltid kalt etter at man gjør startOppfolgingHvisIkkeAlleredeStartet(...)
+        erUnderoppfolging = true
+    )
 }
 
 fun BrukerType.toStartetAvType(): StartetAvType {

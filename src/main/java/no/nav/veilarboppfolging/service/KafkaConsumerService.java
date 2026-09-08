@@ -67,7 +67,6 @@ public class KafkaConsumerService {
         try {
             var aktorId = authService.getAktorIdOrThrow(brukerFnr);
             var endring = EndringPaaOppfolgingsBruker.Companion.from(endringPaBruker, aktorId);
-            utmeldingsService.oppdaterUtmeldingsStatus(KanskjeIservBruker.Companion.of(endringPaBruker, aktorId));
             // behandleBrukerEndring har ingen praktisk funksjon lenger siden ao-kontor er master for oppfølgingskontoret, men beholdes inntil videre for sikkerhets skyld
             oppfolgingsbrukerEndretIArenaService.oppdaterOppfolgingMedStatusFraArena(endring);
             sisteEndringPaaOppfolgingBrukerService.lagreSisteEndring(brukerFnr, endringPaBruker.getSistEndretDato());

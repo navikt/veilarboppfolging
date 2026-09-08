@@ -32,7 +32,6 @@ import no.nav.veilarboppfolging.ident.randomFnr
 import no.nav.veilarboppfolging.kafka.ArbeidssøkerperiodeConsumerService
 import no.nav.veilarboppfolging.kafka.TestUtils
 import no.nav.veilarboppfolging.kandidatForUtmelding.dto.KandidatForUtmeldingTagDto
-import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.BeskrivelseEnum
 import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.FilterhendelseRecord
 import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.Kategori
 import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.Operasjon
@@ -532,7 +531,7 @@ class KandidatForUtmeldingFlytTest(
                 avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
             ).let { KandidatForUtmelding.fromHendelse(it) }
         )
-        val kandidat = kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeUuid)!!
+        val kandidat = kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeUuid)!!
         assertThat(kandidat.avsluttesAutomatiskDato).isBeforeOrEqualTo(ZonedDateTime.now().toLocalDateTime())
 
         // kandidatForUtmeldingService.kastUtKandidaterSomHarVærtKandidatForLenge()

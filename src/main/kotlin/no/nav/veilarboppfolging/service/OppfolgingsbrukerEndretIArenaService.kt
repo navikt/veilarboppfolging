@@ -3,6 +3,7 @@ package no.nav.veilarboppfolging.service
 import kotlin.jvm.optionals.getOrNull
 import no.nav.common.types.identer.Fnr
 import no.nav.veilarboppfolging.client.pdl.PdlFolkeregisterStatusClient
+import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.EndringPaaOppfolgingsBruker
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.LocalArenaOppfolging
@@ -10,7 +11,9 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrerin
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ArenaIservKanIkkeReaktiveres
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.KunneAvsluttes
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.KunneIkkeAvsluttes
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.UtmeldingsService
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
+import no.nav.veilarboppfolging.service.utmelding.KanskjeIservBruker
 import no.nav.veilarboppfolging.utils.ArenaUtils
 import no.nav.veilarboppfolging.utils.SecureLog.secureLog
 import org.slf4j.LoggerFactory
@@ -25,6 +28,8 @@ class OppfolgingsbrukerEndretIArenaService(
     private val metricsService: MetricsService,
     private val oppfolgingsStatusRepository: OppfolgingsStatusRepository,
     private val pdlFolkeregisterStatusClient: PdlFolkeregisterStatusClient,
+    private val utmeldingsService: UtmeldingsService,
+    private val kandidatForUtmeldingService: KandidatForUtmeldingService,
 ){
     val log = LoggerFactory.getLogger(this.javaClass)
 
@@ -75,8 +80,20 @@ class OppfolgingsbrukerEndretIArenaService(
                         kvalifiseringsgruppe,
                     )
                 )
+                // Rydd opp i utmeldingstabell i tilfelle det skulle ligge noe feil der
+                utmeldingsService.oppdaterUtmeldingsStatus(KanskjeIservBruker.of(endringOppfolgingsbruker, erBrukerUnderOppfolgingLokalt))
+            }
+            is BleInaktivertMedKanReaktiveres -> {
+                val kandidatTag = oppfolgingService.hentGjeldendeOppfolgingsperiode(endringOppfolgingsbruker.aktorId)
+                    .map { kandidatForUtmeldingService.hentKandidatForUtmeldingTag(it.uuid) }
+                if (kandidatTag.orElse(null) == null) {
+                    // Bare start grace-periode på 28 dager hvis det ikke finnes noe kandidat-tag på bruker
+                    utmeldingsService.oppdaterUtmeldingsStatus(KanskjeIservBruker.of(endringOppfolgingsbruker, erBrukerUnderOppfolgingLokalt))
+                }
             }
             is BleInaktivertUtenKanReaktiveres -> {
+                // Rydd opp i utmeldingstabell i tilfelle det skulle ligge noe feil der
+                utmeldingsService.oppdaterUtmeldingsStatus(KanskjeIservBruker.of(endringOppfolgingsbruker, erBrukerUnderOppfolgingLokalt))
                 val avregistrering = ArenaIservKanIkkeReaktiveres(endringOppfolgingsbruker.aktorId)
                 val kunneAvsluttesResultat = avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(avregistrering)
                 when (kunneAvsluttesResultat) {

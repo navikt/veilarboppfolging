@@ -37,7 +37,6 @@ public class IservServiceIntegrationTest {
     private AuthService authService = mock(AuthService.class);
     private OppfolgingService oppfolgingService = mock(OppfolgingService.class);
     private AvsluttOppfolgingService avsluttOppfolgingService = mock(AvsluttOppfolgingService.class);
-    private KandidatForUtmeldingService kandidatForUtmeldingService = mock(KandidatForUtmeldingService.class);
 
     private KanAvsluttesInput kunneAvsluttesInput = new KanAvsluttesInput(
         false,
@@ -62,7 +61,7 @@ public class IservServiceIntegrationTest {
         when(authService.getFnrOrThrow(any())).thenReturn(FNR);
 
         utmeldingRepository = new UtmeldingRepository(db);
-        utmeldingsService = new UtmeldingsService(mock(MetricsService.class), utmeldingRepository, oppfolgingService, avsluttOppfolgingService, mock(), kandidatForUtmeldingService);
+        utmeldingsService = new UtmeldingsService(mock(MetricsService.class), utmeldingRepository, oppfolgingService, avsluttOppfolgingService, mock());
         utmeldEtter28Cron = new UtmeldEtter28Cron(
                 utmeldingsService,
                 utmeldingRepository,
@@ -191,7 +190,7 @@ public class IservServiceIntegrationTest {
     }
 
     private KanskjeIservBruker kanskjeIservBruker(ZonedDateTime iservFraDato, Formidlingsgruppe formidlingsgruppe) {
-        return new KanskjeIservBruker(iservFraDato.toLocalDate(), AKTOR_ID, formidlingsgruppe, IservTrigger.OppdateringPaaOppfolgingsBruker);
+        return new KanskjeIservBruker(iservFraDato.toLocalDate(), AKTOR_ID, formidlingsgruppe, IservTrigger.OppdateringPaaOppfolgingsBruker, true);
     }
 
     private EndringPaaOppfoelgingsBrukerV2 insertIservBruker(AktorId aktorId, ZonedDateTime iservFraDato) {

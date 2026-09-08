@@ -5,7 +5,6 @@ import kotlin.jvm.optionals.getOrElse
 import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
-import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.Operasjon
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.service.KafkaProducerService
 import org.slf4j.LoggerFactory
@@ -58,7 +57,7 @@ class RepubliserKandidatForUtmeldingService(
     }
 
     fun republiserKandidatForUtmelding(oppfolgingsperiodeId: UUID) {
-        val aktivKandidat = kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeId)
+        val aktivKandidat = kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeId)
         if (aktivKandidat != null) {
             republiserKandidatForUtmelding(aktivKandidat)
         } else {

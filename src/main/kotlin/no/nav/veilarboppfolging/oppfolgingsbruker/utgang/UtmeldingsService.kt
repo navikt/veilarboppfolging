@@ -20,13 +20,12 @@ class UtmeldingsService(
     val oppfolgingService: OppfolgingService,
     val avsluttOppfolgingService: AvsluttOppfolgingService,
     val bigQueryClient: BigQueryClient,
-    private val kandidatForUtmeldingService: KandidatForUtmeldingService
 ) {
     private val log = LoggerFactory.getLogger(UtmeldingsService::class.java)
 
     fun oppdaterUtmeldingsStatus(bruker: KanskjeIservBruker) {
         val hendelse = bruker.resolveUtmeldingsHendelse(
-            { oppfolgingService.erUnderOppfolging(bruker.aktorId) },
+            { bruker.erUnderoppfolging },
             { finnesIUtmeldingTabell(bruker.aktorId) })
 
         when (hendelse) {

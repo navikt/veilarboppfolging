@@ -2,7 +2,6 @@ package no.nav.veilarboppfolging.kandidatForUtmelding
 
 import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.types.identer.AktorId
-import no.nav.common.types.identer.Fnr
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.service.KafkaProducerService
 import java.util.UUID
@@ -27,7 +26,7 @@ class FjernKandidatForUtmeldingService(
         transactor.executeWithoutResult { _ ->
             logger.info("Fjerner kandidat for utmelding for oppfølgingsperiode $oppfolgingsperiodeId")
             if (sendUtmeldingskandidaterTilObo) run sendTilObo@{
-                kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeId) ?: return@executeWithoutResult
+                kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeId) ?: return@executeWithoutResult
                 val filterkategoriPersonId = kandidatForUtmeldingRepository.hentFilterhendelseId(oppfolgingsperiodeId) ?: return@sendTilObo
                 val aktorId = oppfolgingsPeriodeRepository.hentOppfolgingsperiode(oppfolgingsperiodeId.toString())
                     .getOrElse { throw IllegalStateException("Oppfølgingsperiode med id $oppfolgingsperiodeId finnes ikke") }?.aktorId
