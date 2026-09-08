@@ -237,6 +237,7 @@ class GraphqlController(
                     harVeilederLeseTilgangTilBrukersEnhet = null,
                     harVeilederTilgangFlytteBrukerTilEgetKontor = null,
                     harAktiveTiltaksdeltakelserVedFlyttingTilEgetKontor = null,
+                    harVeilederTilgangStarteOppfolging = null,
                 )
             }.let { result.localContext(context).data(it).build() }
     }
@@ -256,14 +257,22 @@ class GraphqlController(
     fun harVeilederTilgangFlytteBrukerTilEgetKontor(tilgang: VeilederTilgangDto, @LocalContextValue fnr: Fnr): Boolean {
         val aktorId = aktorOppslagClient.hentAktorId(fnr)
         val underOppfølging = erUnderOppfolging(aktorId)
-        val tilgangTilBruker = evaluerNavAnsattTilgangTilEksternBruker(fnr.get())
-        return underOppfølging && (tilgangTilBruker == TilgangResultat.IKKE_TILGANG_ENHET || tilgangTilBruker == TilgangResultat.HAR_TILGANG)
+        val tilgangTilBruker = evaluerNavAnsattTilgangTilEksternBrukerUtenGeografiskTilgangskontroll(fnr.get())
+        return underOppfølging && (tilgangTilBruker == TilgangResultat.HAR_TILGANG)
+    }
+
+    @SchemaMapping(typeName = "VeilederTilgang", field = "harVeilederTilgangStarteOppfolging")
+    fun harVeilederTilgangStarteOppfolging(tilgang: VeilederTilgangDto, @LocalContextValue fnr: Fnr): Boolean {
+        val aktorId = aktorOppslagClient.hentAktorId(fnr)
+        val underOppfolging = erUnderOppfolging(aktorId)
+        val kanStarteOppfolging = kanStarteOppfolgingIntern(underOppfolging, fnr)
+        return kanStarteOppfolging.veilederHarTilgangTilAStarteOppfolging()
     }
 
     @SchemaMapping(typeName = "VeilederTilgang", field = "harAktiveTiltaksdeltakelserVedFlyttingTilEgetKontor")
     fun harAktiveTiltaksdeltakelserVedFlyttingTilEgetKontor(tilgang: VeilederTilgangDto, @LocalContextValue fnr: Fnr): Boolean? {
-        val tilgangTilBruker = evaluerNavAnsattTilgangTilEksternBruker(fnr.get())
-        return if (tilgangTilBruker == TilgangResultat.IKKE_TILGANG_ENHET || tilgangTilBruker == TilgangResultat.HAR_TILGANG) {
+        val tilgangTilBruker = evaluerNavAnsattTilgangTilEksternBrukerUtenGeografiskTilgangskontroll(fnr.get())
+        return if (tilgangTilBruker == TilgangResultat.HAR_TILGANG) {
             oppfolgingService.harAktiveTiltaksdeltakelser(fnr)
         } else {
             null
@@ -344,6 +353,14 @@ class GraphqlController(
         }
     }
 
+    private fun evaluerNavAnsattTilgangTilEksternBrukerUtenGeografiskTilgangskontroll(fnr: String): TilgangResultat {
+        val decision = authService.evaluerNavAnsattTilgangTilBrukerUtenGeografiskTilgangskontroll(Fnr.of(fnr), TilgangType.LESE)
+        return when (decision) {
+            is Decision.Deny -> decision.tryToFindDenyReason()
+            Decision.Permit -> TilgangResultat.HAR_TILGANG
+        }
+    }
+
     @SchemaMapping(typeName = "OppfolgingsEnhetsInfo", field = "enhet")
     fun arenaOppfolgingsEnhet(oppfolgingsEnhet: OppfolgingsEnhetQueryDto, @LocalContextValue fnr: Fnr): EnhetDto? {
         val aktorId = aktorOppslagClient.hentAktorId(fnr)
@@ -368,11 +385,15 @@ class GraphqlController(
     }
 
     @SchemaMapping(typeName = "OppfolgingDto", field = "kanStarteOppfolging")
-    fun kanStarteOppfolging(oppfolgingDto: OppfolgingDto, @LocalContextValue erUnderOppfolging: Boolean, @LocalContextValue fnr: Fnr): KanStarteOppfolgingDto? {
+    fun kanStarteOppfolging(@LocalContextValue erUnderOppfolging: Boolean, @LocalContextValue fnr: Fnr): KanStarteOppfolgingDto? {
+        return kanStarteOppfolgingIntern(erUnderOppfolging, fnr)
+    }
+
+    private fun kanStarteOppfolgingIntern(erUnderOppfolging: Boolean, fnr: Fnr): KanStarteOppfolgingDto {
         val gyldigOppfolging = lazy {
             ErBrukerUnderOppfolging.evaluate(erUnderOppfolging, arenaService.brukerErIservIArena(fnr))
         }
-        val gyldigTilgang = lazy { evaluerNavAnsattTilgangTilEksternBruker(fnr.get()).toKanStarteOppfolging() }
+        val gyldigTilgang = lazy { evaluerNavAnsattTilgangTilEksternBrukerUtenGeografiskTilgangskontroll(fnr.get()).toKanStarteOppfolging() }
         val folkeregisterstatus = lazy { pdlFolkeregisterStatusClient.hentFolkeregisterStatus(fnr) }
         val brukerErUnder18 = lazy { folkeregisterstatus.value.under18 }
         val gyldigFregStatus = lazy { folkeregisterstatus.value.toKanStarteOppfolging() }

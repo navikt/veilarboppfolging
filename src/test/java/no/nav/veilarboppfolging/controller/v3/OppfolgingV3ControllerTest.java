@@ -2,6 +2,8 @@ package no.nav.veilarboppfolging.controller.v3;
 
 import no.nav.common.json.JsonUtils;
 import no.nav.common.types.identer.Fnr;
+import no.nav.poao_tilgang.client.Decision;
+import no.nav.poao_tilgang.client.TilgangType;
 import no.nav.veilarboppfolging.ForbiddenException;
 import no.nav.veilarboppfolging.client.veilarbarena.*;
 import no.nav.veilarboppfolging.controller.KontaktBrukerDto;
@@ -285,6 +287,8 @@ class OppfolgingV3ControllerTest {
 
     @Test
     void startOppfolgingsperiode_skal_ikke_returnere_tom_respons() throws Exception {
+        when(authService.erInternBruker()).thenReturn(true);
+        when(authService.evaluerNavAnsattTilgangTilBrukerUtenGeografiskTilgangskontroll(TEST_FNR, TilgangType.LESE)).thenReturn(Decision.Permit.INSTANCE);
         when(arenaOppfolgingService.registrerIkkeArbeidssoker(TEST_FNR))
                 .thenReturn(new RegistrerIArenaSuccess(new RegistrerIkkeArbeidssokerDto("Ny bruker ble registrert ok som IARBS", ArenaRegistreringResultat.BRUKER_ALLEREDE_ARBS)));
         mockMvc.perform(post("/api/v3/oppfolging/startOppfolgingsperiode")
@@ -296,7 +300,19 @@ class OppfolgingV3ControllerTest {
     }
 
     @Test
+    void startOppfolgingsperiode_skal_returnere_403_ved_manglende_tilgang() throws Exception {
+        when(authService.erInternBruker()).thenReturn(true);
+        when(authService.evaluerNavAnsattTilgangTilBrukerUtenGeografiskTilgangskontroll(TEST_FNR, TilgangType.LESE)).thenReturn(new Decision.Deny("melding", "nei"));
+        mockMvc.perform(post("/api/v3/oppfolging/startOppfolgingsperiode")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"fnr\":\"12345678900\",\"henviserSystem\":\"AAP\"}")
+                )
+                .andExpect(status().is(403));
+    }
+
+    @Test
     void startOppfolgingsperiode_skal_returnere_400_ved_manglende_fnr_hvis_intern_bruker() throws Exception {
+        when(authService.erInternBruker()).thenReturn(true);
         when(arenaOppfolgingService.registrerIkkeArbeidssoker(TEST_FNR))
                 .thenReturn(new RegistrerIArenaSuccess(new RegistrerIkkeArbeidssokerDto("Ny bruker ble registrert ok som IARBS", ArenaRegistreringResultat.BRUKER_ALLEREDE_ARBS)));
         mockMvc.perform(post("/api/v3/oppfolging/startOppfolgingsperiode")

@@ -11,14 +11,5 @@ data class VeilederTilgangDto(
     val harVeilederTilgangFlytteBrukerTilEgetKontor: Boolean?,
     val tilgang: TilgangResultat?,
     val harAktiveTiltaksdeltakelserVedFlyttingTilEgetKontor: Boolean?,
+    val harVeilederTilgangStarteOppfolging: Boolean?,
 )
-
-/*
-                                                Bryker er på kvp    Bruker er ikke under kvp
-   Veileder har tilgang til brukers enhet           true,true,true,true                   true
-   Veileder har ikke tilgang til brukers enhet      false                   true
-
-   Veileder tilgang modia_generell
-   Veileder tilgang modia_oppfolging
-
- */
