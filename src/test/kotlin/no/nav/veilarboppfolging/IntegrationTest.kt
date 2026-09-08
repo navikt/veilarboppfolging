@@ -292,7 +292,7 @@ open class IntegrationTest {
             avslutningsarsak = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString(),
             hendelseTidspunkt = ZonedDateTime.now().toInstant(),
         )
-        kandidatForUtmeldingService.lagreKandidatForUtmelding(fnr,kandidat)
+        kandidatForUtmeldingService.handterUtmeldingsHendelse(fnr,kandidat)
     }
 
     fun forlengKandidatForUtmelding(fnr: Fnr, forlengTil: LocalDate) {
