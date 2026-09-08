@@ -329,31 +329,6 @@ class KandidatForUtmeldingRepositoryTest {
     }
 
     @Test
-    fun `settAvsluttesAutomatiskDatoHvisMangler - setter dato kun hvis den mangler`() {
-        val oppfolgingsbruker = arbeidssokerRegistrering(fnr, aktorId, BrukerRegistrant(fnr))
-        oppfolgingsStatusRepository.opprettOppfolging(aktorId)
-        oppfolgingsPeriodeRepository.start(oppfolgingsbruker)
-        val oppfolgingsperiodeUuid = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId).first().uuid
-        kandidatForUtmeldingRepository.lagreKandidat(arbeidssøkerPeriodeAvsluttet(oppfolgingsperiodeUuid))
-        // Simulerer en eksisterende kandidat som mangler feltet (opprettet før feltet ble innført)
-        namedJdbcTemplate.update(
-            "UPDATE kandidater_for_utmelding SET avsluttes_automatisk_dato = NULL WHERE oppfolgingsperiode_uuid = :id",
-            mapOf("id" to oppfolgingsperiodeUuid.toString())
-        )
-
-        val nyDato = LocalDateTime.now().plusDays(28)
-        kandidatForUtmeldingRepository.settAvsluttesAutomatiskDatoHvisMangler(oppfolgingsperiodeUuid, nyDato)
-        assertThat(kandidatForUtmeldingRepository.hentAvsluttesAutomatiskDato(oppfolgingsperiodeUuid)?.toLocalDateTime())
-            .isCloseTo(nyDato, within(1, ChronoUnit.SECONDS))
-
-        // Skal ikke overskrive en allerede satt dato
-        val forsokPaOverskriving = LocalDateTime.now().plusDays(100)
-        kandidatForUtmeldingRepository.settAvsluttesAutomatiskDatoHvisMangler(oppfolgingsperiodeUuid, forsokPaOverskriving)
-        assertThat(kandidatForUtmeldingRepository.hentAvsluttesAutomatiskDato(oppfolgingsperiodeUuid)?.toLocalDateTime())
-            .isCloseTo(nyDato, within(1, ChronoUnit.SECONDS))
-    }
-
-    @Test
     fun `hentAktiveKandidater - returnerer kandidater som ikke er forlenget`() {
         val fnr2 = Fnr.of("2222229999")
         val aktorId2 = AktorId.of("8765")

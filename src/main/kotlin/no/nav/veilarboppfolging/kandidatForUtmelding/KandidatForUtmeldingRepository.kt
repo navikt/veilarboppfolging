@@ -62,24 +62,6 @@ class KandidatForUtmeldingRepository(
         ) { rs, _ -> UUID.fromString(rs.getString("utmeldingshendelse_id")) }!!
     }
 
-    /**
-     * Setter avsluttes_automatisk_dato på en kandidat dersom den mangler (f.eks. for kandidater opprettet
-     * før feltet ble innført). Idempotent - overskriver ikke en allerede satt dato.
-     */
-    fun settAvsluttesAutomatiskDatoHvisMangler(oppfolgingsperiodeId: UUID, avsluttesAutomatiskDato: LocalDateTime) {
-        val sql = """
-            UPDATE kandidater_for_utmelding
-            SET avsluttes_automatisk_dato = :avsluttesAutomatiskDato, updated_at = current_timestamp
-            WHERE oppfolgingsperiode_uuid = :oppfolgingsperiodeId AND avsluttes_automatisk_dato IS NULL
-        """.trimIndent()
-        db.update(
-            sql, mapOf(
-                "oppfolgingsperiodeId" to oppfolgingsperiodeId.toString(),
-                "avsluttesAutomatiskDato" to Timestamp.valueOf(avsluttesAutomatiskDato),
-            )
-        )
-    }
-
     fun fjernKandidat(oppfolgingsperiodeId: UUID) {
         val sql = """
             DELETE FROM kandidater_for_utmelding
