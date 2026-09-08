@@ -1,6 +1,6 @@
 package no.nav.veilarboppfolging.kandidatForUtmelding.dto
 
-import no.nav.veilarboppfolging.kandidatForUtmelding.ForlengelseHendelse
+import no.nav.veilarboppfolging.kandidatForUtmelding.ForlengelseOpprettetEllerEndretHendelse
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingHendelseUtfortAvType
 
 data class ForlengelseDto(
@@ -10,11 +10,11 @@ data class ForlengelseDto(
     val forlengetTil: String,
 )
 
-fun ForlengelseHendelse.toDto(): ForlengelseDto {
+fun ForlengelseOpprettetEllerEndretHendelse.toDto(): ForlengelseDto {
     return ForlengelseDto(
         utfortAvType = utfortAvType,
         utfortAv = utfortAv,
         hendelseTidspunkt = hendelseTidspunkt.toString(),
-        forlengetTil = hentForlengetTil()?.toString() ?: throw IllegalStateException("ForlengelseHendelse må ha en forlengetTil"),
+        forlengetTil = this.forlengetTil.toString()
     )
 }

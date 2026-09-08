@@ -38,7 +38,7 @@ class FjernKandidatForUtmeldingServiceTest : IntegrationTest() {
                 arbeidssokerperiodeAvsluttetHendelseType = ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
                 avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString(),
                 oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
-            )
+            ).let { KandidatForUtmelding.fromHendelse(it) }
         )
         val filterkategoriPersonId = kandidatForUtmeldingRepository.hentEllerOpprettFilterhendelseId(oppfolgingsperiodeUuid)
         assertThat(kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeUuid)).isNotNull()
@@ -105,7 +105,7 @@ class FjernKandidatForUtmeldingServiceTest : IntegrationTest() {
                 arbeidssokerperiodeAvsluttetHendelseType = ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
                 avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString(),
                 oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
-            )
+            ).let { KandidatForUtmelding.fromHendelse(it) }
         )
 
         val erForlenget = fjernKandidatForUtmeldingService.erOppfolgingForlenget(oppfolgingsperiodeUuid)
@@ -125,7 +125,7 @@ class FjernKandidatForUtmeldingServiceTest : IntegrationTest() {
         startOppfolgingSomArbeidsoker(AKTOR_ID, FNR)
         val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(FNR).get().uuid
         kandidatForUtmeldingRepository.lagreKandidat(
-            ForlengelseHendelse(
+            ForlengelseOpprettetEllerEndretHendelse(
                 utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
                 utfortAv = "A123123",
                 kilde = "kilde",
@@ -133,7 +133,7 @@ class FjernKandidatForUtmeldingServiceTest : IntegrationTest() {
                 oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
                 forlengelseHendelseType = ForlengelseHendelseType.FORLENGELSE_OPPRETTET,
                 forlengetTil = LocalDate.now().plusDays(30),
-            )
+            ).let { KandidatForUtmelding.fromHendelse(it) }
         )
 
         val erForlenget = fjernKandidatForUtmeldingService.erOppfolgingForlenget(oppfolgingsperiodeUuid)
@@ -153,7 +153,7 @@ class FjernKandidatForUtmeldingServiceTest : IntegrationTest() {
         startOppfolgingSomArbeidsoker(AKTOR_ID, FNR)
         val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(FNR).get().uuid
         kandidatForUtmeldingRepository.lagreKandidat(
-            ForlengelseHendelse(
+            ForlengelseOpprettetEllerEndretHendelse(
                 utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
                 utfortAv = "A123123",
                 kilde = "kilde",
@@ -161,7 +161,7 @@ class FjernKandidatForUtmeldingServiceTest : IntegrationTest() {
                 oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
                 forlengelseHendelseType = ForlengelseHendelseType.FORLENGELSE_OPPRETTET,
                 forlengetTil = LocalDate.now().minusDays(3),
-            )
+            ).let { KandidatForUtmelding.fromHendelse(it) }
         )
 
         val erForlenget = fjernKandidatForUtmeldingService.erOppfolgingForlenget(oppfolgingsperiodeUuid)

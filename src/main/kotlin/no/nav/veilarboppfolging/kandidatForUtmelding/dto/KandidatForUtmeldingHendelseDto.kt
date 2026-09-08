@@ -1,8 +1,7 @@
 package no.nav.veilarboppfolging.kandidatForUtmelding.dto
 
-import no.nav.veilarboppfolging.kandidatForUtmelding.ForlengelseHendelse
+import no.nav.veilarboppfolging.kandidatForUtmelding.ForlengelseOpprettetEllerEndretHendelse
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingHendelse
-import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingHendelseType
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingHendelseUtfortAvType
 
 data class KandidatForUtmeldingHendelseDto(
@@ -27,5 +26,5 @@ fun KandidatForUtmeldingHendelse.toKandidatForUtmeldingHendelseDto() = KandidatF
     utfortAv = utfortAv,
     hendelseTidspunkt = hendelseTidspunkt.toString(),
     type = KandidatForUtmeldingHendelseTypeDto.valueOf(type.toString()),
-    forlengetTil = (this as? ForlengelseHendelse)?.hentForlengetTil()?.toString()
+    forlengetTil = (this as? ForlengelseOpprettetEllerEndretHendelse)?.forlengetTil?.toString()
 )

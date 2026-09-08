@@ -10,7 +10,10 @@ import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.Operasjon
 import org.postgresql.util.PGobject
 import java.net.URI
 import java.time.Instant
+import java.time.LocalDateTime
 import java.time.ZoneId
+import java.time.ZoneOffset
+import java.time.ZonedDateTime
 import java.util.UUID
 
 class ArbeidssøkerPeriodeAvsluttet(
@@ -29,6 +32,7 @@ class ArbeidssøkerPeriodeAvsluttet(
     hendelseTidspunkt,
 ) {
     override val type: ArbeidssokerperiodeAvsluttetHendelseType = arbeidssokerperiodeAvsluttetHendelseType
+    val avsluttesAutomatiskDato: ZonedDateTime = beregnAvsluttesAutomatiskDato(hendelseTidspunkt)
     override val hendelseDataJson: PGobject? = avslutningsarsak?.let {
         PGobject().apply {
             type = "jsonb"
@@ -40,11 +44,11 @@ class ArbeidssøkerPeriodeAvsluttet(
         val avslutningsarsak: String?
     )
 
-    override fun tilFilterhendelseRecord(fnr: Fnr, operasjon: Operasjon): FilterhendelseRecord {
+    override fun tilFilterhendelseRecord(fnr: Fnr): FilterhendelseRecord {
         return FilterhendelseRecord(
             personID = NorskIdent(fnr.get()),
             kategori = Kategori.KANDIDAT_FOR_UTMELDING,
-            operasjon = operasjon,
+            operasjon = Operasjon.START,
             hendelse = FilterhendelseRecord.HendelseInnhold(
                 beskrivelse = when (type) {
                     ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT -> "Arbeidssøkerperiode avsluttet: Ikke levert meldekort"
@@ -59,6 +63,7 @@ class ArbeidssøkerPeriodeAvsluttet(
                 dato = hendelseTidspunkt.atZone(ZoneId.of("Europe/Oslo")),
                 lenke = URI("${baseUrlVeilarbpersonflate()}/aktivitetsplan").toURL(),
                 detaljer = null,
+                datoFrist = avsluttesAutomatiskDato
             )
         )
     }

@@ -8,6 +8,9 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant
 
 enum class AvregistreringsType {
     UtmeldtEtter28Dager,
+    /* Ny løsning som finner utmeldingskandidater og melder dem automatisk ut etter 28 dager
+    * Ikke samme som arena-basert løsning som bruker ISERV + kanReaktiveresForenklet */
+    KandidatUtmeldtEtter28Dager,
     ManuellAvregistrering,
     ArenaIservKanIkkeReaktiveres,
     AdminAvregistrering;
@@ -30,6 +33,14 @@ data class UtmeldtEtter28Dager(override val aktorId: AktorId) : Avregistrering(a
 
     companion object {
         const val BEGRUNNELSE = "Oppfølging avsluttet automatisk grunnet iserv i 28 dager"
+    }
+}
+
+data class KandidatUtmeldtEtter28Dager(override val aktorId: AktorId) : Avregistrering(aktorId, SystemRegistrant(), BEGRUNNELSE) {
+    override fun getAvregistreringsType() = AvregistreringsType.KandidatUtmeldtEtter28Dager
+
+    companion object {
+        const val BEGRUNNELSE = "Oppfølging avsluttet automatisk grunnet iserv i 28 dager som utmeldingskandidat"
     }
 }
 

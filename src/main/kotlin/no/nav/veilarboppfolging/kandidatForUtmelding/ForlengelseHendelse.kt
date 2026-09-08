@@ -15,15 +15,45 @@ import java.time.ZonedDateTime
 import no.nav.common.json.JsonUtils
 import java.time.LocalDate
 
-class ForlengelseHendelse(
+class ForlengelseUtløptHendelse(
     oppfolgingsperiodeUuid: UUID,
+    hendelseTidspunkt: Instant,
+): KandidatForUtmeldingHendelse(
+    oppfolgingsperiodeUuid,
+    KandidatForUtmeldingHendelseUtfortAvType.SYSTEM,
+    "veilarboppfolging",
+    "veilarboppfolging",
+    hendelseTidspunkt,
+) {
+    val avsluttesAutomatiskDato: ZonedDateTime = beregnAvsluttesAutomatiskDato(hendelseTidspunkt)
+    override val type: KandidatForUtmeldingHendelseType = ForlengelseHendelseType.FORLENGELSE_UTLOPT
+    override val hendelseDataJson: PGobject? = null
+    override fun tilFilterhendelseRecord(fnr: Fnr): FilterhendelseRecord {
+        return FilterhendelseRecord(
+            personID = NorskIdent(fnr.get()),
+            kategori = Kategori.KANDIDAT_FOR_UTMELDING,
+            operasjon = Operasjon.START,
+            hendelse = FilterhendelseRecord.HendelseInnhold(
+                beskrivelse = "Forlengelse utløpt",
+                beskrivelseEnum = BeskrivelseEnum.FORLENGELSE_UTLOPT.name,
+                dato = hendelseTidspunkt.atZone(ZoneId.of("Europe/Oslo")),
+                lenke = URI("${baseUrlVeilarbpersonflate()}/aktivitetsplan").toURL(),
+                detaljer = null,
+                datoFrist = avsluttesAutomatiskDato
+            )
+        )
+    }
+}
+
+class ForlengelseOpprettetEllerEndretHendelse(
+    oppfolgingsperiodeUuid: UUID,
+    hendelseTidspunkt: Instant,
     utfortAvType: KandidatForUtmeldingHendelseUtfortAvType,
     utfortAv: String?,
     kilde: String,
-    val forlengelseHendelseType: ForlengelseHendelseType,
-    hendelseTidspunkt: Instant,
-    val forlengetTil: LocalDate?,
-) : KandidatForUtmeldingHendelse(
+    val forlengetTil: LocalDate,
+    forlengelseHendelseType: ForlengelseHendelseType
+): KandidatForUtmeldingHendelse(
     oppfolgingsperiodeUuid,
     utfortAvType,
     utfortAv,
@@ -31,45 +61,21 @@ class ForlengelseHendelse(
     hendelseTidspunkt,
 ) {
     override val type: KandidatForUtmeldingHendelseType = forlengelseHendelseType
-    override val hendelseDataJson: PGobject? = forlengetTil?.let {
+    data class Detaljer(
+        val forlengetTil: LocalDate,
+    )
+    override val hendelseDataJson: PGobject = forlengetTil.let {
         PGobject().apply {
             type = "jsonb"
             value = JsonUtils.getMapper().writeValueAsString(Detaljer(it))
         }
     }
-
-    data class Detaljer(
-        val forlengetTil: LocalDate?,
-    )
-
-    fun hentForlengetTil(): LocalDate? {
-        return when (forlengelseHendelseType) {
-            ForlengelseHendelseType.FORLENGELSE_OPPRETTET,
-            ForlengelseHendelseType.FORLENGELSE_ENDRET -> forlengetTil
-            ForlengelseHendelseType.FORLENGELSE_UTLOPT -> null
-        }
-    }
-
-    override fun tilFilterhendelseRecord(fnr: Fnr, operasjon: Operasjon): FilterhendelseRecord {
+    override fun tilFilterhendelseRecord(fnr: Fnr): FilterhendelseRecord {
         return FilterhendelseRecord(
             personID = NorskIdent(fnr.get()),
             kategori = Kategori.KANDIDAT_FOR_UTMELDING,
-            operasjon = operasjon,
-            hendelse = FilterhendelseRecord.HendelseInnhold(
-                beskrivelse = when (type) {
-                    ForlengelseHendelseType.FORLENGELSE_UTLOPT -> "Forlengelse utløpt"
-                    ForlengelseHendelseType.FORLENGELSE_OPPRETTET -> "Forlengelse opprettet"
-                    else -> throw IllegalArgumentException("Ugyldig forlengelseshendelsestype for filterhendelser")
-                },
-                beskrivelseEnum = when (type) {
-                    ForlengelseHendelseType.FORLENGELSE_UTLOPT -> BeskrivelseEnum.FORLENGELSE_UTLOPT
-                    ForlengelseHendelseType.FORLENGELSE_OPPRETTET -> BeskrivelseEnum.FORLENGELSE_OPPRETTET
-                    else -> throw IllegalArgumentException("Ugyldig forlengelseshendelsestype for filterhendelser")
-                }.name,
-                dato = hendelseTidspunkt.atZone(ZoneId.of("Europe/Oslo")),
-                lenke = URI("${baseUrlVeilarbpersonflate()}/aktivitetsplan").toURL(),
-                detaljer = null,
-            )
+            operasjon = Operasjon.STOPP,
+            hendelse = null
         )
     }
 }

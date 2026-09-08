@@ -7,7 +7,6 @@ import no.nav.common.types.identer.Fnr
 import no.nav.common.utils.EnvironmentUtils
 import no.nav.veilarboppfolging.kandidatForUtmelding.dto.KandidatForUtmeldingTagDto
 import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.FilterhendelseRecord
-import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.Operasjon
 import org.postgresql.util.PGobject
 
 sealed class KandidatForUtmeldingHendelse(
@@ -20,7 +19,7 @@ sealed class KandidatForUtmeldingHendelse(
     abstract val type: KandidatForUtmeldingHendelseType
     abstract val hendelseDataJson: PGobject?
 
-    abstract fun tilFilterhendelseRecord(fnr: Fnr, operasjon: Operasjon): FilterhendelseRecord
+    abstract fun tilFilterhendelseRecord(fnr: Fnr): FilterhendelseRecord
 
     private val erProd: Boolean = EnvironmentUtils.isProduction().getOrElse { false }
 
@@ -33,7 +32,8 @@ sealed class KandidatForUtmeldingHendelse(
             ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_SVARTE_NEI_I_BEKREFTELSE -> KandidatForUtmeldingTagDto.ARBEIDSSOKERPERIODE_AVSLUTTET_SVARTE_NEI_I_BEKREFTELSE
             ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET -> KandidatForUtmeldingTagDto.ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET
             ForlengelseHendelseType.FORLENGELSE_UTLOPT -> KandidatForUtmeldingTagDto.FORLENGELSE_UTLOPT
-            ForlengelseHendelseType.FORLENGELSE_OPPRETTET, ForlengelseHendelseType.FORLENGELSE_ENDRET -> null
+            ForlengelseHendelseType.FORLENGELSE_OPPRETTET, ForlengelseHendelseType.FORLENGELSE_ENDRET,
+            OppfolgingAvsluttetHendelseType.OPPFOLGING_AVSLUTTET_AUTOMATISK, OppfolgingAvsluttetHendelseType.OPPFOLGING_AVSLUTTET_MANUELT-> null
         }
     }
 }
@@ -46,7 +46,7 @@ enum class ArbeidssokerperiodeAvsluttetHendelseType : KandidatForUtmeldingHendel
     ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET
 }
 
-enum class ForlengelseHendelseType : KandidatForUtmeldingHendelseType{
+enum class ForlengelseHendelseType : KandidatForUtmeldingHendelseType {
     FORLENGELSE_OPPRETTET,
     FORLENGELSE_ENDRET,
     FORLENGELSE_UTLOPT
