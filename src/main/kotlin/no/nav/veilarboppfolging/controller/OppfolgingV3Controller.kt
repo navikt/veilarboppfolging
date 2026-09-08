@@ -3,6 +3,7 @@ package no.nav.veilarboppfolging.controller
 import java.time.LocalDate
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
+import no.nav.poao_tilgang.client.TilgangType
 import no.nav.veilarboppfolging.BadRequestException
 import no.nav.veilarboppfolging.client.veilarbarena.AlleredeUnderoppfolgingError
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaRegistreringResultat
@@ -214,7 +215,9 @@ class OppfolgingV3Controller(
                 ?: throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Kan ikke hente innlogget personident")
         } else {
             authService.skalVereInternBruker()
-            startOppfolging.fnr ?: throw ResponseStatusException(HttpStatus.BAD_REQUEST, "fnr er påkrevd for interne brukere")
+            val fnr = startOppfolging.fnr ?: throw ResponseStatusException(HttpStatus.BAD_REQUEST, "fnr er påkrevd for interne brukere")
+            sjekkTilgangTilAStarteOppfolging(fnr)
+            fnr
         }
         authService.sjekkAtApplikasjonErIAllowList(ALLOWLIST)
         val arenaResponse = arenaOppfolgingService.registrerIkkeArbeidssoker(fnrTilNyBruker)
@@ -273,6 +276,13 @@ class OppfolgingV3Controller(
             .filter { authService.harTilgangTilEnhet(it.enhet) }
 
         return periode.copy(kvpPerioder = kvpPeriodeEntities)
+    }
+
+    private fun sjekkTilgangTilAStarteOppfolging(fnr: Fnr) {
+        val decision = authService.evaluerNavAnsattTilgangTilBrukerUtenGeografiskTilgangskontroll(fnr, TilgangType.LESE)
+        if (decision.isDeny) {
+            throw ResponseStatusException(HttpStatus.FORBIDDEN, "Veileder har ikke tilgang til å starte oppfølging")
+        }
     }
 
     companion object {

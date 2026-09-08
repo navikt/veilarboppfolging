@@ -413,6 +413,27 @@ public class AuthService {
         return decision;
     }
 
+    public Decision evaluerNavAnsattTilgangTilBrukerUtenGeografiskTilgangskontroll(Fnr fnr, TilgangType tilgangType) {
+        if (!erInternBruker()) {
+            throw new ForbiddenException("Må være intern bruker");
+        }
+        var result = poaoTilgangClient.evaluatePolicy(new NavAnsattTilgangTilEksternBrukerKjernereglerPolicyInput(
+                hentInnloggetVeilederUUID(), tilgangType, fnr.get()
+        ));
+        if (result.isFailure() && result.getException() instanceof BadHttpStatusApiException) {
+            var exception = (BadHttpStatusApiException) result.getException() ;
+            if (exception.getHttpStatus() == 404) throw new NotFoundException("Kunne ikke sjekke tilgang til bruker fordi ident finnes ikke i PDL");
+        }
+        var decision = result.getOrThrow();
+        auditLogWithMessageAndDestinationUserId(
+                "Veileder har gjort oppslag på aktorid",
+                fnr.get(),
+                authContextHolder.getNavIdent().orElse(NavIdent.of(UKJENT_NAV_IDENT)).get(),
+                decision.isPermit() ? AuthorizationDecision.PERMIT : AuthorizationDecision.DENY
+        );
+        return decision;
+    }
+
     private void sjekkTilgang(TilgangType tilgangType, AktorId aktorId) {
         sjekkTilgang(tilgangType, getFnrOrThrow(aktorId));
     }
