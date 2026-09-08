@@ -7,6 +7,7 @@ import no.nav.poao_tilgang.client.TilgangType
 import no.nav.veilarboppfolging.BadRequestException
 import no.nav.veilarboppfolging.client.veilarbarena.AlleredeUnderoppfolgingError
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaRegistreringResultat
+import no.nav.veilarboppfolging.client.veilarbarena.BrukerErUtmeldingskandidat
 import no.nav.veilarboppfolging.client.veilarbarena.FeilFraArenaError
 import no.nav.veilarboppfolging.client.veilarbarena.ReaktiveringSuccess
 import no.nav.veilarboppfolging.client.veilarbarena.RegistrerIArenaError
@@ -203,6 +204,7 @@ class OppfolgingV3Controller(
                 logger.error("Ukjent feil under reaktivering av bruker", reaktiveringResult.throwable)
                 ResponseEntity("Noe gikk veldig galt", HttpStatus.INTERNAL_SERVER_ERROR)
             }
+            is BrukerErUtmeldingskandidat -> ResponseEntity("Bruker er utmeldingskandidat - skal ikke kunne reaktiveres", HttpStatus.CONFLICT)
         }
     }
 
