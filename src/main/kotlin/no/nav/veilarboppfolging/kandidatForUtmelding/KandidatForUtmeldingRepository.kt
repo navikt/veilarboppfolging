@@ -147,18 +147,6 @@ class KandidatForUtmeldingRepository(
         ) { rs, _ -> rs.getTimestamp("forlenget_til") }.firstOrNull()
     }
 
-    @TestOnly
-    fun hentAvsluttesAutomatiskDato(oppfolgingsperiodeId: UUID): Timestamp? {
-        return db.query(
-            """
-            SELECT avsluttes_automatisk_dato
-            FROM kandidater_for_utmelding
-            WHERE oppfolgingsperiode_uuid = :oppfolgingsperiodeId
-            """.trimIndent(),
-            mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeId.toString()),
-        ) { rs, _ -> rs.getTimestamp("avsluttes_automatisk_dato") }.firstOrNull()
-    }
-
     fun hentSisteHendelseForKandidat(oppfolgingsperiodeId: UUID): KandidatForUtmeldingHendelse? {
         return db.query(
             """

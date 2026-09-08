@@ -280,6 +280,7 @@ class KandidatForUtmeldingRepositoryTest {
         val oppfolgingsperiodeUuid = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId).first().uuid
         kandidatForUtmeldingRepository.lagreKandidat(arbeidssøkerPeriodeAvsluttet(oppfolgingsperiodeUuid))
 
+        val forlengetTil = LocalDate.now().plusDays(14)
         val forlengelseHendelse = ForlengelseOpprettetEllerEndretHendelse(
             oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
             utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
@@ -287,12 +288,13 @@ class KandidatForUtmeldingRepositoryTest {
             kilde = "kilde",
             forlengelseHendelseType = ForlengelseHendelseType.FORLENGELSE_OPPRETTET,
             hendelseTidspunkt = ZonedDateTime.now().toInstant(),
-            forlengetTil = LocalDate.now().plusDays(14),
+            forlengetTil = forlengetTil,
         )
 
         kandidatForUtmeldingRepository.lagreKandidat(KandidatForUtmelding.fromHendelse(forlengelseHendelse))
 
-        assertThat(kandidatForUtmeldingRepository.hentAvsluttesAutomatiskDato(oppfolgingsperiodeUuid)).isNull()
+        assertThat(kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeUuid)).isNull()
+        assertThat(kandidatForUtmeldingRepository.hentKandidatMedForlengelse(oppfolgingsperiodeUuid)?.forlengetTil).isEqualTo(forlengetTil)
     }
 
     @Test
