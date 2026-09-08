@@ -60,7 +60,10 @@ class ReaktiveringService(
             oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId)
         val sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder)
         val erUtmeldingskandidat = kandidatForUtmeldingService.erUtmeldingskandidat(sistePeriode.uuid)
-        if (erUtmeldingskandidat && utmeldingskandidater_aktivert) return BrukerErUtmeldingskandidat
+        if (erUtmeldingskandidat && utmeldingskandidater_aktivert) {
+            logger.info("Bruker er utmeldingskandidat, og kan ikke reaktiveres")
+            return BrukerErUtmeldingskandidat
+        }
 
         val response = transactor.execute {
             val arenaResponse = arenaOppfolgingService.registrerIkkeArbeidssoker(fnr)
