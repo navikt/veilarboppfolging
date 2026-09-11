@@ -40,7 +40,6 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrerin
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering.Companion.arbeidssokerRegistrering
 import no.nav.veilarboppfolging.repository.UtmeldingRepository
 import no.nav.veilarboppfolging.service.KafkaConsumerService
-import no.nav.veilarboppfolging.service.ReaktiveringService
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Disabled
@@ -128,7 +127,7 @@ class KandidatForUtmeldingFlytTest(
     }
 
     @Test
-    fun `lagreKandidatForUtmelding blir kalt når bruker blir ISERV etter arbeidssøkerregistrering`() {
+    fun `skal bli lagret som kandidat for utmelding hvis bruker først ble ISERV, så ble arbeidssokerperioden avsluttet`() {
         val fnr = randomFnr()
         val aktorId = randomAktorId()
         mockIdents(fnr, aktorId)
@@ -149,8 +148,8 @@ class KandidatForUtmeldingFlytTest(
         publiserBrukerBleISERV(fnr, ISERV_FRA_DATO)
         publiserAvsluttArbeidssokerPeriode(fnr)
 
-        assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId)).isNotNull()
-        assertThat(utmeldingRepository.eksisterendeIservBruker(aktorId)).isEmpty()
+        assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId)).describedAs("Skal være lagret som kandidat for utmelding").isNotNull()
+        assertThat(utmeldingRepository.eksisterendeIservBruker(aktorId)).describedAs("Skal IKKE finnes i gammel utmeldings-tabell").isEmpty()
     }
 
     @Test

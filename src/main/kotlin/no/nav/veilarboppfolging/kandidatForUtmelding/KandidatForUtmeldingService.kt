@@ -53,6 +53,7 @@ class KandidatForUtmeldingService(
                 }
             }
 
+            utmeldingService.slettFraUtmeldingTabell(hendelse.oppfolgingsperiodeUuid)
             sendUtmeldingskandidatTilObo(hendelse, fnr)
         }
     }
