@@ -18,6 +18,10 @@ class KandidatForUtmeldingRepository(
     private val db: NamedParameterJdbcTemplate
 ) {
 
+    fun lagreKandidatForUtmeldingHendelse(hendelse: KandidatForUtmeldingHendelse): UUID {
+        return insertUtmeldingsHendelse(hendelse)
+    }
+
     fun lagreKandidat(kandidat: KandidatForUtmelding) {
         val hendelseId = insertUtmeldingsHendelse(kandidat.sisteHendelse)
         val sql = """
@@ -68,6 +72,18 @@ class KandidatForUtmeldingRepository(
             WHERE oppfolgingsperiode_uuid = :oppfolgingsperiodeId
         """.trimIndent()
         db.update(sql, mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeId.toString()))
+    }
+
+    fun lagreKandidatSomIkkeKunneAvsluttes(oppfolgingsperiodeId: UUID) {
+        db.update(
+            """
+            INSERT INTO kandidater_som_ikke_kunne_avsluttes(oppfolgingsperiode_uuid, siste_utmeldingshendelse_id)
+            SELECT oppfolgingsperiode_uuid, siste_utmeldingshendelse_id
+            FROM kandidater_for_utmelding
+            WHERE oppfolgingsperiode_uuid = :oppfolgingsperiodeId
+            """.trimIndent(),
+            mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeId.toString()),
+        )
     }
 
     fun hentKandidat(oppfolgingsperiodeId: UUID): AktivKandidatForUtmelding? {
@@ -145,6 +161,18 @@ class KandidatForUtmeldingRepository(
             """.trimIndent(),
             mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeId.toString()),
         ) { rs, _ -> rs.getTimestamp("forlenget_til") }.firstOrNull()
+    }
+
+    @TestOnly
+    fun hentAntallKandidaterSomIkkeKunneAvsluttes(oppfolgingsperiodeId: UUID): Int {
+        return db.queryForObject(
+            """
+            SELECT COUNT(*) as antall
+            FROM kandidater_som_ikke_kunne_avsluttes
+            WHERE oppfolgingsperiode_uuid = :oppfolgingsperiodeId
+            """.trimIndent(),
+            mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeId.toString()),
+        ) { rs, _ -> rs.getInt("antall") }
     }
 
     fun hentSisteHendelseForKandidat(oppfolgingsperiodeId: UUID): KandidatForUtmeldingHendelse? {

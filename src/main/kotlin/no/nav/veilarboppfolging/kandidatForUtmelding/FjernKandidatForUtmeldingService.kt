@@ -22,18 +22,32 @@ class FjernKandidatForUtmeldingService(
 ) {
     private val logger = LoggerFactory.getLogger(this::class.java)
 
-    fun fjernKandidatForUtmelding(oppfolgingsperiodeId: UUID) {
+    fun fjernKandidatForUtmelding(
+        oppfolgingsperiodeId: UUID,
+        oppfolgingAvsluttetHendelseType: OppfolgingAvsluttetHendelseType? = null,
+    ) {
         transactor.executeWithoutResult { _ ->
             logger.info("Fjerner kandidat for utmelding for oppfølgingsperiode $oppfolgingsperiodeId")
+            kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeId) ?: return@executeWithoutResult
+            val hendelse = oppfolgingAvsluttetHendelseType?.let {
+                OppfolgingAvsluttetHendelse(
+                    oppfolgingsperiodeId,
+                    oppfolgingAvsluttetHendelseType = it,
+                ).also { oppfolgingsAvsluttetHendelse ->
+                    kandidatForUtmeldingRepository.lagreKandidatForUtmeldingHendelse(oppfolgingsAvsluttetHendelse)
+                }
+            }
+
             if (sendUtmeldingskandidaterTilObo) run sendTilObo@{
-                kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeId) ?: return@executeWithoutResult
                 val filterkategoriPersonId = kandidatForUtmeldingRepository.hentFilterhendelseId(oppfolgingsperiodeId) ?: return@sendTilObo
                 val aktorId = oppfolgingsPeriodeRepository.hentOppfolgingsperiode(oppfolgingsperiodeId.toString())
                     .getOrElse { throw IllegalStateException("Oppfølgingsperiode med id $oppfolgingsperiodeId finnes ikke") }?.aktorId
                 val fnr = aktorOppslagClient.hentFnr(AktorId(aktorId))
                 logger.info("Sender stopp-melding til OBO med key=$filterkategoriPersonId for oppfølgingsperiode $oppfolgingsperiodeId")
-                val hendelse = OppfolgingAvsluttetHendelse(oppfolgingsperiodeId, oppfolgingAvsluttetHendelseType = OppfolgingAvsluttetHendelseType.OPPFOLGING_AVSLUTTET_AUTOMATISK)
-                val filterhendelse = hendelse.tilFilterhendelseRecord(fnr)
+                val filterhendelse = (hendelse ?: OppfolgingAvsluttetHendelse(
+                    oppfolgingsperiodeId,
+                    oppfolgingAvsluttetHendelseType = OppfolgingAvsluttetHendelseType.OPPFOLGING_AVSLUTTET_AUTOMATISK,
+                )).tilFilterhendelseRecord(fnr)
                 kafkaProducerService.publiserFilterhendelse(filterkategoriPersonId, filterhendelse)
             }
             kandidatForUtmeldingRepository.fjernKandidat(oppfolgingsperiodeId)

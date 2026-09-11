@@ -216,5 +216,122 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
             .filter { it.hendelse?.beskrivelseEnum == BeskrivelseEnum.FORLENGELSE_UTLOPT.name }
         assertThat(filterhendelse).isEmpty()
     }
+
+    @Test
+    fun `avsluttOppfolgingForKandidaterMedPassertAvsluttesAutomatiskDato - avslutter oppfolging og fjerner kandidat`() {
+        mockSytemBrukerAuthOk(AKTOR_ID, FNR)
+        setBrukerUnderOppfolging(AKTOR_ID, FNR)
+        setLocalArenaOppfolging(AKTOR_ID, Formidlingsgruppe.ARBS)
+        mockTiltakshistorikk(FNR, harAktiveDeltakelser = false)
+        mockUngdomsprogram(FNR, erDeltaker = false)
+        mockArbeidssoekerregisteret(FNR, erArbeidssoeker = false)
+        mockAap(FNR, harAap = false)
+        startOppfolgingSomArbeidsoker(AKTOR_ID, FNR)
+        val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(FNR).get().uuid
+
+        kandidatForUtmeldingService.handterUtmeldingsHendelse(
+            FNR,
+            ArbeidssøkerPeriodeAvsluttet(
+                utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
+                utfortAv = "A123123",
+                kilde = "kilde",
+                hendelseTidspunkt = ZonedDateTime.now().minusDays(29).toInstant(),
+                oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
+                arbeidssokerperiodeAvsluttetHendelseType = ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
+                avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString(),
+            )
+        )
+        namedParameterJdbcTemplate.update(
+            """
+            UPDATE kandidater_for_utmelding
+            SET avsluttes_automatisk_dato = CURRENT_TIMESTAMP - INTERVAL '1 hour'
+            WHERE oppfolgingsperiode_uuid = :oppfolgingsperiodeId
+            """.trimIndent(),
+            mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeUuid.toString())
+        )
+
+        kandidatForUtmeldingService.avsluttOppfolgingForKandidaterMedPassertAvsluttesAutomatiskDato()
+
+        assertThat(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID).get().underOppfolging).isFalse()
+        assertThat(kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeUuid)).isNull()
+        val sisteHendelse = kandidatForUtmeldingRepository.hentSisteHendelseForKandidat(oppfolgingsperiodeUuid)
+        assertThat(sisteHendelse).isInstanceOf(OppfolgingAvsluttetHendelse::class.java)
+        assertThat(sisteHendelse!!.type).isEqualTo(OppfolgingAvsluttetHendelseType.OPPFOLGING_AVSLUTTET_AUTOMATISK)
+    }
+
+    @Test
+    fun `avsluttOppfolgingForKandidaterMedPassertAvsluttesAutomatiskDato - kan ikke avsluttes lagres i kandidater_som_ikke_kunne_avsluttes og fjernes fra aktiv liste`() {
+        mockSytemBrukerAuthOk(AKTOR_ID, FNR)
+        setBrukerUnderOppfolging(AKTOR_ID, FNR)
+        setLocalArenaOppfolging(AKTOR_ID, Formidlingsgruppe.ARBS)
+        mockTiltakshistorikk(FNR, harAktiveDeltakelser = false)
+        mockUngdomsprogram(FNR, erDeltaker = false)
+        mockArbeidssoekerregisteret(FNR, erArbeidssoeker = false)
+        mockAap(FNR, harAap = false)
+        startOppfolgingSomArbeidsoker(AKTOR_ID, FNR)
+        val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(FNR).get().uuid
+
+        kandidatForUtmeldingService.handterUtmeldingsHendelse(
+            FNR,
+            ArbeidssøkerPeriodeAvsluttet(
+                utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
+                utfortAv = "A123123",
+                kilde = "kilde",
+                hendelseTidspunkt = ZonedDateTime.now().minusDays(29).toInstant(),
+                oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
+                arbeidssokerperiodeAvsluttetHendelseType = ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
+                avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString(),
+            )
+        )
+        namedParameterJdbcTemplate.update(
+            """
+            UPDATE kandidater_for_utmelding
+            SET avsluttes_automatisk_dato = CURRENT_TIMESTAMP - INTERVAL '1 hour'
+            WHERE oppfolgingsperiode_uuid = :oppfolgingsperiodeId
+            """.trimIndent(),
+            mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeUuid.toString())
+        )
+        mockAap(FNR, harAap = true)
+
+        kandidatForUtmeldingService.avsluttOppfolgingForKandidaterMedPassertAvsluttesAutomatiskDato()
+
+        assertThat(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID).get().underOppfolging).isTrue()
+        assertThat(kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeUuid)).isNull()
+        assertThat(kandidatForUtmeldingRepository.hentAntallKandidaterSomIkkeKunneAvsluttes(oppfolgingsperiodeUuid)).isEqualTo(1)
+    }
+
+    @Test
+    fun `manuell avslutning av oppfolging lagrer OppfolgingAvsluttetHendelse med type manuelt`() {
+        mockSytemBrukerAuthOk(AKTOR_ID, FNR)
+        setBrukerUnderOppfolging(AKTOR_ID, FNR)
+        setLocalArenaOppfolging(AKTOR_ID, Formidlingsgruppe.ARBS)
+        mockTiltakshistorikk(FNR, harAktiveDeltakelser = false)
+        mockUngdomsprogram(FNR, erDeltaker = false)
+        mockArbeidssoekerregisteret(FNR, erArbeidssoeker = false)
+        mockAap(FNR, harAap = false)
+        startOppfolgingSomArbeidsoker(AKTOR_ID, FNR)
+        val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(FNR).get().uuid
+
+        kandidatForUtmeldingService.handterUtmeldingsHendelse(
+            FNR,
+            ArbeidssøkerPeriodeAvsluttet(
+                utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
+                utfortAv = "A123123",
+                kilde = "kilde",
+                hendelseTidspunkt = ZonedDateTime.now().minusDays(2).toInstant(),
+                oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
+                arbeidssokerperiodeAvsluttetHendelseType = ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
+                avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString(),
+            )
+        )
+
+        avsluttOppfolgingManueltSomVeileder(AKTOR_ID)
+
+        assertThat(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID).get().underOppfolging).isFalse()
+        assertThat(kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeUuid)).isNull()
+        val sisteHendelse = kandidatForUtmeldingRepository.hentSisteHendelseForKandidat(oppfolgingsperiodeUuid)
+        assertThat(sisteHendelse).isInstanceOf(OppfolgingAvsluttetHendelse::class.java)
+        assertThat(sisteHendelse!!.type).isEqualTo(OppfolgingAvsluttetHendelseType.OPPFOLGING_AVSLUTTET_MANUELT)
+    }
 }
 
