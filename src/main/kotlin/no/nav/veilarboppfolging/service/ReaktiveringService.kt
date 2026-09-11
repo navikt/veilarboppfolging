@@ -6,6 +6,7 @@ import no.nav.common.types.identer.NavIdent
 import no.nav.veilarboppfolging.client.veilarbarena.*
 import no.nav.veilarboppfolging.kandidatForUtmelding.FjernKandidatForUtmeldingService
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingRepository
+import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
@@ -14,6 +15,7 @@ import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity
 import no.nav.veilarboppfolging.utils.OppfolgingsperiodeUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.transaction.support.TransactionTemplate
@@ -27,7 +29,9 @@ class ReaktiveringService(
     val reaktiveringRepository: ReaktiveringRepository,
     val oppfolgingsPeriodeRepository: OppfolgingsPeriodeRepository,
     val fjernkandidatForUtmeldingService: FjernKandidatForUtmeldingService,
+    val kandidatForUtmeldingService: KandidatForUtmeldingService,
     private val transactor: TransactionTemplate,
+    @Value("\${app.utmeldingskandidater_aktivert}") private val utmeldingskandidater_aktivert: Boolean,
 ) {
     private val logger: Logger = LoggerFactory.getLogger(ReaktiveringService::class.java)
 
@@ -48,13 +52,18 @@ class ReaktiveringService(
         val aktorId = authService.getAktorIdOrThrow(fnr)
 
         val oppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId).orElse(null)
-        val erUnderOppfolging = oppfolging?.underOppfolging ?: false
 
+        val erUnderOppfolging = oppfolging?.underOppfolging ?: false
         if (!erUnderOppfolging) return AlleredeUnderoppfolgingError
 
         val perioder: List<OppfolgingsperiodeEntity> =
             oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId)
         val sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder)
+        val erUtmeldingskandidat = kandidatForUtmeldingService.erUtmeldingskandidat(sistePeriode.uuid)
+        if (erUtmeldingskandidat && utmeldingskandidater_aktivert) {
+            logger.info("Bruker er utmeldingskandidat, og kan ikke reaktiveres")
+            return BrukerErUtmeldingskandidat
+        }
 
         val response = transactor.execute {
             val arenaResponse = arenaOppfolgingService.registrerIkkeArbeidssoker(fnr)

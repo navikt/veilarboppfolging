@@ -15,7 +15,6 @@ sealed class KanStarteOppfolgingSjekk {
 
             when (veilederHarTilgang.value) {
                 IKKE_TILGANG_EGNE_ANSATTE,
-                IKKE_TILGANG_ENHET,
                 IKKE_TILGANG_FORTROLIG_ADRESSE,
                 IKKE_TILGANG_MODIA,
                 IKKE_TILGANG_STRENGT_FORTROLIG_ADRESSE -> return KanStarteOppfolgingDto.kanStarteOppfolging(veilederHarTilgang.value)
@@ -98,7 +97,6 @@ object TILGANG_OK: VeilederHarTilgang()
 object IKKE_TILGANG_FORTROLIG_ADRESSE: VeilederHarTilgang()
 object IKKE_TILGANG_STRENGT_FORTROLIG_ADRESSE: VeilederHarTilgang()
 object IKKE_TILGANG_EGNE_ANSATTE: VeilederHarTilgang()
-object IKKE_TILGANG_ENHET: VeilederHarTilgang()
 object IKKE_TILGANG_MODIA: VeilederHarTilgang()
 
 sealed class FregStatusSjekkResultat: KanStarteOppfolgingSjekk()
@@ -129,7 +127,6 @@ enum class KanStarteOppfolgingDto {
     IKKE_TILGANG_FORTROLIG_ADRESSE,
     IKKE_TILGANG_STRENGT_FORTROLIG_ADRESSE,
     IKKE_TILGANG_EGNE_ANSATTE,
-    IKKE_TILGANG_ENHET,
     IKKE_TILGANG_MODIA;
 
     companion object {
@@ -145,7 +142,6 @@ enum class KanStarteOppfolgingDto {
                 is UKJENT_STATUS_FOLKEREGISTERET -> UKJENT_STATUS_FOLKEREGISTERET
                 is ALLEREDE_UNDER_OPPFOLGING -> ALLEREDE_UNDER_OPPFOLGING
                 is IKKE_TILGANG_EGNE_ANSATTE -> IKKE_TILGANG_EGNE_ANSATTE
-                is IKKE_TILGANG_ENHET -> IKKE_TILGANG_ENHET
                 is IKKE_TILGANG_MODIA -> IKKE_TILGANG_MODIA
                 is IKKE_TILGANG_FORTROLIG_ADRESSE -> IKKE_TILGANG_FORTROLIG_ADRESSE
                 is IKKE_TILGANG_STRENGT_FORTROLIG_ADRESSE -> IKKE_TILGANG_STRENGT_FORTROLIG_ADRESSE
@@ -154,15 +150,27 @@ enum class KanStarteOppfolgingDto {
             }
         }
     }
+
+    fun veilederHarTilgangTilAStarteOppfolging(): Boolean {
+        return when (this) {
+            JA,
+            JA_MED_MANUELL_GODKJENNING_PGA_UNDER_18,
+            JA_MED_MANUELL_GODKJENNING_PGA_IKKE_BOSATT,
+            JA_MED_MANUELL_GODKJENNING_PGA_IKKE_BOSATT_UNDER_18,
+            JA_MED_MANUELL_GODKJENNING_PGA_DNUMMER_IKKE_EOS,
+            JA_MED_MANUELL_GODKJENNING_PGA_DNUMMER_IKKE_EOS_UNDER_18 -> true
+            else -> false
+        }
+    }
 }
 
 fun TilgangResultat.toKanStarteOppfolging(): VeilederHarTilgang {
     return when (this) {
-        TilgangResultat.HAR_TILGANG -> TILGANG_OK
+        TilgangResultat.HAR_TILGANG,
+        TilgangResultat.IKKE_TILGANG_ENHET -> TILGANG_OK
         TilgangResultat.IKKE_TILGANG_FORTROLIG_ADRESSE -> IKKE_TILGANG_FORTROLIG_ADRESSE
         TilgangResultat.IKKE_TILGANG_STRENGT_FORTROLIG_ADRESSE -> IKKE_TILGANG_STRENGT_FORTROLIG_ADRESSE
         TilgangResultat.IKKE_TILGANG_EGNE_ANSATTE -> IKKE_TILGANG_EGNE_ANSATTE
-        TilgangResultat.IKKE_TILGANG_ENHET -> IKKE_TILGANG_ENHET
         TilgangResultat.IKKE_TILGANG_MODIA -> IKKE_TILGANG_MODIA
     }
 }

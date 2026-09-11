@@ -56,8 +56,6 @@ class KandidatForUtmeldingFlytTest(
     val kafkaConsumerService: KafkaConsumerService,
     @Autowired
     val utmeldingRepository: UtmeldingRepository,
-    @Autowired
-    val reaktiveringService: ReaktiveringService,
 ) : IntegrationTest() {
 
     private fun mockIdents(fnr: Fnr, aktorId: AktorId)  {
@@ -296,35 +294,6 @@ class KandidatForUtmeldingFlytTest(
             Formidlingsgruppe.IARBS, Kvalifiseringsgruppe.VURDU
         )
         startOppfolging(aktorId, registrering)
-
-        assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId)).isNull()
-    }
-
-    @Test
-    fun `Sletter kandidat-for-utmelding når ny oppfølgingsperiode reaktiveres`() {
-        val fnr = randomFnr()
-        val aktorId = randomAktorId()
-        mockIdents(fnr, aktorId)
-        mockVeilarbArenaOppfolgingsBruker(fnr, Formidlingsgruppe.ISERV)
-        startOppfolgingSomArbeidsoker(aktorId, fnr)
-        mockInternBrukerAuthOk(UUID.randomUUID(), aktorId, fnr)
-        mockArenaOppfolgingServiceRegistrerIkkeArbeidssoker(fnr)
-        val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(fnr).get().uuid
-        kandidatForUtmeldingRepository.lagreKandidat(
-            ArbeidssøkerPeriodeAvsluttet(
-                oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
-                utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
-                utfortAv = "A123123",
-                kilde = "kilde",
-                hendelseTidspunkt = ZonedDateTime.now().toInstant(),
-                arbeidssokerperiodeAvsluttetHendelseType = ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
-                avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
-            ).let { KandidatForUtmelding.fromHendelse(it) }
-        )
-
-        assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId)).isNotNull()
-
-        reaktiveringService.reaktiverBrukerIArena(fnr)
 
         assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId)).isNull()
     }
