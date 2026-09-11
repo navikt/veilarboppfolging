@@ -41,11 +41,11 @@ class FjernKandidatForUtmeldingServiceTest : IntegrationTest() {
             ).let { KandidatForUtmelding.fromHendelse(it) }
         )
         val filterkategoriPersonId = kandidatForUtmeldingRepository.hentEllerOpprettFilterhendelseId(oppfolgingsperiodeUuid)
-        assertThat(kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeUuid)).isNotNull()
+        assertThat(kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeUuid)).isNotNull()
 
         fjernKandidatForUtmeldingService.fjernKandidatForUtmelding(oppfolgingsperiodeUuid)
 
-        assertThat(kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeUuid)).isNull()
+        assertThat(kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeUuid)).isNull()
         val filterhendelse = getFilterhendelseRecordsStoredInKafkaOutbox(kafkaProperties.portefoljeHendelsesfilterTopic, filterkategoriPersonId.toString()).first()
         assertThat(filterhendelse.operasjon).isEqualTo(Operasjon.STOPP)
         assertThat(filterhendelse.kategori).isEqualTo(Kategori.KANDIDAT_FOR_UTMELDING)
@@ -61,11 +61,11 @@ class FjernKandidatForUtmeldingServiceTest : IntegrationTest() {
         mockArbeidssoekerregisteret(FNR, erArbeidssoeker = false)
         mockAap(FNR, harAap = false)
         val oppfolgingsperiodeId = UUID.randomUUID()
-        assertThat(kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeId)).isNull()
+        assertThat(kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeId)).isNull()
 
         fjernKandidatForUtmeldingService.fjernKandidatForUtmelding(oppfolgingsperiodeId)
 
-        assertThat(kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeId)).isNull()
+        assertThat(kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeId)).isNull()
     }
 
     @Test

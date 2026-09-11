@@ -12,9 +12,7 @@ import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.Kategori
 import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.Operasjon
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import java.net.URI
 import java.time.LocalDateTime
-import java.time.ZoneId
 import java.util.UUID
 
 class RepubliserKandidatForUtmeldingServiceTest : IntegrationTest() {
@@ -37,7 +35,7 @@ class RepubliserKandidatForUtmeldingServiceTest : IntegrationTest() {
                 .let { KandidatForUtmelding.fromHendelse(it) }
         )
         val filterkategoriPersonId = kandidatForUtmeldingRepository.hentEllerOpprettFilterhendelseId(oppfolgingsperiodeUuid)
-        assertThat(kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeUuid)).isNotNull()
+        assertThat(kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeUuid)).isNotNull()
 
         republiserKandidatForUtmeldingService.republiserKandidatForUtmelding(oppfolgingsperiodeUuid)
 
@@ -63,7 +61,7 @@ class RepubliserKandidatForUtmeldingServiceTest : IntegrationTest() {
             OppfolgingAvsluttetHendelse(oppfolgingsperiodeUuid, oppfolgingAvsluttetHendelseType = OppfolgingAvsluttetHendelseType.OPPFOLGING_AVSLUTTET_AUTOMATISK)
         )
 
-        assertThat(kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeUuid)).isNull()
+        assertThat(kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeUuid)).isNull()
         assertThat(kandidatForUtmeldingRepository.hentSisteHendelseForKandidat(oppfolgingsperiodeUuid)?.type)
             .isEqualTo(ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT)
 
@@ -99,7 +97,7 @@ class RepubliserKandidatForUtmeldingServiceTest : IntegrationTest() {
                 forlengetTil = LocalDateTime.now().plusDays(30).toLocalDate()
             )
         )
-        assertThat(kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeUuid)).isNull()
+        assertThat(kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeUuid)).isNull()
         assertThat(kandidatForUtmeldingRepository.hentSisteHendelseForKandidat(oppfolgingsperiodeUuid)).isNotNull()
 
         republiserKandidatForUtmeldingService.republiserKandidatForUtmelding(oppfolgingsperiodeUuid)

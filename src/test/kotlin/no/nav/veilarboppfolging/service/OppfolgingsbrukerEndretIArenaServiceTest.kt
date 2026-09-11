@@ -12,13 +12,17 @@ import no.nav.veilarboppfolging.client.pdl.ForenkletFolkeregisterStatus
 import no.nav.veilarboppfolging.client.pdl.FregStatusOgStatsborgerskap
 import no.nav.veilarboppfolging.client.pdl.PdlFolkeregisterStatusClient
 import no.nav.veilarboppfolging.kafka.TestUtils
+import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.EndringPaaOppfolgingsBruker
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.LocalArenaOppfolging
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ArenaIservKanIkkeReaktiveres
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.KanAvsluttesInput
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.KunneAvsluttes
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.UtmeldingsService
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
+import no.nav.veilarboppfolging.service.utmelding.IservTrigger
+import no.nav.veilarboppfolging.service.utmelding.KanskjeIservBruker
 import org.junit.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
@@ -38,6 +42,8 @@ class OppfolgingsbrukerEndretIArenaServiceTest {
     private val metricsService: MetricsService = mock(MetricsService::class.java)
     private val oppfolgingsStatusRepository: OppfolgingsStatusRepository = mock(OppfolgingsStatusRepository::class.java)
     private val pdlFolkeregisterStatusClient: PdlFolkeregisterStatusClient = mock(PdlFolkeregisterStatusClient::class.java)
+    private val utmeldingService: UtmeldingsService = mock(UtmeldingsService::class.java)
+    private val kandidatForUtmeldingService: KandidatForUtmeldingService = mock(KandidatForUtmeldingService::class.java)
 
     val oppfolgingsbrukerEndretIArenaService = OppfolgingsbrukerEndretIArenaService(
         oppfolgingService,
@@ -47,6 +53,8 @@ class OppfolgingsbrukerEndretIArenaServiceTest {
         metricsService,
         oppfolgingsStatusRepository,
         pdlFolkeregisterStatusClient,
+        utmeldingService,
+        kandidatForUtmeldingService
     )
 
     val AKTOR_ID = AktorId("0102030405")
@@ -61,6 +69,14 @@ class OppfolgingsbrukerEndretIArenaServiceTest {
         oppfolgingsbrukerEndretIArenaService.oppdaterOppfolgingMedStatusFraArena(melding)
 
         verify(avsluttOppfolgingService, never()).avsluttOppfolgingHvisKanAvsluttes(any())
+        verify(utmeldingService, times(1))
+            .oppdaterUtmeldingsStatus(KanskjeIservBruker(
+                iservFraDato = ISERV_FRA_DATO,
+                aktorId = AKTOR_ID,
+                formidlingsgruppe = Formidlingsgruppe.ISERV,
+                trigger = IservTrigger.OppdateringPaaOppfolgingsBruker,
+                erUnderoppfolging = true
+            ))
     }
 
     @Test
@@ -73,6 +89,14 @@ class OppfolgingsbrukerEndretIArenaServiceTest {
         oppfolgingsbrukerEndretIArenaService.oppdaterOppfolgingMedStatusFraArena(melding)
 
         verify(avsluttOppfolgingService, times(1)).avsluttOppfolgingHvisKanAvsluttes(any())
+        verify(utmeldingService, times(1))
+            .oppdaterUtmeldingsStatus(KanskjeIservBruker(
+                iservFraDato = ISERV_FRA_DATO,
+                aktorId = AKTOR_ID,
+                formidlingsgruppe = Formidlingsgruppe.ISERV,
+                trigger = IservTrigger.OppdateringPaaOppfolgingsBruker,
+                erUnderoppfolging = true
+            ))
     }
 
     @Test
@@ -87,6 +111,14 @@ class OppfolgingsbrukerEndretIArenaServiceTest {
 
         verify(startOppfolgingService, times(1))
             .startOppfolgingHvisIkkeAlleredeStartet(any())
+        verify(utmeldingService, times(1))
+            .oppdaterUtmeldingsStatus(KanskjeIservBruker(
+                iservFraDato = null,
+                aktorId = AKTOR_ID,
+                formidlingsgruppe = Formidlingsgruppe.IARBS,
+                trigger = IservTrigger.OppdateringPaaOppfolgingsBruker,
+                erUnderoppfolging = false
+            ))
     }
 
     @Test
@@ -101,6 +133,8 @@ class OppfolgingsbrukerEndretIArenaServiceTest {
 
         verify(startOppfolgingService, never())
             .startOppfolgingHvisIkkeAlleredeStartet(any())
+        verify(utmeldingService, never())
+            .oppdaterUtmeldingsStatus(any())
     }
 
     @ParameterizedTest
@@ -116,6 +150,8 @@ class OppfolgingsbrukerEndretIArenaServiceTest {
             .startOppfolgingHvisIkkeAlleredeStartet(any())
         verify(avsluttOppfolgingService, never())
             .avsluttOppfolgingHvisKanAvsluttes(any())
+        verify(utmeldingService, never())
+            .oppdaterUtmeldingsStatus(any())
     }
 
     @ParameterizedTest
@@ -130,6 +166,8 @@ class OppfolgingsbrukerEndretIArenaServiceTest {
             .startOppfolgingHvisIkkeAlleredeStartet(any())
         verify(avsluttOppfolgingService, never())
             .avsluttOppfolgingHvisKanAvsluttes(any())
+        verify(utmeldingService, never())
+            .oppdaterUtmeldingsStatus(any())
     }
 
     @ParameterizedTest
@@ -144,14 +182,17 @@ class OppfolgingsbrukerEndretIArenaServiceTest {
             .startOppfolgingHvisIkkeAlleredeStartet(any())
         verify(avsluttOppfolgingService, never())
             .avsluttOppfolgingHvisKanAvsluttes(any())
+        verify(utmeldingService, never())
+            .oppdaterUtmeldingsStatus(any())
     }
 
+    val ISERV_FRA_DATO = LocalDate.now()
     private fun meldingFraArena(formidlingsgruppe: Formidlingsgruppe, kvalifiseringsgruppe: Kvalifiseringsgruppe): EndringPaaOppfolgingsBruker {
         return EndringPaaOppfolgingsBruker(
             AKTOR_ID,
             FNR.get(),
             formidlingsgruppe = formidlingsgruppe,
-            iservFraDato = null,
+            iservFraDato = if (formidlingsgruppe === Formidlingsgruppe.ISERV) ISERV_FRA_DATO else null,
             kvalifiseringsgruppe = kvalifiseringsgruppe,
             rettighetsgruppe = null,
             hovedmaal = null,

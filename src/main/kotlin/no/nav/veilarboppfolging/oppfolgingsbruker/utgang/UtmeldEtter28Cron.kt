@@ -5,9 +5,11 @@ import no.nav.common.job.JobRunner
 import no.nav.common.job.leader_election.LeaderElectionClient
 import no.nav.common.types.identer.AktorId
 import no.nav.common.utils.fn.UnsafeRunnable
+import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService
 import no.nav.veilarboppfolging.repository.UtmeldingRepository
 import no.nav.veilarboppfolging.utils.SecureLog
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 
@@ -17,6 +19,8 @@ class UtmeldEtter28Cron(
     private val utmeldingService: UtmeldingsService,
     private val utmeldingsRepository: UtmeldingRepository,
     private val leaderElectionClient: LeaderElectionClient,
+    private val kandidatForUtmeldingService: KandidatForUtmeldingService,
+    @Value("\${app.utmeldingskandidater_aktivert}") private val utmeldingsKandidaterAktivert: Boolean,
 ) {
     private val log = LoggerFactory.getLogger(UtmeldEtter28Cron::class.java)
 
@@ -57,7 +61,14 @@ class UtmeldEtter28Cron(
             val iservert28DagerBrukere = utmeldingsRepository.finnBrukereMedIservI28Dager()
             log.info("Fant {} brukere som har vært ISERV mer enn 28 dager", iservert28DagerBrukere.size)
             return iservert28DagerBrukere.map { utmeldingEntity ->
-                utmeldingService.avsluttOppfolgingOgFjernFraUtmeldingsTabell(AktorId.of(utmeldingEntity.aktorId))
+                val aktorId = AktorId.of(utmeldingEntity.aktorId)
+                when (utmeldingsKandidaterAktivert && kandidatForUtmeldingService.erUtmeldingskandidat(aktorId)) {
+                    true -> {
+                        log.info("Bruker var kandidat for utmelding, sletter fra gammel utmeldingsløsning")
+                        utmeldingService.slettFraUtmeldingTabell(aktorId)
+                    }
+                    false -> utmeldingService.avsluttOppfolgingOgFjernFraUtmeldingsTabell(aktorId)
+                }
             }
         } catch (e: Exception) {
             SecureLog.secureLog.error("Feil ved automatisk avslutning av brukere", e)

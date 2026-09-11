@@ -70,7 +70,7 @@ class KandidatForUtmeldingRepository(
         db.update(sql, mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeId.toString()))
     }
 
-    fun hentKandidat(oppfolgingsperiodeId: UUID): AktivKandidatForUtmelding? {
+    fun hentAktivKandidat(oppfolgingsperiodeId: UUID): AktivKandidatForUtmelding? {
         return db.query(
             """
             SELECT kfuh.*, kfu.avsluttes_automatisk_dato

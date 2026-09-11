@@ -34,3 +34,4 @@ class ArbeidsøkerRegSync_AlleredeUteAvOppfolging(aktorId: AktorId) : SlettFraUt
 class OppdateringFraArena_AlleredeUteAvOppfolging(aktorId: AktorId) : SlettFraUtmelding(aktorId)
 class ScheduledJob_UtAvOppfolgingPga28DagerIserv(aktorId: AktorId) : SlettFraUtmelding(aktorId)
 class ScheduledJob_AlleredeUteAvOppfolging(aktorId: AktorId) : SlettFraUtmelding(aktorId)
+class KandidatForUtmelding(aktorId: AktorId) : SlettFraUtmelding(aktorId)

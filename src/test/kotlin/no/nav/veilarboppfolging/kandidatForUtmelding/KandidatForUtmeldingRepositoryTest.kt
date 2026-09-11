@@ -1,7 +1,6 @@
 package no.nav.veilarboppfolging.kandidatForUtmelding
 
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 import java.util.UUID
@@ -47,7 +46,7 @@ class KandidatForUtmeldingRepositoryTest {
         val avsluttet = arbeidssøkerPeriodeAvsluttet(oppfolgingsperiodeUuid)
         kandidatForUtmeldingRepository.lagreKandidat(avsluttet)
 
-        val kandidat = kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeUuid)
+        val kandidat = kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeUuid)
 
         assertThat(kandidat?.sisteHendelse).isNotNull()
         val sisteHendelse = kandidat?.sisteHendelse
@@ -71,7 +70,7 @@ class KandidatForUtmeldingRepositoryTest {
             UPDATE kandidater_for_utmelding SET forlenget_til = CURRENT_TIMESTAMP + INTERVAL '1 hour' WHERE oppfolgingsperiode_uuid = :oppfolgingsperiodeId
         """.trimIndent(), mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeUuid.toString()))
 
-        val kandidat = kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeUuid)
+        val kandidat = kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeUuid)
 
         assertThat(kandidat).isNull()
     }
@@ -88,7 +87,7 @@ class KandidatForUtmeldingRepositoryTest {
             UPDATE kandidater_for_utmelding SET forlenget_til = CURRENT_TIMESTAMP - INTERVAL '1 hour' WHERE oppfolgingsperiode_uuid = :oppfolgingsperiodeId
         """.trimIndent(), mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeUuid.toString()))
 
-        val kandidat = kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeUuid)
+        val kandidat = kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeUuid)
 
         assertThat(kandidat).isNull()
     }
@@ -234,7 +233,7 @@ class KandidatForUtmeldingRepositoryTest {
         kandidatForUtmeldingRepository.lagreKandidat(avsluttet)
 
         val forventetDato = avsluttet.avsluttesAutomatiskDato
-        val kandidat = kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeUuid)
+        val kandidat = kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeUuid)
         assertThat(kandidat?.avsluttesAutomatiskDato).isCloseTo(forventetDato, within(1, ChronoUnit.SECONDS))
     }
 
@@ -256,14 +255,14 @@ class KandidatForUtmeldingRepositoryTest {
             AvregistreringsType.AdminAvregistrering,
         )
         kandidatForUtmeldingRepository.fjernKandidat(oppfolgingsperiodeUuid)
-        assertThat(kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeUuid)).isNull()
+        assertThat(kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeUuid)).isNull()
 
         oppfolgingsPeriodeRepository.start(oppfolgingsbruker)
         val nesteOppfolgingsperiodeUuid = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId).find { it.sluttDato == null }!!.uuid
         assertThat(oppfolgingsperiodeUuid).isNotEqualTo(nesteOppfolgingsperiodeUuid)
         val nesteAvsluttet = arbeidssøkerPeriodeAvsluttet(nesteOppfolgingsperiodeUuid)
         kandidatForUtmeldingRepository.lagreKandidat(nesteAvsluttet)
-        assertThat(kandidatForUtmeldingRepository.hentKandidat(nesteOppfolgingsperiodeUuid)).isNotNull()
+        assertThat(kandidatForUtmeldingRepository.hentAktivKandidat(nesteOppfolgingsperiodeUuid)).isNotNull()
 
         val hendelser = kandidatForUtmeldingRepository.hentAlleKandidatForUtmeldingHendelser(aktorId)
 
@@ -293,7 +292,7 @@ class KandidatForUtmeldingRepositoryTest {
 
         kandidatForUtmeldingRepository.lagreKandidat(KandidatForUtmelding.fromHendelse(forlengelseHendelse))
 
-        assertThat(kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeUuid)).isNull()
+        assertThat(kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeUuid)).isNull()
         assertThat(kandidatForUtmeldingRepository.hentKandidatMedForlengelse(oppfolgingsperiodeUuid)?.forlengetTil).isEqualTo(forlengetTil)
     }
 
