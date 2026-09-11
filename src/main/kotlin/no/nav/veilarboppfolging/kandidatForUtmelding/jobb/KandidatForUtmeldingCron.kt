@@ -20,4 +20,14 @@ class KandidatForUtmeldingCron(
             kandidatForUtmeldingService.behandleKandidaterMedUtloptForlengelse()
         }
     }
+
+    @Scheduled(cron = "0 0 5 * * *")
+    fun avsluttOppfolgingForKandidaterMedPassertAvsluttesAutomatiskDato() {
+        if (!leaderElectionClient.isLeader) {
+            return
+        }
+        JobRunner.run("avslutt_oppfolging_for_kandidater_med_passert_avsluttes_automatisk_dato") {
+            kandidatForUtmeldingService.avsluttOppfolgingForKandidaterMedPassertAvsluttesAutomatiskDato()
+        }
+    }
 }

@@ -9,6 +9,8 @@ import no.nav.common.types.identer.Fnr
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.service.AvsluttOppfolgingService
 import no.nav.veilarboppfolging.service.KafkaProducerService
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.KandidatUtmeldtEtter28Dager
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.KunneIkkeAvsluttes
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
@@ -20,6 +22,7 @@ import java.time.ZonedDateTime
 class KandidatForUtmeldingService(
     private val avsluttOppfolgingService: AvsluttOppfolgingService,
     private val kandidatForUtmeldingRepository: KandidatForUtmeldingRepository,
+    private val fjernKandidatForUtmeldingService: FjernKandidatForUtmeldingService,
     private val oppfolgingsPeriodeRepository: OppfolgingsPeriodeRepository,
     private val aktorOppslagClient: AktorOppslagClient,
     private val transactor: TransactionTemplate,
@@ -91,6 +94,23 @@ class KandidatForUtmeldingService(
             }
         }
         logger.info("Ferdig med å behandle kandidater med utløpt forlengelse")
+    }
+
+    fun avsluttOppfolgingForKandidaterMedPassertAvsluttesAutomatiskDato() {
+        val kandidaterSomSkalAutomatiskAvsluttes = kandidatForUtmeldingRepository.hentKandidaterSomSkalAutomatiskAvsluttes()
+        logger.info("Behandler ${kandidaterSomSkalAutomatiskAvsluttes.size} kandidater med passert avsluttes_automatisk_dato")
+
+        kandidaterSomSkalAutomatiskAvsluttes.forEach { kandidat ->
+            val (_, aktorId) = finnFnrForOppfolgingsperiode(kandidat.oppfolgingsperiodeId)
+            val resultat = avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(KandidatUtmeldtEtter28Dager(aktorId))
+            if (resultat is KunneIkkeAvsluttes) {
+                kandidatForUtmeldingRepository.lagreKandidatSomIkkeKunneAvsluttes(kandidat.oppfolgingsperiodeId)
+                fjernKandidatForUtmeldingService.fjernKandidatForUtmelding(kandidat.oppfolgingsperiodeId)
+                logger.info("Kandidat med oppfølgingsperiode ${kandidat.oppfolgingsperiodeId} kunne ikke avsluttes automatisk og ble flyttet ut av aktiv liste")
+            }
+        }
+
+        logger.info("Ferdig med å avslutte oppfølging for kandidater med passert avsluttes_automatisk_dato")
     }
 
     private fun sendUtmeldingskandidatTilObo(kandidat: KandidatForUtmeldingHendelse, fnr: Fnr) {

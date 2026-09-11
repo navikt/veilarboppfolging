@@ -15,6 +15,7 @@ import no.nav.veilarboppfolging.client.ungdomsprogram.UngdomsprogramClient
 import no.nav.veilarboppfolging.domain.AvslutningStatusData
 import no.nav.veilarboppfolging.eventsLogger.BigQueryClient
 import no.nav.veilarboppfolging.kandidatForUtmelding.FjernKandidatForUtmeldingService
+import no.nav.veilarboppfolging.kandidatForUtmelding.OppfolgingAvsluttetHendelseType
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingTilstandOppslagResult
@@ -163,7 +164,14 @@ class AvsluttOppfolgingService(
             val sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder)
 
             arbeidsoppfolgingskontorRepository.slettNavKontor(sistePeriode.uuid)
-            fjernKandidatForUtmeldingService.fjernKandidatForUtmelding(sistePeriode.uuid)
+            fjernKandidatForUtmeldingService.fjernKandidatForUtmelding(
+                sistePeriode.uuid,
+                if (avregistrering.getAvregistreringsType().erManuellAvregistrering()) {
+                    OppfolgingAvsluttetHendelseType.OPPFOLGING_AVSLUTTET_MANUELT
+                } else {
+                    OppfolgingAvsluttetHendelseType.OPPFOLGING_AVSLUTTET_AUTOMATISK
+                },
+            )
 
             log.info("Oppfølgingsperiode avsluttet for bruker - publiserer endringer på oppfølgingsperiode-topics.")
             kafkaProducerService.publiserOppfolgingsperiode(DtoMappers.tilOppfolgingsperiodeDTO(sistePeriode))
