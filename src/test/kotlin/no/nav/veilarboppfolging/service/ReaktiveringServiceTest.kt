@@ -8,6 +8,7 @@ import no.nav.common.types.identer.Fnr
 import no.nav.veilarboppfolging.LocalDatabaseSingleton
 import no.nav.veilarboppfolging.client.veilarbarena.AlleredeUnderoppfolgingError
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaRegistreringResultat
+import no.nav.veilarboppfolging.client.veilarbarena.BrukerErUtmeldingskandidat
 import no.nav.veilarboppfolging.client.veilarbarena.ReaktiveringSuccess
 import no.nav.veilarboppfolging.client.veilarbarena.RegistrerIArenaError
 import no.nav.veilarboppfolging.client.veilarbarena.RegistrerIArenaSuccess
@@ -15,6 +16,7 @@ import no.nav.veilarboppfolging.client.veilarbarena.RegistrerIkkeArbeidssokerDto
 import no.nav.veilarboppfolging.client.veilarbarena.UkjentFeilUnderReaktiveringError
 import no.nav.veilarboppfolging.kafka.TestUtils
 import no.nav.veilarboppfolging.kandidatForUtmelding.FjernKandidatForUtmeldingService
+import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.StartetAvType
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
@@ -45,6 +47,7 @@ class ReaktiveringServiceTest {
     private var arenaOppfolgingService = mock(ArenaOppfolgingService::class.java)
     private var oppfolgingsPeriodeRepository = mock(OppfolgingsPeriodeRepository::class.java)
     private var fjernKandidatForUtmeldingService = mock(FjernKandidatForUtmeldingService::class.java)
+    private var kandidatForUtmeldingService = mock(KandidatForUtmeldingService::class.java)
     private var transactor = mock(TransactionTemplate::class.java)
     private val reaktiveringService = ReaktiveringService(
         authService,
@@ -53,7 +56,9 @@ class ReaktiveringServiceTest {
         reaktiveringRepository,
         oppfolgingsPeriodeRepository,
         fjernKandidatForUtmeldingService,
-        transactor
+        kandidatForUtmeldingService,
+        transactor,
+        utmeldingskandidater_aktivert = true,
     )
 
     @Before
@@ -118,6 +123,29 @@ class ReaktiveringServiceTest {
     }
 
     @Test
+    fun `skal gi feil hvis bruker er kandidat for utmelding`() {
+        val FNR = Fnr.of("321")
+        val AKTOR_ID = AktorId.of("321")
+        val OPPFOLGINGSPERIODE_ID = UUID.randomUUID()
+        Mockito.`when`(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID)
+        Mockito.`when`(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID))
+            .thenReturn(
+                Optional.of(TestUtils.oppfølgingEntity(aktorId = AKTOR_ID.get(), underOppfolging = true))
+            )
+        Mockito.`when`(oppfolgingsPeriodeRepository.hentOppfolgingsperioder(AKTOR_ID)).thenReturn(
+            listOf(mockStartetOppfolgingsperiode(AKTOR_ID, OPPFOLGINGSPERIODE_ID))
+        )
+        Mockito.`when`(kandidatForUtmeldingService.erUtmeldingskandidat(OPPFOLGINGSPERIODE_ID)).thenReturn(true)
+
+        val resultat = reaktiveringService.reaktiverBrukerIArena(FNR)
+
+        assertInstanceOf<BrukerErUtmeldingskandidat>(resultat)
+
+        val reaktiveringHistorikk = reaktiveringRepository.hentReaktiveringer(AKTOR_ID)
+        Assert.assertTrue(reaktiveringHistorikk.isEmpty())
+    }
+
+    @Test
     fun `skal gi ukjent feil hvis noe ukjent feiler`() {
         val FNR = Fnr.of("321")
         val AKTOR_ID = AktorId.of("321")
@@ -137,12 +165,15 @@ class ReaktiveringServiceTest {
     fun `skal gi error hvis arena kall feiler`() {
         val FNR = Fnr.of("111")
         val AKTOR_ID = AktorId.of("111")
+        val OPPFOLGINGSPERIODE_ID = UUID.randomUUID()
         Mockito.`when`(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID)
         Mockito.`when`(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID))
             .thenReturn(
                 Optional.of(TestUtils.oppfølgingEntity(aktorId = AKTOR_ID.get(), underOppfolging = true))
             )
-
+        Mockito.`when`(oppfolgingsPeriodeRepository.hentOppfolgingsperioder(AKTOR_ID)).thenReturn(
+            listOf(mockStartetOppfolgingsperiode(AKTOR_ID, OPPFOLGINGSPERIODE_ID))
+        )
         Mockito.`when`(arenaOppfolgingService.registrerIkkeArbeidssoker(FNR)).thenReturn(
             RegistrerIArenaError(
                 "Feil ved registrering av bruker i Arena",
@@ -152,15 +183,16 @@ class ReaktiveringServiceTest {
 
         val resultat = reaktiveringService.reaktiverBrukerIArena(FNR)
 
-        assertInstanceOf<UkjentFeilUnderReaktiveringError>(resultat)
+        val error = assertInstanceOf<UkjentFeilUnderReaktiveringError>(resultat)
+        Assert.assertTrue(error.message.contains("Feil ved registrering av bruker i Arena"))
 
         val reaktiveringHistorikk = reaktiveringRepository.hentReaktiveringer(AKTOR_ID)
         Assert.assertTrue(reaktiveringHistorikk.isEmpty())
     }
 
-    private fun mockStartetOppfolgingsperiode(aktorId: AktorId): OppfolgingsperiodeEntity {
+    private fun mockStartetOppfolgingsperiode(aktorId: AktorId, oppfølgingsperiodeUuid: UUID = UUID.randomUUID()): OppfolgingsperiodeEntity {
         return OppfolgingsperiodeEntity(
-            UUID.randomUUID(),
+            oppfølgingsperiodeUuid,
             AKTOR_ID.get(),
             null,
             OPPFOLGING_START,

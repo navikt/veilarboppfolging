@@ -6,6 +6,7 @@ query sjekkVeilederTilganger($fnr: String!) {
         harVeilederTilgangFlytteBrukerTilEgetKontor
         tilgang
         harAktiveTiltaksdeltakelserVedFlyttingTilEgetKontor
+        harVeilederTilgangStarteOppfolging
     }
     brukerStatus(fnr: $fnr) {
         kontorSperre {

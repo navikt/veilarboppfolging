@@ -24,7 +24,7 @@ class KandidatForUtmeldingService(
     private val aktorOppslagClient: AktorOppslagClient,
     private val transactor: TransactionTemplate,
     private val kafkaProducerService: KafkaProducerService,
-    @Value("\${app.sendUtmeldingskandidaterTilObo}") private val sendUtmeldingskandidaterTilObo: Boolean,
+    @Value("\${app.utmeldingskandidater_aktivert}") private val sendUtmeldingskandidaterTilObo: Boolean,
 ) {
     private val logger = LoggerFactory.getLogger(this::class.java)
 
@@ -63,6 +63,11 @@ class KandidatForUtmeldingService(
         val oppfolgingsperiodeId =
             oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId)?.getOrNull()?.uuid ?: return null
         return hentKandidatForUtmeldingTag(oppfolgingsperiodeId)
+    }
+
+    fun erUtmeldingskandidat(oppfolgingsperiodeId: UUID): Boolean {
+        val kandidat = kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeId)
+        return kandidat != null
     }
 
     fun hentUtmeldingsKandidatHendelser(aktorId: AktorId): List<KandidatForUtmeldingHendelse> {

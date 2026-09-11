@@ -18,7 +18,7 @@ class FjernKandidatForUtmeldingService(
     private val aktorOppslagClient: AktorOppslagClient,
     private val transactor: TransactionTemplate,
     private val kafkaProducerService: KafkaProducerService,
-    @Value("\${app.sendUtmeldingskandidaterTilObo}") private val sendUtmeldingskandidaterTilObo: Boolean,
+    @Value("\${app.utmeldingskandidater_aktivert}") private val sendUtmeldingskandidaterTilObo: Boolean,
 ) {
     private val logger = LoggerFactory.getLogger(this::class.java)
 
