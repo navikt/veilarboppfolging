@@ -12,6 +12,7 @@ import no.nav.veilarboppfolging.service.utmelding.KanskjeIservBruker
 import no.nav.veilarboppfolging.utils.SecureLog.secureLog
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import java.util.UUID
 
 @Service
 class UtmeldingsService(
@@ -41,6 +42,11 @@ class UtmeldingsService(
                 secureLog.info("Ingen endring i utmelding tabell. aktorId={}", bruker.aktorId)
             }
         }
+    }
+
+    fun slettFraUtmeldingTabell(oppfolgingsPeriodeId: UUID) {
+        oppfolgingService.hentOppfolgingsperiode(oppfolgingsPeriodeId.toString()).orElse(null)?.aktorId
+            ?.let { slettFraUtmeldingTabell(KandidatForUtmelding(AktorId.of(it))) }
     }
 
     private fun slettFraUtmeldingTabell(utmeldingHendelse: SlettFraUtmelding) {

@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.support.TransactionTemplate
 import no.nav.veilarboppfolging.kandidatForUtmelding.dto.KandidatForUtmeldingTagDto
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.UtmeldingsService
 import java.time.ZonedDateTime
 
 @Service
@@ -24,6 +25,7 @@ class KandidatForUtmeldingService(
     private val aktorOppslagClient: AktorOppslagClient,
     private val transactor: TransactionTemplate,
     private val kafkaProducerService: KafkaProducerService,
+    private val utmeldingService: UtmeldingsService,
     @Value("\${app.sendUtmeldingskandidaterTilObo}") private val sendUtmeldingskandidaterTilObo: Boolean,
 ) {
     private val logger = LoggerFactory.getLogger(this::class.java)
@@ -45,6 +47,7 @@ class KandidatForUtmeldingService(
                 is ForlengelseOpprettetEllerEndretHendelse -> {
                     val kandidat = KandidatForUtmelding.fromHendelse(hendelse)
                     kandidatForUtmeldingRepository.lagreKandidat(kandidat)
+                    utmeldingService.slettFraUtmeldingTabell(hendelse.oppfolgingsperiodeUuid)
                 }
                 is OppfolgingAvsluttetHendelse -> {
                     kandidatForUtmeldingRepository.fjernKandidat(hendelse.oppfolgingsperiodeUuid)
