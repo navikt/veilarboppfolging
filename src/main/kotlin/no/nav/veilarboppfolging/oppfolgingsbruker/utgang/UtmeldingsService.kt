@@ -2,7 +2,6 @@ package no.nav.veilarboppfolging.oppfolgingsbruker.utgang
 
 import no.nav.common.types.identer.AktorId
 import no.nav.veilarboppfolging.eventsLogger.BigQueryClient
-import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.UtmeldEtter28Cron.AvslutteOppfolgingResultat
 import no.nav.veilarboppfolging.repository.UtmeldingRepository
 import no.nav.veilarboppfolging.service.AvsluttOppfolgingService
@@ -47,6 +46,16 @@ class UtmeldingsService(
     fun slettFraUtmeldingTabell(oppfolgingsPeriodeId: UUID) {
         oppfolgingService.hentOppfolgingsperiode(oppfolgingsPeriodeId.toString()).orElse(null)?.aktorId
             ?.let { slettFraUtmeldingTabell(KandidatForUtmelding(AktorId.of(it))) }
+    }
+
+    fun slettFraUtmeldingTabell(aktorId: AktorId): AvslutteOppfolgingResultat {
+        try {
+            slettFraUtmeldingTabell(KandidatForUtmelding(aktorId))
+            return AvslutteOppfolgingResultat.IKKE_AVSLUTTET
+        } catch (e: Exception) {
+            secureLog.error("Automatisk avsluttOppfolging feilet for aktoerid $aktorId ", e)
+            return AvslutteOppfolgingResultat.AVSLUTTET_FEILET
+        }
     }
 
     private fun slettFraUtmeldingTabell(utmeldingHendelse: SlettFraUtmelding) {
