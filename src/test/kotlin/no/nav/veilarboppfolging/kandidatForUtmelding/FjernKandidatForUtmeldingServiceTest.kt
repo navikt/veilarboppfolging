@@ -90,16 +90,18 @@ class FjernKandidatForUtmeldingServiceTest : IntegrationTest() {
                 forlengetTil = LocalDate.now().plusDays(30),
             ).let { KandidatForUtmelding.fromHendelse(it) }
         )
+        val filterkategoriPersonId = kandidatForUtmeldingRepository.hentEllerOpprettFilterhendelseId(oppfolgingsperiodeUuid)
 
         fjernKandidatForUtmeldingService.fjernKandidatForUtmelding(
             oppfolgingsperiodeUuid,
-            OppfolgingAvsluttetHendelseType.OPPFOLGING_AVSLUTTET_MANUELT
         )
 
-        val sisteHendelse = kandidatForUtmeldingRepository.hentSisteHendelseForKandidat(oppfolgingsperiodeUuid)
-        assertThat(sisteHendelse).isInstanceOf(OppfolgingAvsluttetHendelse::class.java)
         assertThat(kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeUuid)).isNull()
         assertThat(kandidatForUtmeldingRepository.hentKandidatMedForlengelse(oppfolgingsperiodeUuid)).isNull()
+
+        val filterhendelse = getFilterhendelseRecordsStoredInKafkaOutbox(kafkaProperties.portefoljeHendelsesfilterTopic, filterkategoriPersonId.toString()).first()
+        assertThat(filterhendelse.operasjon).isEqualTo(Operasjon.STOPP)
+        assertThat(filterhendelse.kategori).isEqualTo(Kategori.KANDIDAT_FOR_UTMELDING)
 
     }
 

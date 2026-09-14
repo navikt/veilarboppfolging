@@ -10,6 +10,10 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.support.TransactionTemplate
 import kotlin.jvm.optionals.getOrElse
+import no.nav.common.types.identer.NorskIdent
+import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.FilterhendelseRecord
+import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.Kategori
+import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.Operasjon
 
 @Service
 class FjernKandidatForUtmeldingService(
@@ -24,18 +28,12 @@ class FjernKandidatForUtmeldingService(
 
     fun fjernKandidatForUtmelding(
         oppfolgingsperiodeId: UUID,
-        oppfolgingAvsluttetHendelseType: OppfolgingAvsluttetHendelseType? = null,
     ) {
         transactor.executeWithoutResult { _ ->
             logger.info("Fjerner kandidat for utmelding for oppfølgingsperiode $oppfolgingsperiodeId")
-            if (skalIkkeFjerneKandidat(oppfolgingAvsluttetHendelseType, oppfolgingsperiodeId)) return@executeWithoutResult
-            val hendelse = oppfolgingAvsluttetHendelseType?.let {
-                OppfolgingAvsluttetHendelse(
-                    oppfolgingsperiodeId,
-                    oppfolgingAvsluttetHendelseType = it,
-                ).also { oppfolgingsAvsluttetHendelse ->
-                    kandidatForUtmeldingRepository.lagreKandidatForUtmeldingHendelse(oppfolgingsAvsluttetHendelse)
-                }
+            if (!kandidatForUtmeldingRepository.erKandidat(oppfolgingsperiodeId)) {
+                logger.info("Kandidat med oppfølgingsperiodeId $oppfolgingsperiodeId er ikke kandidat for utmelding, ignorerer")
+                return@executeWithoutResult
             }
 
             if (sendUtmeldingskandidaterTilObo) run sendTilObo@{
@@ -44,26 +42,16 @@ class FjernKandidatForUtmeldingService(
                     .getOrElse { throw IllegalStateException("Oppfølgingsperiode med id $oppfolgingsperiodeId finnes ikke") }?.aktorId
                 val fnr = aktorOppslagClient.hentFnr(AktorId(aktorId))
                 logger.info("Sender stopp-melding til OBO med key=$filterkategoriPersonId for oppfølgingsperiode $oppfolgingsperiodeId")
-                val filterhendelse = (hendelse ?: OppfolgingAvsluttetHendelse(
-                    oppfolgingsperiodeId,
-                    oppfolgingAvsluttetHendelseType = OppfolgingAvsluttetHendelseType.OPPFOLGING_AVSLUTTET_AUTOMATISK,
-                )).tilFilterhendelseRecord(fnr)
+                val filterhendelse = FilterhendelseRecord(
+                    personID = NorskIdent(fnr.get()),
+                    kategori = Kategori.KANDIDAT_FOR_UTMELDING,
+                    operasjon = Operasjon.STOPP,
+                    hendelse = null
+                )
                 kafkaProducerService.publiserFilterhendelse(filterkategoriPersonId, filterhendelse)
             }
             kandidatForUtmeldingRepository.fjernKandidat(oppfolgingsperiodeId)
         }
-    }
-
-    private fun skalIkkeFjerneKandidat(
-        oppfolgingAvsluttetHendelseType: OppfolgingAvsluttetHendelseType?,
-        oppfolgingsperiodeId: UUID
-    ): Boolean {
-        if (oppfolgingAvsluttetHendelseType == OppfolgingAvsluttetHendelseType.OPPFOLGING_AVSLUTTET_AUTOMATISK) {
-            kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeId) ?: return true
-        } else {
-            if (!kandidatForUtmeldingRepository.erKandidat(oppfolgingsperiodeId)) return true
-        }
-        return false
     }
 
     fun erOppfolgingForlenget(oppfolgingsperiodeId: UUID): Boolean {
