@@ -88,22 +88,24 @@ class KandidatForUtmeldingService(
     }
 
     fun avsluttOppfolgingForKandidaterMedPassertAvsluttesAutomatiskDato() {
-        val kandidaterSomSkalAutomatiskAvsluttes =
-            kandidatForUtmeldingRepository.hentKandidaterSomSkalAutomatiskAvsluttes()
-        logger.info("Behandler ${kandidaterSomSkalAutomatiskAvsluttes.size} kandidater med passert avsluttes_automatisk_dato")
+        if(sendUtmeldingskandidaterTilObo) {
+            val kandidaterSomSkalAutomatiskAvsluttes =
+                kandidatForUtmeldingRepository.hentKandidaterSomSkalAutomatiskAvsluttes()
+            logger.info("Behandler ${kandidaterSomSkalAutomatiskAvsluttes.size} kandidater med passert avsluttes_automatisk_dato")
 
-        kandidaterSomSkalAutomatiskAvsluttes.forEach { kandidat ->
-            val (_, aktorId) = finnFnrForOppfolgingsperiode(kandidat.oppfolgingsperiodeId)
-            val resultat =
-                avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(KandidatUtmeldtEtter28Dager(aktorId))
-            if (resultat is KunneIkkeAvsluttes) {
-                kandidatForUtmeldingRepository.lagreKandidatSomIkkeKunneAvsluttes(kandidat.oppfolgingsperiodeId)
-                fjernKandidatForUtmeldingService.fjernKandidatForUtmelding(kandidat.oppfolgingsperiodeId)
-                logger.info("Kandidat med oppfølgingsperiode ${kandidat.oppfolgingsperiodeId} kunne ikke avsluttes automatisk og ble flyttet ut av aktiv liste")
+            kandidaterSomSkalAutomatiskAvsluttes.forEach { kandidat ->
+                val (_, aktorId) = finnFnrForOppfolgingsperiode(kandidat.oppfolgingsperiodeId)
+                val resultat =
+                    avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(KandidatUtmeldtEtter28Dager(aktorId))
+                if (resultat is KunneIkkeAvsluttes) {
+                    kandidatForUtmeldingRepository.lagreKandidatSomIkkeKunneAvsluttes(kandidat.oppfolgingsperiodeId)
+                    fjernKandidatForUtmeldingService.fjernKandidatForUtmelding(kandidat.oppfolgingsperiodeId)
+                    logger.info("Kandidat med oppfølgingsperiode ${kandidat.oppfolgingsperiodeId} kunne ikke avsluttes automatisk og ble flyttet ut av aktiv liste")
+                }
             }
-        }
 
-        logger.info("Ferdig med å avslutte oppfølging for kandidater med passert avsluttes_automatisk_dato")
+            logger.info("Ferdig med å avslutte oppfølging for kandidater med passert avsluttes_automatisk_dato")
+        }
     }
 
     private fun sendUtmeldingskandidatTilObo(kandidat: KandidatForUtmeldingHendelse, fnr: Fnr) {
