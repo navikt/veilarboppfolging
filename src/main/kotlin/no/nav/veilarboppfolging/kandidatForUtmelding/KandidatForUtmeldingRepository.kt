@@ -72,12 +72,12 @@ class KandidatForUtmeldingRepository(
 
     fun erAktivEllerForlengetKandidatForUtmelding(oppfolgingsperiodeId: UUID): Boolean {
         val sql = """
-            SELECT 1 FROM kandidat_for_utmelding WHERE oppfolgingsperiode_uuid = :oppfolgingsperiodeId
+            SELECT 1 FROM kandidater_for_utmelding WHERE oppfolgingsperiode_uuid = :oppfolgingsperiodeId
         """.trimIndent()
         return db.query(sql, mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeId.toString()))
             { _, _ -> true }
             .firstOrNull()
-            ?: false // False if not match
+            ?: false // False if no match
     }
 
     fun hentAktivKandidat(oppfolgingsperiodeId: UUID): AktivKandidatForUtmelding? {

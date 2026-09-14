@@ -242,9 +242,40 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
     }
 
     @Test
+    fun `erAktivEllerForlengetKandidatForUtmelding - svarer true hvis bruker er kandidat`() {
+        mockSytemBrukerAuthOk(AKTOR_ID, FNR)
+        setBrukerUnderOppfolging(AKTOR_ID, FNR)
+        setLocalArenaOppfolging(AKTOR_ID, Formidlingsgruppe.ARBS)
+        mockTiltakshistorikk(FNR, harAktiveDeltakelser = false)
+        mockUngdomsprogram(FNR, erDeltaker = false)
+        mockArbeidssoekerregisteret(FNR, erArbeidssoeker = false)
+        mockAap(FNR, harAap = false)
+        startOppfolgingSomArbeidsoker(AKTOR_ID, FNR)
+        val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(FNR).get().uuid
+        val arbeidssøkerPeriodeAvsluttet = ArbeidssøkerPeriodeAvsluttet(
+            utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
+            utfortAv = "A123123",
+            kilde = "kilde",
+            hendelseTidspunkt = ZonedDateTime.now().toInstant(),
+            oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
+            arbeidssokerperiodeAvsluttetHendelseType = ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
+            avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
+        )
+        kandidatForUtmeldingService.handterUtmeldingsHendelse(FNR, arbeidssøkerPeriodeAvsluttet)
+
+        assertThat(kandidatForUtmeldingService.erAktivEllerForlengetKandidatForUtmelding(oppfolgingsperiodeUuid)).isTrue()
+    }
+
+    @Test
     fun `erAktivUtmeldingskandidat - svarer false hvis det ikke finnes noen oppfolgingsperiode på aktorId`() {
         val ukjentAktorId = "1231231232"
         assertThat(kandidatForUtmeldingService.erAktivUtmeldingskandidat(AktorId(ukjentAktorId))).isFalse()
+    }
+
+    @Test
+    fun `erAktivEllerForlengetKandidatForUtmelding - svarer false hvis det ikke finnes noen kandidat med gitt periode`() {
+        val ukjentPeriode = UUID.randomUUID()
+        assertThat(kandidatForUtmeldingService.erAktivEllerForlengetKandidatForUtmelding(ukjentPeriode)).isFalse()
     }
 }
 
