@@ -62,7 +62,7 @@ class UtmeldEtter28Cron(
             log.info("Fant {} brukere som har vært ISERV mer enn 28 dager", iservert28DagerBrukere.size)
             return iservert28DagerBrukere.map { utmeldingEntity ->
                 val aktorId = AktorId.of(utmeldingEntity.aktorId)
-                when (utmeldingsKandidaterAktivert && kandidatForUtmeldingService.erUtmeldingskandidat(aktorId)) {
+                when (utmeldingsKandidaterAktivert && kandidatForUtmeldingService.erAktivUtmeldingskandidat(aktorId)) {
                     true -> {
                         log.info("Bruker var kandidat for utmelding, sletter fra gammel utmeldingsløsning")
                         utmeldingService.slettFraUtmeldingTabell(aktorId)

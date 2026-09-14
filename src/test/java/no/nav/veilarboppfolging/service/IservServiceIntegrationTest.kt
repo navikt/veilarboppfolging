@@ -202,7 +202,7 @@ class IservServiceIntegrationTest {
     @Test
     fun `skal melde ut kandidat hvis toggle er av og bruker var kandidat for utmelding`() {
         insertIservBruker(AKTOR_ID, iservFraDato.minusDays(29))
-        `when`(kandidatForUtmeldingService.erUtmeldingskandidat(AKTOR_ID)).thenReturn(true)
+        `when`(kandidatForUtmeldingService.erAktivUtmeldingskandidat(AKTOR_ID)).thenReturn(true)
 
         utmeldEtter28Cron!!.automatiskAvslutteOppfolging()
 
@@ -221,7 +221,7 @@ class IservServiceIntegrationTest {
             true
         )
         insertIservBruker(AKTOR_ID, iservFraDato.minusDays(29))
-        `when`(kandidatForUtmeldingService.erUtmeldingskandidat(AKTOR_ID)).thenReturn(true)
+        `when`(kandidatForUtmeldingService.erAktivUtmeldingskandidat(AKTOR_ID)).thenReturn(true)
 
         utmeldEtter28Cron!!.automatiskAvslutteOppfolging()
 

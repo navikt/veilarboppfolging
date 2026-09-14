@@ -68,13 +68,13 @@ class KandidatForUtmeldingService(
         return hentKandidatForUtmeldingTag(oppfolgingsperiodeId)
     }
 
-    fun erUtmeldingskandidat(aktorId: AktorId): Boolean {
+    fun erAktivUtmeldingskandidat(aktorId: AktorId): Boolean {
         val oppfolgingsperiodeId = oppfolgingsPeriodeRepository
             .hentGjeldendeOppfolgingsperiode(aktorId)?.getOrNull()?.uuid ?: return false
-        return erUtmeldingskandidat(oppfolgingsperiodeId)
+        return erAktivUtmeldingskandidat(oppfolgingsperiodeId)
     }
 
-    fun erUtmeldingskandidat(oppfolgingsperiodeId: UUID): Boolean {
+    fun erAktivUtmeldingskandidat(oppfolgingsperiodeId: UUID): Boolean {
         val kandidat = kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeId)
         return kandidat != null
     }
