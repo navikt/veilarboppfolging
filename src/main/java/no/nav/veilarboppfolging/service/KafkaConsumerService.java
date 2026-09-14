@@ -5,8 +5,6 @@ import no.nav.common.client.aktorregister.IngenGjeldendeIdentException;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.EndringPaaOppfolgingsBruker;
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.UtmeldingsService;
-import no.nav.veilarboppfolging.service.utmelding.KanskjeIservBruker;
 import no.nav.veilarboppfolging.utils.SecureLog;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.slf4j.Logger;
