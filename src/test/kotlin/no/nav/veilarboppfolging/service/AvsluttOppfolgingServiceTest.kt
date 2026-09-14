@@ -5,17 +5,21 @@ import java.util.Optional
 import java.util.UUID
 import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.client.aktoroppslag.BrukerIdenter
+import no.nav.common.types.identer.NavIdent
 import no.nav.veilarboppfolging.client.aap.AapClient
 import no.nav.veilarboppfolging.client.arbeidssoekerregisteret.ArbeidssoekerregisteretClient
 import no.nav.veilarboppfolging.client.tiltakshistorikk.TiltakshistorikkClient
 import no.nav.veilarboppfolging.client.ungdomsprogram.UngdomsprogramClient
 import no.nav.veilarboppfolging.eventsLogger.BigQueryClient
 import no.nav.veilarboppfolging.kandidatForUtmelding.FjernKandidatForUtmeldingService
+import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
+import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingTilstandOppslagResult
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ArenaIservKanIkkeReaktiveres
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.KunneAvsluttes
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.KunneIkkeAvsluttes
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ManuellAvregistrering
 import no.nav.veilarboppfolging.repository.ArbeidsoppfolgingskontorRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
@@ -225,7 +229,31 @@ class AvsluttOppfolgingServiceTest {
         assertInstanceOf<KunneIkkeAvsluttes>(result)
     }
 
-    //TODO: test for å kunne manuelt avslutte en forlenget kandidat
+    @Test
+    fun `skal avslutte oppfolging pa bruker som er kandidat med forlenget oppfolging hvis det er en manuell avregistrering`() {
+        brukerErUnderOppfolgingLokalt()
+        kanIkkeReaktiveres()
+        mockBrukerIdenter()
+        `when`(kvpService.erUnderKvp(TEST_AKTOR_ID)).thenReturn(false)
+        `when`(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(listOf(TEST_FNR))).thenReturn(false)
+        `when`(ungdomsprogramClient.erDeltakerIUngdomsprogrammet(TEST_FNR)).thenReturn(false)
+        `when`(arbeidssokerRegisterClient.erArbeidssoeker(TEST_FNR.get())).thenReturn(false)
+        `when`(aapClient.harAap(TEST_FNR.get())).thenReturn(false)
+        `when`(fjernKandidatForUtmeldingService.erOppfolgingForlenget(any())).thenReturn(true)
+        `when`(arenaOppfolgingService.hentArenaOppfolgingTilstand(TEST_FNR)).thenReturn(
+            ArenaOppfolgingTilstandOppslagResult.NotFound()
+        )
+
+        val brukverV2 = ManuellAvregistrering(
+            TEST_AKTOR_ID,
+            veileder = VeilederRegistrant(NavIdent("Z123456")),
+            begrunnelse = "Ferdig med oppfølging"
+        )
+        val result = avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(brukverV2)
+
+        assertInstanceOf<KunneAvsluttes>(result)
+
+    }
 
     private fun mockBrukerIdenter() {
         `when`(aktorOppslagClient.hentIdenter(TEST_FNR)).thenReturn(

@@ -59,7 +59,7 @@ class KandidatForUtmeldingService(
     }
 
     fun hentKandidatForUtmeldingTag(oppfolgingsperiodeId: UUID): KandidatForUtmeldingTagDto? {
-        return kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeId)?.sisteHendelse?.mapTilTag()
+        return kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeId)?.sisteHendelse?.mapTilTag()
     }
 
     fun hentKandidatForUtmeldingTag(aktorId: AktorId): KandidatForUtmeldingTagDto? {
@@ -69,7 +69,7 @@ class KandidatForUtmeldingService(
     }
 
     fun erUtmeldingskandidat(oppfolgingsperiodeId: UUID): Boolean {
-        val kandidat = kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeId)
+        val kandidat = kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeId)
         return kandidat != null
     }
 

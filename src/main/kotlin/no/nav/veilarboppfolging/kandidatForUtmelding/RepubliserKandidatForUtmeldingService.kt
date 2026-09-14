@@ -57,7 +57,7 @@ class RepubliserKandidatForUtmeldingService(
     }
 
     fun republiserKandidatForUtmelding(oppfolgingsperiodeId: UUID) {
-        val aktivKandidat = kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeId)
+        val aktivKandidat = kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeId)
         if (aktivKandidat != null) {
             republiserKandidatForUtmelding(aktivKandidat)
         } else {

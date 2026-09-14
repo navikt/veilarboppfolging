@@ -41,11 +41,11 @@ class FjernKandidatForUtmeldingServiceTest : IntegrationTest() {
             ).let { KandidatForUtmelding.fromHendelse(it) }
         )
         val filterkategoriPersonId = kandidatForUtmeldingRepository.hentEllerOpprettFilterhendelseId(oppfolgingsperiodeUuid)
-        assertThat(kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeUuid)).isNotNull()
+        assertThat(kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeUuid)).isNotNull()
 
         fjernKandidatForUtmeldingService.fjernKandidatForUtmelding(oppfolgingsperiodeUuid)
 
-        assertThat(kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeUuid)).isNull()
+        assertThat(kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeUuid)).isNull()
         val filterhendelse = getFilterhendelseRecordsStoredInKafkaOutbox(kafkaProperties.portefoljeHendelsesfilterTopic, filterkategoriPersonId.toString()).first()
         assertThat(filterhendelse.operasjon).isEqualTo(Operasjon.STOPP)
         assertThat(filterhendelse.kategori).isEqualTo(Kategori.KANDIDAT_FOR_UTMELDING)
@@ -61,11 +61,46 @@ class FjernKandidatForUtmeldingServiceTest : IntegrationTest() {
         mockArbeidssoekerregisteret(FNR, erArbeidssoeker = false)
         mockAap(FNR, harAap = false)
         val oppfolgingsperiodeId = UUID.randomUUID()
-        assertThat(kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeId)).isNull()
+        assertThat(kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeId)).isNull()
 
         fjernKandidatForUtmeldingService.fjernKandidatForUtmelding(oppfolgingsperiodeId)
 
-        assertThat(kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeId)).isNull()
+        assertThat(kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeId)).isNull()
+    }
+
+    @Test
+    fun `fjernKandidatForUtmelding skal fjerne forlenget bruker hvis hendelsestypen er manuell avregistrering`() {
+        mockSytemBrukerAuthOk(AKTOR_ID, FNR)
+        setBrukerUnderOppfolging(AKTOR_ID, FNR)
+        setLocalArenaOppfolging(AKTOR_ID, Formidlingsgruppe.ARBS)
+        mockTiltakshistorikk(FNR, harAktiveDeltakelser = false)
+        mockUngdomsprogram(FNR, erDeltaker = false)
+        mockArbeidssoekerregisteret(FNR, erArbeidssoeker = false)
+        mockAap(FNR, harAap = false)
+        startOppfolgingSomArbeidsoker(AKTOR_ID, FNR)
+        val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(FNR).get().uuid
+        kandidatForUtmeldingRepository.lagreKandidat(
+            ForlengelseOpprettetEllerEndretHendelse(
+                utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
+                utfortAv = "A123123",
+                kilde = "kilde",
+                hendelseTidspunkt = ZonedDateTime.now().toInstant(),
+                oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
+                forlengelseHendelseType = ForlengelseHendelseType.FORLENGELSE_OPPRETTET,
+                forlengetTil = LocalDate.now().plusDays(30),
+            ).let { KandidatForUtmelding.fromHendelse(it) }
+        )
+
+        fjernKandidatForUtmeldingService.fjernKandidatForUtmelding(
+            oppfolgingsperiodeUuid,
+            OppfolgingAvsluttetHendelseType.OPPFOLGING_AVSLUTTET_MANUELT
+        )
+
+        val sisteHendelse = kandidatForUtmeldingRepository.hentSisteHendelseForKandidat(oppfolgingsperiodeUuid)
+        assertThat(sisteHendelse).isInstanceOf(OppfolgingAvsluttetHendelse::class.java)
+        assertThat(kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeUuid)).isNull()
+        assertThat(kandidatForUtmeldingRepository.hentKandidatMedForlengelse(oppfolgingsperiodeUuid)).isNull()
+
     }
 
     @Test
@@ -168,5 +203,7 @@ class FjernKandidatForUtmeldingServiceTest : IntegrationTest() {
 
         assertThat(erForlenget).isFalse()
     }
+
+
 }
 

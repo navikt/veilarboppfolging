@@ -86,7 +86,7 @@ class KandidatForUtmeldingRepository(
         )
     }
 
-    fun hentKandidat(oppfolgingsperiodeId: UUID): AktivKandidatForUtmelding? {
+    fun hentAktivKandidat(oppfolgingsperiodeId: UUID): AktivKandidatForUtmelding? {
         return db.query(
             """
             SELECT kfuh.*, kfu.avsluttes_automatisk_dato

@@ -28,7 +28,7 @@ class FjernKandidatForUtmeldingService(
     ) {
         transactor.executeWithoutResult { _ ->
             logger.info("Fjerner kandidat for utmelding for oppfølgingsperiode $oppfolgingsperiodeId")
-            kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeId) ?: return@executeWithoutResult
+            kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeId) ?: return@executeWithoutResult
             val hendelse = oppfolgingAvsluttetHendelseType?.let {
                 OppfolgingAvsluttetHendelse(
                     oppfolgingsperiodeId,
