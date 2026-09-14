@@ -37,7 +37,6 @@ class FjernKandidatForUtmeldingService(
             }
 
             if (sendUtmeldingskandidaterTilObo) run sendTilObo@{
-                kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeId) ?: return@executeWithoutResult
                 val filterkategoriPersonId = kandidatForUtmeldingRepository.hentFilterhendelseId(oppfolgingsperiodeId) ?: return@sendTilObo
                 val aktorId = oppfolgingsPeriodeRepository.hentOppfolgingsperiode(oppfolgingsperiodeId.toString())
                     .getOrElse { throw IllegalStateException("Oppfølgingsperiode med id $oppfolgingsperiodeId finnes ikke") }?.aktorId
