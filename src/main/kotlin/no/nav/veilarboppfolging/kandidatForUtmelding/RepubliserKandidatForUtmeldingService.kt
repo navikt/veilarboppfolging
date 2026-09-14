@@ -5,6 +5,10 @@ import kotlin.jvm.optionals.getOrElse
 import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
+import no.nav.common.types.identer.NorskIdent
+import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.FilterhendelseRecord
+import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.Kategori
+import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.Operasjon
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.service.KafkaProducerService
 import org.slf4j.LoggerFactory
@@ -57,14 +61,18 @@ class RepubliserKandidatForUtmeldingService(
     }
 
     fun republiserKandidatForUtmelding(oppfolgingsperiodeId: UUID) {
-        val aktivKandidat = kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeId)
+        val aktivKandidat = kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeId)
         if (aktivKandidat != null) {
             republiserKandidatForUtmelding(aktivKandidat)
         } else {
             val fnr = finnFnrForOppfolgingsperiode(oppfolgingsperiodeId)
             val filterkategoriPersonId = kandidatForUtmeldingRepository.hentEllerOpprettFilterhendelseId(oppfolgingsperiodeId)
-            val filterHendelseRecord = OppfolgingAvsluttetHendelse(oppfolgingsperiodeId, oppfolgingAvsluttetHendelseType = OppfolgingAvsluttetHendelseType.OPPFOLGING_AVSLUTTET_AUTOMATISK)
-                .tilFilterhendelseRecord(fnr)
+            val filterHendelseRecord = FilterhendelseRecord(
+                personID = NorskIdent(fnr.get()),
+                kategori = Kategori.KANDIDAT_FOR_UTMELDING,
+                operasjon = Operasjon.STOPP,
+                hendelse = null
+            )
             kafkaProducerService.publiserFilterhendelse(filterkategoriPersonId, filterHendelseRecord)
         }
     }

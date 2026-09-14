@@ -32,7 +32,6 @@ import no.nav.veilarboppfolging.ident.randomFnr
 import no.nav.veilarboppfolging.kafka.ArbeidssøkerperiodeConsumerService
 import no.nav.veilarboppfolging.kafka.TestUtils
 import no.nav.veilarboppfolging.kandidatForUtmelding.dto.KandidatForUtmeldingTagDto
-import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.BeskrivelseEnum
 import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.FilterhendelseRecord
 import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.Kategori
 import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.Operasjon
@@ -41,7 +40,6 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrerin
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering.Companion.arbeidssokerRegistrering
 import no.nav.veilarboppfolging.repository.UtmeldingRepository
 import no.nav.veilarboppfolging.service.KafkaConsumerService
-import no.nav.veilarboppfolging.service.ReaktiveringService
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Disabled
@@ -467,60 +465,6 @@ class KandidatForUtmeldingFlytTest(
 
         val kandidat = kandidatForUtmeldingRepository.hentKandidatMedForlengelse(oppfolgingsperiodeUuid)
         assertThat(kandidat?.sisteHendelse?.type).isEqualTo(ForlengelseHendelseType.FORLENGELSE_ENDRET)
-    }
-
-    @Test
-    @Disabled("WIP automatisk avslutning")
-    fun `skal avslutte oppfølging etter karensperiode er utløpt`() {
-        val fnr = randomFnr()
-        val veilederId = UUID.randomUUID()
-        val enhetId = EnhetId("1234")
-        val aktorId = randomAktorId()
-        mockIdents(fnr, aktorId)
-        mockInternBrukerAuthOk(veilederId, aktorId, fnr)
-        mockPoaoTilgangHarTilgangTilBruker(veilederId, fnr, Decision.Permit, TilgangType.SKRIVE)
-        mockPoaoTilgangHarTilgangTilEnhet(veilederId, enhetId)
-        startOppfolgingSomArbeidsoker(aktorId, fnr)
-        setLocalArenaOppfolging(aktorId, Formidlingsgruppe.ISERV)
-        setAoKontor(fnr, aktorId, enhetId.get())
-        mockTiltakshistorikk(fnr, harAktiveDeltakelser = false)
-        mockUngdomsprogram(fnr, erDeltaker = false)
-        mockArbeidssoekerregisteret(fnr, erArbeidssoeker = false)
-        mockAap(fnr, harAap = false)
-
-        val hendelsetidspunkt = ZonedDateTime.now().minusDays(30)
-        val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(fnr).get().uuid
-        kandidatForUtmeldingRepository.lagreKandidat(
-            ArbeidssøkerPeriodeAvsluttet(
-                oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
-                utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
-                utfortAv = "A123123",
-                kilde = "kilde",
-                hendelseTidspunkt = hendelsetidspunkt.toInstant(),
-                arbeidssokerperiodeAvsluttetHendelseType = ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
-                avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
-            ).let { KandidatForUtmelding.fromHendelse(it) }
-        )
-        val kandidat = kandidatForUtmeldingRepository.hentKandidat(oppfolgingsperiodeUuid)!!
-        assertThat(kandidat.avsluttesAutomatiskDato).isBeforeOrEqualTo(ZonedDateTime.now().toLocalDateTime())
-
-        // kandidatForUtmeldingService.kastUtKandidaterSomHarVærtKandidatForLenge()
-
-        // Skal sende riktig hendelse på kafka
-        val key = kandidatForUtmeldingRepository.hentFilterhendelseId(oppfolgingsperiodeUuid)
-        val kafkaMeldinger = getFilterhendelseRecordsStoredInKafkaOutbox(kafkaProperties.portefoljeHendelsesfilterTopic, key.toString())
-        assertThat(kafkaMeldinger).hasSize(1)
-        assertThat(kafkaMeldinger.first()).isEqualTo(FilterhendelseRecord(
-            NorskIdent.of(fnr.get()),
-            "veilarboppfolging",
-            Kategori.KANDIDAT_FOR_UTMELDING,
-            Operasjon.STOPP,
-            null
-        ))
-
-        // Skal lagre hendelse på kandidat
-        val kandidatHendelse = kandidatForUtmeldingRepository.hentSisteHendelseForKandidat(oppfolgingsperiodeUuid)
-        assertThat(kandidatHendelse?.type).isEqualTo(OppfolgingAvsluttetHendelseType.OPPFOLGING_AVSLUTTET_AUTOMATISK)
     }
 
     private fun arbeidssokerperiode(
