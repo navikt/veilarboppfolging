@@ -28,7 +28,7 @@ class FjernKandidatForUtmeldingService(
     ) {
         transactor.executeWithoutResult { _ ->
             logger.info("Fjerner kandidat for utmelding for oppfølgingsperiode $oppfolgingsperiodeId")
-            kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeId) ?: return@executeWithoutResult
+            if (skalIkkeFjerneKandidat(oppfolgingAvsluttetHendelseType, oppfolgingsperiodeId)) return@executeWithoutResult
             val hendelse = oppfolgingAvsluttetHendelseType?.let {
                 OppfolgingAvsluttetHendelse(
                     oppfolgingsperiodeId,
@@ -52,6 +52,18 @@ class FjernKandidatForUtmeldingService(
             }
             kandidatForUtmeldingRepository.fjernKandidat(oppfolgingsperiodeId)
         }
+    }
+
+    private fun skalIkkeFjerneKandidat(
+        oppfolgingAvsluttetHendelseType: OppfolgingAvsluttetHendelseType?,
+        oppfolgingsperiodeId: UUID
+    ): Boolean {
+        if (oppfolgingAvsluttetHendelseType == OppfolgingAvsluttetHendelseType.OPPFOLGING_AVSLUTTET_AUTOMATISK) {
+            kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeId) ?: return true
+        } else {
+            if (!kandidatForUtmeldingRepository.erKandidat(oppfolgingsperiodeId)) return true
+        }
+        return false
     }
 
     fun erOppfolgingForlenget(oppfolgingsperiodeId: UUID): Boolean {
