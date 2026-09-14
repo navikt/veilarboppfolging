@@ -56,10 +56,7 @@ class RepubliserKandidatForUtmeldingServiceTest : IntegrationTest() {
         startOppfolgingSomArbeidsoker(AKTOR_ID, FNR)
         val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(FNR).get().uuid
         kandidatForUtmeldingService.handterUtmeldingsHendelse(FNR, arbeidssokerPeriodeAvsluttet(oppfolgingsperiodeUuid))
-
-        kandidatForUtmeldingService.handterUtmeldingsHendelse(FNR,
-            OppfolgingAvsluttetHendelse(oppfolgingsperiodeUuid, oppfolgingAvsluttetHendelseType = OppfolgingAvsluttetHendelseType.OPPFOLGING_AVSLUTTET_AUTOMATISK)
-        )
+        kandidatForUtmeldingRepository.fjernKandidat(oppfolgingsperiodeUuid)
 
         assertThat(kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeUuid)).isNull()
         assertThat(kandidatForUtmeldingRepository.hentSisteHendelseForKandidat(oppfolgingsperiodeUuid)?.type)

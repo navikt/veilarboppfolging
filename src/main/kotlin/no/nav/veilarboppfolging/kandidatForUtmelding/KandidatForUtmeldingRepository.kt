@@ -48,7 +48,6 @@ class KandidatForUtmeldingRepository(
                 "hendelse" to when (type) {
                     is ArbeidssokerperiodeAvsluttetHendelseType -> type.name
                     is ForlengelseHendelseType -> type.name
-                    is OppfolgingAvsluttetHendelseType -> type.name
                 },
                 "hendelseData" to hendelse.hendelseDataJson,
                 "utfortAv" to hendelse.utfortAv,
@@ -75,7 +74,7 @@ class KandidatForUtmeldingRepository(
             SELECT 1 FROM kandidater_for_utmelding WHERE oppfolgingsperiode_uuid = :oppfolgingsperiodeId
         """.trimIndent()
         return db.query(sql, mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeId.toString()))
-            { _, _ -> true }
+        { _, _ -> true }
             .firstOrNull()
             ?: false // False if no match
     }
@@ -97,6 +96,31 @@ class KandidatForUtmeldingRepository(
             )
         }
             .firstOrNull()
+    }
+
+    fun lagreKandidatSomIkkeKunneAvsluttes(oppfolgingsperiodeId: UUID) {
+        db.update(
+            """
+            INSERT INTO kandidater_som_ikke_kunne_avsluttes(oppfolgingsperiode_uuid, siste_utmeldingshendelse_id)
+            SELECT oppfolgingsperiode_uuid, siste_utmeldingshendelse_id
+            FROM kandidater_for_utmelding
+            WHERE oppfolgingsperiode_uuid = :oppfolgingsperiodeId
+            """.trimIndent(),
+            mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeId.toString()),
+        )
+    }
+
+    fun erKandidat(oppfolgingsperiodeId: UUID): Boolean {
+        return db.queryForObject(
+            """
+            SELECT EXISTS (
+                SELECT 1
+                FROM kandidater_for_utmelding
+                WHERE oppfolgingsperiode_uuid = :oppfolgingsperiodeId
+            ) AS finnes
+            """.trimIndent(),
+            mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeId.toString()),
+        ) { rs, _ -> rs.getBoolean("finnes") }
     }
 
     fun hentKandidatMedForlengelse(oppfolgingsperiodeId: UUID): ForlengetKandidat? {
@@ -155,6 +179,18 @@ class KandidatForUtmeldingRepository(
             """.trimIndent(),
             mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeId.toString()),
         ) { rs, _ -> rs.getTimestamp("forlenget_til") }.firstOrNull()
+    }
+
+    @TestOnly
+    fun hentAntallKandidaterSomIkkeKunneAvsluttes(oppfolgingsperiodeId: UUID): Int {
+        return db.queryForObject(
+            """
+            SELECT COUNT(*) as antall
+            FROM kandidater_som_ikke_kunne_avsluttes
+            WHERE oppfolgingsperiode_uuid = :oppfolgingsperiodeId
+            """.trimIndent(),
+            mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeId.toString()),
+        ) { rs, _ -> rs.getInt("antall") }
     }
 
     fun hentSisteHendelseForKandidat(oppfolgingsperiodeId: UUID): KandidatForUtmeldingHendelse? {
@@ -292,7 +328,6 @@ class KandidatForUtmeldingRepository(
                     else -> throw IllegalArgumentException("ForlengelseHendelseType $hendelsetype is not supported.")
                 }
             }
-            is OppfolgingAvsluttetHendelseType -> resultSet.toOppfolgingAvsluttetHendelse()
         }
 
     }
@@ -301,7 +336,6 @@ class KandidatForUtmeldingRepository(
         return when (hendelse) {
             in ArbeidssokerperiodeAvsluttetHendelseType.entries.map { it.name } -> ArbeidssokerperiodeAvsluttetHendelseType.valueOf(hendelse)
             in ForlengelseHendelseType.entries.map { it.name } -> ForlengelseHendelseType.valueOf(hendelse)
-            in OppfolgingAvsluttetHendelseType.entries.map { it.name } -> OppfolgingAvsluttetHendelseType.valueOf(hendelse)
             else -> {
                 throw IllegalArgumentException("Ugyldig hendelse type: $hendelse")
             }
@@ -335,13 +369,4 @@ fun ResultSet.toForlengelseOpprettetEllerEndretHendelse() = ForlengelseOpprettet
 fun ResultSet.toForlengelseUtløptHendelse() = ForlengelseUtløptHendelse(
     oppfolgingsperiodeUuid = UUID.fromString(getString("oppfolgingsperiode_uuid")),
     hendelseTidspunkt = getTimestamp("hendelse_tidspunkt").toLocalDateTime().toInstant(ZoneOffset.UTC),
-)
-
-fun ResultSet.toOppfolgingAvsluttetHendelse() = OppfolgingAvsluttetHendelse(
-    oppfolgingsperiodeUuid = UUID.fromString(getString("oppfolgingsperiode_uuid")),
-    utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.valueOf(getString("utfort_av_type")),
-    utfortAv = getString("utfort_av"),
-    kilde = getString("kilde"),
-    hendelseTidspunkt = getTimestamp("hendelse_tidspunkt").toLocalDateTime().toInstant(ZoneOffset.UTC),
-    oppfolgingAvsluttetHendelseType = OppfolgingAvsluttetHendelseType.valueOf(getString("hendelse"))
 )
