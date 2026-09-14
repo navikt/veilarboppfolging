@@ -16,9 +16,9 @@ data class FilterhendelseRecord(
         val beskrivelse: String,
         val beskrivelseEnum: String?,
         val tidspunkt: ZonedDateTime,
-        val tidspunktFrist: ZonedDateTime?,
         val lenke: URL,
-        val detaljer: String?
+        val detaljer: String?,
+        val tidspunktFrist: ZonedDateTime?,
     )
 }
 

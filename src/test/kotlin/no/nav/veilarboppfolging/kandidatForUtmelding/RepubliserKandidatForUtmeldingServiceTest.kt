@@ -102,7 +102,7 @@ class RepubliserKandidatForUtmeldingServiceTest : IntegrationTest() {
         val filterkategoriPersonId = kandidatForUtmeldingRepository.hentEllerOpprettFilterhendelseId(oppfolgingsperiodeUuid)
         val ikkeSammenlignDato = ZonedDateTime.now()
         val filterhendelse = getFilterhendelseRecordsStoredInKafkaOutbox(kafkaProperties.portefoljeHendelsesfilterTopic, filterkategoriPersonId.toString()).firstOrNull()
-        assertThat(filterhendelse.let { it?.copy(hendelse = it.hendelse?.copy(dato = ikkeSammenlignDato)) }).isEqualTo(FilterhendelseRecord(
+        assertThat(filterhendelse.let { it?.copy(hendelse = it.hendelse?.copy(tidspunkt = ikkeSammenlignDato)) }).isEqualTo(FilterhendelseRecord(
             personID = NorskIdent(FNR.get()),
             avsender = "veilarboppfolging",
             kategori = Kategori.KANDIDAT_FOR_UTMELDING,

@@ -65,7 +65,7 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
         assertThat(filterhendelse.operasjon).isEqualTo(Operasjon.START)
         assertThat(filterhendelse.kategori).isEqualTo(Kategori.KANDIDAT_FOR_UTMELDING)
         assertThat(filterhendelse.hendelse?.beskrivelseEnum).isEqualTo(BeskrivelseEnum.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT.name)
-        assertThat(filterhendelse.hendelse?.datoFrist)
+        assertThat(filterhendelse.hendelse?.tidspunktFrist)
             .isCloseTo(
                 kandidat.avsluttesAutomatiskDato.atZone(ZoneOffset.UTC)?.withZoneSameInstant(ZoneId.of("Europe/Oslo")),
                 within(1, ChronoUnit.SECONDS)
@@ -165,7 +165,7 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
         val filterhendelse = getFilterhendelseRecordsStoredInKafkaOutbox(kafkaProperties.portefoljeHendelsesfilterTopic, filterhendelseId.toString()).first()
         assertThat(filterhendelse.operasjon).isEqualTo(Operasjon.START)
         assertThat(filterhendelse.kategori).isEqualTo(Kategori.KANDIDAT_FOR_UTMELDING)
-        assertThat(filterhendelse.hendelse?.datoFrist)
+        assertThat(filterhendelse.hendelse?.tidspunktFrist)
             .isCloseTo(
                 kandidat.avsluttesAutomatiskDato.atZone(ZoneOffset.UTC)?.withZoneSameInstant(ZoneId.of("Europe/Oslo")),
                 within(1, ChronoUnit.SECONDS)

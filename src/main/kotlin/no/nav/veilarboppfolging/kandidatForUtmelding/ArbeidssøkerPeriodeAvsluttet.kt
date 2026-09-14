@@ -10,9 +10,7 @@ import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.Operasjon
 import org.postgresql.util.PGobject
 import java.net.URI
 import java.time.Instant
-import java.time.LocalDateTime
 import java.time.ZoneId
-import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.util.UUID
 
@@ -60,10 +58,10 @@ class ArbeidssøkerPeriodeAvsluttet(
                     ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_SVARTE_NEI_I_BEKREFTELSE -> BeskrivelseEnum.ARBEIDSSOKERPERIODE_AVSLUTTET_SVARTE_NEI_I_BEKREFTELSE
                     ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET -> BeskrivelseEnum.ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET
                 }.name,
-                dato = hendelseTidspunkt.atZone(ZoneId.of("Europe/Oslo")),
+                tidspunkt = hendelseTidspunkt.atZone(ZoneId.of("Europe/Oslo")),
                 lenke = URI("${baseUrlVeilarbpersonflate()}/aktivitetsplan").toURL(),
                 detaljer = null,
-                datoFrist = avsluttesAutomatiskDato
+                tidspunktFrist = avsluttesAutomatiskDato
             )
         )
     }

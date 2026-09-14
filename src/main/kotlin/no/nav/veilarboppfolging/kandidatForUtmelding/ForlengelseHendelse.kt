@@ -36,10 +36,10 @@ class ForlengelseUtløptHendelse(
             hendelse = FilterhendelseRecord.HendelseInnhold(
                 beskrivelse = "Forlengelse utløpt",
                 beskrivelseEnum = BeskrivelseEnum.FORLENGELSE_UTLOPT.name,
-                dato = hendelseTidspunkt.atZone(ZoneId.of("Europe/Oslo")),
+                tidspunkt = hendelseTidspunkt.atZone(ZoneId.of("Europe/Oslo")),
                 lenke = URI("${baseUrlVeilarbpersonflate()}/aktivitetsplan").toURL(),
                 detaljer = null,
-                datoFrist = avsluttesAutomatiskDato
+                tidspunktFrist = avsluttesAutomatiskDato
             )
         )
     }
