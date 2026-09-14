@@ -39,10 +39,6 @@ sealed class KandidatForUtmelding(
                 is ArbeidssøkerPeriodeAvsluttet -> hendelseTid.plusDays(KARENSTID_DAGER)
                 is ForlengelseOpprettetEllerEndretHendelse ->  null
                 is ForlengelseUtløptHendelse -> hendelseTid.plusDays(KARENSTID_DAGER)
-                is OppfolgingAvsluttetHendelse -> when (hendelse.type) {
-                    OppfolgingAvsluttetHendelseType.OPPFOLGING_AVSLUTTET_AUTOMATISK,
-                    OppfolgingAvsluttetHendelseType.OPPFOLGING_AVSLUTTET_MANUELT -> null
-                }
             }
         }
 

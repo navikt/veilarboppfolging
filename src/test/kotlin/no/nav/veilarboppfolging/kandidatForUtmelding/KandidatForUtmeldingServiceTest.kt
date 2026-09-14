@@ -253,9 +253,6 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
 
         assertThat(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID).get().underOppfolging).isFalse()
         assertThat(kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeUuid)).isNull()
-        val sisteHendelse = kandidatForUtmeldingRepository.hentSisteHendelseForKandidat(oppfolgingsperiodeUuid)
-        assertThat(sisteHendelse).isInstanceOf(OppfolgingAvsluttetHendelse::class.java)
-        assertThat(sisteHendelse!!.type).isEqualTo(OppfolgingAvsluttetHendelseType.OPPFOLGING_AVSLUTTET_AUTOMATISK)
     }
 
     @Test
@@ -328,9 +325,6 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
 
         assertThat(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID).get().underOppfolging).isFalse()
         assertThat(kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeUuid)).isNull()
-        val sisteHendelse = kandidatForUtmeldingRepository.hentSisteHendelseForKandidat(oppfolgingsperiodeUuid)
-        assertThat(sisteHendelse).isInstanceOf(OppfolgingAvsluttetHendelse::class.java)
-        assertThat(sisteHendelse!!.type).isEqualTo(OppfolgingAvsluttetHendelseType.OPPFOLGING_AVSLUTTET_MANUELT)
     }
 }
 

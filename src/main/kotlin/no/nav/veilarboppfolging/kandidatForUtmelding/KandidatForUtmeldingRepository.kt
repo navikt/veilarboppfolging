@@ -52,7 +52,6 @@ class KandidatForUtmeldingRepository(
                 "hendelse" to when (type) {
                     is ArbeidssokerperiodeAvsluttetHendelseType -> type.name
                     is ForlengelseHendelseType -> type.name
-                    is OppfolgingAvsluttetHendelseType -> type.name
                 },
                 "hendelseData" to hendelse.hendelseDataJson,
                 "utfortAv" to hendelse.utfortAv,
@@ -323,7 +322,6 @@ class KandidatForUtmeldingRepository(
                     else -> throw IllegalArgumentException("ForlengelseHendelseType $hendelsetype is not supported.")
                 }
             }
-            is OppfolgingAvsluttetHendelseType -> resultSet.toOppfolgingAvsluttetHendelse()
         }
 
     }
@@ -332,7 +330,6 @@ class KandidatForUtmeldingRepository(
         return when (hendelse) {
             in ArbeidssokerperiodeAvsluttetHendelseType.entries.map { it.name } -> ArbeidssokerperiodeAvsluttetHendelseType.valueOf(hendelse)
             in ForlengelseHendelseType.entries.map { it.name } -> ForlengelseHendelseType.valueOf(hendelse)
-            in OppfolgingAvsluttetHendelseType.entries.map { it.name } -> OppfolgingAvsluttetHendelseType.valueOf(hendelse)
             else -> {
                 throw IllegalArgumentException("Ugyldig hendelse type: $hendelse")
             }
@@ -366,13 +363,4 @@ fun ResultSet.toForlengelseOpprettetEllerEndretHendelse() = ForlengelseOpprettet
 fun ResultSet.toForlengelseUtløptHendelse() = ForlengelseUtløptHendelse(
     oppfolgingsperiodeUuid = UUID.fromString(getString("oppfolgingsperiode_uuid")),
     hendelseTidspunkt = getTimestamp("hendelse_tidspunkt").toLocalDateTime().toInstant(ZoneOffset.UTC),
-)
-
-fun ResultSet.toOppfolgingAvsluttetHendelse() = OppfolgingAvsluttetHendelse(
-    oppfolgingsperiodeUuid = UUID.fromString(getString("oppfolgingsperiode_uuid")),
-    utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.valueOf(getString("utfort_av_type")),
-    utfortAv = getString("utfort_av"),
-    kilde = getString("kilde"),
-    hendelseTidspunkt = getTimestamp("hendelse_tidspunkt").toLocalDateTime().toInstant(ZoneOffset.UTC),
-    oppfolgingAvsluttetHendelseType = OppfolgingAvsluttetHendelseType.valueOf(getString("hendelse"))
 )

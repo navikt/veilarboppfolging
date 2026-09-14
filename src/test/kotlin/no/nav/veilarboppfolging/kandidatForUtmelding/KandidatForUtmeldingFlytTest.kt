@@ -515,10 +515,6 @@ class KandidatForUtmeldingFlytTest(
             Operasjon.STOPP,
             null
         ))
-
-        // Skal lagre hendelse på kandidat
-        val kandidatHendelse = kandidatForUtmeldingRepository.hentSisteHendelseForKandidat(oppfolgingsperiodeUuid)
-        assertThat(kandidatHendelse?.type).isEqualTo(OppfolgingAvsluttetHendelseType.OPPFOLGING_AVSLUTTET_AUTOMATISK)
     }
 
     private fun arbeidssokerperiode(

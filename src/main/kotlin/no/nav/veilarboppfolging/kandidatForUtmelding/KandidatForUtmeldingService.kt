@@ -42,17 +42,8 @@ class KandidatForUtmeldingService(
                 return@executeWithoutResult
             }
 
-            when (hendelse) {
-                is ArbeidssøkerPeriodeAvsluttet,
-                is ForlengelseUtløptHendelse,
-                is ForlengelseOpprettetEllerEndretHendelse -> {
-                    val kandidat = KandidatForUtmelding.fromHendelse(hendelse)
-                    kandidatForUtmeldingRepository.lagreKandidat(kandidat)
-                }
-                is OppfolgingAvsluttetHendelse -> {
-                    kandidatForUtmeldingRepository.fjernKandidat(hendelse.oppfolgingsperiodeUuid)
-                }
-            }
+            val kandidat = KandidatForUtmelding.fromHendelse(hendelse)
+            kandidatForUtmeldingRepository.lagreKandidat(kandidat)
 
             sendUtmeldingskandidatTilObo(hendelse, fnr)
         }
@@ -97,12 +88,14 @@ class KandidatForUtmeldingService(
     }
 
     fun avsluttOppfolgingForKandidaterMedPassertAvsluttesAutomatiskDato() {
-        val kandidaterSomSkalAutomatiskAvsluttes = kandidatForUtmeldingRepository.hentKandidaterSomSkalAutomatiskAvsluttes()
+        val kandidaterSomSkalAutomatiskAvsluttes =
+            kandidatForUtmeldingRepository.hentKandidaterSomSkalAutomatiskAvsluttes()
         logger.info("Behandler ${kandidaterSomSkalAutomatiskAvsluttes.size} kandidater med passert avsluttes_automatisk_dato")
 
         kandidaterSomSkalAutomatiskAvsluttes.forEach { kandidat ->
             val (_, aktorId) = finnFnrForOppfolgingsperiode(kandidat.oppfolgingsperiodeId)
-            val resultat = avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(KandidatUtmeldtEtter28Dager(aktorId))
+            val resultat =
+                avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(KandidatUtmeldtEtter28Dager(aktorId))
             if (resultat is KunneIkkeAvsluttes) {
                 kandidatForUtmeldingRepository.lagreKandidatSomIkkeKunneAvsluttes(kandidat.oppfolgingsperiodeId)
                 fjernKandidatForUtmeldingService.fjernKandidatForUtmelding(kandidat.oppfolgingsperiodeId)
