@@ -69,29 +69,14 @@ class KandidatForUtmeldingRepository(
         db.update(sql, mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeId.toString()))
     }
 
-    fun lagreKandidatSomIkkeKunneAvsluttes(oppfolgingsperiodeId: UUID) {
-        db.update(
-            """
-            INSERT INTO kandidater_som_ikke_kunne_avsluttes(oppfolgingsperiode_uuid, siste_utmeldingshendelse_id)
-            SELECT oppfolgingsperiode_uuid, siste_utmeldingshendelse_id
-            FROM kandidater_for_utmelding
-            WHERE oppfolgingsperiode_uuid = :oppfolgingsperiodeId
-            """.trimIndent(),
-            mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeId.toString()),
-        )
-    }
-    
-    fun erKandidat(oppfolgingsperiodeId: UUID): Boolean {
-        return db.queryForObject(
-            """
-            SELECT EXISTS (
-                SELECT 1
-                FROM kandidater_for_utmelding
-                WHERE oppfolgingsperiode_uuid = :oppfolgingsperiodeId
-            ) AS finnes
-            """.trimIndent(),
-            mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeId.toString()),
-        ) { rs, _ -> rs.getBoolean("finnes") }
+    fun erAktivEllerForlengetKandidatForUtmelding(oppfolgingsperiodeId: UUID): Boolean {
+        val sql = """
+            SELECT 1 FROM kandidater_for_utmelding WHERE oppfolgingsperiode_uuid = :oppfolgingsperiodeId
+        """.trimIndent()
+        return db.query(sql, mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeId.toString()))
+        { _, _ -> true }
+            .firstOrNull()
+            ?: false // False if no match
     }
 
     fun hentAktivKandidat(oppfolgingsperiodeId: UUID): AktivKandidatForUtmelding? {
@@ -111,6 +96,31 @@ class KandidatForUtmeldingRepository(
             )
         }
             .firstOrNull()
+    }
+
+    fun lagreKandidatSomIkkeKunneAvsluttes(oppfolgingsperiodeId: UUID) {
+        db.update(
+            """
+            INSERT INTO kandidater_som_ikke_kunne_avsluttes(oppfolgingsperiode_uuid, siste_utmeldingshendelse_id)
+            SELECT oppfolgingsperiode_uuid, siste_utmeldingshendelse_id
+            FROM kandidater_for_utmelding
+            WHERE oppfolgingsperiode_uuid = :oppfolgingsperiodeId
+            """.trimIndent(),
+            mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeId.toString()),
+        )
+    }
+
+    fun erKandidat(oppfolgingsperiodeId: UUID): Boolean {
+        return db.queryForObject(
+            """
+            SELECT EXISTS (
+                SELECT 1
+                FROM kandidater_for_utmelding
+                WHERE oppfolgingsperiode_uuid = :oppfolgingsperiodeId
+            ) AS finnes
+            """.trimIndent(),
+            mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeId.toString()),
+        ) { rs, _ -> rs.getBoolean("finnes") }
     }
 
     fun hentKandidatMedForlengelse(oppfolgingsperiodeId: UUID): ForlengetKandidat? {

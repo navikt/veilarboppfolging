@@ -5,8 +5,6 @@ import no.nav.common.client.aktorregister.IngenGjeldendeIdentException;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.EndringPaaOppfolgingsBruker;
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.UtmeldingsService;
-import no.nav.veilarboppfolging.service.utmelding.KanskjeIservBruker;
 import no.nav.veilarboppfolging.utils.SecureLog;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.slf4j.Logger;
@@ -26,7 +24,6 @@ import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
 public class KafkaConsumerService {
 
     private final AuthService authService;
-    private final UtmeldingsService utmeldingsService;
     private final OppfolgingsbrukerEndretIArenaService oppfolgingsbrukerEndretIArenaService;
     private final AktorOppslagClient aktorOppslagClient;
     private final SisteEndringPaaOppfolgingBrukerService sisteEndringPaaOppfolgingBrukerService;
@@ -36,12 +33,10 @@ public class KafkaConsumerService {
     @Autowired
     public KafkaConsumerService(
             AuthService authService,
-            @Lazy UtmeldingsService utmeldingsService,
             @Lazy OppfolgingsbrukerEndretIArenaService oppfolgingsbrukerEndretIArenaService,
             AktorOppslagClient aktorOppslagClient,
             SisteEndringPaaOppfolgingBrukerService sisteEndringPaaOppfolgingBrukerService) {
         this.authService = authService;
-        this.utmeldingsService = utmeldingsService;
         this.oppfolgingsbrukerEndretIArenaService = oppfolgingsbrukerEndretIArenaService;
         this.aktorOppslagClient = aktorOppslagClient;
         this.sisteEndringPaaOppfolgingBrukerService = sisteEndringPaaOppfolgingBrukerService;
@@ -67,7 +62,6 @@ public class KafkaConsumerService {
         try {
             var aktorId = authService.getAktorIdOrThrow(brukerFnr);
             var endring = EndringPaaOppfolgingsBruker.Companion.from(endringPaBruker, aktorId);
-            utmeldingsService.oppdaterUtmeldingsStatus(KanskjeIservBruker.Companion.of(endringPaBruker, aktorId));
             // behandleBrukerEndring har ingen praktisk funksjon lenger siden ao-kontor er master for oppfølgingskontoret, men beholdes inntil videre for sikkerhets skyld
             oppfolgingsbrukerEndretIArenaService.oppdaterOppfolgingMedStatusFraArena(endring);
             sisteEndringPaaOppfolgingBrukerService.lagreSisteEndring(brukerFnr, endringPaBruker.getSistEndretDato());

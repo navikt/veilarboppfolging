@@ -5,7 +5,6 @@ import no.nav.common.types.identer.Fnr
 import no.nav.common.types.identer.NavIdent
 import no.nav.veilarboppfolging.client.veilarbarena.*
 import no.nav.veilarboppfolging.kandidatForUtmelding.FjernKandidatForUtmeldingService
-import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingRepository
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
@@ -59,7 +58,7 @@ class ReaktiveringService(
         val perioder: List<OppfolgingsperiodeEntity> =
             oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId)
         val sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder)
-        val erUtmeldingskandidat = kandidatForUtmeldingService.erUtmeldingskandidat(sistePeriode.uuid)
+        val erUtmeldingskandidat = kandidatForUtmeldingService.erAktivUtmeldingskandidat(sistePeriode.uuid)
         if (erUtmeldingskandidat && utmeldingskandidater_aktivert) {
             logger.info("Bruker er utmeldingskandidat, og kan ikke reaktiveres")
             return BrukerErUtmeldingskandidat

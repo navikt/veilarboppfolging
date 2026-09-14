@@ -85,14 +85,49 @@ class KandidatForUtmeldingFlytTest(
 
         assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId)).isNull()
 
-        val sluttMelding = ConsumerRecord("topic", 0, 0, "dummyKey", arbeidssokerperiode(fnr.get(), periodeAvsluttet = true))
-        arbeidssoekerperiodeConsumerService.consumeArbeidssøkerperiode(sluttMelding)
+        publiserAvsluttArbeidssokerPeriode(fnr)
 
         assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId)).isNotNull()
     }
 
+    private fun publiserStartArbeidssokerPeriode(fnr: Fnr, arbeidsoekerPeriodeStartet: LocalDateTime) {
+        val nyPeriode = arbeidssokerperiode(
+            fnr.get(),
+            periodeStartet = arbeidsoekerPeriodeStartet.atZone(ZoneId.systemDefault()).toInstant()
+        )
+        val nyArbeidssokerPeriodeStartet = ConsumerRecord(
+            "topic", 0, 0, "dummyKey",
+            nyPeriode
+        )
+        arbeidssoekerperiodeConsumerService.consumeArbeidssøkerperiode(nyArbeidssokerPeriodeStartet)
+    }
+
+    private fun publiserAvsluttArbeidssokerPeriode(
+        fnr: Fnr,
+        avsluttetAarsakType: AvsluttetAarsakType = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST) {
+        val sluttMelding = ConsumerRecord(
+            "topic", 0, 0, "dummyKey",
+            arbeidssokerperiode(
+                fnr.get(),
+                periodeAvsluttet = true,
+                periodeStartet = LocalDateTime.now().minusDays(1).atZone(ZoneId.systemDefault()).toInstant(),
+                avsluttetAarsakType = avsluttetAarsakType
+            )
+        )
+        arbeidssoekerperiodeConsumerService.consumeArbeidssøkerperiode(sluttMelding)
+    }
+
+    private fun publiserBrukerBleISERV(fnr: Fnr, iservFraDato: LocalDate) {
+        val oppfolginsBrukerEndretTilISERV = ConsumerRecord(
+            "topic", 0, 0, "key", TestUtils.oppfølgingsBrukerEndret(
+                fnr.get(), iservFraDato = iservFraDato, formidlingsgruppe = Formidlingsgruppe.ISERV
+            )
+        )
+        kafkaConsumerService.consumeEndringPaOppfolgingBruker(oppfolginsBrukerEndretTilISERV)
+    }
+
     @Test
-    fun `lagreKandidatForUtmelding blir kalt når bruker blir ISERV etter arbeidssøkerregistrering`() {
+    fun `skal bli lagret som kandidat for utmelding hvis bruker først ble ISERV, så ble arbeidssokerperioden avsluttet`() {
         val fnr = randomFnr()
         val aktorId = randomAktorId()
         mockIdents(fnr, aktorId)
@@ -109,41 +144,12 @@ class KandidatForUtmeldingFlytTest(
         mockArbeidssoekerregisteret(fnr, erArbeidssoeker = false)
         mockAap(fnr, harAap = false)
 
-        val nyPeriode = arbeidssokerperiode(
-            fnr.get(),
-            periodeStartet = arbeidsoekerPeriodeStartet.atZone(ZoneId.systemDefault()).toInstant()
-        )
-        val oppfolginsBrukerEndretTilISERV = ConsumerRecord(
-            "topic", 0, 0, "key", TestUtils.oppfølgingsBrukerEndret(
-                fnr.get(), iservFraDato = ISERV_FRA_DATO, formidlingsgruppe = Formidlingsgruppe.ISERV
-            )
-        )
+        publiserStartArbeidssokerPeriode(fnr, arbeidsoekerPeriodeStartet)
+        publiserBrukerBleISERV(fnr, ISERV_FRA_DATO)
+        publiserAvsluttArbeidssokerPeriode(fnr)
 
-        kafkaConsumerService.consumeEndringPaOppfolgingBruker(oppfolginsBrukerEndretTilISERV)
-
-        val sluttMelding = ConsumerRecord(
-            "topic",
-            0,
-            0,
-            "dummyKey",
-            arbeidssokerperiode(
-                fnr.get(),
-                periodeAvsluttet = true,
-                periodeStartet = arbeidsoekerPeriodeStartet.atZone(ZoneId.systemDefault()).toInstant()
-            )
-        )
-        arbeidssoekerperiodeConsumerService.consumeArbeidssøkerperiode(
-            ConsumerRecord(
-                "topic",
-                0,
-                0,
-                "dummyKey",
-                nyPeriode
-            )
-        )
-        arbeidssoekerperiodeConsumerService.consumeArbeidssøkerperiode(sluttMelding)
-
-        assertThat(utmeldingRepository.eksisterendeIservBruker(aktorId).isPresent).isTrue()
+        assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId)).describedAs("Skal være lagret som kandidat for utmelding").isNotNull()
+        assertThat(utmeldingRepository.eksisterendeIservBruker(aktorId)).describedAs("Skal IKKE finnes i gammel utmeldings-tabell").isEmpty()
     }
 
     @Test
@@ -256,19 +262,7 @@ class KandidatForUtmeldingFlytTest(
 
         assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId)).isNotNull()
 
-        val nyPeriode = arbeidssokerperiode(
-            fnr.get(),
-            periodeStartet = LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant()
-        )
-        arbeidssoekerperiodeConsumerService.consumeArbeidssøkerperiode(
-            ConsumerRecord(
-                "topic",
-                0,
-                0,
-                "dummyKey",
-                nyPeriode
-            )
-        )
+        publiserStartArbeidssokerPeriode(fnr, LocalDateTime.now())
 
         assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId)).isNull()
     }
@@ -318,18 +312,7 @@ class KandidatForUtmeldingFlytTest(
 
         assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId)).isNull()
 
-        val sluttMelding = ConsumerRecord(
-            "topic",
-            0,
-            0,
-            "dummyKey",
-            arbeidssokerperiode(
-                fnr.get(),
-                periodeAvsluttet = true,
-                avsluttetAarsakType = AvsluttetAarsakType.SVARTE_NEI_I_BEKREFTELSE
-            )
-        )
-        arbeidssoekerperiodeConsumerService.consumeArbeidssøkerperiode(sluttMelding)
+        publiserAvsluttArbeidssokerPeriode(fnr, AvsluttetAarsakType.SVARTE_NEI_I_BEKREFTELSE)
 
         assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId))!!.isEqualTo(
             KandidatForUtmeldingTagDto.ARBEIDSSOKERPERIODE_AVSLUTTET_SVARTE_NEI_I_BEKREFTELSE
@@ -351,18 +334,7 @@ class KandidatForUtmeldingFlytTest(
 
         assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId)).isNull()
 
-        val sluttMelding = ConsumerRecord(
-            "topic",
-            0,
-            0,
-            "dummyKey",
-            arbeidssokerperiode(
-                fnr.get(),
-                periodeAvsluttet = true,
-                avsluttetAarsakType = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST
-            )
-        )
-        arbeidssoekerperiodeConsumerService.consumeArbeidssøkerperiode(sluttMelding)
+        publiserAvsluttArbeidssokerPeriode(fnr, BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST)
 
         assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId))!!
             .isEqualTo(KandidatForUtmeldingTagDto.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT)

@@ -12,6 +12,7 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ArbeidsøkerRegSync_Ikk
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ArbeidsøkerRegSync_NoOp
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ArbeidsøkerRegSync_OppdaterIservDato
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.Avregistrering
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.KandidatForUtmelding
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.OppdateringFraArena_AlleredeUteAvOppfolging
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.OppdateringFraArena_BleIserv
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.OppdateringFraArena_IkkeLengerIserv
@@ -105,6 +106,7 @@ class BigQueryClientImplementation(private val bigQuery: BigQuery): BigQueryClie
 
                 is OppdateringFraArena_IkkeLengerIserv -> mapOf("event" to "avbryt_graceperiode", "trigger" to "EndringPaaOppfolgingsbruker")
                 is ArbeidsøkerRegSync_IkkeLengerIserv -> mapOf("event" to "avbryt_graceperiode", "trigger" to "ArbeidsøkerRegSync")
+                is KandidatForUtmelding -> mapOf("event" to "avbryt_graceperiode", "trigger" to "Kandidat")
 
                 // Disse er opprydding av tabell, bruker var allerede ute av oppfølging
                 is OppdateringFraArena_AlleredeUteAvOppfolging -> mapOf("event" to "slett_fra_utmelding_allerede_ute", "trigger" to "EndringPaaOppfolgingsbruker")

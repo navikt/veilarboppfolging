@@ -25,14 +25,16 @@ class KanskjeIservBrukerTest {
         iservFraDato = ISERV_FRA_DATO,
         aktorId = AKTOR_ID,
         formidlingsgruppe = Formidlingsgruppe.ARBS,
-        trigger = IservTrigger.OppdateringPaaOppfolgingsBruker
+        trigger = IservTrigger.OppdateringPaaOppfolgingsBruker,
+        erUnderoppfolging = true
     )
 
     val brukerIServ = KanskjeIservBruker(
         iservFraDato = ISERV_FRA_DATO,
         aktorId = AKTOR_ID,
         formidlingsgruppe = Formidlingsgruppe.ISERV,
-        trigger = IservTrigger.OppdateringPaaOppfolgingsBruker
+        trigger = IservTrigger.OppdateringPaaOppfolgingsBruker,
+        erUnderoppfolging = true
     )
 
     @Test

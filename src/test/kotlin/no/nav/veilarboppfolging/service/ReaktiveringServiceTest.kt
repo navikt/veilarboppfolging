@@ -135,7 +135,7 @@ class ReaktiveringServiceTest {
         Mockito.`when`(oppfolgingsPeriodeRepository.hentOppfolgingsperioder(AKTOR_ID)).thenReturn(
             listOf(mockStartetOppfolgingsperiode(AKTOR_ID, OPPFOLGINGSPERIODE_ID))
         )
-        Mockito.`when`(kandidatForUtmeldingService.erUtmeldingskandidat(OPPFOLGINGSPERIODE_ID)).thenReturn(true)
+        Mockito.`when`(kandidatForUtmeldingService.erAktivUtmeldingskandidat(OPPFOLGINGSPERIODE_ID)).thenReturn(true)
 
         val resultat = reaktiveringService.reaktiverBrukerIArena(FNR)
 

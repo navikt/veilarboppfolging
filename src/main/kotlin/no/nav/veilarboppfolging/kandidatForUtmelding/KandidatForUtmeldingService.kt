@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.support.TransactionTemplate
 import no.nav.veilarboppfolging.kandidatForUtmelding.dto.KandidatForUtmeldingTagDto
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.UtmeldingsService
 import java.time.ZonedDateTime
 
 @Service
@@ -27,6 +28,7 @@ class KandidatForUtmeldingService(
     private val aktorOppslagClient: AktorOppslagClient,
     private val transactor: TransactionTemplate,
     private val kafkaProducerService: KafkaProducerService,
+    private val utmeldingService: UtmeldingsService,
     @Value("\${app.utmeldingskandidater_aktivert}") private val sendUtmeldingskandidaterTilObo: Boolean,
 ) {
     private val logger = LoggerFactory.getLogger(this::class.java)
@@ -45,6 +47,7 @@ class KandidatForUtmeldingService(
             val kandidat = KandidatForUtmelding.fromHendelse(hendelse)
             kandidatForUtmeldingRepository.lagreKandidat(kandidat)
 
+            utmeldingService.slettFraUtmeldingTabell(hendelse.oppfolgingsperiodeUuid)
             sendUtmeldingskandidatTilObo(hendelse, fnr)
         }
     }
@@ -59,9 +62,19 @@ class KandidatForUtmeldingService(
         return hentKandidatForUtmeldingTag(oppfolgingsperiodeId)
     }
 
-    fun erUtmeldingskandidat(oppfolgingsperiodeId: UUID): Boolean {
+    fun erAktivUtmeldingskandidat(aktorId: AktorId): Boolean {
+        val oppfolgingsperiodeId = oppfolgingsPeriodeRepository
+            .hentGjeldendeOppfolgingsperiode(aktorId)?.getOrNull()?.uuid ?: return false
+        return erAktivUtmeldingskandidat(oppfolgingsperiodeId)
+    }
+
+    fun erAktivUtmeldingskandidat(oppfolgingsperiodeId: UUID): Boolean {
         val kandidat = kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeId)
         return kandidat != null
+    }
+
+    fun erAktivEllerForlengetKandidatForUtmelding(oppfolgingsperiodeId: UUID): Boolean {
+        return kandidatForUtmeldingRepository.erAktivEllerForlengetKandidatForUtmelding(oppfolgingsperiodeId)
     }
 
     fun hentUtmeldingsKandidatHendelser(aktorId: AktorId): List<KandidatForUtmeldingHendelse> {

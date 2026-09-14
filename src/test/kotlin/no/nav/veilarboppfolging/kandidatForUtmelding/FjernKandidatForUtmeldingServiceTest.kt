@@ -92,9 +92,7 @@ class FjernKandidatForUtmeldingServiceTest : IntegrationTest() {
         )
         val filterkategoriPersonId = kandidatForUtmeldingRepository.hentEllerOpprettFilterhendelseId(oppfolgingsperiodeUuid)
 
-        fjernKandidatForUtmeldingService.fjernKandidatForUtmelding(
-            oppfolgingsperiodeUuid,
-        )
+        fjernKandidatForUtmeldingService.fjernKandidatForUtmelding(oppfolgingsperiodeUuid)
 
         assertThat(kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeUuid)).isNull()
         assertThat(kandidatForUtmeldingRepository.hentKandidatMedForlengelse(oppfolgingsperiodeUuid)).isNull()
