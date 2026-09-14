@@ -79,6 +79,10 @@ class KandidatForUtmeldingService(
         return kandidat != null
     }
 
+    fun erAktivEllerForlengetKandidatForUtmelding(oppfolgingsperiodeId: UUID): Boolean {
+        return kandidatForUtmeldingRepository.erAktivEllerForlengetKandidatForUtmelding(oppfolgingsperiodeId)
+    }
+
     fun hentUtmeldingsKandidatHendelser(aktorId: AktorId): List<KandidatForUtmeldingHendelse> {
         return kandidatForUtmeldingRepository.hentAlleKandidatForUtmeldingHendelser(aktorId)
     }

@@ -84,9 +84,11 @@ class OppfolgingsbrukerEndretIArenaService(
                 utmeldingsService.oppdaterUtmeldingsStatus(KanskjeIservBruker.of(endringOppfolgingsbruker, erBrukerUnderOppfolgingLokalt))
             }
             is BleInaktivertMedKanReaktiveres -> {
-                val kandidatTag = oppfolgingService.hentGjeldendeOppfolgingsperiode(endringOppfolgingsbruker.aktorId)
-                    .map { kandidatForUtmeldingService.hentKandidatForUtmeldingTag(it.uuid) }
-                if (kandidatTag.orElse(null) == null) {
+                val erForlengetEllerAktivKandidatForUtmelding: Boolean = oppfolgingService
+                    .hentGjeldendeOppfolgingsperiode(endringOppfolgingsbruker.aktorId)
+                    .map { kandidatForUtmeldingService.erAktivEllerForlengetKandidatForUtmelding(it.uuid) }
+                    .orElse(false)!!
+                if (!erForlengetEllerAktivKandidatForUtmelding) {
                     // Bare start grace-periode på 28 dager hvis det ikke finnes noe kandidat-tag på bruker
                     utmeldingsService.oppdaterUtmeldingsStatus(KanskjeIservBruker.of(endringOppfolgingsbruker, erBrukerUnderOppfolgingLokalt))
                 }
