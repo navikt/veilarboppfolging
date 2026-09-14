@@ -225,6 +225,8 @@ class AvsluttOppfolgingServiceTest {
         assertInstanceOf<KunneIkkeAvsluttes>(result)
     }
 
+    //TODO: test for å kunne manuelt avslutte en forlenget kandidat
+
     private fun mockBrukerIdenter() {
         `when`(aktorOppslagClient.hentIdenter(TEST_FNR)).thenReturn(
             BrukerIdenter(
