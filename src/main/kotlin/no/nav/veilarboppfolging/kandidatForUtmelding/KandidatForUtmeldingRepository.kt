@@ -18,10 +18,6 @@ class KandidatForUtmeldingRepository(
     private val db: NamedParameterJdbcTemplate
 ) {
 
-    fun lagreKandidatForUtmeldingHendelse(hendelse: KandidatForUtmeldingHendelse): UUID {
-        return insertUtmeldingsHendelse(hendelse)
-    }
-
     fun lagreKandidat(kandidat: KandidatForUtmelding) {
         val hendelseId = insertUtmeldingsHendelse(kandidat.sisteHendelse)
         val sql = """
