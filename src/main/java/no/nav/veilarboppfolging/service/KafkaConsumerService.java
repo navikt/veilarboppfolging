@@ -26,7 +26,6 @@ import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
 public class KafkaConsumerService {
 
     private final AuthService authService;
-    private final UtmeldingsService utmeldingsService;
     private final OppfolgingsbrukerEndretIArenaService oppfolgingsbrukerEndretIArenaService;
     private final AktorOppslagClient aktorOppslagClient;
     private final SisteEndringPaaOppfolgingBrukerService sisteEndringPaaOppfolgingBrukerService;
@@ -36,12 +35,10 @@ public class KafkaConsumerService {
     @Autowired
     public KafkaConsumerService(
             AuthService authService,
-            @Lazy UtmeldingsService utmeldingsService,
             @Lazy OppfolgingsbrukerEndretIArenaService oppfolgingsbrukerEndretIArenaService,
             AktorOppslagClient aktorOppslagClient,
             SisteEndringPaaOppfolgingBrukerService sisteEndringPaaOppfolgingBrukerService) {
         this.authService = authService;
-        this.utmeldingsService = utmeldingsService;
         this.oppfolgingsbrukerEndretIArenaService = oppfolgingsbrukerEndretIArenaService;
         this.aktorOppslagClient = aktorOppslagClient;
         this.sisteEndringPaaOppfolgingBrukerService = sisteEndringPaaOppfolgingBrukerService;
