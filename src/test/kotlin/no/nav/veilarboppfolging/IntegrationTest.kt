@@ -104,6 +104,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.web.context.WebApplicationContext
 import java.time.temporal.ChronoUnit
 import no.nav.poao_tilgang.client.NavAnsattTilgangTilEksternBrukerKjernereglerPolicyInput
+import no.nav.veilarboppfolging.kandidatForUtmelding.FilterkategoriRepository
 import no.nav.veilarboppfolging.kandidatForUtmelding.FjernKandidatForUtmeldingService
 import no.nav.veilarboppfolging.kandidatForUtmelding.ForlengelseDTO
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingController
@@ -261,6 +262,9 @@ open class IntegrationTest {
 
     @Autowired
     lateinit var kandidatForUtmeldingRepository: KandidatForUtmeldingRepository
+
+    @Autowired
+    lateinit var filterkategoriRepository: FilterkategoriRepository
 
     @BeforeEach
     fun beforeEach() {

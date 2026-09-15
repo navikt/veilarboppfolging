@@ -34,7 +34,7 @@ class RepubliserKandidatForUtmeldingServiceTest : IntegrationTest() {
             arbeidssokerPeriodeAvsluttet(oppfolgingsperiodeUuid)
                 .let { KandidatForUtmelding.fromHendelse(it) }
         )
-        val filterkategoriPersonId = kandidatForUtmeldingRepository.hentEllerOpprettFilterhendelseId(oppfolgingsperiodeUuid)
+        val filterkategoriPersonId = filterkategoriRepository.hentEllerOpprettFilterhendelseId(oppfolgingsperiodeUuid)
         assertThat(kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeUuid)).isNotNull()
 
         republiserKandidatForUtmeldingService.republiserKandidatForUtmelding(oppfolgingsperiodeUuid)
@@ -64,7 +64,7 @@ class RepubliserKandidatForUtmeldingServiceTest : IntegrationTest() {
 
         republiserKandidatForUtmeldingService.republiserKandidatForUtmelding(oppfolgingsperiodeUuid)
 
-        val filterkategoriPersonId = kandidatForUtmeldingRepository.hentFilterhendelseId(oppfolgingsperiodeUuid)
+        val filterkategoriPersonId = filterkategoriRepository.hentFilterhendelseId(oppfolgingsperiodeUuid)
         val filterhendelse = getFilterhendelseRecordsStoredInKafkaOutbox(kafkaProperties.portefoljeHendelsesfilterTopic, filterkategoriPersonId.toString()).last()
         assertThat(filterhendelse.operasjon).isEqualTo(Operasjon.STOPP)
         assertThat(filterhendelse.hendelse).isNull()
@@ -99,7 +99,7 @@ class RepubliserKandidatForUtmeldingServiceTest : IntegrationTest() {
 
         republiserKandidatForUtmeldingService.republiserKandidatForUtmelding(oppfolgingsperiodeUuid)
 
-        val filterkategoriPersonId = kandidatForUtmeldingRepository.hentEllerOpprettFilterhendelseId(oppfolgingsperiodeUuid)
+        val filterkategoriPersonId = filterkategoriRepository.hentEllerOpprettFilterhendelseId(oppfolgingsperiodeUuid)
         val ikkeSammenlignDato = ZonedDateTime.now()
         val filterhendelse = getFilterhendelseRecordsStoredInKafkaOutbox(kafkaProperties.portefoljeHendelsesfilterTopic, filterkategoriPersonId.toString()).firstOrNull()
         assertThat(filterhendelse.let { it?.copy(hendelse = it.hendelse?.copy(dato = ikkeSammenlignDato)) }).isEqualTo(FilterhendelseRecord(

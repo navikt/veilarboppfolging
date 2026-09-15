@@ -1,0 +1,56 @@
+package no.nav.veilarboppfolging.kandidatForUtmelding
+
+import no.nav.common.types.identer.AktorId
+import no.nav.common.types.identer.Fnr
+import no.nav.veilarboppfolging.LocalDatabaseSingleton
+import no.nav.veilarboppfolging.oppfolgingsbruker.BrukerRegistrant
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering.Companion.arbeidssokerRegistrering
+import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
+import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
+import no.nav.veilarboppfolging.test.DbTestUtils
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
+import org.springframework.transaction.support.TransactionTemplate
+
+class FilterkategoriRepositoryTest {
+    private val jdbcTemplate = LocalDatabaseSingleton.jdbcTemplate
+    private val namedJdbcTemplate = NamedParameterJdbcTemplate(jdbcTemplate)
+    private val transactor: TransactionTemplate = DbTestUtils.createTransactor(jdbcTemplate)
+    val oppfolgingsPeriodeRepository = OppfolgingsPeriodeRepository(jdbcTemplate, transactor)
+    val filterkategoriRepository = FilterkategoriRepository(namedJdbcTemplate)
+    val oppfolgingsStatusRepository = OppfolgingsStatusRepository(NamedParameterJdbcTemplate(jdbcTemplate))
+    val aktorId = AktorId.of("4321")
+    val fnr = Fnr.of("1111119999")
+
+    @BeforeEach
+    fun setUp() {
+        DbTestUtils.cleanupTestDb()
+    }
+
+    @Test
+    fun `hentEllerOpprettFilterhendelseId - oppretter og returnerer id hvis den ikke finnes`() {
+        val oppfolgingsbruker = arbeidssokerRegistrering(fnr, aktorId, BrukerRegistrant(fnr))
+        oppfolgingsStatusRepository.opprettOppfolging(aktorId)
+        oppfolgingsPeriodeRepository.start(oppfolgingsbruker)
+        val oppfolgingsperiodeUuid = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId).first().uuid
+
+        val filterhendelseId = filterkategoriRepository.hentEllerOpprettFilterhendelseId(oppfolgingsperiodeUuid)
+
+        assertThat(filterhendelseId).isNotNull
+    }
+
+    @Test
+    fun `hentEllerOpprettFilterhendelseId - oppretter og returnerer eksisterende id`() {
+        val oppfolgingsbruker = arbeidssokerRegistrering(fnr, aktorId, BrukerRegistrant(fnr))
+        oppfolgingsStatusRepository.opprettOppfolging(aktorId)
+        oppfolgingsPeriodeRepository.start(oppfolgingsbruker)
+        val oppfolgingsperiodeUuid = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId).first().uuid
+        val opprinneligFilterhendelseId = filterkategoriRepository.hentEllerOpprettFilterhendelseId(oppfolgingsperiodeUuid)
+
+        val nyFilterhendelseId = filterkategoriRepository.hentEllerOpprettFilterhendelseId(oppfolgingsperiodeUuid)
+
+        assertThat(nyFilterhendelseId).isEqualTo(opprinneligFilterhendelseId)
+    }
+}
