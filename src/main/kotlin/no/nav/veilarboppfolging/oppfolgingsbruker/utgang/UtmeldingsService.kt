@@ -2,7 +2,6 @@ package no.nav.veilarboppfolging.oppfolgingsbruker.utgang
 
 import no.nav.common.types.identer.AktorId
 import no.nav.veilarboppfolging.eventsLogger.BigQueryClient
-import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.UtmeldEtter28Cron.AvslutteOppfolgingResultat
 import no.nav.veilarboppfolging.repository.UtmeldingRepository
 import no.nav.veilarboppfolging.service.AvsluttOppfolgingService
@@ -12,6 +11,7 @@ import no.nav.veilarboppfolging.service.utmelding.KanskjeIservBruker
 import no.nav.veilarboppfolging.utils.SecureLog.secureLog
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import java.util.UUID
 
 @Service
 class UtmeldingsService(
@@ -20,13 +20,12 @@ class UtmeldingsService(
     val oppfolgingService: OppfolgingService,
     val avsluttOppfolgingService: AvsluttOppfolgingService,
     val bigQueryClient: BigQueryClient,
-    private val kandidatForUtmeldingService: KandidatForUtmeldingService
 ) {
     private val log = LoggerFactory.getLogger(UtmeldingsService::class.java)
 
     fun oppdaterUtmeldingsStatus(bruker: KanskjeIservBruker) {
         val hendelse = bruker.resolveUtmeldingsHendelse(
-            { oppfolgingService.erUnderOppfolging(bruker.aktorId) },
+            { bruker.erUnderoppfolging },
             { finnesIUtmeldingTabell(bruker.aktorId) })
 
         when (hendelse) {
@@ -41,6 +40,21 @@ class UtmeldingsService(
             is NoOp -> {
                 secureLog.info("Ingen endring i utmelding tabell. aktorId={}", bruker.aktorId)
             }
+        }
+    }
+
+    fun slettFraUtmeldingTabell(oppfolgingsPeriodeId: UUID) {
+        oppfolgingService.hentOppfolgingsperiode(oppfolgingsPeriodeId.toString()).orElse(null)?.aktorId
+            ?.let { slettFraUtmeldingTabell(KandidatForUtmelding(AktorId.of(it))) }
+    }
+
+    fun slettFraUtmeldingTabell(aktorId: AktorId): AvslutteOppfolgingResultat {
+        try {
+            slettFraUtmeldingTabell(KandidatForUtmelding(aktorId))
+            return AvslutteOppfolgingResultat.IKKE_AVSLUTTET
+        } catch (e: Exception) {
+            secureLog.error("Automatisk avsluttOppfolging feilet for aktoerid $aktorId ", e)
+            return AvslutteOppfolgingResultat.AVSLUTTET_FEILET
         }
     }
 

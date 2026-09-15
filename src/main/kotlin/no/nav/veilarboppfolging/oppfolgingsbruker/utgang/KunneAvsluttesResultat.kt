@@ -33,12 +33,11 @@ sealed class KunneAvsluttesResultat(val kanAvsluttesInput: KanAvsluttesInput) {
             if (avregistreringsType == AvregistreringsType.AdminAvregistrering) return null
 
             if (!input.erUnderOppfolging) return "bruker var ikke under oppfølging"
-            if (!avregistreringsType.erManuellAvregistrering() && !input.erIservIArena) return "bruker var ikke inaktivert i Arena ved forsøk på automatisk avslutning"
             if (input.underKvp) return "bruker var under kvp"
             if (input.harAktiveTiltaksdeltakelser) return "bruker hadde aktive tiltaksdeltakelser"
             if (input.erDeltakerIUngdomsprogrammet) return "bruker er deltaker i ungdomsprogrammet"
             if (input.erArbeidssoeker) return "bruker er registrert som arbeidssøker"
-            if (input.harAap) return  "bruker har AAP"
+            if (input.harAap) return  "bruker mottar eller har søkt om AAP"
             if (!avregistreringsType.erManuellAvregistrering() && input.erOppfolgingForlenget) return "oppfølgingen er forlenget"
             return null
         }

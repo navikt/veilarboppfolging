@@ -3,6 +3,7 @@ package no.nav.veilarboppfolging.service.utmelding
 import no.nav.common.types.identer.AktorId
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2
+import no.nav.veilarboppfolging.oppfolgingsbruker.arena.EndringPaaOppfolgingsBruker
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ArbeidsøkerRegSync_AlleredeUteAvOppfolging
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ArbeidsøkerRegSync_BleIserv
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ArbeidsøkerRegSync_IkkeLengerIserv
@@ -28,7 +29,8 @@ data class KanskjeIservBruker(
     val iservFraDato: LocalDate?,
     val aktorId: AktorId,
     val formidlingsgruppe: Formidlingsgruppe,
-    val trigger: IservTrigger
+    val trigger: IservTrigger,
+    val erUnderoppfolging: Boolean
 ) {
 
     fun resolveUtmeldingsHendelse(erUnderOppfolging: () -> Boolean, erBrukerIUtmeldingsTabell :() -> Boolean): UtmeldingsHendelse {
@@ -87,8 +89,14 @@ data class KanskjeIservBruker(
     private fun erIserv() = formidlingsgruppe == Formidlingsgruppe.ISERV
 
     companion object {
-        fun of(bruker: EndringPaaOppfoelgingsBrukerV2, aktorId: AktorId): KanskjeIservBruker {
-            return KanskjeIservBruker(bruker.iservFraDato, aktorId, bruker.formidlingsgruppe!!, IservTrigger.OppdateringPaaOppfolgingsBruker)
+        fun of(bruker: EndringPaaOppfolgingsBruker, underOppfolging: Boolean): KanskjeIservBruker {
+            return KanskjeIservBruker(
+                bruker.iservFraDato,
+                bruker.aktorId,
+                bruker.formidlingsgruppe,
+                IservTrigger.OppdateringPaaOppfolgingsBruker,
+                erUnderoppfolging = underOppfolging
+            )
         }
     }
 }

@@ -9,7 +9,7 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.FREG_STATUS_KREVER_MAN
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.FREG_STATUS_KREVER_MANUELL_GODKJENNING_PGA_IKKE_BOSATT
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.FREG_STATUS_OK
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.IKKE_LOVLIG_OPPHOLD
-import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.IKKE_TILGANG_ENHET
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.IKKE_TILGANG_EGNE_ANSATTE
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.IKKE_TILGANG_FORTROLIG_ADRESSE
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.KanStarteOppfolgingDto
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.KanStarteOppfolgingSjekk.Companion.sjekkKanStarteOppfolgingPaBrukerForVeileder
@@ -63,12 +63,12 @@ class KanStarteOppfolgingTest {
 
     @Test
     fun `ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT skal være en OK men skal fortsatt kreve tilgang`() {
-        val harTilgang = lazy { IKKE_TILGANG_ENHET }
+        val harTilgang = lazy { IKKE_TILGANG_EGNE_ANSATTE }
         val oppfolgingStatus = lazy { ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT }
         val folkeregisterStatus = lazy { FREG_STATUS_OK }
         val brukerUnder18 = lazy { true }
         val result = sjekkKanStarteOppfolgingPaBrukerForVeileder(brukerUnder18, oppfolgingStatus, harTilgang, folkeregisterStatus)
-        assertEquals(result, KanStarteOppfolgingDto.IKKE_TILGANG_ENHET)
+        assertEquals(result, KanStarteOppfolgingDto.IKKE_TILGANG_EGNE_ANSATTE)
     }
 
     @Test

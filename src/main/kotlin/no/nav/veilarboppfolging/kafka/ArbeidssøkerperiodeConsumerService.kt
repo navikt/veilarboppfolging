@@ -14,7 +14,6 @@ import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.veilarboppfolging.kandidatForUtmelding.ArbeidssokerperiodeAvsluttetHendelseType
 import no.nav.veilarboppfolging.kandidatForUtmelding.ArbeidssøkerPeriodeAvsluttet
 import no.nav.veilarboppfolging.kandidatForUtmelding.FjernKandidatForUtmeldingService
-import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingHendelseType
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingHendelseUtfortAvType
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.StartetAvType
@@ -79,34 +78,33 @@ open class ArbeidssøkerperiodeConsumerService(
             val registrant =  startetAvType.toStartetAvType().toRegistrant(navIdent, fnr)
 
             startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.arbeidssokerRegistrering(fnr, aktørId, registrant))
+            if(nyestePeriode != null) fjernKandidatForUtmeldingService.fjernKandidatForUtmelding(nyestePeriode.uuid)
             utmeldHvisBrukerBleIservEtterArbeidssøkerRegistrering(fnr, arbeidssøkerperiodeStartet, aktørId)
-            if(nyestePeriode != null)
-                fjernKandidatForUtmeldingService.fjernKandidatForUtmelding(nyestePeriode.uuid)
         } else {
             logger.info("Melding om avsluttet arbeidssøkerperiode, flagger som utmeldingskandidat hvis under oppfølging")
             val gjeldendePeriode = oppfolgingsperioder.firstOrNull { it.sluttDato == null }
             if (gjeldendePeriode != null) {
                 val kilde = arbeidssøkerperiode.avsluttet?.kilde ?: "arbeidssøkerregisteret"
-                val avsluttetAarsakType = arbeidssøkerperiode.avslutningsInfo.aarsaksinformasjon.type
+                val avsluttetAarsakType = arbeidssøkerperiode.avslutningsInfo?.aarsaksinformasjon?.type
                 val avsluttetAv = when(arbeidssøkerperiode.avsluttet?.utfoertAv?.type) {
                     BrukerType.UKJENT_VERDI, BrukerType.UDEFINERT, null -> KandidatForUtmeldingHendelseUtfortAvType.UKJENT
                     BrukerType.VEILEDER -> KandidatForUtmeldingHendelseUtfortAvType.VEILEDER
                     BrukerType.SYSTEM -> KandidatForUtmeldingHendelseUtfortAvType.SYSTEM
                     BrukerType.SLUTTBRUKER -> KandidatForUtmeldingHendelseUtfortAvType.BRUKER
                 }
-                val type = when (arbeidssøkerperiode.avslutningsInfo.aarsaksinformasjon.type) {
+                val type = when (avsluttetAarsakType) {
                     AvsluttetAarsakType.SVARTE_NEI_I_BEKREFTELSE -> ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_SVARTE_NEI_I_BEKREFTELSE
                     AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST -> ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT
-                    AvsluttetAarsakType.UDEFINERT, AvsluttetAarsakType.UKJENT_VERDI -> ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET
+                    AvsluttetAarsakType.UDEFINERT, AvsluttetAarsakType.UKJENT_VERDI, null -> ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET
                 }
-                kandidatForUtmeldingService.lagreKandidatForUtmelding(
+                kandidatForUtmeldingService.handterUtmeldingsHendelse(
                     fnr,
                     ArbeidssøkerPeriodeAvsluttet(
                         oppfolgingsperiodeUuid = gjeldendePeriode.uuid,
                         utfortAvType = avsluttetAv,
                         utfortAv = arbeidssøkerperiode.avsluttet?.utfoertAv?.id,
                         kilde = kilde,
-                        avslutningsarsak = avsluttetAarsakType.toString(),
+                        avslutningsarsak = avsluttetAarsakType?.toString(),
                         hendelseTidspunkt = arbeidssøkerperiode.avsluttet.tidspunkt,
                         arbeidssokerperiodeAvsluttetHendelseType = type,
                     )
@@ -135,7 +133,14 @@ data class KanskjeIservBrukerMedPresisIservDato(
     val aktorId: AktorId,
     val formidlingsgruppe: Formidlingsgruppe
 ) {
-    fun toKanskjeIservBruker(): KanskjeIservBruker = KanskjeIservBruker(this.iservFraDato, this.aktorId, this.formidlingsgruppe, IservTrigger.ArbeidssøkerRegistreringSync)
+    fun toKanskjeIservBruker(): KanskjeIservBruker = KanskjeIservBruker(
+        this.iservFraDato,
+        this.aktorId,
+        this.formidlingsgruppe,
+        IservTrigger.ArbeidssøkerRegistreringSync,
+        // Denne blir alltid kalt etter at man gjør startOppfolgingHvisIkkeAlleredeStartet(...)
+        erUnderoppfolging = true
+    )
 }
 
 fun BrukerType.toStartetAvType(): StartetAvType {

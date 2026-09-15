@@ -7,5 +7,6 @@ class ReaktiveringSuccess(val kode: ArenaRegistreringResultat): ReaktiveringResu
 sealed class ReaktiveringError(val message: String): ReaktiveringResult()
 
 object AlleredeUnderoppfolgingError: ReaktiveringError("Allerede under oppfølging")
+object BrukerErUtmeldingskandidat: ReaktiveringError("Bruker er utmeldingskandidat og kan ikke reaktiveres - men skal forlenges")
 class FeilFraArenaError(val arenaResultat: ArenaRegistreringResultat): ReaktiveringError("Kunne ikke starte reaktivering av bruker i Arena: ${arenaResultat.name}")
 class UkjentFeilUnderReaktiveringError(message: String, val throwable: Throwable): ReaktiveringError(message)

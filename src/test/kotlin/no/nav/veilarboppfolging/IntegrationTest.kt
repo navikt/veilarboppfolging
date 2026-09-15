@@ -103,6 +103,8 @@ import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.web.context.WebApplicationContext
 import java.time.temporal.ChronoUnit
+import no.nav.poao_tilgang.client.NavAnsattTilgangTilEksternBrukerKjernereglerPolicyInput
+import no.nav.veilarboppfolging.kandidatForUtmelding.FilterkategoriRepository
 import no.nav.veilarboppfolging.kandidatForUtmelding.FjernKandidatForUtmeldingService
 import no.nav.veilarboppfolging.kandidatForUtmelding.ForlengelseDTO
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingController
@@ -261,6 +263,9 @@ open class IntegrationTest {
     @Autowired
     lateinit var kandidatForUtmeldingRepository: KandidatForUtmeldingRepository
 
+    @Autowired
+    lateinit var filterkategoriRepository: FilterkategoriRepository
+
     @BeforeEach
     fun beforeEach() {
         DbTestUtils.cleanupTestDb(jdbcTemplate)
@@ -291,7 +296,7 @@ open class IntegrationTest {
             avslutningsarsak = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString(),
             hendelseTidspunkt = ZonedDateTime.now().toInstant(),
         )
-        kandidatForUtmeldingService.lagreKandidatForUtmelding(fnr,kandidat)
+        kandidatForUtmeldingService.handterUtmeldingsHendelse(fnr,kandidat)
     }
 
     fun forlengKandidatForUtmelding(fnr: Fnr, forlengTil: LocalDate) {
@@ -457,6 +462,16 @@ open class IntegrationTest {
 
     fun mockPoaoTilgangHarTilgangTilBruker(veilederUuid: UUID, fnr: Fnr, decision: Decision, tilgangType: TilgangType = TilgangType.LESE) {
         val policyInput = NavAnsattTilgangTilEksternBrukerPolicyInput(
+            navAnsattAzureId = veilederUuid,
+            tilgangType = tilgangType,
+            norskIdent = fnr.get()
+        )
+        val apiResult = ApiResult.success(decision)
+        doReturn(apiResult).`when`(poaoTilgangClient).evaluatePolicy(policyInput)
+    }
+
+    fun mockPoaoTilgangHarTilgangTilBrukerUtenGeografiskTilgangskontroll(veilederUuid: UUID, fnr: Fnr, decision: Decision, tilgangType: TilgangType = TilgangType.LESE) {
+        val policyInput = NavAnsattTilgangTilEksternBrukerKjernereglerPolicyInput(
             navAnsattAzureId = veilederUuid,
             tilgangType = tilgangType,
             norskIdent = fnr.get()

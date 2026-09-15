@@ -9,14 +9,16 @@ data class FilterhendelseRecord(
     val avsender: String = "veilarboppfolging",
     val kategori: Kategori,
     val operasjon: Operasjon,
-    val hendelse: HendelseInnhold
+    val hendelse: HendelseInnhold?,
+    val schemaVersjon: String = "V2",
 ) {
     data class HendelseInnhold(
         val beskrivelse: String,
         val beskrivelseEnum: String?,
-        val dato: ZonedDateTime,
+        val tidspunkt: ZonedDateTime,
         val lenke: URL,
         val detaljer: String?,
+        val tidspunktFrist: ZonedDateTime?,
     )
 }
 
@@ -25,7 +27,6 @@ enum class BeskrivelseEnum {
     ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
     ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET,
     FORLENGELSE_UTLOPT,
-    FORLENGELSE_OPPRETTET,
 }
 
 enum class Kategori {

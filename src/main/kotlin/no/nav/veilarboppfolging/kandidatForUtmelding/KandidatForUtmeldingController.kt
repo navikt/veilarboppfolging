@@ -54,7 +54,7 @@ class KandidatForUtmeldingController(
 
         val forlengelseType = kandidatForUtmeldingService.hentForlengelseType(oppfolgingsperiodeId)
 
-        val forlengelseHendelse = ForlengelseHendelse(
+        val forlengelseHendelse = ForlengelseOpprettetEllerEndretHendelse(
             oppfolgingsperiodeUuid = oppfolgingsperiodeId,
             utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
             utfortAv = authService.innloggetVeilederIdent,

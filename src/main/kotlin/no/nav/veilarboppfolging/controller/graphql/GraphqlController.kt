@@ -4,6 +4,11 @@ import graphql.GraphQLContext
 import graphql.GraphQLError
 import graphql.execution.DataFetcherResult
 import graphql.schema.DataFetchingEnvironment
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
+import java.util.UUID
+import kotlin.jvm.optionals.getOrDefault
+import kotlin.jvm.optionals.getOrNull
 import no.nav.common.auth.context.UserRole
 import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.client.norg2.Norg2Client
@@ -15,15 +20,29 @@ import no.nav.poao_tilgang.client.Decision
 import no.nav.poao_tilgang.client.PoaoTilgangClient
 import no.nav.poao_tilgang.client.TilgangType
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
-import no.nav.veilarboppfolging.ForbiddenException
 import no.nav.veilarboppfolging.client.pdl.PdlFolkeregisterStatusClient
 import no.nav.veilarboppfolging.controller.PoaoTilgangError
-import no.nav.veilarboppfolging.controller.graphql.brukerStatus.*
-import no.nav.veilarboppfolging.controller.graphql.oppfolging.*
+import no.nav.veilarboppfolging.controller.graphql.brukerStatus.BrukerStatusArenaDto
+import no.nav.veilarboppfolging.controller.graphql.brukerStatus.BrukerStatusDto
+import no.nav.veilarboppfolging.controller.graphql.brukerStatus.BrukerStatusKrrDto
+import no.nav.veilarboppfolging.controller.graphql.brukerStatus.BrukerStatusManuellDto
+import no.nav.veilarboppfolging.controller.graphql.brukerStatus.KontorSperre
+import no.nav.veilarboppfolging.controller.graphql.brukerStatus.VeilederTilordningDto
+import no.nav.veilarboppfolging.controller.graphql.oppfolging.EnhetDto
+import no.nav.veilarboppfolging.controller.graphql.oppfolging.KildeDto
+import no.nav.veilarboppfolging.controller.graphql.oppfolging.KvpPeriodeDto
+import no.nav.veilarboppfolging.controller.graphql.oppfolging.OppfolgingDto
+import no.nav.veilarboppfolging.controller.graphql.oppfolging.OppfolgingsEnhetQueryDto
+import no.nav.veilarboppfolging.controller.graphql.oppfolging.OppfolgingsperiodeDto
 import no.nav.veilarboppfolging.controller.graphql.veilederTilgang.VeilederTilgangDto
 import no.nav.veilarboppfolging.ident.toCommonIdent
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService
-import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingTag
+import no.nav.veilarboppfolging.kandidatForUtmelding.dto.ForlengelseDto
+import no.nav.veilarboppfolging.kandidatForUtmelding.dto.KandidatForUtmeldingHendelseDto
+import no.nav.veilarboppfolging.kandidatForUtmelding.dto.KandidatForUtmeldingTagDto
+import no.nav.veilarboppfolging.kandidatForUtmelding.dto.UtmeldingskandidatDto
+import no.nav.veilarboppfolging.kandidatForUtmelding.dto.toDto
+import no.nav.veilarboppfolging.kandidatForUtmelding.dto.toKandidatForUtmeldingHendelseDto
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ErBrukerUnderOppfolging
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.KanStarteOppfolgingDto
@@ -31,7 +50,10 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.KanStarteOppfolgingEks
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.KanStarteOppfolgingEksterneDto.Companion.sjekkKanStarteOppfolgingPaBrukerForEksterne
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.KanStarteOppfolgingSjekk.Companion.sjekkKanStarteOppfolgingPaBrukerForVeileder
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.toKanStarteOppfolging
-import no.nav.veilarboppfolging.repository.*
+import no.nav.veilarboppfolging.repository.ArbeidsoppfolgingskontorRepository
+import no.nav.veilarboppfolging.repository.KvpRepository
+import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
+import no.nav.veilarboppfolging.repository.VeilederTilordningerRepository
 import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity
 import no.nav.veilarboppfolging.service.AuthService
@@ -45,10 +67,6 @@ import org.springframework.graphql.data.method.annotation.SchemaMapping
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Controller
 import org.springframework.web.server.ResponseStatusException
-import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
-import kotlin.jvm.optionals.getOrDefault
-import kotlin.jvm.optionals.getOrNull
 
 enum class TilgangResultat {
     HAR_TILGANG,
@@ -83,8 +101,8 @@ class GraphqlController(
     }
 
     @QueryMapping
-    fun utmeldingskandidatTag(@Argument fnr: String? = null, environment: DataFetchingEnvironment): DataFetcherResult<KandidatForUtmeldingTag> {
-        val dataFetchResult = DataFetcherResult.newResult<KandidatForUtmeldingTag>()
+    fun utmeldingskandidatTag(@Argument fnr: String? = null, environment: DataFetchingEnvironment): DataFetcherResult<KandidatForUtmeldingTagDto> {
+        val dataFetchResult = DataFetcherResult.newResult<KandidatForUtmeldingTagDto>()
         val tilgang = sjekkTilgang(fnr, EksterneHarIkkeTilgang)
         if (tilgang is HarIkkeTilgang) {
             return dataFetchResult
@@ -107,6 +125,54 @@ class GraphqlController(
         return kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId).let { tag ->
             dataFetchResult.localContext(localContext).data(tag).build()
         }
+    }
+
+    @QueryMapping
+    fun utmeldingskandidat(@Argument fnr: String? = null, environment: DataFetchingEnvironment): DataFetcherResult<UtmeldingskandidatDto> {
+        val dataFetchResult = DataFetcherResult.newResult<UtmeldingskandidatDto>()
+        val tilgang = sjekkTilgang(fnr, EksterneHarIkkeTilgang)
+        if (tilgang is HarIkkeTilgang) {
+            return dataFetchResult
+                .error(GraphQLError.newError()
+                    .message("Ikke tilgang til forlengelser: ${tilgang.message}")
+                    .path(environment.executionStepInfo.path)
+                    .build())
+                .build()
+        }
+
+        val eksternBrukerId = fnrFraContext(fnr)
+
+        val fnr = eksternBrukerId.getFnr()
+        val aktorId = eksternBrukerId.getAktorId()
+        val periodeId = oppfolgingService.hentGjeldendeOppfolgingsperiode(aktorId).map { it.uuid }.getOrNull()
+
+        val localContext = GraphQLContext.getDefault()
+            .put("fnr", fnr)
+            .put("aktorId", aktorId)
+            .apply { periodeId?.let { put("oppfolgingsPeriodeId", it) } }
+
+        return dataFetchResult
+            .localContext(localContext)
+            .data(UtmeldingskandidatDto(tag = null, utmeldingskandidatHendelser = null, aktivForlengelse = null))
+            .build()
+    }
+
+    @SchemaMapping(typeName = "Utmeldingskandidat", field = "aktivForlengelse")
+    fun aktivForlengelse(@LocalContextValue(required = false) oppfolgingsPeriodeId: UUID?): ForlengelseDto? {
+        if (oppfolgingsPeriodeId == null) return null
+        return kandidatForUtmeldingService.hentAktivForlengelse(oppfolgingsPeriodeId)?.toDto()
+    }
+
+    @SchemaMapping(typeName = "Utmeldingskandidat", field = "utmeldingskandidatHendelser")
+    fun utmeldingskandidatHendelser(@LocalContextValue aktorId: AktorId): List<KandidatForUtmeldingHendelseDto> {
+        val hendelser = kandidatForUtmeldingService.hentUtmeldingsKandidatHendelser(aktorId)
+        return hendelser.map { it.toKandidatForUtmeldingHendelseDto() }
+    }
+
+    @SchemaMapping(typeName = "Utmeldingskandidat", field = "tag")
+    fun utmeldingskandidatTag(@LocalContextValue(required = false) oppfolgingsPeriodeId: UUID?): KandidatForUtmeldingTagDto? {
+        if (oppfolgingsPeriodeId == null) return null
+        return kandidatForUtmeldingService.hentKandidatForUtmeldingTag(oppfolgingsPeriodeId)
     }
 
     @QueryMapping
@@ -171,6 +237,7 @@ class GraphqlController(
                     harVeilederLeseTilgangTilBrukersEnhet = null,
                     harVeilederTilgangFlytteBrukerTilEgetKontor = null,
                     harAktiveTiltaksdeltakelserVedFlyttingTilEgetKontor = null,
+                    harVeilederTilgangStarteOppfolging = null,
                 )
             }.let { result.localContext(context).data(it).build() }
     }
@@ -190,14 +257,22 @@ class GraphqlController(
     fun harVeilederTilgangFlytteBrukerTilEgetKontor(tilgang: VeilederTilgangDto, @LocalContextValue fnr: Fnr): Boolean {
         val aktorId = aktorOppslagClient.hentAktorId(fnr)
         val underOppfølging = erUnderOppfolging(aktorId)
-        val tilgangTilBruker = evaluerNavAnsattTilgangTilEksternBruker(fnr.get())
-        return underOppfølging && (tilgangTilBruker == TilgangResultat.IKKE_TILGANG_ENHET || tilgangTilBruker == TilgangResultat.HAR_TILGANG)
+        val tilgangTilBruker = evaluerNavAnsattTilgangTilEksternBrukerUtenGeografiskTilgangskontroll(fnr.get())
+        return underOppfølging && (tilgangTilBruker == TilgangResultat.HAR_TILGANG)
+    }
+
+    @SchemaMapping(typeName = "VeilederTilgang", field = "harVeilederTilgangStarteOppfolging")
+    fun harVeilederTilgangStarteOppfolging(tilgang: VeilederTilgangDto, @LocalContextValue fnr: Fnr): Boolean {
+        val aktorId = aktorOppslagClient.hentAktorId(fnr)
+        val underOppfolging = erUnderOppfolging(aktorId)
+        val kanStarteOppfolging = kanStarteOppfolgingIntern(underOppfolging, fnr)
+        return kanStarteOppfolging.veilederHarTilgangTilAStarteOppfolging()
     }
 
     @SchemaMapping(typeName = "VeilederTilgang", field = "harAktiveTiltaksdeltakelserVedFlyttingTilEgetKontor")
     fun harAktiveTiltaksdeltakelserVedFlyttingTilEgetKontor(tilgang: VeilederTilgangDto, @LocalContextValue fnr: Fnr): Boolean? {
-        val tilgangTilBruker = evaluerNavAnsattTilgangTilEksternBruker(fnr.get())
-        return if (tilgangTilBruker == TilgangResultat.IKKE_TILGANG_ENHET || tilgangTilBruker == TilgangResultat.HAR_TILGANG) {
+        val tilgangTilBruker = evaluerNavAnsattTilgangTilEksternBrukerUtenGeografiskTilgangskontroll(fnr.get())
+        return if (tilgangTilBruker == TilgangResultat.HAR_TILGANG) {
             oppfolgingService.harAktiveTiltaksdeltakelser(fnr)
         } else {
             null
@@ -278,6 +353,14 @@ class GraphqlController(
         }
     }
 
+    private fun evaluerNavAnsattTilgangTilEksternBrukerUtenGeografiskTilgangskontroll(fnr: String): TilgangResultat {
+        val decision = authService.evaluerNavAnsattTilgangTilBrukerUtenGeografiskTilgangskontroll(Fnr.of(fnr), TilgangType.LESE)
+        return when (decision) {
+            is Decision.Deny -> decision.tryToFindDenyReason()
+            Decision.Permit -> TilgangResultat.HAR_TILGANG
+        }
+    }
+
     @SchemaMapping(typeName = "OppfolgingsEnhetsInfo", field = "enhet")
     fun arenaOppfolgingsEnhet(oppfolgingsEnhet: OppfolgingsEnhetQueryDto, @LocalContextValue fnr: Fnr): EnhetDto? {
         val aktorId = aktorOppslagClient.hentAktorId(fnr)
@@ -302,11 +385,15 @@ class GraphqlController(
     }
 
     @SchemaMapping(typeName = "OppfolgingDto", field = "kanStarteOppfolging")
-    fun kanStarteOppfolging(oppfolgingDto: OppfolgingDto, @LocalContextValue erUnderOppfolging: Boolean, @LocalContextValue fnr: Fnr): KanStarteOppfolgingDto? {
+    fun kanStarteOppfolging(@LocalContextValue erUnderOppfolging: Boolean, @LocalContextValue fnr: Fnr): KanStarteOppfolgingDto? {
+        return kanStarteOppfolgingIntern(erUnderOppfolging, fnr)
+    }
+
+    private fun kanStarteOppfolgingIntern(erUnderOppfolging: Boolean, fnr: Fnr): KanStarteOppfolgingDto {
         val gyldigOppfolging = lazy {
             ErBrukerUnderOppfolging.evaluate(erUnderOppfolging, arenaService.brukerErIservIArena(fnr))
         }
-        val gyldigTilgang = lazy { evaluerNavAnsattTilgangTilEksternBruker(fnr.get()).toKanStarteOppfolging() }
+        val gyldigTilgang = lazy { evaluerNavAnsattTilgangTilEksternBrukerUtenGeografiskTilgangskontroll(fnr.get()).toKanStarteOppfolging() }
         val folkeregisterstatus = lazy { pdlFolkeregisterStatusClient.hentFolkeregisterStatus(fnr) }
         val brukerErUnder18 = lazy { folkeregisterstatus.value.under18 }
         val gyldigFregStatus = lazy { folkeregisterstatus.value.toKanStarteOppfolging() }

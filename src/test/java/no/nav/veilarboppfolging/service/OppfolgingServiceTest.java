@@ -509,14 +509,14 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     }
 
     @Test
-    public void kanIkkeAvslutteOmManErAktivIArenaHvisAvslutningEr_UtmeldtEtter28Dager() {
+    public void kanAvslutteOmManErAktivIArenaHvisAvslutningEr_UtmeldtEtter28Dager() {
         startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.Companion.arbeidssokerRegistrering(fnr, aktorId, new VeilederRegistrant(NAV_IDENT)));
         assertUnderOppfolgingLagret(aktorId);
         gittArenaOppfolgingStatus("ARBS", null);
 
         KunneAvsluttesResultat avslutningStatusData = avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(new UtmeldtEtter28Dager(aktorId));
 
-        assertInstanceOf(KunneIkkeAvsluttes.class, avslutningStatusData);
+        assertInstanceOf(KunneAvsluttes.class, avslutningStatusData);
     }
 
     @Test
