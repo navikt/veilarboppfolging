@@ -40,7 +40,7 @@ data class KandidatUtmeldtEtter28Dager(override val aktorId: AktorId) : Avregist
     override fun getAvregistreringsType() = AvregistreringsType.KandidatUtmeldtEtter28Dager
 
     companion object {
-        const val BEGRUNNELSE = "Oppfølging avsluttet automatisk grunnet iserv i 28 dager som utmeldingskandidat"
+        const val BEGRUNNELSE = "Oppfølging avsluttet automatisk grunnet kandidat for avslutning i 28 dager"
     }
 }
 
