@@ -15,6 +15,11 @@ val confluentKafkaAvroVersion = "8.2.0"
 val okHttpVersion = "5.5.0"
 val dabBigQuerySchemaVersion = "2026.08.13-08.27.6add270b9bee"
 
+// Overstyrer Tomcat-versjonen som Spring Boots dependency-management ellers ville valgt,
+// for å unngå kjente sårbarheter i den transitivt styrte tomcat-embed-core-versjonen.
+// Samme versjon som er verifisert og i bruk i veilarbportefolje.
+extra["tomcat.version"] = "11.0.25"
+
 plugins {
     val kotlinVersion = "2.4.10"
     kotlin("jvm") version kotlinVersion
