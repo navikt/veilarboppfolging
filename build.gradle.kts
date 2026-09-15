@@ -102,7 +102,7 @@ dependencies {
     implementation("no.nav.common:metrics:$commonVersion")
     implementation("no.nav.common:kafka:$commonVersion")
     implementation("org.apache.avro:avro:$avroVersion")
-    avroSchemas("no.nav.paw.arbeidssokerregisteret.api:main-avro-schema:1.26.06.18.18-1")
+    avroSchemas("no.nav.paw.arbeidssokerregisteret.api:main-avro-schema:1.13764081353.1-2")
     implementation("io.confluent:kafka-avro-serializer:$confluentKafkaAvroVersion") {
         exclude(group = "io.swagger.core.v3")
     }
