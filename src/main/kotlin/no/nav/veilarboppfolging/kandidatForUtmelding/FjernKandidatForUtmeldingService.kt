@@ -19,6 +19,7 @@ import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.Operasjon
 class FjernKandidatForUtmeldingService(
     private val kandidatForUtmeldingRepository: KandidatForUtmeldingRepository,
     private val oppfolgingsPeriodeRepository: OppfolgingsPeriodeRepository,
+    private val filterkategoriRepository: FilterkategoriRepository,
     private val aktorOppslagClient: AktorOppslagClient,
     private val transactor: TransactionTemplate,
     private val kafkaProducerService: KafkaProducerService,
@@ -37,7 +38,7 @@ class FjernKandidatForUtmeldingService(
             }
 
             if (sendUtmeldingskandidaterTilObo) run sendTilObo@{
-                val filterkategoriPersonId = kandidatForUtmeldingRepository.hentFilterhendelseId(oppfolgingsperiodeId) ?: return@sendTilObo
+                val filterkategoriPersonId = filterkategoriRepository.hentFilterhendelseId(oppfolgingsperiodeId) ?: return@sendTilObo
                 val aktorId = oppfolgingsPeriodeRepository.hentOppfolgingsperiode(oppfolgingsperiodeId.toString())
                     .getOrElse { throw IllegalStateException("Oppfølgingsperiode med id $oppfolgingsperiodeId finnes ikke") }?.aktorId
                 val fnr = aktorOppslagClient.hentFnr(AktorId(aktorId))

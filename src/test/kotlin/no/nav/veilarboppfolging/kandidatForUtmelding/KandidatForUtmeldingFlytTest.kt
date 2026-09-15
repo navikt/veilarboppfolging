@@ -12,7 +12,6 @@ import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.EnhetId
 import no.nav.common.types.identer.Fnr
 import no.nav.common.types.identer.NavIdent
-import no.nav.common.types.identer.NorskIdent
 import no.nav.paw.arbeidssokerregisteret.api.v1.Aarsaksinformasjon
 import no.nav.paw.arbeidssokerregisteret.api.v1.AvslutningsInfo
 import no.nav.paw.arbeidssokerregisteret.api.v1.AvsluttetAarsakType
@@ -32,7 +31,6 @@ import no.nav.veilarboppfolging.ident.randomFnr
 import no.nav.veilarboppfolging.kafka.ArbeidssøkerperiodeConsumerService
 import no.nav.veilarboppfolging.kafka.TestUtils
 import no.nav.veilarboppfolging.kandidatForUtmelding.dto.KandidatForUtmeldingTagDto
-import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.FilterhendelseRecord
 import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.Kategori
 import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.Operasjon
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant
@@ -42,7 +40,6 @@ import no.nav.veilarboppfolging.repository.UtmeldingRepository
 import no.nav.veilarboppfolging.service.KafkaConsumerService
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
@@ -385,7 +382,7 @@ class KandidatForUtmeldingFlytTest(
             JsonUtils.getMapper()
                 .writeValueAsString(ForlengelseOpprettetEllerEndretHendelse.Detaljer(forlengelseDato))
         )
-        val filterhendelseId = kandidatForUtmeldingRepository.hentFilterhendelseId(oppfolgingsperiodeUuid)
+        val filterhendelseId = filterkategoriRepository.hentFilterhendelseId(oppfolgingsperiodeUuid)
         assertThat(filterhendelseId).isNotNull
         val filterhendelse = getFilterhendelseRecordsStoredInKafkaOutbox(
             kafkaProperties.portefoljeHendelsesfilterTopic,

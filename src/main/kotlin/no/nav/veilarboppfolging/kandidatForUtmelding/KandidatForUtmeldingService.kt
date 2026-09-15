@@ -23,6 +23,7 @@ import java.time.ZonedDateTime
 class KandidatForUtmeldingService(
     private val avsluttOppfolgingService: AvsluttOppfolgingService,
     private val kandidatForUtmeldingRepository: KandidatForUtmeldingRepository,
+    private val filterkategoriRepository: FilterkategoriRepository,
     private val fjernKandidatForUtmeldingService: FjernKandidatForUtmeldingService,
     private val oppfolgingsPeriodeRepository: OppfolgingsPeriodeRepository,
     private val aktorOppslagClient: AktorOppslagClient,
@@ -124,7 +125,7 @@ class KandidatForUtmeldingService(
     private fun sendUtmeldingskandidatTilObo(kandidat: KandidatForUtmeldingHendelse, fnr: Fnr) {
         if (sendUtmeldingskandidaterTilObo) {
             val filterkategoriPersonId =
-                kandidatForUtmeldingRepository.hentEllerOpprettFilterhendelseId(kandidat.oppfolgingsperiodeUuid)
+                filterkategoriRepository.hentEllerOpprettFilterhendelseId(kandidat.oppfolgingsperiodeUuid)
             logger.info("Sender kandidat for utmelding til OBO med key=$filterkategoriPersonId for oppfølgingsperiode ${kandidat.oppfolgingsperiodeUuid}")
             val filterhendelse = kandidat.tilFilterhendelseRecord(fnr)
             kafkaProducerService.publiserFilterhendelse(filterkategoriPersonId, filterhendelse)

@@ -19,6 +19,7 @@ import org.springframework.transaction.support.TransactionTemplate
 @Service
 class RepubliserKandidatForUtmeldingService(
     private val kandidatForUtmeldingRepository: KandidatForUtmeldingRepository,
+    private val filterkategoriRepository: FilterkategoriRepository,
     private val oppfolgingsPeriodeRepository: OppfolgingsPeriodeRepository,
     private val aktorOppslagClient: AktorOppslagClient,
     private val transactor: TransactionTemplate,
@@ -66,7 +67,7 @@ class RepubliserKandidatForUtmeldingService(
             republiserKandidatForUtmelding(aktivKandidat)
         } else {
             val fnr = finnFnrForOppfolgingsperiode(oppfolgingsperiodeId)
-            val filterkategoriPersonId = kandidatForUtmeldingRepository.hentEllerOpprettFilterhendelseId(oppfolgingsperiodeId)
+            val filterkategoriPersonId = filterkategoriRepository.hentEllerOpprettFilterhendelseId(oppfolgingsperiodeId)
             val filterHendelseRecord = FilterhendelseRecord(
                 personID = NorskIdent(fnr.get()),
                 kategori = Kategori.KANDIDAT_FOR_UTMELDING,
@@ -81,7 +82,7 @@ class RepubliserKandidatForUtmeldingService(
         if (sendUtmeldingskandidaterTilObo) {
             transactor.executeWithoutResult { _ ->
                 val fnr = finnFnrForOppfolgingsperiode(kandidat.oppfolgingsperiodeId)
-                val filterkategoriPersonId = kandidatForUtmeldingRepository.hentEllerOpprettFilterhendelseId(kandidat.oppfolgingsperiodeId)
+                val filterkategoriPersonId = filterkategoriRepository.hentEllerOpprettFilterhendelseId(kandidat.oppfolgingsperiodeId)
                 val filterhendelseRecord = kandidat.sisteHendelse.tilFilterhendelseRecord(fnr)
                 logger.info("Republiserer kandidat for utmelding til OBO med key=$filterkategoriPersonId for oppfølgingsperiode ${kandidat.oppfolgingsperiodeId}")
                 kafkaProducerService.publiserFilterhendelse(filterkategoriPersonId, filterhendelseRecord)
