@@ -52,14 +52,14 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
         val kandidat = kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeUuid)
         val hendelse = kandidat!!.sisteHendelse
         assertThat(hendelse).isNotNull
-        assertThat(hendelse?.oppfolgingsperiodeUuid).isEqualTo(oppfolgingsperiodeUuid)
-        assertThat(hendelse?.utfortAvType).isEqualTo(KandidatForUtmeldingHendelseUtfortAvType.VEILEDER)
-        assertThat(hendelse?.kilde).isEqualTo("kilde")
-        assertThat(hendelse?.hendelseDataJson?.value).isEqualTo(
+        assertThat(hendelse.oppfolgingsperiodeUuid).isEqualTo(oppfolgingsperiodeUuid)
+        assertThat(hendelse.utfortAvType).isEqualTo(KandidatForUtmeldingHendelseUtfortAvType.VEILEDER)
+        assertThat(hendelse.kilde).isEqualTo("kilde")
+        assertThat(hendelse.hendelseDataJson?.value).isEqualTo(
             JsonUtils.getMapper()
                 .writeValueAsString(ArbeidssøkerPeriodeAvsluttet.Detaljer(BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()))
         )
-        val filterhendelseId = kandidatForUtmeldingRepository.hentFilterhendelseId(oppfolgingsperiodeUuid)
+        val filterhendelseId = filterkategoriRepository.hentFilterhendelseId(oppfolgingsperiodeUuid)
         assertThat(filterhendelseId).isNotNull
         val filterhendelse = getFilterhendelseRecordsStoredInKafkaOutbox(kafkaProperties.portefoljeHendelsesfilterTopic, filterhendelseId.toString()).first()
         assertThat(filterhendelse.operasjon).isEqualTo(Operasjon.START)
@@ -97,7 +97,7 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
         )
 
         assertThat(kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeId)).isNull()
-        assertThat(kandidatForUtmeldingRepository.hentFilterhendelseId(oppfolgingsperiodeId)).isNull()
+        assertThat(filterkategoriRepository.hentFilterhendelseId(oppfolgingsperiodeId)).isNull()
     }
 
     @Test
@@ -125,7 +125,7 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
         )
 
         assertThat(kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeId)).isNull()
-        assertThat(kandidatForUtmeldingRepository.hentFilterhendelseId(oppfolgingsperiodeId)).isNull()
+        assertThat(filterkategoriRepository.hentFilterhendelseId(oppfolgingsperiodeId)).isNull()
     }
 
     @Test
@@ -160,7 +160,7 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
         assertThat(hendelse).isNotNull
         assertThat(hendelse.type).isEqualTo(ForlengelseHendelseType.FORLENGELSE_UTLOPT)
         assertThat(kandidatForUtmeldingRepository.hentKandidatMedForlengelse(oppfolgingsperiodeUuid)).isNull()
-        val filterhendelseId = kandidatForUtmeldingRepository.hentFilterhendelseId(oppfolgingsperiodeUuid)
+        val filterhendelseId = filterkategoriRepository.hentFilterhendelseId(oppfolgingsperiodeUuid)
         assertThat(filterhendelseId).isNotNull
         val filterhendelse = getFilterhendelseRecordsStoredInKafkaOutbox(kafkaProperties.portefoljeHendelsesfilterTopic, filterhendelseId.toString()).first()
         assertThat(filterhendelse.operasjon).isEqualTo(Operasjon.START)
@@ -208,7 +208,7 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
 
         assertThat(kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeUuid)).isNull()
         assertThat(kandidatForUtmeldingRepository.hentKandidatMedForlengelse(oppfolgingsperiodeUuid)).isNull()
-        val filterhendelseId = kandidatForUtmeldingRepository.hentFilterhendelseId(oppfolgingsperiodeUuid)
+        val filterhendelseId = filterkategoriRepository.hentFilterhendelseId(oppfolgingsperiodeUuid)
         assertThat(filterhendelseId).isNotNull()
         // Forlengelse-utløpt skal ikke ha blitt sendt på Kafka
         val filterhendelse = getFilterhendelseRecordsStoredInKafkaOutbox(kafkaProperties.portefoljeHendelsesfilterTopic, filterhendelseId.toString())

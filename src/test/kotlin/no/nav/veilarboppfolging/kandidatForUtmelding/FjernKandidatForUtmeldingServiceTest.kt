@@ -40,7 +40,7 @@ class FjernKandidatForUtmeldingServiceTest : IntegrationTest() {
                 oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
             ).let { KandidatForUtmelding.fromHendelse(it) }
         )
-        val filterkategoriPersonId = kandidatForUtmeldingRepository.hentEllerOpprettFilterhendelseId(oppfolgingsperiodeUuid)
+        val filterkategoriPersonId = filterkategoriRepository.hentEllerOpprettFilterhendelseId(oppfolgingsperiodeUuid)
         assertThat(kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeUuid)).isNotNull()
 
         fjernKandidatForUtmeldingService.fjernKandidatForUtmelding(oppfolgingsperiodeUuid)
@@ -90,7 +90,7 @@ class FjernKandidatForUtmeldingServiceTest : IntegrationTest() {
                 forlengetTil = LocalDate.now().plusDays(30),
             ).let { KandidatForUtmelding.fromHendelse(it) }
         )
-        val filterkategoriPersonId = kandidatForUtmeldingRepository.hentEllerOpprettFilterhendelseId(oppfolgingsperiodeUuid)
+        val filterkategoriPersonId = filterkategoriRepository.hentEllerOpprettFilterhendelseId(oppfolgingsperiodeUuid)
 
         fjernKandidatForUtmeldingService.fjernKandidatForUtmelding(oppfolgingsperiodeUuid)
 
