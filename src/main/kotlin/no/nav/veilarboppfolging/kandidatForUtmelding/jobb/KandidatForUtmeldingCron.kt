@@ -21,7 +21,7 @@ class KandidatForUtmeldingCron(
         }
     }
 
-    @Scheduled(cron = "0 0 5 * * *")
+    @Scheduled(cron = "0 0 * * * *")
     fun avsluttOppfolgingForKandidaterMedPassertAvsluttesAutomatiskDato() {
         if (!leaderElectionClient.isLeader) {
             return
