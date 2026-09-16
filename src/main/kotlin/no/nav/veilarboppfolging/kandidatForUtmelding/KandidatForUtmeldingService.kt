@@ -112,7 +112,7 @@ class KandidatForUtmeldingService(
                 val resultat =
                     avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(KandidatUtmeldtEtter28Dager(aktorId))
                 if (resultat is KunneIkkeAvsluttes) {
-                    kandidatForUtmeldingRepository.lagreKandidatSomIkkeKunneAvsluttes(kandidat.oppfolgingsperiodeId)
+                    kandidatForUtmeldingRepository.lagreKandidatSomIkkeKunneAvsluttes(kandidat.oppfolgingsperiodeId, resultat.begrunnelse)
                     fjernKandidatForUtmeldingService.fjernKandidatForUtmelding(kandidat.oppfolgingsperiodeId)
                     logger.info("Kandidat med oppfølgingsperiode ${kandidat.oppfolgingsperiodeId} kunne ikke avsluttes automatisk og ble flyttet ut av aktiv liste")
                 }
