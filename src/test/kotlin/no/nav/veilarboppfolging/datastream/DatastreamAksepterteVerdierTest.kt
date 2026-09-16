@@ -5,6 +5,7 @@ import no.nav.pto_schema.enums.arena.Hovedmaal
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
 import no.nav.veilarboppfolging.oppfolgingsbruker.StartetAvType
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelse
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvregistreringsType
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
@@ -80,6 +81,15 @@ class DatastreamAksepterteVerdierTest {
             tabellNavn = "oppfolgingsperiode",
             kolonneNavn = "startet_av_type",
             faktiskeVerdier = StartetAvType.entries.map { it.name }.toSet(),
+        )
+    }
+
+    @Test
+    fun `avregistrering_type-snapshot matcher AvregistreringsType-enum`() {
+        verifiserSnapshot(
+            tabellNavn = "oppfolgingsperiode",
+            kolonneNavn = "avregistrering_type",
+            faktiskeVerdier = AvregistreringsType.entries.map { it.name }.toSet(),
         )
     }
 }
