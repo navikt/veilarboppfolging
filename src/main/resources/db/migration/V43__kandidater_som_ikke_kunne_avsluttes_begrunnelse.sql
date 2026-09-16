@@ -1,0 +1,1 @@
+alter table kandidater_som_ikke_kunne_avsluttes add column begrunnelse varchar;

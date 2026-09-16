@@ -98,15 +98,18 @@ class KandidatForUtmeldingRepository(
             .firstOrNull()
     }
 
-    fun lagreKandidatSomIkkeKunneAvsluttes(oppfolgingsperiodeId: UUID) {
+    fun lagreKandidatSomIkkeKunneAvsluttes(oppfolgingsperiodeId: UUID, begrunnelse: String?) {
         db.update(
             """
-            INSERT INTO kandidater_som_ikke_kunne_avsluttes(oppfolgingsperiode_uuid, siste_utmeldingshendelse_id)
-            SELECT oppfolgingsperiode_uuid, siste_utmeldingshendelse_id
+            INSERT INTO kandidater_som_ikke_kunne_avsluttes(oppfolgingsperiode_uuid, siste_utmeldingshendelse_id, begrunnelse)
+            SELECT oppfolgingsperiode_uuid, siste_utmeldingshendelse_id, :begrunnelse
             FROM kandidater_for_utmelding
             WHERE oppfolgingsperiode_uuid = :oppfolgingsperiodeId
             """.trimIndent(),
-            mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeId.toString()),
+            mapOf(
+                "oppfolgingsperiodeId" to oppfolgingsperiodeId.toString(),
+                "begrunnelse" to begrunnelse,
+            ),
         )
     }
 
