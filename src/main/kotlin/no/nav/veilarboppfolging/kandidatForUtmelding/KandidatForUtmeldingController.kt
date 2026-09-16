@@ -17,7 +17,16 @@ import java.time.ZonedDateTime
 data class ForlengelseDTO(
     val fnr: Fnr,
     val forlengetTil: LocalDate
-)
+) {
+    fun valider() {
+        if (forlengetTil.isAfter(LocalDate.now().plusMonths(6))) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Forlengelse kan ikke være mer enn 6 måneder frem i tid")
+        }
+        if (forlengetTil.isBefore(LocalDate.now().plusDays(1))) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Forlengelse må være minst en dag frem i tid")
+        }
+    }
+}
 
 @RestController
 @RequestMapping("/api/forlengelse")
@@ -51,6 +60,7 @@ class KandidatForUtmeldingController(
         } else {
             throw IllegalStateException("Kun veileder kan forlenge oppfølging")
         }
+        forlengelseDTO.valider()
 
         val forlengelseType = kandidatForUtmeldingService.hentForlengelseType(oppfolgingsperiodeId)
 
