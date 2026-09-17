@@ -334,6 +334,39 @@ class KandidatForUtmeldingRepositoryTest {
         assertThat(kandidater.first().oppfolgingsperiodeId).isEqualTo(aktivPeriode)
     }
 
+    @Test
+    fun `hentAlleKandidater - henter både aktive og forlengede kandidater`() {
+        val forlengetOppfolgingsbruker = arbeidssokerRegistrering(fnr, aktorId, BrukerRegistrant(fnr))
+        oppfolgingsStatusRepository.opprettOppfolging(aktorId)
+        oppfolgingsPeriodeRepository.start(forlengetOppfolgingsbruker)
+        val forlengetOppfolgingsperiodeUuid = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId).first().uuid
+        val forlengetKandidat = ForlengelseOpprettetEllerEndretHendelse(
+            oppfolgingsperiodeUuid = forlengetOppfolgingsperiodeUuid,
+            utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
+            utfortAv = "A123123",
+            kilde = "kilde",
+            forlengelseHendelseType = ForlengelseHendelseType.FORLENGELSE_OPPRETTET,
+            hendelseTidspunkt = ZonedDateTime.now().toInstant(),
+            forlengetTil = LocalDate.now().plusDays(10),
+        ).let { KandidatForUtmelding.fromHendelse(it) }
+        kandidatForUtmeldingRepository.lagreKandidat(forlengetKandidat)
+
+        val aktorId2 = AktorId.of("5678")
+        val fnr2 = Fnr.of("1111118899")
+        val aktivOppfolgingsbruker = arbeidssokerRegistrering(fnr2, aktorId2, BrukerRegistrant(fnr2))
+        oppfolgingsStatusRepository.opprettOppfolging(aktorId2)
+        oppfolgingsPeriodeRepository.start(aktivOppfolgingsbruker)
+        val aktivOppfolgingsperiodeUuid = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId2).first().uuid
+        val aktivKandidat = arbeidssøkerPeriodeAvsluttet(aktivOppfolgingsperiodeUuid)
+        kandidatForUtmeldingRepository.lagreKandidat(aktivKandidat)
+
+        val alleKandidater = kandidatForUtmeldingRepository.hentAlleKandidater(0, 10)
+
+        assertThat(alleKandidater).hasSize(2)
+        assertThat(alleKandidater.find { it is ForlengetKandidat }).isNotNull
+        assertThat(alleKandidater.find { it is AktivKandidatForUtmelding }).isNotNull
+    }
+
     fun arbeidssøkerPeriodeAvsluttet(oppfolgingsperiodeUuid: UUID) =
         ArbeidssøkerPeriodeAvsluttet(
                 oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
