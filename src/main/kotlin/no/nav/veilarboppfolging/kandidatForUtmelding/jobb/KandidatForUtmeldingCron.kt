@@ -31,7 +31,7 @@ class KandidatForUtmeldingCron(
         }
     }
 
-    @Scheduled(cron = "0 0 3 * * *")
+    @Scheduled(cron = "0 45 11 * * *")
     fun fjernKandidaterSomIkkeKanAvsluttes() {
         if (!leaderElectionClient.isLeader) {
             return
