@@ -335,7 +335,7 @@ class KandidatForUtmeldingRepositoryTest {
     }
 
     @Test
-    fun `hentAlleKandidater - henter både aktive og forlengede kandidater`() {
+    fun `hentAlleKandidaterSistSjekketForMerEnnEnDagSiden - henter både aktive og forlengede kandidater`() {
         val forlengetOppfolgingsbruker = arbeidssokerRegistrering(fnr, aktorId, BrukerRegistrant(fnr))
         oppfolgingsStatusRepository.opprettOppfolging(aktorId)
         oppfolgingsPeriodeRepository.start(forlengetOppfolgingsbruker)
@@ -350,6 +350,14 @@ class KandidatForUtmeldingRepositoryTest {
             forlengetTil = LocalDate.now().plusDays(10),
         ).let { KandidatForUtmelding.fromHendelse(it) }
         kandidatForUtmeldingRepository.lagreKandidat(forlengetKandidat)
+        namedJdbcTemplate.update(
+            """
+            UPDATE kandidater_for_utmelding
+            SET sist_sjekket = CURRENT_TIMESTAMP - INTERVAL '2 day'
+            WHERE oppfolgingsperiode_uuid = :oppfolgingsperiodeId
+            """.trimIndent(),
+            mapOf("oppfolgingsperiodeId" to forlengetOppfolgingsperiodeUuid.toString())
+        )
 
         val aktorId2 = AktorId.of("5678")
         val fnr2 = Fnr.of("1111118899")
@@ -359,8 +367,16 @@ class KandidatForUtmeldingRepositoryTest {
         val aktivOppfolgingsperiodeUuid = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId2).first().uuid
         val aktivKandidat = arbeidssøkerPeriodeAvsluttet(aktivOppfolgingsperiodeUuid)
         kandidatForUtmeldingRepository.lagreKandidat(aktivKandidat)
+        namedJdbcTemplate.update(
+            """
+            UPDATE kandidater_for_utmelding
+            SET sist_sjekket = CURRENT_TIMESTAMP - INTERVAL '2 day'
+            WHERE oppfolgingsperiode_uuid = :oppfolgingsperiodeId
+            """.trimIndent(),
+            mapOf("oppfolgingsperiodeId" to aktivOppfolgingsperiodeUuid.toString())
+        )
 
-        val alleKandidater = kandidatForUtmeldingRepository.hentAlleKandidater(0, 10)
+        val alleKandidater = kandidatForUtmeldingRepository.hentAlleKandidaterSistSjekketForMerEnnEnDagSiden(0, 10)
 
         assertThat(alleKandidater).hasSize(2)
         assertThat(alleKandidater.find { it is ForlengetKandidat }).isNotNull

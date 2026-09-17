@@ -185,6 +185,18 @@ class KandidatForUtmeldingRepository(
     }
 
     @TestOnly
+    fun hentSistSjekket(oppfolgingsperiodeId: UUID): Timestamp? {
+        return db.query(
+            """
+            SELECT sist_sjekket
+            FROM kandidater_for_utmelding
+            WHERE oppfolgingsperiode_uuid = :oppfolgingsperiodeId
+            """.trimIndent(),
+            mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeId.toString()),
+        ) { rs, _ -> rs.getTimestamp("sist_sjekket") }.firstOrNull()
+    }
+
+    @TestOnly
     fun hentAntallKandidaterSomIkkeKunneAvsluttes(oppfolgingsperiodeId: UUID): Int {
         return db.queryForObject(
             """
@@ -240,13 +252,14 @@ class KandidatForUtmeldingRepository(
 
     // OBS: Denne henter ikke avsluttes automatisk-dato eller forlenget til som er lagret i kandidater_for_utmelding, men beregner det utifra hendelsen.
     // Denne funksjonen brukes for å sjekke om kandidater kan avsluttes, og da er det uansett ikke relevant.
-    fun hentAlleKandidater(offset: Int, batchSize: Int): List<KandidatForUtmelding> {
+    fun hentAlleKandidaterSistSjekketForMerEnnEnDagSiden(offset: Int, batchSize: Int): List<KandidatForUtmelding> {
         return db.query(
             """
             SELECT kfuh.*
             FROM kandidater_for_utmelding kfu
             JOIN kandidater_for_utmelding_hendelser kfuh ON kfu.siste_utmeldingshendelse_id = kfuh.utmeldingshendelse_id
-            ORDER BY kfu.created_at
+            WHERE kfu.sist_sjekket < current_timestamp - interval '1 day'
+            ORDER BY kfu.sist_sjekket
             OFFSET :offset ROWS FETCH NEXT :batchSize ROWS ONLY
             """.trimIndent(),
             mapOf(
@@ -254,6 +267,15 @@ class KandidatForUtmeldingRepository(
                 "batchSize" to batchSize
             ),
         ) { rs, _ -> KandidatForUtmelding.fromHendelse(resultSetToUtmeldingsHendelse(rs)) }
+    }
+
+    fun oppdaterSistSjekket(oppfolgingsperiodeId: UUID) {
+        val sql = """
+            UPDATE kandidater_for_utmelding
+            SET sist_sjekket = current_timestamp
+            WHERE oppfolgingsperiode_uuid = :oppfolgingsperiodeId
+        """.trimIndent()
+        db.update(sql, mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeId.toString()))
     }
 
     fun hentKandidaterMedUtloptForlengelse(): List<KandidatForUtmeldingHendelse> {
