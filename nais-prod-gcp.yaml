@@ -107,7 +107,7 @@ spec:
     - name: OPPGAVE_SCOPE
       value: api://prod-fss.oppgavehandtering.oppgave/.default
     - name: UTMELDINGSKANDIDATER_AKTIVERT
-      value: "false"
+      value: "true"
   kafka:
     pool: nav-prod
   azure:
