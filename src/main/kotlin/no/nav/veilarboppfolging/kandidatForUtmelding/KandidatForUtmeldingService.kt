@@ -132,10 +132,10 @@ class KandidatForUtmeldingService(
         }
     }
 
-    fun fjernKandidaterSomIkkeKanAvsluttes() {
+    fun fjernKandidaterSomIkkeKanAvsluttesManuelt() {
         var currentOffset = 0
         while (true) {
-            val alleKandidater = kandidatForUtmeldingRepository.hentAlleKandidater(
+            val alleKandidater = kandidatForUtmeldingRepository.hentAlleKandidaterSistSjekketForMerEnnEnDagSiden(
                 offset = currentOffset,
                 batchSize = BATCH_SIZE,
             )
@@ -158,6 +158,8 @@ class KandidatForUtmeldingService(
                         logger.info("Kandidat med oppfølgingsperiode ${kandidat.oppfolgingsperiodeId} kan ikke avsluttes, fjerner fra kandidat for utmelding")
                         fjernKandidatForUtmeldingService.fjernKandidatForUtmelding(kandidat.oppfolgingsperiodeId)
                         return@executeWithoutResult
+                    } else {
+                        kandidatForUtmeldingRepository.oppdaterSistSjekket(kandidat.oppfolgingsperiodeId)
                     }
                 }
             }

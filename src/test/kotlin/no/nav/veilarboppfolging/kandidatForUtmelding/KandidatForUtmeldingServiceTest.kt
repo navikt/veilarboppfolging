@@ -390,7 +390,7 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
     }
 
     @Test
-    fun `fjernKandidaterSomIkkeKanAvsluttes - kan ikke avsluttes - fjernes som kandidat`() {
+    fun `fjernKandidaterSomIkkeKanAvsluttesManuelt - kan ikke avsluttes - fjernes som kandidat`() {
         mockSytemBrukerAuthOk(AKTOR_ID, FNR)
         setBrukerUnderOppfolging(AKTOR_ID, FNR)
         setLocalArenaOppfolging(AKTOR_ID, Formidlingsgruppe.ARBS)
@@ -413,10 +413,18 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
                 avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString(),
             )
         )
+        namedParameterJdbcTemplate.update(
+            """
+            UPDATE kandidater_for_utmelding
+            SET sist_sjekket = CURRENT_TIMESTAMP - INTERVAL '2 day'
+            WHERE oppfolgingsperiode_uuid = :oppfolgingsperiodeId
+            """.trimIndent(),
+            mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeUuid.toString())
+        )
 
         mockAap(FNR, harAap = true)
 
-        kandidatForUtmeldingService.fjernKandidaterSomIkkeKanAvsluttes()
+        kandidatForUtmeldingService.fjernKandidaterSomIkkeKanAvsluttesManuelt()
 
         assertThat(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID).get().underOppfolging).isTrue()
         assertThat(kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeUuid)).isNull()
@@ -430,7 +438,7 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
     }
 
     @Test
-    fun `fjernKandidaterSomIkkeKanAvsluttes - kan avsluttes - fjernes ikke som kandidat`() {
+    fun `fjernKandidaterSomIkkeKanAvsluttesManuelt - kan avsluttes - fjernes ikke som kandidat`() {
         mockSytemBrukerAuthOk(AKTOR_ID, FNR)
         setBrukerUnderOppfolging(AKTOR_ID, FNR)
         setLocalArenaOppfolging(AKTOR_ID, Formidlingsgruppe.ARBS)
@@ -453,12 +461,22 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
                 avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString(),
             )
         )
+        namedParameterJdbcTemplate.update(
+            """
+            UPDATE kandidater_for_utmelding
+            SET sist_sjekket = CURRENT_TIMESTAMP - INTERVAL '2 day'
+            WHERE oppfolgingsperiode_uuid = :oppfolgingsperiodeId
+            """.trimIndent(),
+            mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeUuid.toString())
+        )
 
-        kandidatForUtmeldingService.fjernKandidaterSomIkkeKanAvsluttes()
+        kandidatForUtmeldingService.fjernKandidaterSomIkkeKanAvsluttesManuelt()
 
         assertThat(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID).get().underOppfolging).isTrue()
         assertThat(kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeUuid)).isNotNull()
         assertThat(kandidatForUtmeldingRepository.hentAntallKandidaterSomIkkeKunneAvsluttes(oppfolgingsperiodeUuid)).isEqualTo(0)
+        val sistSjekket = kandidatForUtmeldingRepository.hentSistSjekket(oppfolgingsperiodeUuid)
+        assertThat(sistSjekket).isCloseTo(ZonedDateTime.now().toInstant(), 5000)
 
         val filterhendelseId = filterkategoriRepository.hentFilterhendelseId(oppfolgingsperiodeUuid)
         assertThat(filterhendelseId).isNotNull()
