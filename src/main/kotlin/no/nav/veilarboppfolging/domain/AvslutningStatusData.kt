@@ -12,4 +12,5 @@ data class AvslutningStatusData(
     val erDeltakerIUngdomsprogrammet: Boolean,
     val erArbeidssoeker: Boolean,
     val harAap: Boolean,
+    val begrunnelse: String?
 )

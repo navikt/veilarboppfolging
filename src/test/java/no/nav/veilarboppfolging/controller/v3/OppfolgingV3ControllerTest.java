@@ -123,7 +123,7 @@ class OppfolgingV3ControllerTest {
     @Test
     void hentAvslutningStatus_skal_returnere_avslutningstatus() throws Exception {
         when(avsluttOppfolgingService.hentAvslutningstatusForManuellAvslutning(TEST_FNR)).thenReturn(
-                new AvslutningStatusData(true, true, false, LocalDate.parse("2023-01-01"), false, false, false, false, false)
+                new AvslutningStatusData(true, true, false, LocalDate.parse("2023-01-01"), false, false, false, false, false, null)
         );
 
         String expectedJson = "{\"kanAvslutte\":true,\"underOppfolging\":true,\"underKvp\":false,\"inaktiveringsDato\":\"2023-01-01\",\"erIserv\":false,\"harAktiveTiltaksdeltakelser\":false,\"erDeltakerIUngdomsprogrammet\":false,\"erArbeidssoeker\":false,\"harAap\":false}";

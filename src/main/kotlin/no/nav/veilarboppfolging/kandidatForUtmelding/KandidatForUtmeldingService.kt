@@ -42,6 +42,10 @@ class KandidatForUtmeldingService(
                     || hendelse is ForlengelseUtløptHendelse
             if (erHendelseSomSkalTaPersonInnIFilteret && !avslutningsstatus.kanAvslutte) {
                 logger.info("Kandidat kunne ikke avsluttes selvom ${hendelse::class.simpleName}, oppfølgingsperiode ${hendelse.oppfolgingsperiodeUuid}")
+                kandidatForUtmeldingRepository.lagreKandidatSomIkkeKunneAvsluttes(
+                    hendelse.oppfolgingsperiodeUuid,
+                    avslutningsstatus.begrunnelse
+                )
                 kandidatForUtmeldingRepository.fjernKandidat(hendelse.oppfolgingsperiodeUuid)
                 return@executeWithoutResult
             }
