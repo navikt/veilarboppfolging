@@ -31,7 +31,8 @@ class UtmeldEtter28Cron(
         AVSLUTTET_FEILET
     }
 
-    @Scheduled(cron = "0 0 * * * *")
+    // Utkommenteres da vi disse brukerne ikke vises i noe filter og derfor ikke bør kastes ut automatisk
+//    @Scheduled(cron = "0 0 * * * *")
     fun scheduledAvslutteOppfolgingEtter28DagerIUtmelding() {
         if (leaderElectionClient.isLeader) {
             JobRunner.run(
