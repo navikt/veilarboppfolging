@@ -388,5 +388,83 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
         assertThat(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID).get().underOppfolging).isFalse()
         assertThat(kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeUuid)).isNull()
     }
+
+    @Test
+    fun `fjernKandidaterSomIkkeKanAvsluttes - kan ikke avsluttes - fjernes som kandidat`() {
+        mockSytemBrukerAuthOk(AKTOR_ID, FNR)
+        setBrukerUnderOppfolging(AKTOR_ID, FNR)
+        setLocalArenaOppfolging(AKTOR_ID, Formidlingsgruppe.ARBS)
+        mockTiltakshistorikk(FNR, harAktiveDeltakelser = false)
+        mockUngdomsprogram(FNR, erDeltaker = false)
+        mockArbeidssoekerregisteret(FNR, erArbeidssoeker = false)
+        mockAap(FNR, harAap = false)
+        startOppfolgingSomArbeidsoker(AKTOR_ID, FNR)
+        val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(FNR).get().uuid
+
+        kandidatForUtmeldingService.handterUtmeldingsHendelse(
+            FNR,
+            ArbeidssøkerPeriodeAvsluttet(
+                utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
+                utfortAv = "A123123",
+                kilde = "kilde",
+                hendelseTidspunkt = ZonedDateTime.now().minusDays(5).toInstant(),
+                oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
+                arbeidssokerperiodeAvsluttetHendelseType = ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
+                avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString(),
+            )
+        )
+
+        mockAap(FNR, harAap = true)
+
+        kandidatForUtmeldingService.fjernKandidaterSomIkkeKanAvsluttes()
+
+        assertThat(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID).get().underOppfolging).isTrue()
+        assertThat(kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeUuid)).isNull()
+        assertThat(kandidatForUtmeldingRepository.hentAntallKandidaterSomIkkeKunneAvsluttes(oppfolgingsperiodeUuid)).isEqualTo(0)
+
+        val filterhendelseId = filterkategoriRepository.hentFilterhendelseId(oppfolgingsperiodeUuid)
+        assertThat(filterhendelseId).isNotNull()
+        val filterhendelse = getFilterhendelseRecordsStoredInKafkaOutbox(kafkaProperties.portefoljeHendelsesfilterTopic, filterhendelseId.toString())
+            .filter { it.operasjon == Operasjon.STOPP }
+        assertThat(filterhendelse).isNotEmpty()
+    }
+
+    @Test
+    fun `fjernKandidaterSomIkkeKanAvsluttes - kan avsluttes - fjernes ikke som kandidat`() {
+        mockSytemBrukerAuthOk(AKTOR_ID, FNR)
+        setBrukerUnderOppfolging(AKTOR_ID, FNR)
+        setLocalArenaOppfolging(AKTOR_ID, Formidlingsgruppe.ARBS)
+        mockTiltakshistorikk(FNR, harAktiveDeltakelser = false)
+        mockUngdomsprogram(FNR, erDeltaker = false)
+        mockArbeidssoekerregisteret(FNR, erArbeidssoeker = false)
+        mockAap(FNR, harAap = false)
+        startOppfolgingSomArbeidsoker(AKTOR_ID, FNR)
+        val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(FNR).get().uuid
+
+        kandidatForUtmeldingService.handterUtmeldingsHendelse(
+            FNR,
+            ArbeidssøkerPeriodeAvsluttet(
+                utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
+                utfortAv = "A123123",
+                kilde = "kilde",
+                hendelseTidspunkt = ZonedDateTime.now().minusDays(5).toInstant(),
+                oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
+                arbeidssokerperiodeAvsluttetHendelseType = ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
+                avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString(),
+            )
+        )
+
+        kandidatForUtmeldingService.fjernKandidaterSomIkkeKanAvsluttes()
+
+        assertThat(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID).get().underOppfolging).isTrue()
+        assertThat(kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeUuid)).isNotNull()
+        assertThat(kandidatForUtmeldingRepository.hentAntallKandidaterSomIkkeKunneAvsluttes(oppfolgingsperiodeUuid)).isEqualTo(0)
+
+        val filterhendelseId = filterkategoriRepository.hentFilterhendelseId(oppfolgingsperiodeUuid)
+        assertThat(filterhendelseId).isNotNull()
+        val filterhendelse = getFilterhendelseRecordsStoredInKafkaOutbox(kafkaProperties.portefoljeHendelsesfilterTopic, filterhendelseId.toString())
+            .filter { it.operasjon == Operasjon.STOPP }
+        assertThat(filterhendelse).isEmpty()
+    }
 }
 

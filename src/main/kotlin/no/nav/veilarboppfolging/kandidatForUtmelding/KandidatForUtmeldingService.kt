@@ -32,6 +32,7 @@ class KandidatForUtmeldingService(
     private val utmeldingService: UtmeldingsService,
     @Value("\${app.utmeldingskandidater_aktivert}") private val sendUtmeldingskandidaterTilObo: Boolean,
 ) {
+    private val BATCH_SIZE = 1000
     private val logger = LoggerFactory.getLogger(this::class.java)
 
     fun handterUtmeldingsHendelse(fnr: Fnr, hendelse: KandidatForUtmeldingHendelse) {
@@ -108,18 +109,56 @@ class KandidatForUtmeldingService(
             logger.info("Behandler ${kandidaterSomSkalAutomatiskAvsluttes.size} kandidater med passert avsluttes_automatisk_dato")
 
             kandidaterSomSkalAutomatiskAvsluttes.forEach { kandidat ->
-                val (_, aktorId) = finnFnrForOppfolgingsperiode(kandidat.oppfolgingsperiodeId)
-                val resultat =
-                    avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(KandidatUtmeldtEtter28Dager(aktorId))
-                if (resultat is KunneIkkeAvsluttes) {
-                    kandidatForUtmeldingRepository.lagreKandidatSomIkkeKunneAvsluttes(kandidat.oppfolgingsperiodeId, resultat.begrunnelse)
-                    fjernKandidatForUtmeldingService.fjernKandidatForUtmelding(kandidat.oppfolgingsperiodeId)
-                    logger.info("Kandidat med oppfølgingsperiode ${kandidat.oppfolgingsperiodeId} kunne ikke avsluttes automatisk og ble flyttet ut av aktiv liste")
+                transactor.executeWithoutResult { _ ->
+                    val (_, aktorId) = finnFnrForOppfolgingsperiode(kandidat.oppfolgingsperiodeId)
+                    val resultat =
+                        avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(KandidatUtmeldtEtter28Dager(aktorId))
+                    if (resultat is KunneIkkeAvsluttes) {
+                        kandidatForUtmeldingRepository.lagreKandidatSomIkkeKunneAvsluttes(
+                            kandidat.oppfolgingsperiodeId,
+                            resultat.begrunnelse
+                        )
+                        fjernKandidatForUtmeldingService.fjernKandidatForUtmelding(kandidat.oppfolgingsperiodeId)
+                        logger.info("Kandidat med oppfølgingsperiode ${kandidat.oppfolgingsperiodeId} kunne ikke avsluttes automatisk og ble flyttet ut av aktiv liste")
+                    }
                 }
             }
 
             logger.info("Ferdig med å avslutte oppfølging for kandidater med passert avsluttes_automatisk_dato")
         }
+    }
+
+    fun fjernKandidaterSomIkkeKanAvsluttes() {
+        var currentOffset = 0
+        while (true) {
+            val alleKandidater = kandidatForUtmeldingRepository.hentAlleKandidater(
+                offset = currentOffset,
+                batchSize = BATCH_SIZE,
+            )
+            if (alleKandidater.isEmpty()) {
+                break
+            }
+            currentOffset += alleKandidater.size
+
+            logger.info(
+                "Sjekker om kandidater for utmelding fortsatt kan avsluttes. CurrentOffset={} BatchSize={}",
+                currentOffset,
+                alleKandidater.size
+            )
+
+            alleKandidater.forEach { kandidat ->
+                transactor.executeWithoutResult { _ ->
+                    val (fnr, _) = finnFnrForOppfolgingsperiode(kandidat.oppfolgingsperiodeId)
+                    val avslutningsstatus = avsluttOppfolgingService.hentAvslutningstatusForManuellAvslutning(fnr)
+                    if (!avslutningsstatus.kanAvslutte) {
+                        logger.info("Kandidat med oppfølgingsperiode ${kandidat.oppfolgingsperiodeId} kan ikke avsluttes, fjerner fra kandidat for utmelding")
+                        fjernKandidatForUtmeldingService.fjernKandidatForUtmelding(kandidat.oppfolgingsperiodeId)
+                        return@executeWithoutResult
+                    }
+                }
+            }
+        }
+        logger.info("Ferdig med å sjekke om kandidater fortsatt kan avsluttes")
     }
 
     private fun sendUtmeldingskandidatTilObo(kandidat: KandidatForUtmeldingHendelse, fnr: Fnr) {

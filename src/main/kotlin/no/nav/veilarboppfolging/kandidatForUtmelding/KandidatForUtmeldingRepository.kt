@@ -238,6 +238,24 @@ class KandidatForUtmeldingRepository(
         ) { rs, _ -> AktivKandidatForUtmelding(sisteHendelse = resultSetToUtmeldingsHendelse(rs), avsluttesAutomatiskDato = rs.getTimestamp("avsluttes_automatisk_dato").toLocalDateTime())  }
     }
 
+    // OBS: Denne henter ikke avsluttes automatisk-dato eller forlenget til som er lagret i kandidater_for_utmelding, men beregner det utifra hendelsen.
+    // Denne funksjonen brukes for å sjekke om kandidater kan avsluttes, og da er det uansett ikke relevant.
+    fun hentAlleKandidater(offset: Int, batchSize: Int): List<KandidatForUtmelding> {
+        return db.query(
+            """
+            SELECT kfuh.*
+            FROM kandidater_for_utmelding kfu
+            JOIN kandidater_for_utmelding_hendelser kfuh ON kfu.siste_utmeldingshendelse_id = kfuh.utmeldingshendelse_id
+            ORDER BY kfu.created_at
+            OFFSET :offset ROWS FETCH NEXT :batchSize ROWS ONLY
+            """.trimIndent(),
+            mapOf(
+                "offset" to offset,
+                "batchSize" to batchSize
+            ),
+        ) { rs, _ -> KandidatForUtmelding.fromHendelse(resultSetToUtmeldingsHendelse(rs)) }
+    }
+
     fun hentKandidaterMedUtloptForlengelse(): List<KandidatForUtmeldingHendelse> {
         return db.query(
             """

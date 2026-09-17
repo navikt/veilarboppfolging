@@ -30,4 +30,14 @@ class KandidatForUtmeldingCron(
             kandidatForUtmeldingService.avsluttOppfolgingForKandidaterMedPassertAvsluttesAutomatiskDato()
         }
     }
+
+    @Scheduled(cron = "0 0 3 * * *")
+    fun fjernKandidaterSomIkkeKanAvsluttes() {
+        if (!leaderElectionClient.isLeader) {
+            return
+        }
+        JobRunner.run("fjern_kandidater_som_ikke_kan_avsluttes") {
+            kandidatForUtmeldingService.fjernKandidaterSomIkkeKanAvsluttes()
+        }
+    }
 }
