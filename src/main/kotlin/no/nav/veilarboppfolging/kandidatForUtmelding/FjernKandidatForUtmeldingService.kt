@@ -30,7 +30,7 @@ class FjernKandidatForUtmeldingService(
     ) {
         transactor.executeWithoutResult { _ ->
             logger.info("Fjerner kandidat for utmelding for oppfølgingsperiode $oppfolgingsperiodeId")
-            if (!kandidatForUtmeldingRepository.erKandidat(oppfolgingsperiodeId)) {
+            if (!kandidatForUtmeldingRepository.erAktivEllerForlengetKandidatForUtmelding(oppfolgingsperiodeId)) {
                 logger.info("Kandidat med oppfølgingsperiodeId $oppfolgingsperiodeId er ikke kandidat for utmelding, ignorerer")
                 return@executeWithoutResult
             }
