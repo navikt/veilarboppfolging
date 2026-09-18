@@ -9,6 +9,7 @@ import no.nav.common.json.JsonUtils
 import no.nav.veilarboppfolging.controller.admin.v1.POAO_ADMIN
 import no.nav.veilarboppfolging.kandidatForUtmelding.RepubliserKandidatForUtmeldingService
 import no.nav.veilarboppfolging.service.AuthService
+import no.nav.veilarboppfolging.service.AvsluttOppfolgingService
 import no.nav.veilarboppfolging.service.KafkaRepubliseringService
 import no.nav.veilarboppfolging.test.TestUtils
 import org.hamcrest.Matchers
@@ -40,6 +41,9 @@ class AdminV2ControllerTest {
 
     @MockitoBean
     private lateinit var republiserKandidatForUtmeldingService: RepubliserKandidatForUtmeldingService
+
+    @MockitoBean
+    private lateinit var avsluttOppfolgingService: AvsluttOppfolgingService
 
     @Test
     fun republiserOppfolgingsperioder__should_return_403_if_user_missing() {
