@@ -23,7 +23,6 @@ import org.mockito.Mockito.never
 import org.mockito.Mockito.`when`
 import org.mockito.kotlin.whenever
 import org.mockito.kotlin.any
-import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import java.time.ZonedDateTime
@@ -73,7 +72,6 @@ class IservServiceIntegrationTest {
             utmeldingRepository!!,
             mock<LeaderElectionClient?>(LeaderElectionClient::class.java)!!,
             kandidatForUtmeldingService,
-            false
         )
     }
 
@@ -200,25 +198,12 @@ class IservServiceIntegrationTest {
     }
 
     @Test
-    fun `skal melde ut kandidat hvis toggle er av og bruker var kandidat for utmelding`() {
-        insertIservBruker(AKTOR_ID, iservFraDato.minusDays(29))
-        `when`(kandidatForUtmeldingService.erAktivUtmeldingskandidat(AKTOR_ID)).thenReturn(true)
-
-        utmeldEtter28Cron!!.automatiskAvslutteOppfolging()
-
-        verify(avsluttOppfolgingService, times(1))
-            .avsluttOppfolgingHvisKanAvsluttes(any<Avregistrering>())
-        assertTrue(utmeldingRepository!!.eksisterendeIservBruker(AKTOR_ID).isEmpty)
-    }
-
-    @Test
-    fun `skal ikke melde ut kandidat hvis toggle er på og bruker var kandidat for utmelding`() {
+    fun `skal ikke melde ut kandidat hvis bruker var kandidat for utmelding`() {
         utmeldEtter28Cron = UtmeldEtter28Cron(
             utmeldingsService!!,
             utmeldingRepository!!,
             mock<LeaderElectionClient?>(LeaderElectionClient::class.java)!!,
             kandidatForUtmeldingService,
-            true
         )
         insertIservBruker(AKTOR_ID, iservFraDato.minusDays(29))
         `when`(kandidatForUtmeldingService.erAktivUtmeldingskandidat(AKTOR_ID)).thenReturn(true)

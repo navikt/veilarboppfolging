@@ -106,6 +106,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
                 mock(),
                 mock(),
                 mock(),
+                mock(),
                 transactor,
                 "https://test.nav.no"
         );

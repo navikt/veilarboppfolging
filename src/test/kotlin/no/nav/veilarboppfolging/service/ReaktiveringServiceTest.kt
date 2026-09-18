@@ -58,7 +58,6 @@ class ReaktiveringServiceTest {
         fjernKandidatForUtmeldingService,
         kandidatForUtmeldingService,
         transactor,
-        utmeldingskandidater_aktivert = true,
     )
 
     @Before

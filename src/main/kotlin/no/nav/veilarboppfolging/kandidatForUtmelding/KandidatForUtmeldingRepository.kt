@@ -113,19 +113,6 @@ class KandidatForUtmeldingRepository(
         )
     }
 
-    fun erKandidat(oppfolgingsperiodeId: UUID): Boolean {
-        return db.queryForObject(
-            """
-            SELECT EXISTS (
-                SELECT 1
-                FROM kandidater_for_utmelding
-                WHERE oppfolgingsperiode_uuid = :oppfolgingsperiodeId
-            ) AS finnes
-            """.trimIndent(),
-            mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeId.toString()),
-        ) { rs, _ -> rs.getBoolean("finnes") }
-    }
-
     fun hentKandidatMedForlengelse(oppfolgingsperiodeId: UUID): ForlengetKandidat? {
         return db.query(
             """

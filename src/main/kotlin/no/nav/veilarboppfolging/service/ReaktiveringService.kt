@@ -3,7 +3,15 @@ package no.nav.veilarboppfolging.service
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.common.types.identer.NavIdent
-import no.nav.veilarboppfolging.client.veilarbarena.*
+import no.nav.veilarboppfolging.client.veilarbarena.AlleredeUnderoppfolgingError
+import no.nav.veilarboppfolging.client.veilarbarena.ArenaRegistreringResultat
+import no.nav.veilarboppfolging.client.veilarbarena.BrukerErUtmeldingskandidat
+import no.nav.veilarboppfolging.client.veilarbarena.FeilFraArenaError
+import no.nav.veilarboppfolging.client.veilarbarena.ReaktiveringResult
+import no.nav.veilarboppfolging.client.veilarbarena.ReaktiveringSuccess
+import no.nav.veilarboppfolging.client.veilarbarena.RegistrerIArenaError
+import no.nav.veilarboppfolging.client.veilarbarena.RegistrerIArenaSuccess
+import no.nav.veilarboppfolging.client.veilarbarena.UkjentFeilUnderReaktiveringError
 import no.nav.veilarboppfolging.kandidatForUtmelding.FjernKandidatForUtmeldingService
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
@@ -14,7 +22,6 @@ import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity
 import no.nav.veilarboppfolging.utils.OppfolgingsperiodeUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.transaction.support.TransactionTemplate
@@ -30,7 +37,6 @@ class ReaktiveringService(
     val fjernkandidatForUtmeldingService: FjernKandidatForUtmeldingService,
     val kandidatForUtmeldingService: KandidatForUtmeldingService,
     private val transactor: TransactionTemplate,
-    @Value("\${app.utmeldingskandidater_aktivert}") private val utmeldingskandidater_aktivert: Boolean,
 ) {
     private val logger: Logger = LoggerFactory.getLogger(ReaktiveringService::class.java)
 
@@ -59,7 +65,7 @@ class ReaktiveringService(
             oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId)
         val sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder)
         val erUtmeldingskandidat = kandidatForUtmeldingService.erAktivUtmeldingskandidat(sistePeriode.uuid)
-        if (erUtmeldingskandidat && utmeldingskandidater_aktivert) {
+        if (erUtmeldingskandidat) {
             logger.info("Bruker er utmeldingskandidat, og kan ikke reaktiveres")
             return BrukerErUtmeldingskandidat
         }
