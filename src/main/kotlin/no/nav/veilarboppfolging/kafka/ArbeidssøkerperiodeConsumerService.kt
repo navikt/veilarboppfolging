@@ -13,7 +13,6 @@ import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.veilarboppfolging.kandidatForUtmelding.ArbeidssokerperiodeAvsluttetHendelseType
 import no.nav.veilarboppfolging.kandidatForUtmelding.ArbeidssøkerPeriodeAvsluttet
-import no.nav.veilarboppfolging.kandidatForUtmelding.FjernKandidatForUtmeldingService
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingHendelseUtfortAvType
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.StartetAvType
@@ -44,7 +43,6 @@ open class ArbeidssøkerperiodeConsumerService(
             private val arenaOppfolgingService: ArenaOppfolgingService,
             private val utmeldingService: UtmeldingsService,
             private val kandidatForUtmeldingService: KandidatForUtmeldingService,
-            private val fjernKandidatForUtmeldingService: FjernKandidatForUtmeldingService,
         ) {
             private val logger = LoggerFactory.getLogger(this::class.java)
 
@@ -78,7 +76,6 @@ open class ArbeidssøkerperiodeConsumerService(
             val registrant =  startetAvType.toStartetAvType().toRegistrant(navIdent, fnr)
 
             startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.arbeidssokerRegistrering(fnr, aktørId, registrant))
-            if(nyestePeriode != null) fjernKandidatForUtmeldingService.fjernKandidatForUtmelding(nyestePeriode.uuid)
             utmeldHvisBrukerBleIservEtterArbeidssøkerRegistrering(fnr, arbeidssøkerperiodeStartet, aktørId)
         } else {
             logger.info("Melding om avsluttet arbeidssøkerperiode, flagger som utmeldingskandidat hvis under oppfølging")

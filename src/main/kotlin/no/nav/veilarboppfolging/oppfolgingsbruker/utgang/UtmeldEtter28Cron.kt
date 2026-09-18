@@ -1,6 +1,5 @@
 package no.nav.veilarboppfolging.oppfolgingsbruker.utgang
 
-
 import no.nav.common.job.JobRunner
 import no.nav.common.job.leader_election.LeaderElectionClient
 import no.nav.common.types.identer.AktorId
@@ -9,10 +8,7 @@ import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService
 import no.nav.veilarboppfolging.repository.UtmeldingRepository
 import no.nav.veilarboppfolging.utils.SecureLog
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Value
-import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
-
 
 @Service
 class UtmeldEtter28Cron(
@@ -20,7 +16,6 @@ class UtmeldEtter28Cron(
     private val utmeldingsRepository: UtmeldingRepository,
     private val leaderElectionClient: LeaderElectionClient,
     private val kandidatForUtmeldingService: KandidatForUtmeldingService,
-    @Value("\${app.utmeldingskandidater_aktivert}") private val utmeldingsKandidaterAktivert: Boolean,
 ) {
     private val log = LoggerFactory.getLogger(UtmeldEtter28Cron::class.java)
 
@@ -63,7 +58,7 @@ class UtmeldEtter28Cron(
             log.info("Fant {} brukere som har vært ISERV mer enn 28 dager", iservert28DagerBrukere.size)
             return iservert28DagerBrukere.map { utmeldingEntity ->
                 val aktorId = AktorId.of(utmeldingEntity.aktorId)
-                when (utmeldingsKandidaterAktivert && kandidatForUtmeldingService.erAktivUtmeldingskandidat(aktorId)) {
+                when (kandidatForUtmeldingService.erAktivUtmeldingskandidat(aktorId)) {
                     true -> {
                         log.info("Bruker var kandidat for utmelding, sletter fra gammel utmeldingsløsning")
                         utmeldingService.slettFraUtmeldingTabell(aktorId)

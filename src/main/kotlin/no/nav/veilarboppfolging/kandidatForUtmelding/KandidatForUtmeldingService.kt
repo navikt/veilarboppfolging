@@ -1,23 +1,22 @@
 package no.nav.veilarboppfolging.kandidatForUtmelding
 
+import java.time.ZonedDateTime
 import java.util.UUID
 import kotlin.jvm.optionals.getOrElse
 import kotlin.jvm.optionals.getOrNull
 import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
+import no.nav.veilarboppfolging.kandidatForUtmelding.dto.KandidatForUtmeldingTagDto
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.KandidatUtmeldtEtter28Dager
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.KunneIkkeAvsluttes
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.UtmeldingsService
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.service.AvsluttOppfolgingService
 import no.nav.veilarboppfolging.service.KafkaProducerService
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.KandidatUtmeldtEtter28Dager
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.KunneIkkeAvsluttes
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.support.TransactionTemplate
-import no.nav.veilarboppfolging.kandidatForUtmelding.dto.KandidatForUtmeldingTagDto
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.UtmeldingsService
-import java.time.ZonedDateTime
 
 @Service
 class KandidatForUtmeldingService(
@@ -30,7 +29,6 @@ class KandidatForUtmeldingService(
     private val transactor: TransactionTemplate,
     private val kafkaProducerService: KafkaProducerService,
     private val utmeldingService: UtmeldingsService,
-    @Value("\${app.utmeldingskandidater_aktivert}") private val sendUtmeldingskandidaterTilObo: Boolean,
 ) {
     private val BATCH_SIZE = 1000
     private val logger = LoggerFactory.getLogger(this::class.java)
@@ -107,29 +105,27 @@ class KandidatForUtmeldingService(
     }
 
     fun avsluttOppfolgingForKandidaterMedPassertAvsluttesAutomatiskDato() {
-        if(sendUtmeldingskandidaterTilObo) {
-            val kandidaterSomSkalAutomatiskAvsluttes =
-                kandidatForUtmeldingRepository.hentKandidaterSomSkalAutomatiskAvsluttes()
-            logger.info("Behandler ${kandidaterSomSkalAutomatiskAvsluttes.size} kandidater med passert avsluttes_automatisk_dato")
+        val kandidaterSomSkalAutomatiskAvsluttes =
+            kandidatForUtmeldingRepository.hentKandidaterSomSkalAutomatiskAvsluttes()
+        logger.info("Behandler ${kandidaterSomSkalAutomatiskAvsluttes.size} kandidater med passert avsluttes_automatisk_dato")
 
-            kandidaterSomSkalAutomatiskAvsluttes.forEach { kandidat ->
-                transactor.executeWithoutResult { _ ->
-                    val (_, aktorId) = finnFnrForOppfolgingsperiode(kandidat.oppfolgingsperiodeId)
-                    val resultat =
-                        avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(KandidatUtmeldtEtter28Dager(aktorId))
-                    if (resultat is KunneIkkeAvsluttes) {
-                        kandidatForUtmeldingRepository.lagreKandidatSomIkkeKunneAvsluttes(
-                            kandidat.oppfolgingsperiodeId,
-                            resultat.begrunnelse
-                        )
-                        fjernKandidatForUtmeldingService.fjernKandidatForUtmelding(kandidat.oppfolgingsperiodeId)
-                        logger.info("Kandidat med oppfølgingsperiode ${kandidat.oppfolgingsperiodeId} kunne ikke avsluttes automatisk og ble flyttet ut av aktiv liste")
-                    }
+        kandidaterSomSkalAutomatiskAvsluttes.forEach { kandidat ->
+            transactor.executeWithoutResult { _ ->
+                val (_, aktorId) = finnFnrForOppfolgingsperiode(kandidat.oppfolgingsperiodeId)
+                val resultat =
+                    avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(KandidatUtmeldtEtter28Dager(aktorId))
+                if (resultat is KunneIkkeAvsluttes) {
+                    kandidatForUtmeldingRepository.lagreKandidatSomIkkeKunneAvsluttes(
+                        kandidat.oppfolgingsperiodeId,
+                        resultat.begrunnelse
+                    )
+                    fjernKandidatForUtmeldingService.fjernKandidatForUtmelding(kandidat.oppfolgingsperiodeId)
+                    logger.info("Kandidat med oppfølgingsperiode ${kandidat.oppfolgingsperiodeId} kunne ikke avsluttes automatisk og ble flyttet ut av aktiv liste")
                 }
             }
-
-            logger.info("Ferdig med å avslutte oppfølging for kandidater med passert avsluttes_automatisk_dato")
         }
+
+        logger.info("Ferdig med å avslutte oppfølging for kandidater med passert avsluttes_automatisk_dato")
     }
 
     fun fjernKandidaterSomIkkeKanAvsluttesManuelt() {
@@ -168,15 +164,11 @@ class KandidatForUtmeldingService(
     }
 
     private fun sendUtmeldingskandidatTilObo(kandidat: KandidatForUtmeldingHendelse, fnr: Fnr) {
-        if (sendUtmeldingskandidaterTilObo) {
-            val filterkategoriPersonId =
-                filterkategoriRepository.hentEllerOpprettFilterhendelseId(kandidat.oppfolgingsperiodeUuid)
-            logger.info("Sender kandidat for utmelding til OBO med key=$filterkategoriPersonId for oppfølgingsperiode ${kandidat.oppfolgingsperiodeUuid}")
-            val filterhendelse = kandidat.tilFilterhendelseRecord(fnr)
-            kafkaProducerService.publiserFilterhendelse(filterkategoriPersonId, filterhendelse)
-        } else {
-            logger.info("Sender ikke kandidat for utmelding til OBO for oppfølgingsperiode ${kandidat.oppfolgingsperiodeUuid} fordi sending til OBO er togglet av")
-        }
+        val filterkategoriPersonId =
+            filterkategoriRepository.hentEllerOpprettFilterhendelseId(kandidat.oppfolgingsperiodeUuid)
+        logger.info("Sender kandidat for utmelding til OBO med key=$filterkategoriPersonId for oppfølgingsperiode ${kandidat.oppfolgingsperiodeUuid}")
+        val filterhendelse = kandidat.tilFilterhendelseRecord(fnr)
+        kafkaProducerService.publiserFilterhendelse(filterkategoriPersonId, filterhendelse)
     }
 
     private fun finnFnrForOppfolgingsperiode(oppfolgingsperiodeId: UUID): Pair<Fnr, AktorId> {

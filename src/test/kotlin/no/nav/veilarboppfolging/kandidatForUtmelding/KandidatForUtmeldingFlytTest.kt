@@ -170,6 +170,8 @@ class KandidatForUtmeldingFlytTest(
                 avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
             ).let { KandidatForUtmelding.fromHendelse(it) }
         )
+        filterkategoriRepository.hentEllerOpprettFilterhendelseId(oppfolgingsperiodeUuid)
+
         avsluttOppfolgingManueltSomVeileder(aktorId)
 
         val registrering = OppfolgingsRegistrering.manuellRegistreringVeileder(
@@ -203,6 +205,7 @@ class KandidatForUtmeldingFlytTest(
                 avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
             ).let { KandidatForUtmelding.fromHendelse(it) }
         )
+        filterkategoriRepository.hentEllerOpprettFilterhendelseId(oppfolgingsperiodeUuid)
 
         avsluttOppfolgingManueltSomVeileder(aktorId)
 
@@ -231,6 +234,7 @@ class KandidatForUtmeldingFlytTest(
                 avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
             ).let { KandidatForUtmelding.fromHendelse(it) }
         )
+        filterkategoriRepository.hentEllerOpprettFilterhendelseId(oppfolgingsperiodeUuid)
 
         avsluttOppfolgingManueltSomVeileder(aktorId)
         val registrering = arbeidssokerRegistrering(fnr, aktorId, VeilederRegistrant(NavIdent("veileder")))
@@ -258,6 +262,7 @@ class KandidatForUtmeldingFlytTest(
                 avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
             ).let { KandidatForUtmelding.fromHendelse(it) }
         )
+        filterkategoriRepository.hentEllerOpprettFilterhendelseId(oppfolgingsperiodeUuid)
 
         assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId)).isNotNull()
 
@@ -285,7 +290,7 @@ class KandidatForUtmeldingFlytTest(
                 avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
             ).let { KandidatForUtmelding.fromHendelse(it) }
         )
-        avsluttOppfolgingManueltSomVeileder(aktorId)
+        filterkategoriRepository.hentEllerOpprettFilterhendelseId(oppfolgingsperiodeUuid)
 
         val registrering = OppfolgingsRegistrering.arenaSyncOppfolgingBrukerRegistrering(
             fnr, aktorId,

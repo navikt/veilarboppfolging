@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.support.TransactionTemplate
 import java.util.*
 import kotlin.jvm.optionals.getOrNull
+import no.nav.veilarboppfolging.kandidatForUtmelding.FjernKandidatForUtmeldingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.SystemRegistrering
 
 @Service
@@ -32,6 +33,7 @@ open class StartOppfolgingService(
     val oppfolgingsPeriodeRepository: OppfolgingsPeriodeRepository,
     val kafkaProducerService: KafkaProducerService,
     val kandidatForUtmeldingService: KandidatForUtmeldingService,
+    val fjernKandidatForUtmeldingService: FjernKandidatForUtmeldingService,
     val bigQueryClient: BigQueryClient,
     val transactor: TransactionTemplate,
     @Value("\${app.env.nav-no-url}")
@@ -49,7 +51,12 @@ open class StartOppfolgingService(
             val erUnderOppfolging = maybeOppfolging
                 .getOrNull()?.underOppfolging ?: false
 
-            if (erUnderOppfolging) return@executeWithoutResult
+            if (erUnderOppfolging) {
+                val periode = oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId).getOrNull()
+                    ?: throw IllegalStateException("Fant ikke gjeldende oppfolgingsperiode for bruker som er under oppfølging")
+                fjernKandidatForUtmeldingService.fjernKandidatForUtmelding(periode.uuid)
+                return@executeWithoutResult
+            }
             if (maybeOppfolging.isEmpty) {
                 // Siden det blir gjort mange kall samtidig til flere noder kan det oppstå en race condition
                 // hvor oppfølging har blitt insertet av en annen node etter at den har sjekket at oppfølging

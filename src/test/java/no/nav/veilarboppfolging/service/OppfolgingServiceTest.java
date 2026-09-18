@@ -143,6 +143,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
                 oppfolgingsPeriodeRepository,
                 kafkaProducerService,
                 kandidatForUtmeldingService,
+                fjernKandidatForUtmeldingService,
                 bigQueryClient,
                 transactor,
                 "https://test.nav.no"
