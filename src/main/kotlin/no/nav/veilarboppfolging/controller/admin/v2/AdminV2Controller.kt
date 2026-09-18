@@ -1,12 +1,15 @@
 package no.nav.veilarboppfolging.controller.admin.v2
 
+import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import java.util.UUID
 import no.nav.common.job.JobRunner
+import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.veilarboppfolging.ForbiddenException
 import no.nav.veilarboppfolging.controller.admin.v1.POAO_ADMIN
 import no.nav.veilarboppfolging.controller.response.AvslutningsStatusDto
 import no.nav.veilarboppfolging.kandidatForUtmelding.RepubliserKandidatForUtmeldingService
+import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.service.AuthService
 import no.nav.veilarboppfolging.service.AvsluttOppfolgingService
 import no.nav.veilarboppfolging.service.KafkaRepubliseringService
@@ -23,6 +26,8 @@ class AdminV2Controller(
     private val kafkaRepubliseringService: KafkaRepubliseringService,
     private val republiserKandidatForUtmeldingService: RepubliserKandidatForUtmeldingService,
     private val avsluttOppfolgingService: AvsluttOppfolgingService,
+    private val oppfolgingsperiodeService: OppfolgingsPeriodeRepository,
+    private val aktorOppslagClient: AktorOppslagClient
 ) {
     @PostMapping("/republiser/oppfolgingsperioder")
     fun republiserOppfolgingsperioder(): String {
@@ -67,12 +72,16 @@ class AdminV2Controller(
     @PostMapping("/avslutning-status")
     fun hentAvslutningStatusForOppfolgingsperioder(
         @RequestBody request: HentAvslutningStatusForOppfolgingsperioderRequest
-    ): List<AvslutningsStatusDto> {
+    ): Map<String, AvslutningsStatusDto?> {
         sjekkTilgangTilAdmin()
-        return request.oppfolgingsperiodeIder.map { oppfolgingsperiodeId ->
-            avsluttOppfolgingService.hentAvslutningstatusForManuellAvslutning(
-                Fnr.of(oppfolgingsperiodeId)
-            ).let { DtoMappers.tilDto(it) }
+
+        return request.oppfolgingsperiodeIder.associateWith { oppfolgingsperiodeId ->
+            oppfolgingsperiodeService
+                .hentOppfolgingsperiode(oppfolgingsperiodeId)
+                    .orElse(null)?.aktorId
+                ?.let { aktorOppslagClient.hentFnr(AktorId(it)) }
+                ?.let { avsluttOppfolgingService.hentAvslutningstatusForManuellAvslutning(it) }
+                ?.let { DtoMappers.tilDto(it) }
         }
     }
 

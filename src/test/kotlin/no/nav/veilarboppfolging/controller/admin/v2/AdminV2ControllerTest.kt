@@ -5,9 +5,11 @@ import java.util.UUID
 import java.util.concurrent.TimeUnit
 import no.nav.common.auth.context.AuthContextHolder
 import no.nav.common.auth.context.UserRole
+import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.json.JsonUtils
 import no.nav.veilarboppfolging.controller.admin.v1.POAO_ADMIN
 import no.nav.veilarboppfolging.kandidatForUtmelding.RepubliserKandidatForUtmeldingService
+import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.service.AuthService
 import no.nav.veilarboppfolging.service.AvsluttOppfolgingService
 import no.nav.veilarboppfolging.service.KafkaRepubliseringService
@@ -44,6 +46,12 @@ class AdminV2ControllerTest {
 
     @MockitoBean
     private lateinit var avsluttOppfolgingService: AvsluttOppfolgingService
+
+    @MockitoBean
+    private lateinit var aktorOppslagClient: AktorOppslagClient
+
+    @MockitoBean
+    private lateinit var oppfolgingsPeriodeRepository: OppfolgingsPeriodeRepository
 
     @Test
     fun republiserOppfolgingsperioder__should_return_403_if_user_missing() {
