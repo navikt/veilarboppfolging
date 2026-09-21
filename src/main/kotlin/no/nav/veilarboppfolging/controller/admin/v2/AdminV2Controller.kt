@@ -6,6 +6,11 @@ import no.nav.common.job.JobRunner
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.veilarboppfolging.ForbiddenException
+import no.nav.veilarboppfolging.client.veilarbarena.ArenaRegistreringResultat
+import no.nav.veilarboppfolging.client.veilarbarena.RegistrerIArenaError
+import no.nav.veilarboppfolging.client.veilarbarena.RegistrerIArenaSuccess
+import no.nav.veilarboppfolging.client.veilarbarena.RegistrerIkkeArbeidssokerDto
+import no.nav.veilarboppfolging.controller.OppfolgingV3Controller.Companion.ALLOWLIST
 import no.nav.veilarboppfolging.controller.admin.v1.POAO_ADMIN
 import no.nav.veilarboppfolging.controller.response.AvslutningsStatusDto
 import no.nav.veilarboppfolging.kandidatForUtmelding.RepubliserKandidatForUtmeldingService
@@ -15,10 +20,13 @@ import no.nav.veilarboppfolging.service.AvsluttOppfolgingService
 import no.nav.veilarboppfolging.service.KafkaRepubliseringService
 import no.nav.veilarboppfolging.service.StartOppfolgingService
 import no.nav.veilarboppfolging.utils.DtoMappers
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.server.ResponseStatusException
 
 @RestController
 @RequestMapping("/api/v2/admin")
@@ -88,8 +96,41 @@ class AdminV2Controller(
     }
 
     @PostMapping("/batch/start-oppfolging")
-    fun batchStartOppfolgingsperioder(@RequestBody input: BatchStartOppfolging) {
+    fun batchStartOppfolgingsperioder(@RequestBody input: BatchStartOppfolging): List<ResponseEntity<RegistrerIkkeArbeidssokerDto>> {
+        authService.sjekkAtApplikasjonErIAllowList(ALLOWLIST)
 
+        val result = fnrList.map { fnr ->
+            val kontor = aoKontorClient.hentForrigeAoKontor(fnr)
+            val arenaResponse = arenaOppfolgingService.registrerIkkeArbeidssoker(fnr)
+            when (arenaResponse) {
+                is RegistrerIArenaSuccess -> {
+                    when (arenaResponse.arenaResultat.kode) {
+                        ArenaRegistreringResultat.FNR_FINNES_IKKE, ArenaRegistreringResultat.KAN_REAKTIVERES_FORENKLET, ArenaRegistreringResultat.UKJENT_FEIL -> {
+                            logger.error(
+                                "Feil ved registrering av bruker i Arena: {}",
+                                arenaResponse.arenaResultat.resultat
+                            )
+                            ResponseEntity(arenaResponse.arenaResultat, HttpStatus.CONFLICT)
+                        }
+
+                        else -> {
+                            logger.info("Bruker registrert i Arena med resultat: ${arenaResponse.arenaResultat.kode}")
+                            aktiverBrukerManueltService.aktiverBrukerManuelt(
+                                fnr = fnr,
+                                kontorSattAvVeileder = kontor,
+                            )
+                            ResponseEntity(arenaResponse.arenaResultat, HttpStatus.OK)
+                        }
+                    }
+                }
+
+                is RegistrerIArenaError -> {
+                    logger.error("Feil ved registrering av bruker i Arena", arenaResponse.throwable)
+                    throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, arenaResponse.message)
+                }
+            }
+        }
+        return result
     }
 
     private fun sjekkTilgangTilAdmin() {
