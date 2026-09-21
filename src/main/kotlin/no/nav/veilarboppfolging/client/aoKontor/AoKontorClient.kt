@@ -15,7 +15,7 @@ class AoKontorClient(
     private val httpClient: OkHttpClient,
 ) {
 
-    fun hentForrigeAoKontor(fnr: Fnr) {
+    fun hentForrigeAoKontor(fnr: Fnr): String {
         val graphqlRequest = GraphqlRequestBuilder<QueryVariables>("graphql/pdl/hentGeografiskTilknytningOgAdressebeskyttelse.graphql")
             .buildRequest(QueryVariables(ident = fnr.get()))
         val result = aoKontorHttpClient.request(graphqlRequest, GeografiskTilknytningOgAdresseBeskyttelseResponse::class.java)
