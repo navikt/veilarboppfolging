@@ -44,7 +44,7 @@ class AktiverBrukerManueltService(
                 true -> throw IllegalStateException("Ekstern bruker kan ikke starte oppfølging med forrige AO-kontor")
                 false -> OppfolgingsRegistrering.systemRegistrering(
                     fnr, aktorId,
-                    AdminRegistrant(),
+                    AdminRegistrant(authService.innloggetVeilederIdent),
                     OppfolgingStartBegrunnelseFraSystem.ADMIN_START_OPPFOLGING_MED_FORRIGE_AO_KONTOR,
                     forrigeAoKontor
                 )
