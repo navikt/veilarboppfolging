@@ -218,44 +218,6 @@ class OppfolgingV3Controller(
         }
     }
 
-    @PostMapping("/oppfolging/batchStartOppfolgingsperiode")
-    fun batchStartOppfolgingsperiode(@RequestBody fnrList: List<Fnr>): List<ResponseEntity<RegistrerIkkeArbeidssokerDto>> {
-        authService.sjekkAtApplikasjonErIAllowList(ALLOWLIST)
-        
-        val result = fnrList.map { fnr ->
-            val kontor = aoKontorClient.hentForrigeAoKontor(fnr)
-            val arenaResponse = arenaOppfolgingService.registrerIkkeArbeidssoker(fnr)
-            when (arenaResponse) {
-                is RegistrerIArenaSuccess -> {
-                    when (arenaResponse.arenaResultat.kode) {
-                        ArenaRegistreringResultat.FNR_FINNES_IKKE, ArenaRegistreringResultat.KAN_REAKTIVERES_FORENKLET, ArenaRegistreringResultat.UKJENT_FEIL -> {
-                            logger.error(
-                                "Feil ved registrering av bruker i Arena: {}",
-                                arenaResponse.arenaResultat.resultat
-                            )
-                            ResponseEntity(arenaResponse.arenaResultat, HttpStatus.CONFLICT)
-                        }
-
-                        else -> {
-                            logger.info("Bruker registrert i Arena med resultat: ${arenaResponse.arenaResultat.kode}")
-                            aktiverBrukerManueltService.aktiverBrukerManuelt(
-                                fnr = fnr,
-                                kontorSattAvVeileder = kontor,
-                            )
-                            ResponseEntity(arenaResponse.arenaResultat, HttpStatus.OK)
-                        }
-                    }
-                }
-
-                is RegistrerIArenaError -> {
-                    logger.error("Feil ved registrering av bruker i Arena", arenaResponse.throwable)
-                    throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, arenaResponse.message)
-                }
-            }
-        }
-        return result
-    }
-
     @PostMapping("/oppfolging/startOppfolgingsperiode")
     fun aktiverBruker(@RequestBody startOppfolging: StartOppfolgingDto): ResponseEntity<RegistrerIkkeArbeidssokerDto> {
         val fnrTilNyBruker = if (authService.erEksternBruker()) {
