@@ -11,6 +11,7 @@ import no.nav.common.token_client.builder.AzureAdTokenClientBuilder;
 import no.nav.common.token_client.builder.TokenXTokenClientBuilder;
 import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
 import no.nav.common.token_client.client.TokenXOnBehalfOfTokenClient;
+import no.nav.veilarboppfolging.client.aoKontor.AoKontorClient;
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirClient;
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirClientImpl;
 import no.nav.veilarboppfolging.client.oppgave.OppgaveClient;
@@ -109,6 +110,17 @@ public class ClientConfig {
                 : tokenClient.createMachineToMachineToken(properties.aapScope());
 
         return new AapClient(properties.aapUrl(),
+                tokenSupplier,
+                RestClient.baseClient()
+        );
+    }
+
+    @Bean
+    public AoKontorClient aoKontorClient(EnvironmentProperties properties, ErrorMappedAzureAdMachineToMachineTokenClient tokenClient, AuthService authService) {
+        Supplier<String> tokenSupplier = () -> authService.erInternBruker() ? authService.getAadOboTokenForTjeneste(properties.aoKontorScope())
+                : tokenClient.createMachineToMachineToken(properties.aoKontorScope());
+
+        return new AoKontorClient(properties.aoKontorUrl(),
                 tokenSupplier,
                 RestClient.baseClient()
         );
