@@ -19,7 +19,7 @@ class AoKontorClient(
 ) {
 
     fun hentForrigeAoKontor(fnr: Fnr): String {
-        val graphqlRequest = GraphqlRequestBuilder<QueryVariables>("graphql/pdl/hentGeografiskTilknytningOgAdressebeskyttelse.graphql")
+        val graphqlRequest = GraphqlRequestBuilder<QueryVariables>("graphql/aoKontor/hentKontorHistorikk.graphql")
             .buildRequest(QueryVariables(ident = fnr.get()))
         val request = Request.Builder()
             .url(UrlUtils.joinPaths(baseUrl, "/graphql"))
