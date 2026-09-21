@@ -13,6 +13,7 @@ import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.service.AuthService
 import no.nav.veilarboppfolging.service.AvsluttOppfolgingService
 import no.nav.veilarboppfolging.service.KafkaRepubliseringService
+import no.nav.veilarboppfolging.service.StartOppfolgingService
 import no.nav.veilarboppfolging.utils.DtoMappers
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -27,7 +28,8 @@ class AdminV2Controller(
     private val republiserKandidatForUtmeldingService: RepubliserKandidatForUtmeldingService,
     private val avsluttOppfolgingService: AvsluttOppfolgingService,
     private val oppfolgingsperiodeService: OppfolgingsPeriodeRepository,
-    private val aktorOppslagClient: AktorOppslagClient
+    private val aktorOppslagClient: AktorOppslagClient,
+    private val startOppfolgingService: StartOppfolgingService
 ) {
     @PostMapping("/republiser/oppfolgingsperioder")
     fun republiserOppfolgingsperioder(): String {
@@ -85,6 +87,11 @@ class AdminV2Controller(
         }
     }
 
+    @PostMapping("/batch/start-oppfolging")
+    fun batchStartOppfolgingsperioder(@RequestBody input: BatchStartOppfolging) {
+
+    }
+
     private fun sjekkTilgangTilAdmin() {
         authService.sjekkAtApplikasjonErIAllowList(listOf(POAO_ADMIN))
         if (!authService.erInternBruker()) throw ForbiddenException("Må være internbruker")
@@ -93,4 +100,8 @@ class AdminV2Controller(
 
 data class HentAvslutningStatusForOppfolgingsperioderRequest(
     val oppfolgingsperiodeIder: List<String>,
+)
+
+data class BatchStartOppfolging(
+    val aktorIds: List<String>,
 )
