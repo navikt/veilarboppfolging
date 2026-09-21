@@ -213,5 +213,6 @@ fun StartetAvType.toKodeverkBruker(): KodeverkBruker {
         StartetAvType.VEILEDER -> KodeverkBruker.NAV
         StartetAvType.SYSTEM -> KodeverkBruker.SYSTEM
         StartetAvType.BRUKER -> KodeverkBruker.EKSTERN
+        StartetAvType.ADMIN -> KodeverkBruker.ADMIN
     }
 }

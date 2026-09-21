@@ -6,20 +6,23 @@ import no.nav.common.job.JobRunner
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.veilarboppfolging.ForbiddenException
+import no.nav.veilarboppfolging.client.aoKontor.AoKontorClient
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaRegistreringResultat
 import no.nav.veilarboppfolging.client.veilarbarena.RegistrerIArenaError
 import no.nav.veilarboppfolging.client.veilarbarena.RegistrerIArenaSuccess
 import no.nav.veilarboppfolging.client.veilarbarena.RegistrerIkkeArbeidssokerDto
-import no.nav.veilarboppfolging.controller.OppfolgingV3Controller.Companion.ALLOWLIST
 import no.nav.veilarboppfolging.controller.admin.v1.POAO_ADMIN
 import no.nav.veilarboppfolging.controller.response.AvslutningsStatusDto
 import no.nav.veilarboppfolging.kandidatForUtmelding.RepubliserKandidatForUtmeldingService
+import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.AktiverBrukerManueltService
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.service.AuthService
 import no.nav.veilarboppfolging.service.AvsluttOppfolgingService
 import no.nav.veilarboppfolging.service.KafkaRepubliseringService
 import no.nav.veilarboppfolging.service.StartOppfolgingService
 import no.nav.veilarboppfolging.utils.DtoMappers
+import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
@@ -37,8 +40,14 @@ class AdminV2Controller(
     private val avsluttOppfolgingService: AvsluttOppfolgingService,
     private val oppfolgingsperiodeService: OppfolgingsPeriodeRepository,
     private val aktorOppslagClient: AktorOppslagClient,
-    private val startOppfolgingService: StartOppfolgingService
+    private val startOppfolgingService: StartOppfolgingService,
+    private val aoKontorClient: AoKontorClient,
+    private val arenaOppfolgingService: ArenaOppfolgingService,
+    private val aktiverBrukerManueltService: AktiverBrukerManueltService,
 ) {
+
+    private val logger = LoggerFactory.getLogger(this::class.java)
+
     @PostMapping("/republiser/oppfolgingsperioder")
     fun republiserOppfolgingsperioder(): String {
         sjekkTilgangTilAdmin()
@@ -88,20 +97,18 @@ class AdminV2Controller(
         return request.oppfolgingsperiodeIder.associateWith { oppfolgingsperiodeId ->
             oppfolgingsperiodeService
                 .hentOppfolgingsperiode(oppfolgingsperiodeId)
-                    .orElse(null)?.aktorId
+                .orElse(null)?.aktorId
                 ?.let { aktorOppslagClient.hentFnr(AktorId(it)) }
                 ?.let { avsluttOppfolgingService.hentAvslutningstatusForManuellAvslutning(it) }
                 ?.let { DtoMappers.tilDto(it) }
         }
     }
 
-    @PostMapping("/batch/start-oppfolging")
+    @PostMapping("/batch/start-oppfolging-med-forrige-kontor")
     fun batchStartOppfolgingsperioder(@RequestBody input: BatchStartOppfolging): List<ResponseEntity<RegistrerIkkeArbeidssokerDto>> {
-        authService.sjekkAtApplikasjonErIAllowList(ALLOWLIST)
-
-        val result = fnrList.map { fnr ->
-            val kontor = aoKontorClient.hentForrigeAoKontor(fnr)
-            val arenaResponse = arenaOppfolgingService.registrerIkkeArbeidssoker(fnr)
+        val result = input.fnrList.map { fnr ->
+            val kontor = aoKontorClient.hentForrigeAoKontor(Fnr.of(fnr))
+            val arenaResponse = arenaOppfolgingService.registrerIkkeArbeidssoker(Fnr.of(fnr))
             when (arenaResponse) {
                 is RegistrerIArenaSuccess -> {
                     when (arenaResponse.arenaResultat.kode) {
@@ -115,9 +122,9 @@ class AdminV2Controller(
 
                         else -> {
                             logger.info("Bruker registrert i Arena med resultat: ${arenaResponse.arenaResultat.kode}")
-                            aktiverBrukerManueltService.aktiverBrukerManuelt(
-                                fnr = fnr,
-                                kontorSattAvVeileder = kontor,
+                            aktiverBrukerManueltService.aktiverBrukerMedForrigeAoKontor(
+                                fnr = Fnr.of(fnr),
+                                forrigeAoKontor = kontor,
                             )
                             ResponseEntity(arenaResponse.arenaResultat, HttpStatus.OK)
                         }
@@ -144,5 +151,5 @@ data class HentAvslutningStatusForOppfolgingsperioderRequest(
 )
 
 data class BatchStartOppfolging(
-    val aktorIds: List<String>,
+    val fnrList: List<String>,
 )

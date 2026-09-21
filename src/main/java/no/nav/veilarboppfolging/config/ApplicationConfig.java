@@ -43,6 +43,7 @@ public class ApplicationConfig {
     public static final String APPLICATION_NAME = "veilarboppfolging";
 
     public static final String SYSTEM_USER_NAME = "System";
+    public static final String ADMIN_USER_NAME = "Admin";
 
 	private final Cache<PolicyInput, Decision> policyInputToDecisionCache = Caffeine.newBuilder()
 			.expireAfterWrite(Duration.ofMinutes(30))
