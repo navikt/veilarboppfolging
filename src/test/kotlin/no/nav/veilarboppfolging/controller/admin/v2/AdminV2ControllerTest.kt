@@ -7,12 +7,16 @@ import no.nav.common.auth.context.AuthContextHolder
 import no.nav.common.auth.context.UserRole
 import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.json.JsonUtils
+import no.nav.veilarboppfolging.client.aoKontor.AoKontorClient
 import no.nav.veilarboppfolging.controller.admin.v1.POAO_ADMIN
 import no.nav.veilarboppfolging.kandidatForUtmelding.RepubliserKandidatForUtmeldingService
+import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.AktiverBrukerManueltService
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.service.AuthService
 import no.nav.veilarboppfolging.service.AvsluttOppfolgingService
 import no.nav.veilarboppfolging.service.KafkaRepubliseringService
+import no.nav.veilarboppfolging.service.StartOppfolgingService
 import no.nav.veilarboppfolging.test.TestUtils
 import org.hamcrest.Matchers
 import org.junit.jupiter.api.Test
@@ -31,27 +35,28 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 class AdminV2ControllerTest {
     @Autowired
     private lateinit var mockMvc: MockMvc
-
     @MockitoBean
     private lateinit var authContextHolder: AuthContextHolder
-
     @MockitoBean
     private lateinit var authService: AuthService
-
     @MockitoBean
     private lateinit var kafkaRepubliseringService: KafkaRepubliseringService
-
     @MockitoBean
     private lateinit var republiserKandidatForUtmeldingService: RepubliserKandidatForUtmeldingService
-
     @MockitoBean
     private lateinit var avsluttOppfolgingService: AvsluttOppfolgingService
-
     @MockitoBean
     private lateinit var aktorOppslagClient: AktorOppslagClient
-
     @MockitoBean
     private lateinit var oppfolgingsPeriodeRepository: OppfolgingsPeriodeRepository
+    @MockitoBean
+    private lateinit var aoKontorClient: AoKontorClient
+    @MockitoBean
+    private lateinit var arenaOppfolgingService: ArenaOppfolgingService
+    @MockitoBean
+    private lateinit var aktiverBrukerManueltService: AktiverBrukerManueltService
+    @MockitoBean
+    lateinit var startOppfolgingService: StartOppfolgingService
 
     @Test
     fun republiserOppfolgingsperioder__should_return_403_if_user_missing() {

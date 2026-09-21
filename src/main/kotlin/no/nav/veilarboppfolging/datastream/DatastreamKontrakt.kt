@@ -45,11 +45,12 @@ object DatastreamKontrakt {
                         "MANUELL_REGISTRERING_BRUKER",
                         "MANUELL_REGISTRERING_VEILEDER",
                         "SYKMELDT_UTEN_ARBEIDSGIVER_4_UKER",
+                        "ADMIN_START_OPPFOLGING_MED_FORRIGE_AO_KONTOR"
                     )
                 ),
                 Kolonne("startet_av"),
                 Kolonne("avregistrering_type", aksepterteVerdier = setOf("UtmeldtEtter28Dager", "KandidatUtmeldtEtter28Dager", "ManuellAvregistrering", "ArenaIservKanIkkeReaktiveres", "AdminAvregistrering")),
-                Kolonne("startet_av_type", aksepterteVerdier = setOf("SYSTEM", "BRUKER", "VEILEDER")),
+                Kolonne("startet_av_type", aksepterteVerdier = setOf("SYSTEM", "BRUKER", "VEILEDER", "ADMIN")),
                 Kolonne("kontor_satt_av_veileder"),
             ),
             ikkeReplikerteKolonner = setOf("avslutt_begrunnelse", "ao_kontor_intern_person_id"),
