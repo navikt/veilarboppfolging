@@ -208,6 +208,38 @@ class OppfolgingV3Controller(
         }
     }
 
+    @PostMapping("/oppfolging/batchStartOppfolgingsperiode")
+    fun batchStartOppfolgingsperiode(@RequestBody fnr: List<Fnr>) {
+
+        authService.sjekkAtApplikasjonErIAllowList(ALLOWLIST)
+
+        val arenaResponse = arenaOppfolgingService.registrerIkkeArbeidssoker(fnrTilNyBruker)
+
+        when (arenaResponse) {
+            is RegistrerIArenaSuccess -> {
+                when (arenaResponse.arenaResultat.kode) {
+                    ArenaRegistreringResultat.FNR_FINNES_IKKE, ArenaRegistreringResultat.KAN_REAKTIVERES_FORENKLET, ArenaRegistreringResultat.UKJENT_FEIL -> {
+                        logger.error("Feil ved registrering av bruker i Arena: {}", arenaResponse.arenaResultat.resultat)
+                        return ResponseEntity(arenaResponse.arenaResultat, HttpStatus.CONFLICT)
+                    }
+                    else -> {
+                        logger.info("Bruker registrert i Arena med resultat: ${arenaResponse.arenaResultat.kode}")
+                        aktiverBrukerManueltService.aktiverBrukerManuelt(
+                            fnr = fnrTilNyBruker,
+                            kontorSattAvVeileder = startOppfolging.kontorSattAvVeileder,
+                        )
+                        return ResponseEntity(arenaResponse.arenaResultat, HttpStatus.OK)
+                    }
+                }
+            }
+            is RegistrerIArenaError -> {
+                logger.error("Feil ved registrering av bruker i Arena", arenaResponse.throwable)
+                throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, arenaResponse.message)
+            }
+        }
+
+    }
+
     @PostMapping("/oppfolging/startOppfolgingsperiode")
     fun aktiverBruker(@RequestBody startOppfolging: StartOppfolgingDto): ResponseEntity<RegistrerIkkeArbeidssokerDto> {
         val fnrTilNyBruker = if (authService.erEksternBruker()) {
