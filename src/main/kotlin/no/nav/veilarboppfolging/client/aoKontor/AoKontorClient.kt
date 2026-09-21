@@ -36,7 +36,7 @@ class AoKontorClient(
             parsed.data
         }
         return kontorHistorikk.kontorHistorikk
-            .lastOrNull { it.kontorType == KontorType.ARBEIDSOPPFOLGING }
+            .firstOrNull { it.kontorType == KontorType.ARBEIDSOPPFOLGING }
             ?.kontorId ?: throw RuntimeException("Fant ikke ao-kontor historikk for ARBEIDSOPPFOLGING")
     }
 }
