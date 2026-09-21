@@ -24,6 +24,7 @@ import org.springframework.transaction.support.TransactionTemplate
 import java.util.*
 import kotlin.jvm.optionals.getOrNull
 import no.nav.veilarboppfolging.kandidatForUtmelding.FjernKandidatForUtmeldingService
+import no.nav.veilarboppfolging.oppfolgingsbruker.AdminRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.SystemRegistrering
 
 @Service
@@ -91,7 +92,15 @@ open class StartOppfolgingService(
             kafkaProducerService.publiserOppfolgingsperiode(DtoMappers.tilOppfolgingsperiodeDTO(sistePeriode))
             kafkaProducerService.publiserVisAoMinSideMicrofrontend(aktorId, fnr)
             kafkaProducerService.publiserOppfolgingsStartet(lagOppfolgingStartetHendelseDto(fnr, sistePeriode, arbeidsoppfolgingskontor))
-            publiserMinSideBeskjedHvisIkkeReservert(kontaktinfo, aktorId, fnr)
+            when (oppfolgingsRegistrering) {
+                is SystemRegistrering -> {
+                    // Ikke send ut minside-varsel hvis det er en system-registrering som ble gjort av Admin
+                    if (oppfolgingsRegistrering.registrertAv !is AdminRegistrant) {
+                        publiserMinSideBeskjedHvisIkkeReservert(kontaktinfo, aktorId, fnr)
+                    }
+                }
+                else -> publiserMinSideBeskjedHvisIkkeReservert(kontaktinfo, aktorId, fnr)
+            }
 
             bigQueryClient.loggStartOppfolgingsperiode(
                 oppfolgingsRegistrering.oppfolgingStartBegrunnelse,
