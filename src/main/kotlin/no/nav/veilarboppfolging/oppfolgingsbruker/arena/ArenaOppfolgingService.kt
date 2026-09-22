@@ -141,6 +141,10 @@ class ArenaOppfolgingService @Autowired constructor(
         return veilarbarenaClient.registrerIkkeArbeidsoker(fnr)
     }
 
+    fun adminRegistrerIkkeArbeidssoker(fnr: Fnr): RegistrerIArenaResult {
+        return veilarbarenaClient.adminRegistrerIkkeArbeidsoker(fnr)
+    }
+
     private fun hentEnhet(enhetId: EnhetId?): Oppfolgingsenhet? {
         if (enhetId == null) return null
         try {
