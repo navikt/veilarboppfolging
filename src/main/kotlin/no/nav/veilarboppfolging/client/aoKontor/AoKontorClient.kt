@@ -35,9 +35,18 @@ class AoKontorClient(
             if(parsed.errors?.isNotEmpty() == true) { throw RuntimeException("Feil ved kall til ao-kontor ${parsed.errors}") }
             parsed.data
         }
-        return kontorHistorikk.kontorHistorikk
-            .firstOrNull { it.kontorType == KontorType.ARBEIDSOPPFOLGING }
-            ?.kontorId ?: throw RuntimeException("Fant ikke ao-kontor historikk for ARBEIDSOPPFOLGING")
+        if (kontorHistorikk == null) {
+            throw RuntimeException("Klarte ikke å hent ao-kontorhistorikk, data var null")
+        }
+        return finnForrigeAoKontor(kontorHistorikk.kontorHistorikk)
+    }
+
+    private fun finnForrigeAoKontor(kontorHistorikk: List<KontorInnslag>): String {
+        kontorHistorikk.firstOrNull { it.kontorType == KontorType.ARBEIDSOPPFOLGING }?.kontorId?.let { return it }
+
+        kontorHistorikk.firstOrNull { it.kontorType == KontorType.ARENA }?.kontorId?.let { return it }
+
+        throw RuntimeException("Fant ikke ao-kontor historikk for ARBEIDSOPPFOLGING")
     }
 }
 
