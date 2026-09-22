@@ -3,6 +3,7 @@ package no.nav.veilarboppfolging.oppfolgingsbruker.inngang
 import no.nav.common.types.identer.Fnr
 import no.nav.common.types.identer.NavIdent
 import no.nav.veilarboppfolging.client.pdl.PdlFolkeregisterStatusClient
+import no.nav.veilarboppfolging.oppfolgingsbruker.AdminRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant
 import no.nav.veilarboppfolging.service.AuthService
 import no.nav.veilarboppfolging.service.StartOppfolgingService
@@ -29,6 +30,23 @@ class AktiverBrukerManueltService(
                     VeilederRegistrant(NavIdent.of(authService.innloggetVeilederIdent)),
                     kontorSattAvVeileder,
                     manueltSjekketLovligOpphold
+                )
+            }
+
+            startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(oppfolgingsbruker)
+        }
+    }
+
+    fun aktiverBrukerMedForrigeAoKontor(fnr: Fnr, forrigeAoKontor: String) {
+        transactor.executeWithoutResult {
+            val aktorId = authService.getAktorIdOrThrow(fnr)
+            val oppfolgingsbruker = when (authService.erEksternBruker()) {
+                true -> throw IllegalStateException("Ekstern bruker kan ikke starte oppfølging med forrige AO-kontor")
+                false -> OppfolgingsRegistrering.systemRegistrering(
+                    fnr, aktorId,
+                    AdminRegistrant(authService.innloggetVeilederIdent),
+                    OppfolgingStartBegrunnelseFraSystem.ADMIN_START_OPPFOLGING_MED_FORRIGE_AO_KONTOR,
+                    forrigeAoKontor
                 )
             }
 

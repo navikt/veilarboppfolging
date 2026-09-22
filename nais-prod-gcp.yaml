@@ -86,6 +86,10 @@ spec:
       value: http://api-intern.aap
     - name: AAP_SCOPE
       value: api://prod-gcp.aap.api-intern/.default
+    - name: AO_KONTOR_URL
+      value: http://ao-oppfolgingskontor.dab
+    - name: AO_KONTOR_SCOPE
+      value: api://prod-gcp.dab.ao-oppfolgingskontor/.default
     - name: KAFKA_ENABLED
       value: "true"
     - name: VEILARBARENA_URL
@@ -140,6 +144,8 @@ spec:
           namespace: paw
         - application: api-intern
           namespace: aap
+        - application: ao-oppfolgingskontor
+          namespace: dab
       external:
         - host: veilarbarena.prod-fss-pub.nais.io
         - host: pdl-api.prod-fss-pub.nais.io

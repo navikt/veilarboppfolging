@@ -2,6 +2,7 @@ package no.nav.veilarboppfolging.oppfolgingsbruker
 
 import no.nav.common.types.identer.Fnr
 import no.nav.common.types.identer.NavIdent
+import no.nav.veilarboppfolging.config.ApplicationConfig.ADMIN_USER_NAME
 import no.nav.veilarboppfolging.config.ApplicationConfig.SYSTEM_USER_NAME
 
 /* a person who registers something. */
@@ -23,6 +24,13 @@ class SystemRegistrant(
     override fun getType() = StartetAvType.SYSTEM
 }
 
+class AdminRegistrant(
+    val navn: String = ADMIN_USER_NAME
+) : Registrant() {
+    override fun getIdent(): String = navn
+    override fun getType() = StartetAvType.ADMIN
+}
+
 class VeilederRegistrant(
     val navIdent: NavIdent,
 ) : Registrant() {
@@ -35,5 +43,6 @@ fun StartetAvType.toRegistrant(navIdent: NavIdent, fnr: Fnr, systemnavn: String 
         StartetAvType.SYSTEM -> SystemRegistrant(systemnavn)
         StartetAvType.BRUKER -> BrukerRegistrant(fnr)
         StartetAvType.VEILEDER -> VeilederRegistrant(navIdent)
+        StartetAvType.ADMIN -> AdminRegistrant()
     }
 }

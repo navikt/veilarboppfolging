@@ -26,5 +26,7 @@ public record EnvironmentProperties(
     String arbeidssoekerregisteretUrl,
     String arbeidssoekerregisteretScope,
     String aapUrl,
-    String aapScope
+    String aoKontorUrl,
+    String aapScope,
+    String aoKontorScope
 ) {}

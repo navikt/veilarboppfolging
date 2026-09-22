@@ -1,0 +1,6 @@
+query hentKontorHistorikk($ident: String!) {
+    kontorHistorikk(ident: $ident) {
+        kontorId
+        kontorType
+    }
+}

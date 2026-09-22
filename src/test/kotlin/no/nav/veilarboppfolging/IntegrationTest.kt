@@ -104,6 +104,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.web.context.WebApplicationContext
 import java.time.temporal.ChronoUnit
 import no.nav.poao_tilgang.client.NavAnsattTilgangTilEksternBrukerKjernereglerPolicyInput
+import no.nav.veilarboppfolging.client.aoKontor.AoKontorClient
 import no.nav.veilarboppfolging.kandidatForUtmelding.FilterkategoriRepository
 import no.nav.veilarboppfolging.kandidatForUtmelding.FjernKandidatForUtmeldingService
 import no.nav.veilarboppfolging.kandidatForUtmelding.ForlengelseDTO
@@ -250,6 +251,9 @@ open class IntegrationTest {
 
     @MockitoBean
     lateinit var aapClient: AapClient
+
+    @MockitoBean
+    lateinit var aoKontorClient: AoKontorClient
 
     @Autowired
     lateinit var kandidatForUtmeldingService: KandidatForUtmeldingService

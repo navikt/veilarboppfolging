@@ -5,6 +5,7 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.poao_tilgang.client.Decision;
 import no.nav.poao_tilgang.client.TilgangType;
 import no.nav.veilarboppfolging.ForbiddenException;
+import no.nav.veilarboppfolging.client.aoKontor.AoKontorClient;
 import no.nav.veilarboppfolging.client.veilarbarena.*;
 import no.nav.veilarboppfolging.controller.KontaktBrukerDto;
 import no.nav.veilarboppfolging.controller.OppfolgingV3Controller;
@@ -67,6 +68,8 @@ class OppfolgingV3ControllerTest {
     private KontaktBrukerService kontaktBrukerService;
     @MockitoBean
     private AvsluttOppfolgingService avsluttOppfolgingService;
+    @MockitoBean
+    private AoKontorClient aoKontorClient;
 
     @BeforeEach
     void setup() throws Exception {

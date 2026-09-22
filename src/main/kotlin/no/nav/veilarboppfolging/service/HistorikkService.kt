@@ -139,7 +139,7 @@ class HistorikkService(
             dato = periode.startDato,
             begrunnelse = getStartetBegrunnelseTekst(periode.startetBegrunnelse, periode.startetAvType),
             opprettetAv = periode.startetAvType?.toKodeverkBruker(),
-            opprettetAvBrukerId = periode.startetAv,
+            opprettetAvBrukerId = if (periode.startetAvType == StartetAvType.ADMIN) "Admin" else periode.startetAv,
             dialogId = null,
             enhet = null,
             tildeltVeilederId = null,
@@ -213,5 +213,6 @@ fun StartetAvType.toKodeverkBruker(): KodeverkBruker {
         StartetAvType.VEILEDER -> KodeverkBruker.NAV
         StartetAvType.SYSTEM -> KodeverkBruker.SYSTEM
         StartetAvType.BRUKER -> KodeverkBruker.EKSTERN
+        StartetAvType.ADMIN -> KodeverkBruker.ADMIN
     }
 }

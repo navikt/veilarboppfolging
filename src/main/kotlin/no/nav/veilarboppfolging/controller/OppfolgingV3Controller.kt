@@ -5,6 +5,7 @@ import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.poao_tilgang.client.TilgangType
 import no.nav.veilarboppfolging.BadRequestException
+import no.nav.veilarboppfolging.client.aoKontor.AoKontorClient
 import no.nav.veilarboppfolging.client.veilarbarena.AlleredeUnderoppfolgingError
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaRegistreringResultat
 import no.nav.veilarboppfolging.client.veilarbarena.BrukerErUtmeldingskandidat
@@ -60,6 +61,7 @@ class OppfolgingV3Controller(
     val arenaOppfolgingService: ArenaOppfolgingService,
     val reaktiveringService: ReaktiveringService,
     val kontaktBrukerService: KontaktBrukerService,
+    val aoKontorClient: AoKontorClient
 ) {
     private val logger = LoggerFactory.getLogger(this::class.java)
 
@@ -78,7 +80,11 @@ class OppfolgingV3Controller(
 
     @GetMapping("/oppfolging/me")
     fun hentBrukerInfo(): Bruker? {
-        return Bruker(id = authService.innloggetBrukerIdent, erVeileder = authService.erInternBruker(), erBruker = authService.erEksternBruker())
+        return Bruker(
+            id = authService.innloggetBrukerIdent,
+            erVeileder = authService.erInternBruker(),
+            erBruker = authService.erEksternBruker()
+        )
     }
 
     @PostMapping("/oppfolging/hent-status")
@@ -204,18 +210,25 @@ class OppfolgingV3Controller(
                 logger.error("Ukjent feil under reaktivering av bruker", reaktiveringResult.throwable)
                 ResponseEntity("Noe gikk veldig galt", HttpStatus.INTERNAL_SERVER_ERROR)
             }
-            is BrukerErUtmeldingskandidat -> ResponseEntity("Bruker er utmeldingskandidat - skal ikke kunne reaktiveres", HttpStatus.CONFLICT)
+
+            is BrukerErUtmeldingskandidat -> ResponseEntity(
+                "Bruker er utmeldingskandidat - skal ikke kunne reaktiveres",
+                HttpStatus.CONFLICT
+            )
         }
     }
 
     @PostMapping("/oppfolging/startOppfolgingsperiode")
     fun aktiverBruker(@RequestBody startOppfolging: StartOppfolgingDto): ResponseEntity<RegistrerIkkeArbeidssokerDto> {
         val fnrTilNyBruker = if (authService.erEksternBruker()) {
-            authService.hentInnloggetPersonIdent()?.let {  Fnr.of(it) }
+            authService.hentInnloggetPersonIdent()?.let { Fnr.of(it) }
                 ?: throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Kan ikke hente innlogget personident")
         } else {
             authService.skalVereInternBruker()
-            val fnr = startOppfolging.fnr ?: throw ResponseStatusException(HttpStatus.BAD_REQUEST, "fnr er påkrevd for interne brukere")
+            val fnr = startOppfolging.fnr ?: throw ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "fnr er påkrevd for interne brukere"
+            )
             sjekkTilgangTilAStarteOppfolging(fnr)
             fnr
         }
@@ -225,9 +238,13 @@ class OppfolgingV3Controller(
             is RegistrerIArenaSuccess -> {
                 when (arenaResponse.arenaResultat.kode) {
                     ArenaRegistreringResultat.FNR_FINNES_IKKE, ArenaRegistreringResultat.KAN_REAKTIVERES_FORENKLET, ArenaRegistreringResultat.UKJENT_FEIL -> {
-                        logger.error("Feil ved registrering av bruker i Arena: {}", arenaResponse.arenaResultat.resultat)
+                        logger.error(
+                            "Feil ved registrering av bruker i Arena: {}",
+                            arenaResponse.arenaResultat.resultat
+                        )
                         return ResponseEntity(arenaResponse.arenaResultat, HttpStatus.CONFLICT)
                     }
+
                     else -> {
                         logger.info("Bruker registrert i Arena med resultat: ${arenaResponse.arenaResultat.kode}")
                         aktiverBrukerManueltService.aktiverBrukerManuelt(
@@ -238,6 +255,7 @@ class OppfolgingV3Controller(
                     }
                 }
             }
+
             is RegistrerIArenaError -> {
                 logger.error("Feil ved registrering av bruker i Arena", arenaResponse.throwable)
                 throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, arenaResponse.message)
@@ -248,8 +266,8 @@ class OppfolgingV3Controller(
     @PostMapping("/oppfolging/bliKontaktet")
     fun bliKontaktet(): ResponseEntity<KontaktBrukerDto> {
         authService.skalVereEksternBruker()
-        val fnr = authService.hentInnloggetPersonIdent()?.let {  Fnr.of(it) }
-                ?: throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Kan ikke hente innlogget personident")
+        val fnr = authService.hentInnloggetPersonIdent()?.let { Fnr.of(it) }
+            ?: throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Kan ikke hente innlogget personident")
         authService.harEksternBrukerTilgang(fnr)
         authService.sjekkAtApplikasjonErIAllowList(ALLOWLIST)
 

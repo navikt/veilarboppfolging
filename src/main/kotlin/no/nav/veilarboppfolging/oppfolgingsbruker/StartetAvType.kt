@@ -3,6 +3,7 @@ package no.nav.veilarboppfolging.oppfolgingsbruker;
 enum class StartetAvType {
     SYSTEM,
     BRUKER,
-    VEILEDER
+    VEILEDER,
+    ADMIN
 }
 typealias AvsluttetAvType = StartetAvType
