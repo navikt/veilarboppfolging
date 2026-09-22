@@ -117,7 +117,7 @@ class AdminV2Controller(
         val result = input.aktorIdList.map { aktorId ->
             val fnr = aktorOppslagClient.hentFnr(AktorId.of(aktorId))
             val kontor = aoKontorClient.hentForrigeAoKontor(fnr)
-            val arenaResponse = arenaOppfolgingService.registrerIkkeArbeidssoker(fnr)
+            val arenaResponse = arenaOppfolgingService.adminRegistrerIkkeArbeidssoker(fnr)
             when (arenaResponse) {
                 is RegistrerIArenaSuccess -> {
                     when (arenaResponse.arenaResultat.kode) {

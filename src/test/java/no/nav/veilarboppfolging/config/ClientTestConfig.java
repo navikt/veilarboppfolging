@@ -109,6 +109,11 @@ public class ClientTestConfig {
             }
 
             @Override
+            public RegistrerIArenaResult adminRegistrerIkkeArbeidsoker(Fnr fnr) {
+                return new RegistrerIArenaSuccess(new RegistrerIkkeArbeidssokerDto("lol", ArenaRegistreringResultat.OK_REGISTRERT_I_ARENA));
+            }
+
+            @Override
             public HealthCheckResult checkHealth() {
                 return HealthCheckResult.healthy();
             }

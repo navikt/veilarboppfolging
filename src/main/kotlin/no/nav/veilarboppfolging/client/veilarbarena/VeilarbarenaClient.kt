@@ -8,4 +8,5 @@ interface VeilarbarenaClient : HealthCheck {
     fun hentOppfolgingsbruker(fnr: Fnr): ArenaOppfolginsBrukerOppslagResult
     fun getArenaOppfolgingsstatus(fnr: Fnr): Optional<VeilarbArenaOppfolgingsStatus>
     fun registrerIkkeArbeidsoker(fnr: Fnr): RegistrerIArenaResult
+    fun adminRegistrerIkkeArbeidsoker(fnr: Fnr): RegistrerIArenaResult
 }
