@@ -149,9 +149,9 @@ class AdminV2Controller(
     }
 
     @PostMapping("/batch/opprett-utmeldingskandidater-ikke-lenger-arbeidssoker")
-    fun batchOpprettUtmeldingskandidatIkkeLengerArbeidssøker(@RequestBody input: BatchOpprettUtmeldingskandidater): List<ResponseEntity<BatchOpprettUtmeldingskandidaterResponse>> {
+    fun batchOpprettUtmeldingskandidatIkkeLengerArbeidssøker(@RequestBody input: BatchOpprettUtmeldingskandidater): ResponseEntity<BatchOpprettUtmeldingskandidaterResponse> {
         sjekkTilgangTilAdmin()
-        input.oppfolgingsperiodeIder.map {oppfolgingsperiodeId ->
+        val feiledeOppfolginsperiodeIder = input.oppfolgingsperiodeIder.mapNotNull {oppfolgingsperiodeId ->
             val kandidat = ArbeidssøkerPeriodeAvsluttet(
                 oppfolgingsperiodeUuid = oppfolgingsperiodeId,
                 utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.SYSTEM,
@@ -161,9 +161,19 @@ class AdminV2Controller(
                 avslutningsarsak = "",
                 hendelseTidspunkt = java.time.Instant.now(),
             )
-            kandidatForUtmeldingService.handterUtmeldingsHendelse(kandidat)
+            try {
+                kandidatForUtmeldingService.handterUtmeldingsHendelse(kandidat)
+                null
+            } catch(e: Exception) {
+                logger.error("Feil ved oppretting av utmeldingskandidat for oppfolgingsperiodeId: $oppfolgingsperiodeId", e)
+                oppfolgingsperiodeId
+            }
         }
-        return listOf()
+        return if (feiledeOppfolginsperiodeIder.isNotEmpty()) {
+            ResponseEntity(BatchOpprettUtmeldingskandidaterResponse(feiledeOppfolginsperiodeIder), HttpStatus.INTERNAL_SERVER_ERROR)
+        } else {
+            ResponseEntity(BatchOpprettUtmeldingskandidaterResponse(emptyList()), HttpStatus.OK)
+        }
     }
 
     private fun sjekkTilgangTilAdmin() {
