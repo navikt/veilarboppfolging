@@ -13,6 +13,10 @@ import no.nav.veilarboppfolging.client.veilarbarena.RegistrerIArenaSuccess
 import no.nav.veilarboppfolging.client.veilarbarena.RegistrerIkkeArbeidssokerDto
 import no.nav.veilarboppfolging.controller.admin.v1.POAO_ADMIN
 import no.nav.veilarboppfolging.controller.response.AvslutningsStatusDto
+import no.nav.veilarboppfolging.kandidatForUtmelding.ArbeidssokerperiodeAvsluttetHendelseType
+import no.nav.veilarboppfolging.kandidatForUtmelding.ArbeidssøkerPeriodeAvsluttet
+import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingHendelseUtfortAvType
+import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService
 import no.nav.veilarboppfolging.kandidatForUtmelding.RepubliserKandidatForUtmeldingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.AktiverBrukerManueltService
@@ -30,6 +34,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.server.ResponseStatusException
+import kotlin.time.Instant
 
 
 @RestController
@@ -45,6 +50,7 @@ class AdminV2Controller(
     private val aoKontorClient: AoKontorClient,
     private val arenaOppfolgingService: ArenaOppfolgingService,
     private val aktiverBrukerManueltService: AktiverBrukerManueltService,
+    private val kandidatForUtmeldingService: KandidatForUtmeldingService
 ) {
 
     private val logger = LoggerFactory.getLogger(this::class.java)
@@ -142,6 +148,24 @@ class AdminV2Controller(
         return result
     }
 
+    @PostMapping("/batch/opprett-utmeldingskandidater-ikke-lenger-arbeidssoker")
+    fun batchOpprettUtmeldingskandidatIkkeLengerArbeidssøker(@RequestBody input: BatchOpprettUtmeldingskandidater): List<ResponseEntity<BatchOpprettUtmeldingskandidaterResponse>> {
+        sjekkTilgangTilAdmin()
+        input.oppfolgingsperiodeIder.map {oppfolgingsperiodeId ->
+            val kandidat = ArbeidssøkerPeriodeAvsluttet(
+                oppfolgingsperiodeUuid = oppfolgingsperiodeId,
+                utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.SYSTEM,
+                utfortAv = "System",
+                kilde = "TEAM_DAB",
+                arbeidssokerperiodeAvsluttetHendelseType = ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET,
+                avslutningsarsak = "",
+                hendelseTidspunkt = java.time.Instant.now(),
+            )
+            kandidatForUtmeldingService.handterUtmeldingsHendelse(kandidat)
+        }
+        return listOf()
+    }
+
     private fun sjekkTilgangTilAdmin() {
         authService.sjekkAtApplikasjonErIAllowList(listOf(POAO_ADMIN))
         if (!authService.erInternBruker()) throw ForbiddenException("Må være internbruker")
@@ -154,4 +178,12 @@ data class HentAvslutningStatusForOppfolgingsperioderRequest(
 
 data class BatchStartOppfolging(
     val aktorIdList: List<String>,
+)
+
+data class BatchOpprettUtmeldingskandidater(
+    val oppfolgingsperiodeIder: List<UUID>,
+)
+
+data class BatchOpprettUtmeldingskandidaterResponse(
+    val feiledeOppfolgingsperiodeIder: List<UUID>
 )
