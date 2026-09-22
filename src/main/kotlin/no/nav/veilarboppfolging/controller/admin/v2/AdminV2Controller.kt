@@ -107,6 +107,7 @@ class AdminV2Controller(
 
     @PostMapping("/batch/start-oppfolging-med-forrige-kontor")
     fun batchStartOppfolgingsperioder(@RequestBody input: BatchStartOppfolging): List<ResponseEntity<RegistrerIkkeArbeidssokerDto>> {
+        sjekkTilgangTilAdmin()
         val result = input.aktorIdList.map { aktorId ->
             val fnr = aktorOppslagClient.hentFnr(AktorId.of(aktorId))
             val kontor = aoKontorClient.hentForrigeAoKontor(fnr)
@@ -121,7 +122,6 @@ class AdminV2Controller(
                             )
                             ResponseEntity(arenaResponse.arenaResultat, HttpStatus.CONFLICT)
                         }
-
                         else -> {
                             logger.info("Bruker registrert i Arena med resultat: ${arenaResponse.arenaResultat.kode}")
                             aktiverBrukerManueltService.aktiverBrukerMedForrigeAoKontor(

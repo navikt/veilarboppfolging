@@ -117,8 +117,7 @@ public class ClientConfig {
 
     @Bean
     public AoKontorClient aoKontorClient(EnvironmentProperties properties, ErrorMappedAzureAdMachineToMachineTokenClient tokenClient, AuthService authService) {
-        Supplier<String> tokenSupplier = () -> authService.erInternBruker() ? authService.getAadOboTokenForTjeneste(properties.aoKontorScope())
-                : tokenClient.createMachineToMachineToken(properties.aoKontorScope());
+        Supplier<String> tokenSupplier = () -> tokenClient.createMachineToMachineToken(properties.aoKontorScope());
 
         return new AoKontorClient(properties.aoKontorUrl(),
                 tokenSupplier,
