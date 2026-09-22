@@ -33,6 +33,11 @@ class KandidatForUtmeldingService(
     private val BATCH_SIZE = 1000
     private val logger = LoggerFactory.getLogger(this::class.java)
 
+    fun handterUtmeldingsHendelse(hendelse: KandidatForUtmeldingHendelse) {
+        val fnr = finnFnrForOppfolgingsperiode(hendelse.oppfolgingsperiodeUuid)
+        handterUtmeldingsHendelse(fnr.first, hendelse)
+    }
+
     fun handterUtmeldingsHendelse(fnr: Fnr, hendelse: KandidatForUtmeldingHendelse) {
         transactor.executeWithoutResult { _ ->
             val avslutningsstatus by lazy { avsluttOppfolgingService.hentAvslutningstatusForManuellAvslutning(fnr) }
