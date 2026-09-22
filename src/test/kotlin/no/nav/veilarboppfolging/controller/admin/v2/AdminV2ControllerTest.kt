@@ -9,6 +9,7 @@ import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.json.JsonUtils
 import no.nav.veilarboppfolging.client.aoKontor.AoKontorClient
 import no.nav.veilarboppfolging.controller.admin.v1.POAO_ADMIN
+import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService
 import no.nav.veilarboppfolging.kandidatForUtmelding.RepubliserKandidatForUtmeldingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.AktiverBrukerManueltService
@@ -57,6 +58,8 @@ class AdminV2ControllerTest {
     private lateinit var aktiverBrukerManueltService: AktiverBrukerManueltService
     @MockitoBean
     lateinit var startOppfolgingService: StartOppfolgingService
+    @MockitoBean
+    lateinit var kandidatForUtmeldingService: KandidatForUtmeldingService
 
     @Test
     fun republiserOppfolgingsperioder__should_return_403_if_user_missing() {
