@@ -107,9 +107,10 @@ class AdminV2Controller(
 
     @PostMapping("/batch/start-oppfolging-med-forrige-kontor")
     fun batchStartOppfolgingsperioder(@RequestBody input: BatchStartOppfolging): List<ResponseEntity<RegistrerIkkeArbeidssokerDto>> {
-        val result = input.fnrList.map { fnr ->
-            val kontor = aoKontorClient.hentForrigeAoKontor(Fnr.of(fnr))
-            val arenaResponse = arenaOppfolgingService.registrerIkkeArbeidssoker(Fnr.of(fnr))
+        val result = input.aktorIdList.map { aktorId ->
+            val fnr = aktorOppslagClient.hentFnr(AktorId.of(aktorId))
+            val kontor = aoKontorClient.hentForrigeAoKontor(fnr)
+            val arenaResponse = arenaOppfolgingService.registrerIkkeArbeidssoker(fnr)
             when (arenaResponse) {
                 is RegistrerIArenaSuccess -> {
                     when (arenaResponse.arenaResultat.kode) {
@@ -124,7 +125,7 @@ class AdminV2Controller(
                         else -> {
                             logger.info("Bruker registrert i Arena med resultat: ${arenaResponse.arenaResultat.kode}")
                             aktiverBrukerManueltService.aktiverBrukerMedForrigeAoKontor(
-                                fnr = Fnr.of(fnr),
+                                fnr = fnr,
                                 forrigeAoKontor = kontor,
                             )
                             ResponseEntity(arenaResponse.arenaResultat, HttpStatus.OK)
@@ -152,5 +153,5 @@ data class HentAvslutningStatusForOppfolgingsperioderRequest(
 )
 
 data class BatchStartOppfolging(
-    val fnrList: List<String>,
+    val aktorIdList: List<String>,
 )
