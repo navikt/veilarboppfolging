@@ -55,9 +55,9 @@ class VeilarbarenaClientImpl(
     private fun getMachineToMachineToken(): TokenResult {
         return runCatching {
             authService.getMachineTokenForTjeneste(veilarbarenaAadTokenScope)
+        }
             .map { TokenResult.Success(it) }
-            .getOrElse { TokenResult.Fail("Feilet å hente token for veilarbarena" , it)
-
+            .getOrElse { TokenResult.Fail("Feilet å hente token for veilarbarena", it) }
     }
 
     private fun buildRequest(url: String, payload: PersonRequest, token: String): Request {
