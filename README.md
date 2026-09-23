@@ -43,3 +43,6 @@ Dette repoet bruker GitHub Copilot til å generere kode.
     - `{ "Authorization": "Bearer <token>", "nav-consumer-id": "graphiql" }`
     - Sett `{ "fnr": "<fnr eller aktorId>" }` i variables
 - Profit?
+
+### Metrikk for bruk av Graphql felter
+Vi har en prometheus metrikk på hvilke felter i graphql som er brukt av hvilke klienter. Den heter ``graphql_field_fetch``. Se klassen ``GraphqlFieldTrackingInstrumentation`` for implementasjon
