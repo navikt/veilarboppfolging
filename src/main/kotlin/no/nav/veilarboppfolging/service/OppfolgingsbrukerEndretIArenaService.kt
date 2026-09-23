@@ -89,6 +89,7 @@ class OppfolgingsbrukerEndretIArenaService(
                     .map { kandidatForUtmeldingService.erAktivEllerForlengetKandidatForUtmelding(it.uuid) }
                     .orElse(false)!!
                 if (!erForlengetEllerAktivKandidatForUtmelding) {
+                    log.warn("Person BleInaktivertMedKanReaktiveres men var ikke utmeldingskandidat, dette skal ikke skje")
                     // Bare start grace-periode på 28 dager hvis det ikke finnes noe kandidat-tag på bruker
                     utmeldingsService.oppdaterUtmeldingsStatus(KanskjeIservBruker.of(endringOppfolgingsbruker, erBrukerUnderOppfolgingLokalt))
                 }
