@@ -1,12 +1,12 @@
-val kotlinVersion = "2.4.10"
-val flywayVersion = "13.5.0"
+val kotlinVersion = "2.4.20"
+val flywayVersion = "13.6.0"
 val commonVersion = "4.2026.09.14_05.57-40a1ead1e559"
 val ptoSchemaVersion = "2.2026.06.16_10.51-c03b8278b27d"
 val poaoTilgangVersion = "4.2026.09.14_09.01-2100e3faec2d"
 val wiremockVersion = "3.13.2"
 val schedlockVersion = "7.10.1"
-val googleCloudLibrariesBomVersion = "26.86.0"
-val springDoc = "3.1.0"
+val googleCloudLibrariesBomVersion = "26.88.1"
+val springDoc = "3.1.1"
 val tmsMicrofrontendBuilder = "3.0.0"
 val tmsVarselBuilder = "2.2.0"
 val logstashVersion = "9.0"
@@ -21,7 +21,7 @@ val dabBigQuerySchemaVersion = "2026.08.13-08.27.6add270b9bee"
 extra["tomcat.version"] = "11.0.25"
 
 plugins {
-    val kotlinVersion = "2.4.10"
+    val kotlinVersion = "2.4.20"
     kotlin("jvm") version kotlinVersion
     kotlin("plugin.spring") version kotlinVersion
     id("org.springframework.boot") version "4.1.1"

@@ -40,7 +40,7 @@ class VeilarbarenaClientImpl(
     private val client: OkHttpClient = RestClient.baseClient()
     private val logger = LoggerFactory.getLogger(this::class.java)
 
-    private fun getToken(): TokenResult {
+    private fun getOboToken(): TokenResult {
         return runCatching {
             when {
                 authService.erInternBruker() -> authService.getAadOboTokenForTjeneste(veilarbarenaAadTokenScope)
@@ -52,6 +52,14 @@ class VeilarbarenaClientImpl(
         }
     }
 
+    private fun getMachineToMachineToken(): TokenResult {
+        return runCatching {
+            authService.getMachineTokenForTjeneste(veilarbarenaAadTokenScope)
+        }
+            .map { TokenResult.Success(it) }
+            .getOrElse { TokenResult.Fail("Feilet å hente token for veilarbarena", it) }
+    }
+
     private fun buildRequest(url: String, payload: PersonRequest, token: String): Request {
         return Request.Builder()
             .url(url)
@@ -61,7 +69,7 @@ class VeilarbarenaClientImpl(
             .build()
     }
 
-    private fun <T : Any> httpPost(url: String, payload: PersonRequest, clazz: Class<T>): RequestResult<T> {
+    private fun <T : Any> httpPost(url: String, payload: PersonRequest, clazz: Class<T>, getToken: () -> TokenResult = ::getOboToken): RequestResult<T> {
         when (val tokenResult = getToken()) {
             is TokenResult.Fail -> return RequestResult.Fail(tokenResult.message, tokenResult.reason)
             is TokenResult.Success -> {
@@ -131,6 +139,26 @@ class VeilarbarenaClientImpl(
         catch (e: Exception) {
             logger.error("Uventet feil ved henting av oppfolgingsstatus fra veilarbarena: ${e.message}", e)
             return Optional.empty()
+        }
+    }
+
+    override fun adminRegistrerIkkeArbeidsoker(fnr: Fnr): RegistrerIArenaResult {
+        val personRequest = PersonRequest(fnr)
+
+        try {
+            val response = httpPost(UrlUtils.joinPaths(veilarbarenaUrl,
+                "/veilarbarena/api/v2/arena/registrer-i-arena"),
+                personRequest,
+                RegistrerIkkeArbeidssokerDto::class.java,
+                ::getMachineToMachineToken
+            )
+            emptySuccessMeansFailure(response)
+            return when (response) {
+                is RequestResult.Success -> RegistrerIArenaSuccess(response.body.get())
+                is RequestResult.Fail ->  RegistrerIArenaError("Noe gikk galt ved registrering av bruker i Arena", response.reason)
+            }
+        } catch (e: Exception) {
+            return RegistrerIArenaError("Uventet feil ved registrer bruker via veilarbarena", e)
         }
     }
 
