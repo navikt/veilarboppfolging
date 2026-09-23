@@ -1,5 +1,5 @@
 val kotlinVersion = "2.4.20"
-val flywayVersion = "13.6.0"
+val flywayVersion = "13.7.0"
 val commonVersion = "4.2026.09.14_05.57-40a1ead1e559"
 val ptoSchemaVersion = "2.2026.06.16_10.51-c03b8278b27d"
 val poaoTilgangVersion = "4.2026.09.14_09.01-2100e3faec2d"
@@ -107,7 +107,7 @@ dependencies {
     implementation("no.nav.common:metrics:$commonVersion")
     implementation("no.nav.common:kafka:$commonVersion")
     implementation("org.apache.avro:avro:$avroVersion")
-    avroSchemas("no.nav.paw.arbeidssokerregisteret.api:main-avro-schema:1.26.06.18.18-1")
+    avroSchemas("no.nav.paw.arbeidssokerregisteret.api:main-avro-schema:1.13764081353.1-2")
     implementation("io.confluent:kafka-avro-serializer:$confluentKafkaAvroVersion") {
         exclude(group = "io.swagger.core.v3")
     }
