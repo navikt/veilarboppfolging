@@ -2,6 +2,7 @@ package no.nav.veilarboppfolging.service
 
 import kotlin.jvm.optionals.getOrNull
 import no.nav.common.types.identer.Fnr
+import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.veilarboppfolging.client.pdl.PdlFolkeregisterStatusClient
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
@@ -92,6 +93,10 @@ class OppfolgingsbrukerEndretIArenaService(
                     log.warn("Person BleInaktivertMedKanReaktiveres men var ikke utmeldingskandidat, dette skal ikke skje")
                     // Bare start grace-periode på 28 dager hvis det ikke finnes noe kandidat-tag på bruker
                     utmeldingsService.oppdaterUtmeldingsStatus(KanskjeIservBruker.of(endringOppfolgingsbruker, erBrukerUnderOppfolgingLokalt))
+                    val varArbs = currentLocalOppfolging.orElse(null)?.localArenaOppfolging?.orElse(null)?.formidlingsgruppe == Formidlingsgruppe.ARBS
+                    if (varArbs) {
+                        secureLog.warn("Bruker med aktørid ${endringOppfolgingsbruker.aktorId.get()} har gått fra ARBS til ISERV og er ikke kandidat for utmelding")
+                    }
                 }
             }
             is BleInaktivertUtenKanReaktiveres -> {
