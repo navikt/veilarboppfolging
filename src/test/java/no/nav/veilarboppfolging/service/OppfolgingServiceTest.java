@@ -121,8 +121,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
                 transactor,
                 arbeidsoppfolgingskontorRepository,
                 fjernKandidatForUtmeldingService,
-                aktorOppslagClient,
-                kandidatForUtmeldingService
+                aktorOppslagClient
         );
         oppfolgingService = new OppfolgingService(
                 kvpService,

@@ -62,8 +62,6 @@ class AvsluttOppfolgingService(
     val arbeidsoppfolgingskontorRepository: ArbeidsoppfolgingskontorRepository,
     val fjernKandidatForUtmeldingService: FjernKandidatForUtmeldingService,
     val aktorOppslagClient: AktorOppslagClient,
-    @Lazy
-    val kandidatForUtmeldingService: KandidatForUtmeldingService,
 ) {
 
     val log = LoggerFactory.getLogger(this::class.java)
@@ -167,7 +165,7 @@ class AvsluttOppfolgingService(
             val perioder: List<OppfolgingsperiodeEntity> = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId)
             val sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder)
 
-            val erKandidatForUtmelding = kandidatForUtmeldingService.erAktivEllerForlengetKandidatForUtmelding(sistePeriode.uuid)
+            val erKandidatForUtmelding = fjernKandidatForUtmeldingService.erAktivEllerForlengetKandidatForUtmelding(sistePeriode.uuid)
 
             arbeidsoppfolgingskontorRepository.slettNavKontor(sistePeriode.uuid)
             fjernKandidatForUtmeldingService.fjernKandidatForUtmelding(sistePeriode.uuid)

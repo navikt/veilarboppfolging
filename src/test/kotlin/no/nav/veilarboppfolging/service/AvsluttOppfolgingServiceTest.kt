@@ -55,7 +55,6 @@ class AvsluttOppfolgingServiceTest {
     private val arbeidsoppfolgingskontorRepository: ArbeidsoppfolgingskontorRepository = Mockito.mock(ArbeidsoppfolgingskontorRepository::class.java)
     private val fjernKandidatForUtmeldingService: FjernKandidatForUtmeldingService = Mockito.mock(FjernKandidatForUtmeldingService::class.java)
     private val aktorOppslagClient: AktorOppslagClient = Mockito.mock(AktorOppslagClient::class.java)
-    private val kandidatForUtmeldingService: KandidatForUtmeldingService = Mockito.mock(KandidatForUtmeldingService::class.java)
 
     private fun <T> any(type: Class<T>): T = Mockito.any<T>(type)
 
@@ -69,8 +68,7 @@ class AvsluttOppfolgingServiceTest {
         transactor = transactionTemplate,
         arbeidsoppfolgingskontorRepository = arbeidsoppfolgingskontorRepository,
         fjernKandidatForUtmeldingService = fjernKandidatForUtmeldingService,
-        aktorOppslagClient = aktorOppslagClient,
-        kandidatForUtmeldingService = kandidatForUtmeldingService
+        aktorOppslagClient = aktorOppslagClient
     )
 
     private fun arenaIservAvregistrering(): ArenaIservKanIkkeReaktiveres {

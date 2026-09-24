@@ -88,9 +88,6 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
     @Autowired
     AapClient aapClient;
 
-    @Autowired
-    KandidatForUtmeldingService kandidatForUtmeldingService;
-
     @Test
     void hentOppfolgingsPeriode_brukerHarEnAktivOppfolgingsPeriode() throws EmptyResultDataAccessException {
         mockAuthOk();

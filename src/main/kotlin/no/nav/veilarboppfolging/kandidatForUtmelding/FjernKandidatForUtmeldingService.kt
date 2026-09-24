@@ -54,4 +54,8 @@ class FjernKandidatForUtmeldingService(
     fun erOppfolgingForlenget(oppfolgingsperiodeId: UUID): Boolean {
         return kandidatForUtmeldingRepository.hentKandidatMedIkkeUtloptForlengelse(oppfolgingsperiodeId) != null
     }
+
+    fun erAktivEllerForlengetKandidatForUtmelding(oppfolgingsperiodeId: UUID): Boolean {
+        return kandidatForUtmeldingRepository.erAktivEllerForlengetKandidatForUtmelding(oppfolgingsperiodeId)
+    }
 }
