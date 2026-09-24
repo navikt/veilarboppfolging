@@ -186,6 +186,18 @@ class OppfolgingsbrukerEndretIArenaServiceTest {
             .oppdaterUtmeldingsStatus(any())
     }
 
+    @Test
+    fun `skal ikke lagre brukere som går fra ARBS til ISERV i utmeldingstabellen`() {
+        oppfolgingStatusArbs()
+        kanReaktiveres()
+        val melding = meldingFraArena(Formidlingsgruppe.ISERV, Kvalifiseringsgruppe.BATT)
+
+        oppfolgingsbrukerEndretIArenaService.oppdaterOppfolgingMedStatusFraArena(melding)
+
+        verify(avsluttOppfolgingService, never()).avsluttOppfolgingHvisKanAvsluttes(any())
+        verify(utmeldingService, never()).oppdaterUtmeldingsStatus(any())
+    }
+
     val ISERV_FRA_DATO = LocalDate.now()
     private fun meldingFraArena(formidlingsgruppe: Formidlingsgruppe, kvalifiseringsgruppe: Kvalifiseringsgruppe): EndringPaaOppfolgingsBruker {
         return EndringPaaOppfolgingsBruker(
@@ -209,6 +221,21 @@ class OppfolgingsbrukerEndretIArenaServiceTest {
                         Kvalifiseringsgruppe.BATT,
                         if (iservFraDato != null) Formidlingsgruppe.ISERV else Formidlingsgruppe.IARBS,
                         iservFraDato,
+                    )
+                )
+            )
+        )
+    }
+
+    private fun oppfolgingStatusArbs() {
+        `when`(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID)).thenReturn(
+            Optional.of(
+                TestUtils.oppfølgingEntity(aktorId = AKTOR_ID.get(), underOppfolging = true, localArenaOppfølging =
+                    LocalArenaOppfolging(
+                        Hovedmaal.BEHOLDEA,
+                        Kvalifiseringsgruppe.BATT,
+                        Formidlingsgruppe.ARBS,
+                        null,
                     )
                 )
             )

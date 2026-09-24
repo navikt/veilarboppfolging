@@ -12,6 +12,9 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.arena.EndringPaaOppfolgingsBru
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import java.util.Optional
+import no.nav.pto_schema.enums.arena.Formidlingsgruppe.ISERV
+import no.nav.pto_schema.enums.arena.Formidlingsgruppe.ARBS
+import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe.BATT
 
 class ResolveEndringPaaOppfolgingsbrukerEventTest {
 
@@ -45,5 +48,21 @@ class ResolveEndringPaaOppfolgingsbrukerEventTest {
         )
 
         assertThat(endring).isInstanceOf(BleSykmeldtUtenArbeidsgiver::class.java)
+    }
+
+    @Test
+    fun `Endring på oppfølgingsbruker som har gått fra ARBS til ISERV er VarArbsBleIserv`() {
+        val aktorId = randomAktorId()
+        val nåværendeOppfølgingstatus =
+            oppfølgingEntity(aktorId = aktorId.get(), localArenaOppfølging = localArenaOppfolging(kvalifiseringsgruppe = BATT, formidlingsgruppe = ARBS))
+        val oppfolgingsbrukerEndret = oppfølgingsBrukerEndret(fnr = randomFnr().get(), formidlingsgruppe = ISERV, kvalifiseringsgruppe = BATT)
+
+        val endring = resolveEndringPaaOppfolgingsbrukerEvent(
+            endringPaaOppfolgingsBruker = EndringPaaOppfolgingsBruker.from(oppfolgingsbrukerEndret, aktorId),
+            nåværendeOppfolgingsstatus = nåværendeOppfølgingstatus,
+            getKanReaktiveresIArena = { Optional.of(true) },
+        )
+
+        assertThat(endring).isInstanceOf(VarArbsBleIserv::class.java)
     }
 }
