@@ -334,7 +334,7 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
             fnr = fnr,
             enhetId = "8989",
             hovedmaal = null,
-            formidlingsgruppe = Formidlingsgruppe.ARBS,
+            formidlingsgruppe = Formidlingsgruppe.IARBS,
             kvalifiseringsgruppe = Kvalifiseringsgruppe.VURDU,
         )
 
@@ -363,7 +363,7 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
             fnr = fnr,
             enhetId = "8989",
             hovedmaal = null,
-            formidlingsgruppe = Formidlingsgruppe.ARBS,
+            formidlingsgruppe = Formidlingsgruppe.IARBS,
             kvalifiseringsgruppe = Kvalifiseringsgruppe.VURDU,
         )
 
@@ -386,6 +386,43 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
         assertEquals(periode.first().avsluttetAv, SYSTEM_USER_NAME)
         assertEquals(periode.first().begrunnelse, ArenaIservKanIkkeReaktiveres.BEGRUNNELSE)
         assertThat(statusEtterEndring.get().underOppfolging).isFalse()
+    }
+
+    @Test
+    fun `skal ikke utmeldes hvis bruker går fra ARBS til ISERV, men oppdaterer lokal Arenastatus`() {
+        mockEnhetINorg("8989", "Nav enhet")
+        arena_sier_kan_IKKE_reaktiveres()
+        erSystemBruker()
+
+        startOppfolgingSomArbeidsoker(aktorId, fnr)
+        meldingFraVeilarbArenaPåBrukerMedStatus(
+            fnr = fnr,
+            enhetId = "8989",
+            hovedmaal = null,
+            formidlingsgruppe = Formidlingsgruppe.ARBS,
+            kvalifiseringsgruppe = Kvalifiseringsgruppe.BATT,
+            iservFraDato = null
+        )
+        val status = oppfolgingsStatusRepository.hentOppfolging(aktorId)
+        assert(status.isPresent)
+        assertThat(status.get().localArenaOppfolging.get().iservFraDato).isNull()
+        assertThat(status.get().localArenaOppfolging.get().formidlingsgruppe).isEqualTo(Formidlingsgruppe.ARBS)
+        assertThat(status.get().underOppfolging).isTrue()
+
+        meldingFraVeilarbArenaPåBrukerMedStatus(
+            fnr = fnr,
+            enhetId = "8989",
+            hovedmaal = null,
+            formidlingsgruppe = Formidlingsgruppe.ISERV,
+            kvalifiseringsgruppe = Kvalifiseringsgruppe.BATT,
+            iservFraDato = LocalDate.now().minusDays(1)
+        )
+
+        val statusEtterEndring = oppfolgingsStatusRepository.hentOppfolging(aktorId)
+        assert(statusEtterEndring.isPresent)
+        assertThat(statusEtterEndring.get().localArenaOppfolging.get().iservFraDato).isNotNull
+        assertThat(statusEtterEndring.get().localArenaOppfolging.get().formidlingsgruppe).isEqualTo(Formidlingsgruppe.ISERV)
+        assertThat(statusEtterEndring.get().underOppfolging).isTrue()
     }
 
     private fun erSystemBruker() {

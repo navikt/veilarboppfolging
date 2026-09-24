@@ -83,6 +83,10 @@ class OppfolgingsbrukerEndretIArenaService(
                 // Rydd opp i utmeldingstabell i tilfelle det skulle ligge noe feil der
                 utmeldingsService.oppdaterUtmeldingsStatus(KanskjeIservBruker.of(endringOppfolgingsbruker, erBrukerUnderOppfolgingLokalt))
             }
+            is VarArbsBleIserv -> {
+                secureLog.info("Bruker gikk fra ARBS til ISERV. aktorId={}", endringOppfolgingsbruker.aktorId)
+                log.info("Oppdaterer ikke utmeldingstabell for bruker som gikk fra ARBS til ISERV")
+            }
             is BleInaktivertMedKanReaktiveres -> {
                 val erForlengetEllerAktivKandidatForUtmelding: Boolean = oppfolgingService
                     .hentGjeldendeOppfolgingsperiode(endringOppfolgingsbruker.aktorId)
