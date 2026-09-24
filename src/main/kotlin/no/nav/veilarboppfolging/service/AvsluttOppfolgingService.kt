@@ -15,6 +15,7 @@ import no.nav.veilarboppfolging.client.ungdomsprogram.UngdomsprogramClient
 import no.nav.veilarboppfolging.domain.AvslutningStatusData
 import no.nav.veilarboppfolging.eventsLogger.BigQueryClient
 import no.nav.veilarboppfolging.kandidatForUtmelding.FjernKandidatForUtmeldingService
+import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingTilstandOppslagResult
@@ -59,7 +60,8 @@ class AvsluttOppfolgingService(
     val transactor: TransactionTemplate,
     val arbeidsoppfolgingskontorRepository: ArbeidsoppfolgingskontorRepository,
     val fjernKandidatForUtmeldingService: FjernKandidatForUtmeldingService,
-    val aktorOppslagClient: AktorOppslagClient
+    val aktorOppslagClient: AktorOppslagClient,
+    val kandidatForUtmeldingService: KandidatForUtmeldingService,
 ) {
 
     val log = LoggerFactory.getLogger(this::class.java)
@@ -163,6 +165,8 @@ class AvsluttOppfolgingService(
             val perioder: List<OppfolgingsperiodeEntity> = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId)
             val sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder)
 
+            val erKandidatForUtmelding = kandidatForUtmeldingService.erAktivEllerForlengetKandidatForUtmelding(sistePeriode.uuid)
+
             arbeidsoppfolgingskontorRepository.slettNavKontor(sistePeriode.uuid)
             fjernKandidatForUtmeldingService.fjernKandidatForUtmelding(sistePeriode.uuid)
 
@@ -175,7 +179,7 @@ class AvsluttOppfolgingService(
             kafkaProducerService.publiserSkjulAoMinSideMicrofrontend(aktorId, fnr)
 
             // oppfolgingsperiodeEndretService.oppdaterSisteOppfolgingsperiodeV2MedAvsluttetStatus(sistePeriode); // TODO I en overgangsperiode lytter vi heller på tombstone fra ao-oppfolgingskontor
-            bigQueryClient.loggAvsluttOppfolgingsperiode(sistePeriode.uuid, avregistrering, aktivIArena)
+            bigQueryClient.loggAvsluttOppfolgingsperiode(sistePeriode.uuid, avregistrering, aktivIArena, erKandidatForUtmelding)
         }
     }
 
@@ -297,7 +301,7 @@ class AvsluttOppfolgingService(
                 avsluttetOppfolgingsperiode
             )
         )
-        bigQueryClient.loggAvsluttOppfolgingsperiode(oppfolgingsperiodeUUID!!, avregistrering, null)
+        bigQueryClient.loggAvsluttOppfolgingsperiode(oppfolgingsperiodeUUID!!, avregistrering, null, null)
     }
 
     fun adminAvsluttOppfolgingForBruker(avregistrering: AdminAvregistrering) {
