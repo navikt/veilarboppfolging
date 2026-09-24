@@ -1,8 +1,5 @@
 package no.nav.veilarboppfolging.service
 
-import java.time.ZonedDateTime
-import java.util.Optional
-import java.util.UUID
 import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.client.aktoroppslag.BrukerIdenter
 import no.nav.common.types.identer.NavIdent
@@ -36,6 +33,8 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.springframework.transaction.support.TransactionTemplate
+import java.time.ZonedDateTime
+import java.util.*
 
 class AvsluttOppfolgingServiceTest {
     private val authService: AuthService = Mockito.mock(AuthService::class.java)

@@ -39,7 +39,7 @@ data class KandidaterForUtmeldingMetrikker(
 
 interface BigQueryClient {
     fun loggStartOppfolgingsperiode(startBegrunnelse: OppfolgingStartBegrunnelse, oppfolgingPeriodeId: UUID, startedAvType: StartetAvType, kvalifiseringsgruppe: Optional<Kvalifiseringsgruppe>, manuellSjekkLovligOpphold: Boolean? = null, forrigePeriodeAvsluttet: ZonedDateTime?)
-    fun loggAvsluttOppfolgingsperiode(oppfolgingPeriodeId: UUID, avregistrering: Avregistrering, aktivIArena: Boolean? = null)
+    fun loggAvsluttOppfolgingsperiode(oppfolgingPeriodeId: UUID, avregistrering: Avregistrering, aktivIArena: Boolean? = null, erKandidatForUtmelding: Boolean?)
     fun loggUtmeldingsHendelse(utmelding: UtmeldingsHendelse)
     fun loggKandidaterForUtmeldingMetrikker(metrikker: KandidaterForUtmeldingMetrikker)
     fun loggUnder18()
@@ -62,7 +62,7 @@ class BigQueryClientImplementation(private val bigQuery: BigQuery): BigQueryClie
 
     val log = LoggerFactory.getLogger(this.javaClass)
 
-    override fun loggAvsluttOppfolgingsperiode(oppfolgingPeriodeId: UUID, avregistrering: Avregistrering, aktivIArena: Boolean?) {
+    override fun loggAvsluttOppfolgingsperiode(oppfolgingPeriodeId: UUID, avregistrering: Avregistrering, aktivIArena: Boolean?, erKandidatForUtmelding: Boolean?) {
         val erAutomatiskAvsluttet = !avregistrering.getAvregistreringsType().erManuellAvregistrering()
         insertIntoOppfolgingEvents(oppfolgingsperiodeEventsTable) {
             mapOf(
@@ -71,7 +71,8 @@ class BigQueryClientImplementation(private val bigQuery: BigQuery): BigQueryClie
                 "timestamp" to ZonedDateTime.now().toOffsetDateTime().toString(),
                 "event" to BigQueryEventType.OPPFOLGINGSPERIODE_SLUTT.name,
                 "avregistreringsType" to avregistrering.getAvregistreringsType().name,
-                "erAktivIArena" to aktivIArena
+                "erAktivIArena" to aktivIArena,
+                "erKandidatForUtmelding" to erKandidatForUtmelding
             )
         }
     }
