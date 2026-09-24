@@ -1,8 +1,5 @@
 package no.nav.veilarboppfolging.service
 
-import java.time.ZonedDateTime
-import java.util.UUID
-import kotlin.jvm.optionals.getOrNull
 import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
@@ -15,21 +12,11 @@ import no.nav.veilarboppfolging.client.ungdomsprogram.UngdomsprogramClient
 import no.nav.veilarboppfolging.domain.AvslutningStatusData
 import no.nav.veilarboppfolging.eventsLogger.BigQueryClient
 import no.nav.veilarboppfolging.kandidatForUtmelding.FjernKandidatForUtmeldingService
-import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingTilstandOppslagResult
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AdminAvregistrering
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ArenaIservKanIkkeReaktiveres
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.Avregistrering
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvslutningsInput
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.KanAvsluttesInput
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.KunneAvsluttes
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.KunneAvsluttesOverstyring
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.KunneAvsluttesResultat
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.*
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.KunneAvsluttesResultat.Companion.kanAvsluttes
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.KunneIkkeAvsluttes
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ManuellAvregistrering
 import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.hendelser.OppfolgingsAvsluttetHendelseDto.Companion.of
 import no.nav.veilarboppfolging.repository.ArbeidsoppfolgingskontorRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
@@ -41,9 +28,11 @@ import no.nav.veilarboppfolging.utils.EnumUtils
 import no.nav.veilarboppfolging.utils.OppfolgingsperiodeUtils
 import no.nav.veilarboppfolging.utils.SecureLog.secureLog
 import org.slf4j.LoggerFactory
-import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Service
 import org.springframework.transaction.support.TransactionTemplate
+import java.time.ZonedDateTime
+import java.util.*
+import kotlin.jvm.optionals.getOrNull
 
 @Service
 class AvsluttOppfolgingService(

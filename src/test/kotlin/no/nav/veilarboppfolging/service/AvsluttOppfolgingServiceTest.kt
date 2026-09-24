@@ -1,8 +1,5 @@
 package no.nav.veilarboppfolging.service
 
-import java.time.ZonedDateTime
-import java.util.Optional
-import java.util.UUID
 import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.client.aktoroppslag.BrukerIdenter
 import no.nav.common.types.identer.NavIdent
@@ -12,7 +9,6 @@ import no.nav.veilarboppfolging.client.tiltakshistorikk.TiltakshistorikkClient
 import no.nav.veilarboppfolging.client.ungdomsprogram.UngdomsprogramClient
 import no.nav.veilarboppfolging.eventsLogger.BigQueryClient
 import no.nav.veilarboppfolging.kandidatForUtmelding.FjernKandidatForUtmeldingService
-import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingTilstandOppslagResult
@@ -37,6 +33,8 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.springframework.transaction.support.TransactionTemplate
+import java.time.ZonedDateTime
+import java.util.*
 
 class AvsluttOppfolgingServiceTest {
     private val authService: AuthService = Mockito.mock(AuthService::class.java)
