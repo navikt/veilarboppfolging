@@ -1,30 +1,22 @@
 package no.nav.veilarboppfolging.kafka
 
-import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
-import java.time.ZonedDateTime
-import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.common.types.identer.NavIdent
 import no.nav.paw.arbeidssokerregisteret.api.v1.AvsluttetAarsakType
 import no.nav.paw.arbeidssokerregisteret.api.v1.BrukerType
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
-import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.veilarboppfolging.kandidatForUtmelding.ArbeidssokerperiodeAvsluttetHendelseType
 import no.nav.veilarboppfolging.kandidatForUtmelding.ArbeidssøkerPeriodeAvsluttet
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingHendelseUtfortAvType
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.StartetAvType
-import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering
 import no.nav.veilarboppfolging.oppfolgingsbruker.toRegistrant
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.UtmeldingsService
 import no.nav.veilarboppfolging.service.AuthService
 import no.nav.veilarboppfolging.service.OppfolgingService
 import no.nav.veilarboppfolging.service.StartOppfolgingService
-import no.nav.veilarboppfolging.service.utmelding.IservTrigger
-import no.nav.veilarboppfolging.service.utmelding.KanskjeIservBruker
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Lazy
@@ -40,8 +32,6 @@ open class ArbeidssøkerperiodeConsumerService(
             private val oppfolgingService: OppfolgingService,
             private val startOppfolgingService: StartOppfolgingService,
             private val authService: AuthService,
-            private val arenaOppfolgingService: ArenaOppfolgingService,
-            private val utmeldingService: UtmeldingsService,
             private val kandidatForUtmeldingService: KandidatForUtmeldingService,
         ) {
             private val logger = LoggerFactory.getLogger(this::class.java)
@@ -76,7 +66,6 @@ open class ArbeidssøkerperiodeConsumerService(
             val registrant =  startetAvType.toStartetAvType().toRegistrant(navIdent, fnr)
 
             startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.arbeidssokerRegistrering(fnr, aktørId, registrant))
-            utmeldHvisBrukerBleIservEtterArbeidssøkerRegistrering(fnr, arbeidssøkerperiodeStartet, aktørId)
         } else {
             logger.info("Melding om avsluttet arbeidssøkerperiode, flagger som utmeldingskandidat hvis under oppfølging")
             val gjeldendePeriode = oppfolgingsperioder.firstOrNull { it.sluttDato == null }
@@ -109,35 +98,6 @@ open class ArbeidssøkerperiodeConsumerService(
             }
         }
     }
-
-    fun utmeldHvisBrukerBleIservEtterArbeidssøkerRegistrering(fnr: Fnr, arbeidssøkerperiodeStartet: ZonedDateTime, aktorId: AktorId) {
-        runCatching {
-            val oppfolgingsbruker = arenaOppfolgingService.hentIservDatoOgFormidlingsGruppe(fnr) ?: throw IllegalStateException("Fant ikke bruker")
-            if (oppfolgingsbruker.iservDato == null || oppfolgingsbruker.formidlingsGruppe == null) return@runCatching null
-            KanskjeIservBrukerMedPresisIservDato(oppfolgingsbruker.iservDato, aktorId, oppfolgingsbruker.formidlingsGruppe)
-        }.onSuccess { kanskjeIservBruker ->
-            if (kanskjeIservBruker == null) return
-            if (kanskjeIservBruker.iservFraDato.atStartOfDay(ZoneId.systemDefault()).isAfter(arbeidssøkerperiodeStartet)) {
-                logger.info("Bruker ble ${kanskjeIservBruker.formidlingsgruppe} etter arbeidssøkerregistrering, sjekker om bruker bør utmeldes")
-                utmeldingService.oppdaterUtmeldingsStatus(kanskjeIservBruker.toKanskjeIservBruker())
-            }
-        }.onFailure { logger.warn("Kunne ikke hente oppfolgingsstatus (arena) for bruker under prosessering av arbeidssøkerregistrering, sjekker ikke om bruker skal i utmelding", it) }
-    }
-}
-
-data class KanskjeIservBrukerMedPresisIservDato(
-    val iservFraDato: LocalDate,
-    val aktorId: AktorId,
-    val formidlingsgruppe: Formidlingsgruppe
-) {
-    fun toKanskjeIservBruker(): KanskjeIservBruker = KanskjeIservBruker(
-        this.iservFraDato,
-        this.aktorId,
-        this.formidlingsgruppe,
-        IservTrigger.ArbeidssøkerRegistreringSync,
-        // Denne blir alltid kalt etter at man gjør startOppfolgingHvisIkkeAlleredeStartet(...)
-        erUnderoppfolging = true
-    )
 }
 
 fun BrukerType.toStartetAvType(): StartetAvType {

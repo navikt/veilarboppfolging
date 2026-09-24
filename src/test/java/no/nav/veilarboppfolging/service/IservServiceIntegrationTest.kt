@@ -90,7 +90,7 @@ class IservServiceIntegrationTest {
 
     @Test
     fun oppdaterUtmeldingsStatus_skalOppdatereEksisterendeIservBruker() {
-        Mockito.`when`<AktorId?>(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID)
+        `when`<AktorId?>(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID)
         val brukerV2 = kanskjeIservBruker(iservFraDato.plusDays(2), Formidlingsgruppe.ISERV)
         utmeldingRepository!!.insertUtmeldingTabell(OppdateringFraArena_BleIserv(AKTOR_ID, iservFraDato))
         assertTrue(utmeldingRepository!!.eksisterendeIservBruker(AKTOR_ID).isPresent)
@@ -104,7 +104,7 @@ class IservServiceIntegrationTest {
 
     @Test
     fun oppdaterUtmeldingsStatus_skalSletteBrukerSomIkkeLengerErIserv() {
-        val brukerV2 = kanskjeIservBruker(iservFraDato, Formidlingsgruppe.ARBS)
+        val brukerV2 = kanskjeIservBruker(iservFraDato, Formidlingsgruppe.IARBS)
 
         utmeldingRepository!!.insertUtmeldingTabell(OppdateringFraArena_BleIserv(AKTOR_ID, iservFraDato))
         assertTrue(utmeldingRepository!!.eksisterendeIservBruker(AKTOR_ID).isPresent)

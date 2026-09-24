@@ -4,8 +4,6 @@ import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.common.types.identer.NavIdent
 import no.nav.paw.arbeidssokerregisteret.api.v1.*
-import no.nav.pto_schema.enums.arena.Formidlingsgruppe
-import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2
 import no.nav.veilarboppfolging.IntegrationTest
 import no.nav.veilarboppfolging.client.pdl.ForenkletFolkeregisterStatus
 import no.nav.veilarboppfolging.client.pdl.FregStatusOgStatsborgerskap
@@ -16,9 +14,7 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunn
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering
 import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.OppfolgingsHendelseDto
 import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.hendelser.OppfolgingStartetHendelseDto
-import no.nav.veilarboppfolging.repository.UtmeldingRepository
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity
-import no.nav.veilarboppfolging.service.KafkaConsumerService
 import no.nav.veilarboppfolging.service.OppfolgingService
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.assertj.core.api.Assertions.assertThat
@@ -34,7 +30,6 @@ import java.sql.Timestamp
 import java.time.*
 import java.time.temporal.ChronoUnit
 import java.util.*
-import kotlin.jvm.optionals.getOrNull
 import no.nav.paw.arbeidssokerregisteret.api.v1.Metadata as MetaData
 
 
@@ -44,11 +39,7 @@ class ArbeidssøkerperiodeConsumerServiceTest(
     @param:Autowired
     val arbeidssøkerperiodeConsumerService: ArbeidssøkerperiodeConsumerService,
     @param:Autowired
-    val kafkaConsumerService: KafkaConsumerService,
-    @param:Autowired
     val oppfølgingService: OppfolgingService,
-    @param:Autowired
-    val utmeldingRepository: UtmeldingRepository,
 ): IntegrationTest() {
 
     private val fnr = "01010198765"
@@ -182,54 +173,6 @@ class ArbeidssøkerperiodeConsumerServiceTest(
         assertThat(oppfølgingsdataFørSykmeldtRegistrering).isEqualTo(oppfølgingsdataEtterSykmeldtRegistrering)
     }
 
-    @Test
-    fun `Skal putte person i utmelding tabell hvis ISERV i Arena og ISERV_FRA_DATO er etter arbeidssøkerregistreringen`() {
-        val arbeidsøkerPeriodeStartet = LocalDateTime.of(2024, 10,1,23,59)
-        val ISERV_FRA_DATO = LocalDate.of(2024, 10, 2)
-        mockVeilarbArenaOppfolgingsBruker(
-            Fnr.of(fnr),
-            Formidlingsgruppe.ISERV,
-            iservFraDato = ISERV_FRA_DATO.atStartOfDay(ZoneId.systemDefault())
-        )
-        val nyPeriode = arbeidssøkerperiode(fnr, periodeStartet = arbeidsøkerPeriodeStartet.atZone(ZoneId.systemDefault()).toInstant())
-        val oppfolginsBrukerEndretTilISERV = ConsumerRecord("topic", 0, 0, "key", oppfølgingsBrukerEndret(
-            ISERV_FRA_DATO, formidlingsgruppe = Formidlingsgruppe.ISERV))
-        val melding = ConsumerRecord("topic", 0, 0, "dummyKey", nyPeriode)
-
-        kafkaConsumerService.consumeEndringPaOppfolgingBruker(oppfolginsBrukerEndretTilISERV)
-        arbeidssøkerperiodeConsumerService.consumeArbeidssøkerperiode(melding)
-
-        val oppfølgingsperioder = oppfølgingService.hentOppfolgingsperioder(Fnr.of(fnr))
-        assertThat(oppfølgingsperioder).hasSize(1)
-        val oppfølgingsperiode = oppfølgingsperioder.first()
-        assertThat(oppfølgingsperiode.startDato).isCloseTo(ZonedDateTime.now(), within(1, ChronoUnit.SECONDS))
-        assertThat(oppfølgingsperiode.sluttDato).isNull()
-        assertThat(oppfølgingsperiode.startetBegrunnelse).isEqualTo(OppfolgingStartBegrunnelse.ARBEIDSSOKER_REGISTRERING)
-        assertThat(utmeldingRepository.eksisterendeIservBruker(aktørId).getOrNull()).isNotNull()
-    }
-
-    @Test
-    fun `Skal ikke putte person i utmelding tabell hvis ISERV i Arena og ISERV_FRA_DATO er før arbeidssøkerregistreringen`() {
-        val arbeidsøkerPeriodeStartet = LocalDateTime.of(2024, 10,1,1,1)
-        val ISERV_FRA_DATO = arbeidsøkerPeriodeStartet // Samme tidspunkt
-        mockVeilarbArenaOppfolgingsBruker(Fnr.of(fnr), Formidlingsgruppe.ISERV, iservFraDato = ISERV_FRA_DATO.atZone(ZoneId.systemDefault()))
-        val nyPeriode = arbeidssøkerperiode(fnr, periodeStartet = arbeidsøkerPeriodeStartet.atZone(ZoneId.systemDefault()).toInstant())
-        val oppfolginsBrukerEndretTilISERV = ConsumerRecord("topic", 0, 0, "key", oppfølgingsBrukerEndret(
-            ISERV_FRA_DATO.toLocalDate(), formidlingsgruppe = Formidlingsgruppe.ISERV))
-        val melding = ConsumerRecord("topic", 0, 0, "dummyKey", nyPeriode)
-
-        kafkaConsumerService.consumeEndringPaOppfolgingBruker(oppfolginsBrukerEndretTilISERV)
-        arbeidssøkerperiodeConsumerService.consumeArbeidssøkerperiode(melding)
-
-        val oppfølgingsperioder = oppfølgingService.hentOppfolgingsperioder(Fnr.of(fnr))
-        assertThat(oppfølgingsperioder).hasSize(1)
-        val oppfølgingsperiode = oppfølgingsperioder.first()
-        assertThat(oppfølgingsperiode.startDato).isCloseTo(ZonedDateTime.now(), within(1, ChronoUnit.SECONDS))
-        assertThat(oppfølgingsperiode.sluttDato).isNull()
-        assertThat(oppfølgingsperiode.startetBegrunnelse).isEqualTo(OppfolgingStartBegrunnelse.ARBEIDSSOKER_REGISTRERING)
-        assertThat(utmeldingRepository.eksisterendeIservBruker(aktørId).getOrNull()).isNull()
-    }
-
     private fun oppfølgingsperiode(startet: ZonedDateTime = ZonedDateTime.now()) =
         OppfolgingsperiodeEntity(
             UUID.randomUUID(),
@@ -282,10 +225,6 @@ class ArbeidssøkerperiodeConsumerServiceTest(
             }
             avsluttet = slutt
         }
-    }
-
-    private fun oppfølgingsBrukerEndret(iservFraDato: LocalDate, formidlingsgruppe: Formidlingsgruppe = Formidlingsgruppe.ARBS): EndringPaaOppfoelgingsBrukerV2 {
-        return TestUtils.oppfølgingsBrukerEndret(fnr, iservFraDato, formidlingsgruppe)
     }
 
     fun lagreOppfølgingsperiode(periode: OppfolgingsperiodeEntity) {

@@ -19,8 +19,11 @@ fun resolveEndringPaaOppfolgingsbrukerEvent(
     val erInaktivIArena = Formidlingsgruppe.ISERV == endringPaaOppfolgingsBruker.formidlingsgruppe
     val varInaktivIArena = nåværendeOppfolgingsstatus?.localArenaOppfolging?.orElse(null)?.formidlingsgruppe == Formidlingsgruppe.ISERV
     val erUnderOppfolging = nåværendeOppfolgingsstatus?.underOppfolging ?: false
+    val varArbsIArena = nåværendeOppfolgingsstatus?.localArenaOppfolging?.orElse(null)?.formidlingsgruppe == Formidlingsgruppe.ARBS
 
     if (erInaktivIArena && varInaktivIArena) return IrrelevantEndring()
+
+    if (erInaktivIArena && varArbsIArena) return VarArbsBleIserv()
 
     if (erUnderOppfolging && erInaktivIArena && !varInaktivIArena) {
         val kanReaktiveres = getKanReaktiveresIArena()
@@ -58,4 +61,8 @@ class BleInaktivertMedKanReaktiveres : OppfolgingsbrukerEndretEvent {
 
 class IrrelevantEndring : OppfolgingsbrukerEndretEvent {
     override fun loggMessage(): String = "Irrelevant endring – gjør ingenting"
+}
+
+class VarArbsBleIserv : OppfolgingsbrukerEndretEvent {
+    override fun loggMessage(): String = "Bruker var ARBS og ble ISERV, ignoreres"
 }
