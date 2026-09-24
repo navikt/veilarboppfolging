@@ -41,6 +41,7 @@ import no.nav.veilarboppfolging.utils.EnumUtils
 import no.nav.veilarboppfolging.utils.OppfolgingsperiodeUtils
 import no.nav.veilarboppfolging.utils.SecureLog.secureLog
 import org.slf4j.LoggerFactory
+import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Service
 import org.springframework.transaction.support.TransactionTemplate
 
@@ -61,6 +62,7 @@ class AvsluttOppfolgingService(
     val arbeidsoppfolgingskontorRepository: ArbeidsoppfolgingskontorRepository,
     val fjernKandidatForUtmeldingService: FjernKandidatForUtmeldingService,
     val aktorOppslagClient: AktorOppslagClient,
+    @Lazy
     val kandidatForUtmeldingService: KandidatForUtmeldingService,
 ) {
 

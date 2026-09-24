@@ -12,6 +12,7 @@ import no.nav.veilarboppfolging.client.tiltakshistorikk.TiltakshistorikkClient
 import no.nav.veilarboppfolging.client.ungdomsprogram.UngdomsprogramClient
 import no.nav.veilarboppfolging.eventsLogger.BigQueryClient
 import no.nav.veilarboppfolging.kandidatForUtmelding.FjernKandidatForUtmeldingService
+import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingTilstandOppslagResult
@@ -54,6 +55,7 @@ class AvsluttOppfolgingServiceTest {
     private val arbeidsoppfolgingskontorRepository: ArbeidsoppfolgingskontorRepository = Mockito.mock(ArbeidsoppfolgingskontorRepository::class.java)
     private val fjernKandidatForUtmeldingService: FjernKandidatForUtmeldingService = Mockito.mock(FjernKandidatForUtmeldingService::class.java)
     private val aktorOppslagClient: AktorOppslagClient = Mockito.mock(AktorOppslagClient::class.java)
+    private val kandidatForUtmeldingService: KandidatForUtmeldingService = Mockito.mock(KandidatForUtmeldingService::class.java)
 
     private fun <T> any(type: Class<T>): T = Mockito.any<T>(type)
 
@@ -67,7 +69,8 @@ class AvsluttOppfolgingServiceTest {
         transactor = transactionTemplate,
         arbeidsoppfolgingskontorRepository = arbeidsoppfolgingskontorRepository,
         fjernKandidatForUtmeldingService = fjernKandidatForUtmeldingService,
-        aktorOppslagClient = aktorOppslagClient
+        aktorOppslagClient = aktorOppslagClient,
+        kandidatForUtmeldingService = kandidatForUtmeldingService
     )
 
     private fun arenaIservAvregistrering(): ArenaIservKanIkkeReaktiveres {

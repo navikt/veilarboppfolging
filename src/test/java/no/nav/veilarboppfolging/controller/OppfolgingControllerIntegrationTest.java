@@ -31,6 +31,7 @@ import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeMinimalDTO;
 import no.nav.veilarboppfolging.controller.v2.OppfolgingV2Controller;
 import no.nav.veilarboppfolging.controller.v2.request.AvsluttOppfolgingV2Request;
 import no.nav.veilarboppfolging.controller.v3.request.OppfolgingRequest;
+import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService;
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
 import no.nav.veilarboppfolging.service.AuthService;
 import org.junit.jupiter.api.Assertions;
@@ -86,6 +87,9 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
 
     @Autowired
     AapClient aapClient;
+
+    @Autowired
+    KandidatForUtmeldingService kandidatForUtmeldingService;
 
     @Test
     void hentOppfolgingsPeriode_brukerHarEnAktivOppfolgingsPeriode() throws EmptyResultDataAccessException {
