@@ -25,6 +25,7 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ScheduledJob_AlleredeUt
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ScheduledJob_UtAvOppfolgingPga28DagerIserv
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.UtmeldingsHendelse
 import org.slf4j.LoggerFactory
+import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.*
 
@@ -74,7 +75,7 @@ class BigQueryClientImplementation(private val bigQuery: BigQuery): BigQueryClie
                 "hendelse" to hendelse.type.toString(),
                 "forlenget_til" to hendelse.forlengetTil,
                 "oppfolgingsperiode_id" to hendelse.oppfolgingsperiodeUuid.toString(),
-                "hendelse_opprettet" to hendelse.hendelseTidspunkt,
+                "hendelse_opprettet" to ZonedDateTime.ofInstant(hendelse.hendelseTidspunkt, ZoneId.systemDefault()).toOffsetDateTime().toString(),
                 "timestamp" to ZonedDateTime.now().toOffsetDateTime().toString()
             )
         }
