@@ -18,6 +18,11 @@ import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.ZoneOffset
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ArbeidssokerperiodeAvsluttetHendelseType
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ArbeidssøkerPeriodeAvsluttet
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseHendelseType
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseOpprettetEllerEndretHendelse
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.KandidatForUtmeldingHendelseUtfortAvType
 
 class KandidatForUtmeldingServiceTest : IntegrationTest() {
 
@@ -140,14 +145,14 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
         startOppfolgingSomArbeidsoker(AKTOR_ID, FNR)
         val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(FNR).get().uuid
         val lagretKandidat = ArbeidssøkerPeriodeAvsluttet(
-                utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
-                utfortAv = "A123123",
-                kilde = "kilde",
-                hendelseTidspunkt = ZonedDateTime.now().toInstant(),
-                oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
-                arbeidssokerperiodeAvsluttetHendelseType = ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
-                avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
-            ).let { KandidatForUtmelding.fromHendelse(it) }
+            utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
+            utfortAv = "A123123",
+            kilde = "kilde",
+            hendelseTidspunkt = ZonedDateTime.now().toInstant(),
+            oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
+            arbeidssokerperiodeAvsluttetHendelseType = ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
+            avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
+        ).let { KandidatForUtmelding.fromHendelse(it) }
         kandidatForUtmeldingRepository.lagreKandidat(lagretKandidat)
         namedParameterJdbcTemplate.update("""
             UPDATE kandidater_for_utmelding SET forlenget_til = CURRENT_TIMESTAMP - INTERVAL '1 hour' WHERE oppfolgingsperiode_uuid = :oppfolgingsperiodeId
@@ -201,7 +206,8 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
             forlengelseHendelseType = ForlengelseHendelseType.FORLENGELSE_OPPRETTET,
             hendelseTidspunkt = ZonedDateTime.now().minusDays(29).toInstant(),
             forlengetTil = LocalDate.now().minusDays(1)
-        ))
+        )
+        )
         mockAap(FNR, harAap = true)
 
         kandidatForUtmeldingService.behandleKandidaterMedUtloptForlengelse()

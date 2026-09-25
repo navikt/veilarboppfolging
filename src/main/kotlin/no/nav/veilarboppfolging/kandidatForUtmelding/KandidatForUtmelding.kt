@@ -8,6 +8,10 @@ import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.util.UUID
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ArbeidssøkerPeriodeAvsluttet
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseOpprettetEllerEndretHendelse
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseUtløptHendelse
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.KandidatForUtmeldingHendelse
 
 sealed class KandidatForUtmelding(
     val sisteHendelse: KandidatForUtmeldingHendelse,
@@ -56,5 +60,5 @@ class ForlengetKandidat(
     val forlengetTil: LocalDate): KandidatForUtmelding(forlengelseHendelse)
 
 class AktivKandidatForUtmelding(sisteHendelse: KandidatForUtmeldingHendelse,
-    val avsluttesAutomatiskDato: LocalDateTime
+                                val avsluttesAutomatiskDato: LocalDateTime
 ): KandidatForUtmelding(sisteHendelse)

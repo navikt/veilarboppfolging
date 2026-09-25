@@ -12,6 +12,14 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Repository
 import kotlin.collections.firstOrNull
 import no.nav.common.types.identer.AktorId
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ArbeidssokerperiodeAvsluttetHendelseType
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ArbeidssøkerPeriodeAvsluttet
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseHendelseType
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseOpprettetEllerEndretHendelse
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseUtløptHendelse
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.KandidatForUtmeldingHendelse
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.KandidatForUtmeldingHendelseType
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.KandidatForUtmeldingHendelseUtfortAvType
 
 @Repository
 class KandidatForUtmeldingRepository(
@@ -351,7 +359,12 @@ fun ResultSet.toArbeidssøkerPeriodeAvsluttet() = ArbeidssøkerPeriodeAvsluttet(
     utfortAv = getString("utfort_av"),
     kilde = getString("kilde"),
     hendelseTidspunkt = getTimestamp("hendelse_tidspunkt").toLocalDateTime().toInstant(ZoneOffset.UTC),
-    avslutningsarsak = getStringOrNull("hendelse_data")?.let { JsonUtils.fromJson(it, ArbeidssøkerPeriodeAvsluttet.Detaljer::class.java).avslutningsarsak },
+    avslutningsarsak = getStringOrNull("hendelse_data")?.let {
+        JsonUtils.fromJson(
+            it,
+            ArbeidssøkerPeriodeAvsluttet.Detaljer::class.java
+        ).avslutningsarsak
+    },
     arbeidssokerperiodeAvsluttetHendelseType = ArbeidssokerperiodeAvsluttetHendelseType.valueOf(getString("hendelse")),
 )
 

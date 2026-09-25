@@ -1,4 +1,4 @@
-package no.nav.veilarboppfolging.kandidatForUtmelding
+package no.nav.veilarboppfolging.kandidatForUtmelding.hendelser
 
 import no.nav.common.json.JsonUtils
 import no.nav.common.types.identer.Fnr
@@ -13,6 +13,7 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.UUID
+import no.nav.veilarboppfolging.kandidatForUtmelding.beregnAvsluttesAutomatiskDato
 
 class ArbeidssøkerPeriodeAvsluttet(
     oppfolgingsperiodeUuid: UUID,

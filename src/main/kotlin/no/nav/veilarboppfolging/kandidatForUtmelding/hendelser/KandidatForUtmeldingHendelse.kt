@@ -1,4 +1,4 @@
-package no.nav.veilarboppfolging.kandidatForUtmelding
+package no.nav.veilarboppfolging.kandidatForUtmelding.hendelser
 
 import java.time.Instant
 import java.util.UUID

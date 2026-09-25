@@ -14,6 +14,11 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import java.time.LocalDateTime
 import java.util.UUID
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ArbeidssokerperiodeAvsluttetHendelseType
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ArbeidssøkerPeriodeAvsluttet
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseHendelseType
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseOpprettetEllerEndretHendelse
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.KandidatForUtmeldingHendelseUtfortAvType
 
 class RepubliserKandidatForUtmeldingServiceTest : IntegrationTest() {
     private val AKTOR_ID = AktorId.of("2234567811")

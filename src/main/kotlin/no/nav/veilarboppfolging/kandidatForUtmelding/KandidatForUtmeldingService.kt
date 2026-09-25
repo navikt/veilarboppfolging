@@ -8,6 +8,11 @@ import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.veilarboppfolging.kandidatForUtmelding.dto.KandidatForUtmeldingTagDto
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ArbeidssøkerPeriodeAvsluttet
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseHendelseType
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseOpprettetEllerEndretHendelse
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseUtløptHendelse
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.KandidatForUtmeldingHendelse
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.KandidatUtmeldtEtter28Dager
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.KunneIkkeAvsluttes
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.UtmeldingsService
