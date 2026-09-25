@@ -4,6 +4,7 @@ import kotlin.jvm.optionals.getOrNull
 import no.nav.common.types.identer.Fnr
 import no.nav.veilarboppfolging.client.pdl.PdlFolkeregisterStatusClient
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService
+import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatSomIkkeKunneAvsluttesService
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.EndringPaaOppfolgingsBruker
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.LocalArenaOppfolging
@@ -11,9 +12,7 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrerin
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ArenaIservKanIkkeReaktiveres
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.KunneAvsluttes
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.KunneIkkeAvsluttes
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.UtmeldingsService
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
-import no.nav.veilarboppfolging.service.utmelding.KanskjeIservBruker
 import no.nav.veilarboppfolging.utils.ArenaUtils
 import no.nav.veilarboppfolging.utils.SecureLog.secureLog
 import org.slf4j.LoggerFactory
@@ -28,8 +27,8 @@ class OppfolgingsbrukerEndretIArenaService(
     private val metricsService: MetricsService,
     private val oppfolgingsStatusRepository: OppfolgingsStatusRepository,
     private val pdlFolkeregisterStatusClient: PdlFolkeregisterStatusClient,
-    private val utmeldingsService: UtmeldingsService,
     private val kandidatForUtmeldingService: KandidatForUtmeldingService,
+    private val kandidatSomIkkeKunneAvsluttesService: KandidatSomIkkeKunneAvsluttesService,
 ){
     val log = LoggerFactory.getLogger(this.javaClass)
 
@@ -80,8 +79,6 @@ class OppfolgingsbrukerEndretIArenaService(
                         kvalifiseringsgruppe,
                     )
                 )
-                // Rydd opp i utmeldingstabell i tilfelle det skulle ligge noe feil der
-                utmeldingsService.oppdaterUtmeldingsStatus(KanskjeIservBruker.of(endringOppfolgingsbruker, erBrukerUnderOppfolgingLokalt))
             }
             is VarArbsBleIserv -> {
                 secureLog.info("Bruker gikk fra ARBS til ISERV. aktorId={}", endringOppfolgingsbruker.aktorId)
@@ -94,13 +91,9 @@ class OppfolgingsbrukerEndretIArenaService(
                     .orElse(false)!!
                 if (!erForlengetEllerAktivKandidatForUtmelding) {
                     log.warn("Person BleInaktivertMedKanReaktiveres men var ikke utmeldingskandidat, dette skal ikke skje")
-                    // Bare start grace-periode på 28 dager hvis det ikke finnes noe kandidat-tag på bruker
-                    utmeldingsService.oppdaterUtmeldingsStatus(KanskjeIservBruker.of(endringOppfolgingsbruker, erBrukerUnderOppfolgingLokalt))
                 }
             }
             is BleInaktivertUtenKanReaktiveres -> {
-                // Rydd opp i utmeldingstabell i tilfelle det skulle ligge noe feil der
-                utmeldingsService.oppdaterUtmeldingsStatus(KanskjeIservBruker.of(endringOppfolgingsbruker, erBrukerUnderOppfolgingLokalt))
                 val avregistrering = ArenaIservKanIkkeReaktiveres(endringOppfolgingsbruker.aktorId)
                 val kunneAvsluttesResultat = avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(avregistrering)
                 when (kunneAvsluttesResultat) {
@@ -114,6 +107,11 @@ class OppfolgingsbrukerEndretIArenaService(
                     }
                     is KunneIkkeAvsluttes -> {
                         log.info("ISERV bruker som ikke kunne reaktiveres ble ikke avsluttet likevel: ${kunneAvsluttesResultat.begrunnelse}")
+                        kandidatSomIkkeKunneAvsluttesService.lagreInaktivertIArenaSomIkkeKunneAvsluttes(
+                            aktorId = endringOppfolgingsbruker.aktorId,
+                            iservFraDato = endringOppfolgingsbruker.iservFraDato,
+                            begrunnelse = kunneAvsluttesResultat.begrunnelse,
+                        )
                     }
                 }
             }

@@ -46,6 +46,21 @@ class KandidatForUtmeldingRepository(
         )
     }
 
+    fun lagreKandidatSomIkkeKunneAvsluttesOgHendelse(kandidat: KandidatSomIkkeKanAvsluttes) {
+        val hendelseId = insertUtmeldingsHendelse(kandidat.sisteHendelse)
+        db.update(
+            """
+            INSERT INTO kandidater_som_ikke_kunne_avsluttes(oppfolgingsperiode_uuid, siste_utmeldingshendelse_id, begrunnelse)
+            VALUES (:oppfolgingsperiodeId, :sisteUtmeldingshendelseId, :begrunnelse)
+            """.trimIndent(),
+            mapOf(
+                "oppfolgingsperiodeId" to kandidat.oppfolgingsperiodeId.toString(),
+                "sisteUtmeldingshendelseId" to hendelseId.toString(),
+                "begrunnelse" to kandidat.begrunnelse,
+            ),
+        )
+    }
+
     private fun insertUtmeldingsHendelse(hendelse: KandidatForUtmeldingHendelse): UUID {
         val sql = """
             INSERT INTO kandidater_for_utmelding_hendelser(utmeldingshendelse_id, hendelse, hendelse_data, utfort_av, utfort_av_type, kilde, oppfolgingsperiode_uuid, hendelse_tidspunkt)

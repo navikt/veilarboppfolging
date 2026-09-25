@@ -61,6 +61,12 @@ class ForlengetKandidat(
     val forlengelseHendelse: ForlengelseOpprettetEllerEndretHendelse,
     val forlengetTil: LocalDate): KandidatForUtmelding(forlengelseHendelse)
 
-class AktivKandidatForUtmelding(sisteHendelse: KandidatForUtmeldingHendelse,
-                                val avsluttesAutomatiskDato: LocalDateTime
-): KandidatForUtmelding(sisteHendelse)
+class AktivKandidatForUtmelding(
+    sisteHendelse: KandidatForUtmeldingHendelse,
+    val avsluttesAutomatiskDato: LocalDateTime
+) : KandidatForUtmelding(sisteHendelse)
+
+class KandidatSomIkkeKanAvsluttes(
+    sisteHendelse: KandidatForUtmeldingHendelse,
+    val begrunnelse: String?,
+) : KandidatForUtmelding(sisteHendelse)
