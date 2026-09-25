@@ -13,6 +13,7 @@ import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.veilarboppfolging.IntegrationTest
 import no.nav.veilarboppfolging.client.pdl.ForenkletFolkeregisterStatus
 import no.nav.veilarboppfolging.client.pdl.FregStatusOgStatsborgerskap
+import no.nav.veilarboppfolging.client.isoppfolgingstilfelle.OppfolgingstilfelleStatus
 import no.nav.veilarboppfolging.controller.graphql.AdGruppeNavn
 import no.nav.veilarboppfolging.controller.graphql.toISOString
 import no.nav.veilarboppfolging.ident.randomAktorId
@@ -27,6 +28,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertNotNull
 import org.junit.jupiter.api.assertNull
 import org.mockito.Mockito.verifyNoInteractions
+import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.graphql.execution.DefaultExecutionGraphQlService
 import org.springframework.graphql.execution.GraphQlSource
@@ -605,6 +607,7 @@ class GraphqlControllerTest: IntegrationTest() {
         setTilordnetVeileder(aktorId, navIdent)
         mockDigdir(fnr, reservertMotDigitalKommunikasjon = true, kanVarsles = false)
         mockTiltakshistorikk(fnr, harAktiveDeltakelser = true)
+        `when`(isOppfolgingstilfelleClient.hentStatus(fnr.get())).thenReturn(OppfolgingstilfelleStatus.SYKMELDT_UTEN_ARBEIDSGIVER)
         mockVeilarbArenaOppfolgingsStatus(fnr= fnr, formidlingsgruppe = Formidlingsgruppe.ISERV, kanEnkeltReaktiveres = true)
 
         /* Query is hidden in test/resources/graphl-test :) */
@@ -636,7 +639,8 @@ class GraphqlControllerTest: IntegrationTest() {
               "veilederTilordning": {
                 "veilederIdent": "${navIdent}"
               },
-              "harAktiveTiltaksdeltakelser": true
+              "harAktiveTiltaksdeltakelser": true,
+              "sykmeldtStatus": "SYKMELDT_UTEN_ARBEIDSGIVER"
             }
         """.trimIndent())
     }

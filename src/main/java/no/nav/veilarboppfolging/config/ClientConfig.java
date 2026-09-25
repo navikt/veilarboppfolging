@@ -14,6 +14,7 @@ import no.nav.common.token_client.client.TokenXOnBehalfOfTokenClient;
 import no.nav.veilarboppfolging.client.aoKontor.AoKontorClient;
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirClient;
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirClientImpl;
+import no.nav.veilarboppfolging.client.isoppfolgingstilfelle.IsOppfolgingstilfelleClient;
 import no.nav.veilarboppfolging.client.oppgave.OppgaveClient;
 import no.nav.veilarboppfolging.client.tiltakshistorikk.TiltakshistorikkClient;
 import no.nav.veilarboppfolging.client.ungdomsprogram.UngdomsprogramClient;
@@ -128,6 +129,16 @@ public class ClientConfig {
     @Bean
     public VeilarbarenaClient veilarbarenaClient(AuthService authService) {
         return new VeilarbarenaClientImpl(veilarbarenaUrl, veilarbarenaAzureScope, authService);
+    }
+
+    @Bean
+    public IsOppfolgingstilfelleClient isOppfolgingstilfelleClient(EnvironmentProperties properties, ErrorMappedAzureAdMachineToMachineTokenClient tokenClient) {
+        Supplier<String> tokenSupplier = () -> tokenClient.createMachineToMachineToken(properties.isOppfolgingstilfelleScope());
+
+        return new IsOppfolgingstilfelleClient(properties.isOppfolgingstilfelleUrl(),
+                tokenSupplier,
+                RestClient.baseClient()
+        );
     }
 
     @Bean
