@@ -110,6 +110,10 @@ spec:
       value: https://oppgave.prod-fss-pub.nais.io
     - name: OPPGAVE_SCOPE
       value: api://prod-fss.oppgavehandtering.oppgave/.default
+    - name: IS_OPPFOLGINGSTILFELLE_URL
+      value: http://isoppfolgingstilfelle.teamsykefravr
+    - name: IS_OPPFOLGINGSTILFELLE_SCOPE
+      value: api://prod-gcp.teamsykefravr.isoppfolgingstilfelle/.default
   kafka:
     pool: nav-prod
   azure:
@@ -144,6 +148,8 @@ spec:
           namespace: paw
         - application: api-intern
           namespace: aap
+        - application: isoppfolgingstilfelle
+          namespace: teamsykefravr
         - application: ao-oppfolgingskontor
           namespace: dab
       external:
@@ -242,6 +248,8 @@ spec:
           namespace: poao
         - application: oppgave
           namespace: aap
+        - application: isoppfolgingstilfelle
+          namespace: teamsykefravr
         - application: ao-min-side-microfrontend-ssr
           namespace: dab
         - application: tilleggsstonader-sak
@@ -249,4 +257,3 @@ spec:
         - application: arena
           namespace: teamarenanais
           cluster: prod-fss
-

@@ -21,6 +21,8 @@ import no.nav.poao_tilgang.client.PoaoTilgangClient
 import no.nav.poao_tilgang.client.TilgangType
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.veilarboppfolging.client.pdl.PdlFolkeregisterStatusClient
+import no.nav.veilarboppfolging.client.isoppfolgingstilfelle.IsOppfolgingstilfelleClient
+import no.nav.veilarboppfolging.client.isoppfolgingstilfelle.OppfolgingstilfelleStatus
 import no.nav.veilarboppfolging.controller.PoaoTilgangError
 import no.nav.veilarboppfolging.controller.graphql.brukerStatus.BrukerStatusArenaDto
 import no.nav.veilarboppfolging.controller.graphql.brukerStatus.BrukerStatusDto
@@ -93,6 +95,7 @@ class GraphqlController(
     private val veilederTilordningerRepository: VeilederTilordningerRepository,
     private val arbeidsoppfolgingskontorRepository: ArbeidsoppfolgingskontorRepository,
     private val kandidatForUtmeldingService: KandidatForUtmeldingService,
+    private val isOppfolgingstilfelleClient: IsOppfolgingstilfelleClient,
 ) {
     private val logger = LoggerFactory.getLogger(GraphqlController::class.java)
 
@@ -487,6 +490,16 @@ class GraphqlController(
     fun harAktiveTiltaksdeltakelser(brukerStatusDto: BrukerStatusDto, @LocalContextValue aktorId: AktorId): Boolean? {
         val fnr = aktorOppslagClient.hentFnr(aktorId)
         return oppfolgingService.harAktiveTiltaksdeltakelser(fnr)
+    }
+
+    @SchemaMapping(typeName = "BrukerStatusDto", field = "sykmeldtStatus")
+    fun sykmeldtStatus(brukerStatusDto: BrukerStatusDto, @LocalContextValue fnr: Fnr): OppfolgingstilfelleStatus? {
+        val tilgang = sjekkTilgang(fnr.get(), EksterneHarIkkeTilgang)
+        if (tilgang is HarIkkeTilgang) {
+            return null
+        }
+
+        return isOppfolgingstilfelleClient.hentStatus(fnr.get())
     }
 
     private fun hentDefaultEnhetFraNorg(fnr: Fnr): Pair<EnhetId, KildeDto>? {
