@@ -55,12 +55,12 @@ class BigQueryClientImplementation(private val bigQuery: BigQuery): BigQueryClie
     val KANDIDATER_FOR_UTMELDING_METRIKKER = "KANDIDATER_FOR_UTMELDING_METRIKKER"
     val UNDER18_EVENTS = "UNDER18_EVENTS"
     val DATASET_NAME = "oppfolging_metrikker"
-    val FORLENGELSE_METRIKKER = "FORLENGELSE_METRIKKER"
+    val kandidatForlengetHendelserTabellNavn = "kandidat_forlenget_hendelser"
     val oppfolgingsperiodeEventsTable = TableId.of(DATASET_NAME, OPPFOLGING_EVENTS)
     val utmeldingEventsTable = TableId.of(DATASET_NAME, UTMELDING_EVENTS)
     val kandidaterForUtmeldingMetrikkerTable = TableId.of(DATASET_NAME, KANDIDATER_FOR_UTMELDING_METRIKKER)
     val under18EventsTable = TableId.of(DATASET_NAME, UNDER18_EVENTS)
-    val forlengelseMetrikkerTable = TableId.of(DATASET_NAME, FORLENGELSE_METRIKKER)
+    val forlengelseMetrikkerTable = TableId.of(DATASET_NAME, kandidatForlengetHendelserTabellNavn)
 
     private fun TableId.insertRequest(row: Map<String, Any?>): InsertAllRequest {
         return InsertAllRequest.newBuilder(this).addRow(row).build()
