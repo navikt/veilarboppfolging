@@ -187,6 +187,7 @@ class KandidatForUtmeldingService(
     fun forlengKandidat(hendelse: ForlengelseOpprettetEllerEndretHendelse, fnr: Fnr) {
         logger.info("Lagrer forlengelse for oppfølgingsperiode ${hendelse.oppfolgingsperiodeUuid}")
         handterUtmeldingsHendelse(fnr, hendelse)
+        logger.info("Sender forlengelse til BigQuery for oppfølgingsperiode ${hendelse.oppfolgingsperiodeUuid}")
         bigQueryClient.loggForlengelseHendelse(hendelse)
     }
 
