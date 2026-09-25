@@ -11,6 +11,7 @@ import java.util.UUID
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ArbeidssøkerPeriodeAvsluttet
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseOpprettetEllerEndretHendelse
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseUtløptHendelse
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.InaktivertIArena
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.KandidatForUtmeldingHendelse
 
 sealed class KandidatForUtmelding(
@@ -43,6 +44,7 @@ sealed class KandidatForUtmelding(
                 is ArbeidssøkerPeriodeAvsluttet -> hendelseTid.plusDays(KARENSTID_DAGER)
                 is ForlengelseOpprettetEllerEndretHendelse ->  null
                 is ForlengelseUtløptHendelse -> hendelseTid.plusDays(KARENSTID_DAGER)
+                is InaktivertIArena -> null
             }
         }
 
