@@ -73,7 +73,7 @@ class BigQueryClientImplementation(private val bigQuery: BigQuery): BigQueryClie
         insertIntoOppfolgingEvents(forlengelseMetrikkerTable) {
             mapOf(
                 "hendelse" to hendelse.type.toString(),
-                "forlenget_til" to ZonedDateTime.from(hendelse.forlengetTil).toOffsetDateTime().toString(),
+                "forlenget_til" to hendelse.forlengetTil.atStartOfDay(ZoneId.systemDefault()).toOffsetDateTime().toString(),
                 "oppfolgingsperiode_id" to hendelse.oppfolgingsperiodeUuid.toString(),
                 "hendelse_opprettet" to ZonedDateTime.ofInstant(hendelse.hendelseTidspunkt, ZoneId.systemDefault()).toOffsetDateTime().toString(),
                 "timestamp" to ZonedDateTime.now().toOffsetDateTime().toString()
