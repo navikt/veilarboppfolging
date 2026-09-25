@@ -12,13 +12,15 @@ import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ArbeidssøkerPeri
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseHendelseType
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseOpprettetEllerEndretHendelse
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseUtløptHendelse
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.InaktivertIArena
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.KandidatForUtmeldingHendelse
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ArenaIservKanIkkeReaktiveres
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.KandidatUtmeldtEtter28Dager
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.KunneIkkeAvsluttes
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.UtmeldingsService
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.service.AvsluttOppfolgingService
 import no.nav.veilarboppfolging.service.KafkaProducerService
+import no.nav.veilarboppfolging.service.MetricsService
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.support.TransactionTemplate
@@ -33,7 +35,7 @@ class KandidatForUtmeldingService(
     private val aktorOppslagClient: AktorOppslagClient,
     private val transactor: TransactionTemplate,
     private val kafkaProducerService: KafkaProducerService,
-    private val utmeldingService: UtmeldingsService,
+    private val metricsService: MetricsService,
 ) {
     private val BATCH_SIZE = 1000
     private val logger = LoggerFactory.getLogger(this::class.java)
@@ -46,23 +48,40 @@ class KandidatForUtmeldingService(
     fun handterUtmeldingsHendelse(fnr: Fnr, hendelse: KandidatForUtmeldingHendelse) {
         transactor.executeWithoutResult { _ ->
             val avslutningsstatus by lazy { avsluttOppfolgingService.hentAvslutningstatusForManuellAvslutning(fnr) }
-            val erHendelseSomSkalTaPersonInnIFilteret = hendelse is ArbeidssøkerPeriodeAvsluttet
-                    || hendelse is ForlengelseUtløptHendelse
-            if (erHendelseSomSkalTaPersonInnIFilteret && !avslutningsstatus.kanAvslutte) {
+            val erHendelseSomAktivererKandidat = when (hendelse) {
+                is ArbeidssøkerPeriodeAvsluttet, is InaktivertIArena, is ForlengelseUtløptHendelse -> true
+                is ForlengelseOpprettetEllerEndretHendelse -> false
+            }
+            if (erHendelseSomAktivererKandidat && !avslutningsstatus.kanAvslutte) {
+                if (!avslutningsstatus.underOppfolging) {
+                    logger.info("Kandidat med oppfølgingsperiode ${hendelse.oppfolgingsperiodeUuid} er ikke under oppfølging, fjerner fra kandidat for utmelding hvis den finnes")
+                    kandidatForUtmeldingRepository.fjernKandidat(hendelse.oppfolgingsperiodeUuid)
+                    return@executeWithoutResult
+                }
                 logger.info("Kandidat kunne ikke avsluttes selvom ${hendelse::class.simpleName}, oppfølgingsperiode ${hendelse.oppfolgingsperiodeUuid}")
-                kandidatForUtmeldingRepository.lagreKandidatSomIkkeKunneAvsluttes(
-                    hendelse.oppfolgingsperiodeUuid,
-                    avslutningsstatus.begrunnelse
+                kandidatForUtmeldingRepository.lagreKandidatSomIkkeKunneAvsluttesOgHendelse(
+                    hendelse = hendelse,
+                    oppfolgingsperiodeId = hendelse.oppfolgingsperiodeUuid,
+                    begrunnelse = avslutningsstatus.begrunnelse,
                 )
                 kandidatForUtmeldingRepository.fjernKandidat(hendelse.oppfolgingsperiodeUuid)
                 return@executeWithoutResult
             }
 
-            val kandidat = KandidatForUtmelding.fromHendelse(hendelse)
-            kandidatForUtmeldingRepository.lagreKandidat(kandidat)
+            if (hendelse is InaktivertIArena) {
+                val avsluttResultat = avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(ArenaIservKanIkkeReaktiveres(aktorOppslagClient.hentAktorId(fnr)))
+                if (avsluttResultat is KunneIkkeAvsluttes) {
+                    logger.error("Kunne ikke avslutte oppfølging for oppfølgingsperiode ${hendelse.oppfolgingsperiodeUuid} etter inaktivering i Arena, selv om den nettopp kunne avsluttes!")
+                    throw IllegalStateException("Kunne ikke avslutte oppfølging for oppfølgingsperiode ${hendelse.oppfolgingsperiodeUuid} etter inaktivering i Arena, selv om den nettopp kunne avsluttes!")
+                }
+                logger.info("Utgang: Oppfølging avsluttet automatisk pga. inaktiv bruker i Arena som ikke kan reaktiveres")
+                metricsService.rapporterAutomatiskAvslutningAvOppfolging(true)
+            } else {
+                val kandidat = KandidatForUtmelding.fromHendelse(hendelse)
+                kandidatForUtmeldingRepository.lagreKandidat(kandidat)
 
-            utmeldingService.slettFraUtmeldingTabell(hendelse.oppfolgingsperiodeUuid)
-            sendUtmeldingskandidatTilObo(hendelse, fnr)
+                sendUtmeldingskandidatTilObo(hendelse, fnr)
+            }
         }
     }
 

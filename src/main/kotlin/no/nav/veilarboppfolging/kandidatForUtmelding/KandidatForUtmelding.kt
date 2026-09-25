@@ -65,8 +65,3 @@ class AktivKandidatForUtmelding(
     sisteHendelse: KandidatForUtmeldingHendelse,
     val avsluttesAutomatiskDato: LocalDateTime
 ) : KandidatForUtmelding(sisteHendelse)
-
-class KandidatSomIkkeKanAvsluttes(
-    sisteHendelse: KandidatForUtmeldingHendelse,
-    val begrunnelse: String?,
-) : KandidatForUtmelding(sisteHendelse)

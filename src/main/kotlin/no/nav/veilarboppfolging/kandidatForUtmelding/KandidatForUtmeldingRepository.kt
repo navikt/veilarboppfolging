@@ -46,17 +46,21 @@ class KandidatForUtmeldingRepository(
         )
     }
 
-    fun lagreKandidatSomIkkeKunneAvsluttesOgHendelse(kandidat: KandidatSomIkkeKanAvsluttes) {
-        val hendelseId = insertUtmeldingsHendelse(kandidat.sisteHendelse)
+    fun lagreKandidatSomIkkeKunneAvsluttesOgHendelse(
+        hendelse: KandidatForUtmeldingHendelse,
+        oppfolgingsperiodeId: UUID,
+        begrunnelse: String?,
+    ) {
+        val hendelseId = insertUtmeldingsHendelse(hendelse)
         db.update(
             """
             INSERT INTO kandidater_som_ikke_kunne_avsluttes(oppfolgingsperiode_uuid, siste_utmeldingshendelse_id, begrunnelse)
             VALUES (:oppfolgingsperiodeId, :sisteUtmeldingshendelseId, :begrunnelse)
             """.trimIndent(),
             mapOf(
-                "oppfolgingsperiodeId" to kandidat.oppfolgingsperiodeId.toString(),
-                "sisteUtmeldingshendelseId" to hendelseId.toString(),
-                "begrunnelse" to kandidat.begrunnelse,
+                "oppfolgingsperiodeId" to oppfolgingsperiodeId.toString(),
+                "sisteUtmeldingshendelseId" to hendelseId,
+                "begrunnelse" to begrunnelse,
             ),
         )
     }
@@ -365,6 +369,7 @@ class KandidatForUtmeldingRepository(
         return when (hendelse) {
             in ArbeidssokerperiodeAvsluttetHendelseType.entries.map { it.name } -> ArbeidssokerperiodeAvsluttetHendelseType.valueOf(hendelse)
             in ForlengelseHendelseType.entries.map { it.name } -> ForlengelseHendelseType.valueOf(hendelse)
+            in InaktivertIArenaHendelseType.entries.map { it.name } -> InaktivertIArenaHendelseType.valueOf(hendelse)
             else -> {
                 throw IllegalArgumentException("Ugyldig hendelse type: $hendelse")
             }
