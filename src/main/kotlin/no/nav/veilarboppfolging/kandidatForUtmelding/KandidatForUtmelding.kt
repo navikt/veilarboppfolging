@@ -20,6 +20,9 @@ sealed class KandidatForUtmelding(
 ) {
     companion object {
         fun fromHendelse(hendelse: KandidatForUtmeldingHendelse): KandidatForUtmelding {
+            if (hendelse is InaktivertIArena) {
+                throw IllegalArgumentException("InaktivertIArena-hendelser gjør ikke bruker til kandidat for utmelding")
+            }
             val avsluttesAutomatiskDato = beregnAvsluttesAutomatiskDato(hendelse)
             val forlengetTil = when (hendelse) {
                 is ForlengelseOpprettetEllerEndretHendelse -> hendelse.forlengetTil

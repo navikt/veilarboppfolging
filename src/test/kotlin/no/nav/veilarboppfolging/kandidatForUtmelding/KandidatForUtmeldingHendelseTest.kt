@@ -90,7 +90,7 @@ class KandidatForUtmeldingHendelseTest {
         val automatiskAvslutningDato = hendelse.avsluttesAutomatiskDato
 
         assertThat(automatiskAvslutningDato).isEqualTo(forventetDato)
-        assertThat(hendelse.sisteHendelse.tilFilterhendelseRecord(Fnr.of("12345678901")).hendelse?.tidspunktFrist)
+        assertThat(hendelse.sisteHendelse.tilFilterhendelseRecord(Fnr.of("12345678901"))?.hendelse?.tidspunktFrist)
             .isEqualTo(forventetDato.atZone(ZoneOffset.UTC).withZoneSameInstant(ZoneId.of("Europe/Oslo")))
     }
 
@@ -115,7 +115,7 @@ class KandidatForUtmeldingHendelseTest {
         val automatiskAvslutningDato = kandidatForUtmelding.avsluttesAutomatiskDato
 
         assertThat(automatiskAvslutningDato).isEqualTo(forventetDato)
-        assertThat(kandidatForUtmelding.sisteHendelse.tilFilterhendelseRecord(Fnr.of("12345678901")).hendelse?.tidspunktFrist)
+        assertThat(kandidatForUtmelding.sisteHendelse.tilFilterhendelseRecord(Fnr.of("12345678901"))?.hendelse?.tidspunktFrist)
             .isEqualTo(forventetDato.atZone(ZoneOffset.UTC).withZoneSameInstant(ZoneId.of("Europe/Oslo")))
     }
 }

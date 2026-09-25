@@ -197,7 +197,7 @@ class KandidatForUtmeldingService(
             filterkategoriRepository.hentEllerOpprettFilterhendelseId(kandidat.oppfolgingsperiodeUuid)
         logger.info("Sender kandidat for utmelding til OBO med key=$filterkategoriPersonId for oppfølgingsperiode ${kandidat.oppfolgingsperiodeUuid}")
         val filterhendelse = kandidat.tilFilterhendelseRecord(fnr)
-        kafkaProducerService.publiserFilterhendelse(filterkategoriPersonId, filterhendelse)
+        filterhendelse?.let { kafkaProducerService.publiserFilterhendelse(filterkategoriPersonId, it) }
     }
 
     private fun finnFnrForOppfolgingsperiode(oppfolgingsperiodeId: UUID): Pair<Fnr, AktorId> {
