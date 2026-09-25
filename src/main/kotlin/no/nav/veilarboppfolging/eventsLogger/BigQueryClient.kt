@@ -56,7 +56,7 @@ class BigQueryClientImplementation(private val bigQuery: BigQuery): BigQueryClie
     val KANDIDATER_FOR_UTMELDING_METRIKKER = "KANDIDATER_FOR_UTMELDING_METRIKKER"
     val UNDER18_EVENTS = "UNDER18_EVENTS"
     val DATASET_NAME = "oppfolging_metrikker"
-    val kandidatForlengetHendelserTabellNavn = "kandidat_forlenget_hendelser"
+    val kandidatForlengetHendelserTabellNavn = "KANDIDAT_FORLENGET_HENDELSER"
     val oppfolgingsperiodeEventsTable = TableId.of(DATASET_NAME, OPPFOLGING_EVENTS)
     val utmeldingEventsTable = TableId.of(DATASET_NAME, UTMELDING_EVENTS)
     val kandidaterForUtmeldingMetrikkerTable = TableId.of(DATASET_NAME, KANDIDATER_FOR_UTMELDING_METRIKKER)
@@ -73,9 +73,9 @@ class BigQueryClientImplementation(private val bigQuery: BigQuery): BigQueryClie
         insertIntoOppfolgingEvents(forlengelseMetrikkerTable) {
             mapOf(
                 "hendelse" to hendelse.type.toString(),
-                "forlenget_til" to hendelse.forlengetTil.atStartOfDay(ZoneId.systemDefault()).toOffsetDateTime().toString(),
+                "forlenget_til" to hendelse.forlengetTil.toString(),
                 "oppfolgingsperiode_id" to hendelse.oppfolgingsperiodeUuid.toString(),
-                "hendelse_opprettet" to ZonedDateTime.ofInstant(hendelse.hendelseTidspunkt, ZoneId.systemDefault()).toOffsetDateTime().toString(),
+                "hendelse_opprettet" to ZonedDateTime.ofInstant(hendelse.hendelseTidspunkt, ZoneId.of("Europe/Oslo")).toOffsetDateTime().toString(),
                 "timestamp" to ZonedDateTime.now().toOffsetDateTime().toString()
             )
         }
