@@ -12,6 +12,16 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Repository
 import kotlin.collections.firstOrNull
 import no.nav.common.types.identer.AktorId
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ArbeidssokerperiodeAvsluttetHendelseType
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ArbeidssøkerPeriodeAvsluttet
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseHendelseType
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseOpprettetEllerEndretHendelse
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseUtløptHendelse
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.InaktivertIArena
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.InaktivertIArenaHendelseType
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.KandidatForUtmeldingHendelse
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.KandidatForUtmeldingHendelseType
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.KandidatForUtmeldingHendelseUtfortAvType
 
 @Repository
 class KandidatForUtmeldingRepository(
@@ -36,6 +46,25 @@ class KandidatForUtmeldingRepository(
         )
     }
 
+    fun lagreKandidatSomIkkeKunneAvsluttesOgHendelse(
+        hendelse: KandidatForUtmeldingHendelse,
+        oppfolgingsperiodeId: UUID,
+        begrunnelse: String?,
+    ) {
+        val hendelseId = insertUtmeldingsHendelse(hendelse)
+        db.update(
+            """
+            INSERT INTO kandidater_som_ikke_kunne_avsluttes(oppfolgingsperiode_uuid, siste_utmeldingshendelse_id, begrunnelse)
+            VALUES (:oppfolgingsperiodeId, :sisteUtmeldingshendelseId, :begrunnelse)
+            """.trimIndent(),
+            mapOf(
+                "oppfolgingsperiodeId" to oppfolgingsperiodeId.toString(),
+                "sisteUtmeldingshendelseId" to hendelseId,
+                "begrunnelse" to begrunnelse,
+            ),
+        )
+    }
+
     private fun insertUtmeldingsHendelse(hendelse: KandidatForUtmeldingHendelse): UUID {
         val sql = """
             INSERT INTO kandidater_for_utmelding_hendelser(utmeldingshendelse_id, hendelse, hendelse_data, utfort_av, utfort_av_type, kilde, oppfolgingsperiode_uuid, hendelse_tidspunkt)
@@ -48,6 +77,7 @@ class KandidatForUtmeldingRepository(
                 "hendelse" to when (type) {
                     is ArbeidssokerperiodeAvsluttetHendelseType -> type.name
                     is ForlengelseHendelseType -> type.name
+                    is InaktivertIArenaHendelseType -> type.name
                 },
                 "hendelseData" to hendelse.hendelseDataJson,
                 "utfortAv" to hendelse.utfortAv,
@@ -330,6 +360,7 @@ class KandidatForUtmeldingRepository(
                     else -> throw IllegalArgumentException("ForlengelseHendelseType $hendelsetype is not supported.")
                 }
             }
+            is InaktivertIArenaHendelseType -> resultSet.toInaktivertIArena()
         }
 
     }
@@ -338,6 +369,7 @@ class KandidatForUtmeldingRepository(
         return when (hendelse) {
             in ArbeidssokerperiodeAvsluttetHendelseType.entries.map { it.name } -> ArbeidssokerperiodeAvsluttetHendelseType.valueOf(hendelse)
             in ForlengelseHendelseType.entries.map { it.name } -> ForlengelseHendelseType.valueOf(hendelse)
+            in InaktivertIArenaHendelseType.entries.map { it.name } -> InaktivertIArenaHendelseType.valueOf(hendelse)
             else -> {
                 throw IllegalArgumentException("Ugyldig hendelse type: $hendelse")
             }
@@ -351,7 +383,12 @@ fun ResultSet.toArbeidssøkerPeriodeAvsluttet() = ArbeidssøkerPeriodeAvsluttet(
     utfortAv = getString("utfort_av"),
     kilde = getString("kilde"),
     hendelseTidspunkt = getTimestamp("hendelse_tidspunkt").toLocalDateTime().toInstant(ZoneOffset.UTC),
-    avslutningsarsak = getStringOrNull("hendelse_data")?.let { JsonUtils.fromJson(it, ArbeidssøkerPeriodeAvsluttet.Detaljer::class.java).avslutningsarsak },
+    avslutningsarsak = getStringOrNull("hendelse_data")?.let {
+        JsonUtils.fromJson(
+            it,
+            ArbeidssøkerPeriodeAvsluttet.Detaljer::class.java
+        ).avslutningsarsak
+    },
     arbeidssokerperiodeAvsluttetHendelseType = ArbeidssokerperiodeAvsluttetHendelseType.valueOf(getString("hendelse")),
 )
 
@@ -371,4 +408,15 @@ fun ResultSet.toForlengelseOpprettetEllerEndretHendelse() = ForlengelseOpprettet
 fun ResultSet.toForlengelseUtløptHendelse() = ForlengelseUtløptHendelse(
     oppfolgingsperiodeUuid = UUID.fromString(getString("oppfolgingsperiode_uuid")),
     hendelseTidspunkt = getTimestamp("hendelse_tidspunkt").toLocalDateTime().toInstant(ZoneOffset.UTC),
+)
+
+fun ResultSet.toInaktivertIArena() = InaktivertIArena(
+    oppfolgingsperiodeUuid = UUID.fromString(getString("oppfolgingsperiode_uuid")),
+    hendelseTidspunkt = getTimestamp("hendelse_tidspunkt").toLocalDateTime().toInstant(ZoneOffset.UTC),
+    iservFraDato = getStringOrNull("hendelse_data")?.let {
+        JsonUtils.fromJson(
+            it,
+            InaktivertIArena.Detaljer::class.java
+        ).iservFraDato
+    },
 )

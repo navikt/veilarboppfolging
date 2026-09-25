@@ -11,6 +11,12 @@ import no.nav.common.types.identer.Fnr
 import no.nav.paw.arbeidssokerregisteret.api.v1.AvsluttetAarsakType
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmelding.Companion.KARENSTID_DAGER
 import no.nav.veilarboppfolging.kandidatForUtmelding.dto.KandidatForUtmeldingTagDto
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ArbeidssokerperiodeAvsluttetHendelseType
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ArbeidssøkerPeriodeAvsluttet
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseHendelseType
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseOpprettetEllerEndretHendelse
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseUtløptHendelse
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.KandidatForUtmeldingHendelseUtfortAvType
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
@@ -84,7 +90,7 @@ class KandidatForUtmeldingHendelseTest {
         val automatiskAvslutningDato = hendelse.avsluttesAutomatiskDato
 
         assertThat(automatiskAvslutningDato).isEqualTo(forventetDato)
-        assertThat(hendelse.sisteHendelse.tilFilterhendelseRecord(Fnr.of("12345678901")).hendelse?.tidspunktFrist)
+        assertThat(hendelse.sisteHendelse.tilFilterhendelseRecord(Fnr.of("12345678901"))?.hendelse?.tidspunktFrist)
             .isEqualTo(forventetDato.atZone(ZoneOffset.UTC).withZoneSameInstant(ZoneId.of("Europe/Oslo")))
     }
 
@@ -109,7 +115,7 @@ class KandidatForUtmeldingHendelseTest {
         val automatiskAvslutningDato = kandidatForUtmelding.avsluttesAutomatiskDato
 
         assertThat(automatiskAvslutningDato).isEqualTo(forventetDato)
-        assertThat(kandidatForUtmelding.sisteHendelse.tilFilterhendelseRecord(Fnr.of("12345678901")).hendelse?.tidspunktFrist)
+        assertThat(kandidatForUtmelding.sisteHendelse.tilFilterhendelseRecord(Fnr.of("12345678901"))?.hendelse?.tidspunktFrist)
             .isEqualTo(forventetDato.atZone(ZoneOffset.UTC).withZoneSameInstant(ZoneId.of("Europe/Oslo")))
     }
 }

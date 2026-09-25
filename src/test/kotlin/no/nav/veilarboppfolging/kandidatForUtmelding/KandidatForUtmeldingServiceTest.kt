@@ -18,6 +18,13 @@ import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.ZoneOffset
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ArbeidssokerperiodeAvsluttetHendelseType
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ArbeidssøkerPeriodeAvsluttet
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseHendelseType
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseOpprettetEllerEndretHendelse
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.InaktivertIArena
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.InaktivertIArenaHendelseType
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.KandidatForUtmeldingHendelseUtfortAvType
 
 class KandidatForUtmeldingServiceTest : IntegrationTest() {
 
@@ -70,6 +77,7 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
                 kandidat.avsluttesAutomatiskDato.atZone(ZoneOffset.UTC)?.withZoneSameInstant(ZoneId.of("Europe/Oslo")),
                 within(1, ChronoUnit.SECONDS)
             )
+        assertThat(kandidatForUtmeldingRepository.hentAntallKandidaterSomIkkeKunneAvsluttes(oppfolgingsperiodeUuid)).isEqualTo(0)
     }
 
     @Test
@@ -98,6 +106,7 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
 
         assertThat(kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeId)).isNull()
         assertThat(filterkategoriRepository.hentFilterhendelseId(oppfolgingsperiodeId)).isNull()
+        assertThat(kandidatForUtmeldingRepository.hentAntallKandidaterSomIkkeKunneAvsluttes(oppfolgingsperiodeId)).isEqualTo(0)
     }
 
     @Test
@@ -109,7 +118,8 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
         mockUngdomsprogram(FNR, erDeltaker = false)
         mockArbeidssoekerregisteret(FNR, erArbeidssoeker = true)
         mockAap(FNR, harAap = false)
-        val oppfolgingsperiodeId = UUID.randomUUID()
+        startOppfolgingSomArbeidsoker(AKTOR_ID, FNR)
+        val oppfolgingsperiodeId = oppfolgingService.hentGjeldendeOppfolgingsperiode(FNR).get().uuid
 
         kandidatForUtmeldingService.handterUtmeldingsHendelse(
             FNR,
@@ -126,6 +136,62 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
 
         assertThat(kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeId)).isNull()
         assertThat(filterkategoriRepository.hentFilterhendelseId(oppfolgingsperiodeId)).isNull()
+        assertThat(kandidatForUtmeldingRepository.hentAntallKandidaterSomIkkeKunneAvsluttes(oppfolgingsperiodeId)).isEqualTo(1)
+    }
+
+    @Test
+    fun `lagreKandidatForUtmelding avslutter oppfølging hvis bruker inaktiveres i Arena og kan avsluttes`() {
+        mockSytemBrukerAuthOk(AKTOR_ID, FNR)
+        setBrukerUnderOppfolging(AKTOR_ID, FNR)
+        setLocalArenaOppfolging(AKTOR_ID, Formidlingsgruppe.ARBS)
+        mockTiltakshistorikk(FNR, harAktiveDeltakelser = false)
+        mockUngdomsprogram(FNR, erDeltaker = false)
+        mockArbeidssoekerregisteret(FNR, erArbeidssoeker = false)
+        mockAap(FNR, harAap = false)
+        startOppfolgingSomArbeidsoker(AKTOR_ID, FNR)
+        val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(FNR).get().uuid
+
+        kandidatForUtmeldingService.handterUtmeldingsHendelse(
+            FNR,
+            InaktivertIArena(
+                hendelseTidspunkt = ZonedDateTime.now().toInstant(),
+                oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
+                iservFraDato = LocalDate.now(),
+            )
+        )
+
+        val hendelse = kandidatForUtmeldingRepository.hentSisteHendelseForKandidat(oppfolgingsperiodeUuid)
+        assertThat(hendelse).isNull()
+        assertThat(kandidatForUtmeldingRepository.hentAntallKandidaterSomIkkeKunneAvsluttes(oppfolgingsperiodeUuid)).isEqualTo(0)
+        assertThat(kandidatForUtmeldingRepository.erAktivEllerForlengetKandidatForUtmelding(oppfolgingsperiodeUuid)).isFalse
+    }
+
+    @Test
+    fun `lagreKandidatForUtmelding avslutter ikke oppfølging hvis bruker inaktiveres i Arena og ikke kan avsluttes`() {
+        mockSytemBrukerAuthOk(AKTOR_ID, FNR)
+        setBrukerUnderOppfolging(AKTOR_ID, FNR)
+        setLocalArenaOppfolging(AKTOR_ID, Formidlingsgruppe.ARBS)
+        mockTiltakshistorikk(FNR, harAktiveDeltakelser = false)
+        mockUngdomsprogram(FNR, erDeltaker = false)
+        mockArbeidssoekerregisteret(FNR, erArbeidssoeker = false)
+        mockAap(FNR, harAap = true)
+        startOppfolgingSomArbeidsoker(AKTOR_ID, FNR)
+        val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(FNR).get().uuid
+
+        kandidatForUtmeldingService.handterUtmeldingsHendelse(
+            FNR,
+            InaktivertIArena(
+                hendelseTidspunkt = ZonedDateTime.now().toInstant(),
+                oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
+                iservFraDato = LocalDate.now(),
+            )
+        )
+
+        val hendelse = kandidatForUtmeldingRepository.hentSisteHendelseForKandidat(oppfolgingsperiodeUuid)
+        assertThat(hendelse).isNotNull
+        assertThat(hendelse?.type).isEqualTo(InaktivertIArenaHendelseType.INAKTIVERT_I_ARENA)
+        assertThat(kandidatForUtmeldingRepository.hentAntallKandidaterSomIkkeKunneAvsluttes(oppfolgingsperiodeUuid)).isEqualTo(1)
+        assertThat(kandidatForUtmeldingRepository.erAktivEllerForlengetKandidatForUtmelding(oppfolgingsperiodeUuid)).isFalse
     }
 
     @Test
@@ -140,14 +206,14 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
         startOppfolgingSomArbeidsoker(AKTOR_ID, FNR)
         val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(FNR).get().uuid
         val lagretKandidat = ArbeidssøkerPeriodeAvsluttet(
-                utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
-                utfortAv = "A123123",
-                kilde = "kilde",
-                hendelseTidspunkt = ZonedDateTime.now().toInstant(),
-                oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
-                arbeidssokerperiodeAvsluttetHendelseType = ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
-                avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
-            ).let { KandidatForUtmelding.fromHendelse(it) }
+            utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
+            utfortAv = "A123123",
+            kilde = "kilde",
+            hendelseTidspunkt = ZonedDateTime.now().toInstant(),
+            oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
+            arbeidssokerperiodeAvsluttetHendelseType = ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
+            avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
+        ).let { KandidatForUtmelding.fromHendelse(it) }
         kandidatForUtmeldingRepository.lagreKandidat(lagretKandidat)
         namedParameterJdbcTemplate.update("""
             UPDATE kandidater_for_utmelding SET forlenget_til = CURRENT_TIMESTAMP - INTERVAL '1 hour' WHERE oppfolgingsperiode_uuid = :oppfolgingsperiodeId
@@ -201,7 +267,8 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
             forlengelseHendelseType = ForlengelseHendelseType.FORLENGELSE_OPPRETTET,
             hendelseTidspunkt = ZonedDateTime.now().minusDays(29).toInstant(),
             forlengetTil = LocalDate.now().minusDays(1)
-        ))
+        )
+        )
         mockAap(FNR, harAap = true)
 
         kandidatForUtmeldingService.behandleKandidaterMedUtloptForlengelse()
@@ -359,7 +426,7 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
     }
 
     @Test
-    fun `manuell avslutning av oppfolging lagrer OppfolgingAvsluttetHendelse med type manuelt`() {
+    fun `manuell avslutning av oppfolging fjerner kandidat`() {
         mockSytemBrukerAuthOk(AKTOR_ID, FNR)
         setBrukerUnderOppfolging(AKTOR_ID, FNR)
         setLocalArenaOppfolging(AKTOR_ID, Formidlingsgruppe.ARBS)

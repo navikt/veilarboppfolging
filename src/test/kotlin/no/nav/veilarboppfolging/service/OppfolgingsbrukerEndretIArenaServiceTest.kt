@@ -3,6 +3,7 @@ package no.nav.veilarboppfolging.service
 import java.time.LocalDate
 import java.time.ZonedDateTime
 import java.util.Optional
+import java.util.UUID
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
@@ -13,16 +14,12 @@ import no.nav.veilarboppfolging.client.pdl.FregStatusOgStatsborgerskap
 import no.nav.veilarboppfolging.client.pdl.PdlFolkeregisterStatusClient
 import no.nav.veilarboppfolging.kafka.TestUtils
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService
+import no.nav.veilarboppfolging.oppfolgingsbruker.StartetAvType
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.EndringPaaOppfolgingsBruker
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.LocalArenaOppfolging
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ArenaIservKanIkkeReaktiveres
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.KanAvsluttesInput
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.KunneAvsluttes
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.UtmeldingsService
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
-import no.nav.veilarboppfolging.service.utmelding.IservTrigger
-import no.nav.veilarboppfolging.service.utmelding.KanskjeIservBruker
+import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity
 import org.junit.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
@@ -36,74 +33,50 @@ import org.mockito.kotlin.verify
 class OppfolgingsbrukerEndretIArenaServiceTest {
 
     private val oppfolgingService: OppfolgingService = mock(OppfolgingService::class.java)
-    private val avsluttOppfolgingService: AvsluttOppfolgingService = mock(AvsluttOppfolgingService::class.java)
     private val startOppfolgingService: StartOppfolgingService = mock(StartOppfolgingService::class.java)
     private val arenaOppfolgingService: ArenaOppfolgingService = mock(ArenaOppfolgingService::class.java)
-    private val metricsService: MetricsService = mock(MetricsService::class.java)
     private val oppfolgingsStatusRepository: OppfolgingsStatusRepository = mock(OppfolgingsStatusRepository::class.java)
     private val pdlFolkeregisterStatusClient: PdlFolkeregisterStatusClient = mock(PdlFolkeregisterStatusClient::class.java)
-    private val utmeldingService: UtmeldingsService = mock(UtmeldingsService::class.java)
     private val kandidatForUtmeldingService: KandidatForUtmeldingService = mock(KandidatForUtmeldingService::class.java)
 
     val oppfolgingsbrukerEndretIArenaService = OppfolgingsbrukerEndretIArenaService(
-        oppfolgingService,
-        avsluttOppfolgingService,
-        startOppfolgingService,
-        arenaOppfolgingService,
-        metricsService,
-        oppfolgingsStatusRepository,
-        pdlFolkeregisterStatusClient,
-        utmeldingService,
-        kandidatForUtmeldingService
+        oppfolgingService = oppfolgingService,
+        startOppfolgingService = startOppfolgingService,
+        arenaOppfolgingService = arenaOppfolgingService,
+        oppfolgingsStatusRepository = oppfolgingsStatusRepository,
+        pdlFolkeregisterStatusClient = pdlFolkeregisterStatusClient,
+        kandidatForUtmeldingService = kandidatForUtmeldingService,
     )
 
     val AKTOR_ID = AktorId("0102030405")
     val FNR = Fnr("1102030405")
 
     @Test
-    fun `skal ikke avslutte brukere som kan reaktiveres i Arena`() {
+    fun `brukere som kan reaktiveres i Arena skal delegeres til kandidatForUtmeldingService`() {
         oppfolgingStatus(underOppfolging = true)
         kanReaktiveres()
         val melding = meldingFraArena(Formidlingsgruppe.ISERV, Kvalifiseringsgruppe.BATT)
 
         oppfolgingsbrukerEndretIArenaService.oppdaterOppfolgingMedStatusFraArena(melding)
 
-        verify(avsluttOppfolgingService, never()).avsluttOppfolgingHvisKanAvsluttes(any())
-        verify(utmeldingService, times(1))
-            .oppdaterUtmeldingsStatus(KanskjeIservBruker(
-                iservFraDato = ISERV_FRA_DATO,
-                aktorId = AKTOR_ID,
-                formidlingsgruppe = Formidlingsgruppe.ISERV,
-                trigger = IservTrigger.OppdateringPaaOppfolgingsBruker,
-                erUnderoppfolging = true
-            ))
+        verify(kandidatForUtmeldingService, times(1)).handterUtmeldingsHendelse(any(), any())
     }
 
     @Test
-    fun `skal avslutte brukere som ikke kan reaktiveres i Arena`() {
+    fun `brukere som ikke kan reaktiveres i Arena skal delegeres til kandidatForUtmeldingService`() {
         oppfolgingStatus(underOppfolging = true)
         kanIkkeReaktiveres()
-        kanAvsluttes()
         val melding = meldingFraArena(Formidlingsgruppe.ISERV, Kvalifiseringsgruppe.BATT)
 
         oppfolgingsbrukerEndretIArenaService.oppdaterOppfolgingMedStatusFraArena(melding)
 
-        verify(avsluttOppfolgingService, times(1)).avsluttOppfolgingHvisKanAvsluttes(any())
-        verify(utmeldingService, times(1))
-            .oppdaterUtmeldingsStatus(KanskjeIservBruker(
-                iservFraDato = ISERV_FRA_DATO,
-                aktorId = AKTOR_ID,
-                formidlingsgruppe = Formidlingsgruppe.ISERV,
-                trigger = IservTrigger.OppdateringPaaOppfolgingsBruker,
-                erUnderoppfolging = true
-            ))
+        verify(kandidatForUtmeldingService, times(1)).handterUtmeldingsHendelse(any(), any())
     }
 
     @Test
     fun `skal starte oppfølging på brukere som ble sykmeldt uten arbeidsgiver`() {
         oppfolgingStatus(underOppfolging = false)
         kanIkkeReaktiveres()
-        kanAvsluttes()
         brukerSomErOver18()
         val melding = meldingFraArena(Formidlingsgruppe.IARBS, Kvalifiseringsgruppe.VURDU)
 
@@ -111,21 +84,12 @@ class OppfolgingsbrukerEndretIArenaServiceTest {
 
         verify(startOppfolgingService, times(1))
             .startOppfolgingHvisIkkeAlleredeStartet(any())
-        verify(utmeldingService, times(1))
-            .oppdaterUtmeldingsStatus(KanskjeIservBruker(
-                iservFraDato = null,
-                aktorId = AKTOR_ID,
-                formidlingsgruppe = Formidlingsgruppe.IARBS,
-                trigger = IservTrigger.OppdateringPaaOppfolgingsBruker,
-                erUnderoppfolging = false
-            ))
     }
 
     @Test
     fun `skal ikke starte oppfølging på bruker under 18 som ble sykmeldt uten arbeidsgiver`() {
         oppfolgingStatus(underOppfolging = false)
         kanIkkeReaktiveres()
-        kanAvsluttes()
         brukerSomErUnder18()
         val melding = meldingFraArena(Formidlingsgruppe.IARBS, Kvalifiseringsgruppe.VURDU)
 
@@ -133,30 +97,24 @@ class OppfolgingsbrukerEndretIArenaServiceTest {
 
         verify(startOppfolgingService, never())
             .startOppfolgingHvisIkkeAlleredeStartet(any())
-        verify(utmeldingService, never())
-            .oppdaterUtmeldingsStatus(any())
     }
 
     @ParameterizedTest
     @EnumSource(Kvalifiseringsgruppe::class, names = ["IKVAL", "BATT", "BFORM", "VARIG"])
     fun `14a vedtak i arena skal ikke starte oppfølging`(kvalifiseringsgruppe: Kvalifiseringsgruppe) {
         oppfolgingStatus(underOppfolging = false)
-        kanAvsluttes()
         val melding = meldingFraArena(Formidlingsgruppe.IARBS, kvalifiseringsgruppe)
 
         oppfolgingsbrukerEndretIArenaService.oppdaterOppfolgingMedStatusFraArena(melding)
 
         verify(startOppfolgingService, never())
             .startOppfolgingHvisIkkeAlleredeStartet(any())
-        verify(avsluttOppfolgingService, never())
-            .avsluttOppfolgingHvisKanAvsluttes(any())
-        verify(utmeldingService, never())
-            .oppdaterUtmeldingsStatus(any())
+        verify(kandidatForUtmeldingService, never()).handterUtmeldingsHendelse(any(), any())
     }
 
     @ParameterizedTest
     @EnumSource(Kvalifiseringsgruppe::class, names = ["BKART", "IVURD", "VURDI"])
-    fun `skal ikkke gjøre noe på brukere under oppfølging som ikke er ISERV`(kvalifiseringsgruppe: Kvalifiseringsgruppe) {
+    fun `skal ikke gjøre noe på brukere under oppfølging som ikke er ISERV`(kvalifiseringsgruppe: Kvalifiseringsgruppe) {
         oppfolgingStatus(underOppfolging = true)
         val melding = meldingFraArena(Formidlingsgruppe.IARBS, kvalifiseringsgruppe)
 
@@ -164,10 +122,7 @@ class OppfolgingsbrukerEndretIArenaServiceTest {
 
         verify(startOppfolgingService, never())
             .startOppfolgingHvisIkkeAlleredeStartet(any())
-        verify(avsluttOppfolgingService, never())
-            .avsluttOppfolgingHvisKanAvsluttes(any())
-        verify(utmeldingService, never())
-            .oppdaterUtmeldingsStatus(any())
+        verify(kandidatForUtmeldingService, never()).handterUtmeldingsHendelse(any(), any())
     }
 
     @ParameterizedTest
@@ -180,22 +135,18 @@ class OppfolgingsbrukerEndretIArenaServiceTest {
 
         verify(startOppfolgingService, never())
             .startOppfolgingHvisIkkeAlleredeStartet(any())
-        verify(avsluttOppfolgingService, never())
-            .avsluttOppfolgingHvisKanAvsluttes(any())
-        verify(utmeldingService, never())
-            .oppdaterUtmeldingsStatus(any())
+        verify(kandidatForUtmeldingService, never()).handterUtmeldingsHendelse(any(), any())
     }
 
     @Test
-    fun `skal ikke lagre brukere som går fra ARBS til ISERV i utmeldingstabellen`() {
+    fun `skal ignorere brukere som går fra ARBS til ISERV`() {
         oppfolgingStatusArbs()
         kanReaktiveres()
         val melding = meldingFraArena(Formidlingsgruppe.ISERV, Kvalifiseringsgruppe.BATT)
 
         oppfolgingsbrukerEndretIArenaService.oppdaterOppfolgingMedStatusFraArena(melding)
 
-        verify(avsluttOppfolgingService, never()).avsluttOppfolgingHvisKanAvsluttes(any())
-        verify(utmeldingService, never()).oppdaterUtmeldingsStatus(any())
+        verify(kandidatForUtmeldingService, never()).handterUtmeldingsHendelse(any(), any())
     }
 
     val ISERV_FRA_DATO = LocalDate.now()
@@ -225,6 +176,25 @@ class OppfolgingsbrukerEndretIArenaServiceTest {
                 )
             )
         )
+        if (underOppfolging) {
+            `when`(oppfolgingService.hentGjeldendeOppfolgingsperiode(AKTOR_ID)).thenReturn(
+                Optional.of(
+                    OppfolgingsperiodeEntity(
+                        UUID.randomUUID(),
+                        AKTOR_ID.get(),
+                        null,
+                        ZonedDateTime.now().minusDays(5),
+                        null,
+                        null,
+                        emptyList(),
+                        null,
+                        "defaultVeileder",
+                        StartetAvType.VEILEDER,
+                        null
+                    )
+                )
+            )
+        }
     }
 
     private fun oppfolgingStatusArbs() {
@@ -240,24 +210,6 @@ class OppfolgingsbrukerEndretIArenaServiceTest {
                 )
             )
         )
-    }
-
-    private fun kanAvsluttes() {
-        `when`(avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(any()))
-            .thenReturn(KunneAvsluttes(
-                ArenaIservKanIkkeReaktiveres(AKTOR_ID),
-                true,
-                KanAvsluttesInput(
-                    erUnderOppfolging = true,
-                    erIservIArena = false,
-                    harAktiveTiltaksdeltakelser = false,
-                    erDeltakerIUngdomsprogrammet = false,
-                    erArbeidssoeker = false,
-                    harAap = false,
-                    underKvp = false,
-                    erOppfolgingForlenget = false,
-                )
-            ))
     }
 
     private fun kanReaktiveres() {

@@ -8,6 +8,12 @@ import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.paw.arbeidssokerregisteret.api.v1.AvsluttetAarsakType
 import no.nav.veilarboppfolging.LocalDatabaseSingleton
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ArbeidssokerperiodeAvsluttetHendelseType
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ArbeidssøkerPeriodeAvsluttet
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseHendelseType
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseOpprettetEllerEndretHendelse
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseUtløptHendelse
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.KandidatForUtmeldingHendelseUtfortAvType
 import no.nav.veilarboppfolging.oppfolgingsbruker.BrukerRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering.Companion.arbeidssokerRegistrering
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvregistreringsType
@@ -385,14 +391,14 @@ class KandidatForUtmeldingRepositoryTest {
 
     fun arbeidssøkerPeriodeAvsluttet(oppfolgingsperiodeUuid: UUID) =
         ArbeidssøkerPeriodeAvsluttet(
-                oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
-                utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
-                utfortAv = "A123123",
-                arbeidssokerperiodeAvsluttetHendelseType = ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
-                avslutningsarsak = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString(),
-                kilde = "kilde",
-                hendelseTidspunkt = ZonedDateTime.now().toInstant(),
-            ).let {
+            oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
+            utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
+            utfortAv = "A123123",
+            arbeidssokerperiodeAvsluttetHendelseType = ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
+            avslutningsarsak = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString(),
+            kilde = "kilde",
+            hendelseTidspunkt = ZonedDateTime.now().toInstant(),
+        ).let {
                 KandidatForUtmelding.fromHendelse(it) as AktivKandidatForUtmelding
         }
 }

@@ -1,19 +1,18 @@
 package no.nav.veilarboppfolging.service
 
+import java.time.Instant
+import java.time.ZoneId
+import kotlin.jvm.optionals.getOrElse
 import kotlin.jvm.optionals.getOrNull
 import no.nav.common.types.identer.Fnr
 import no.nav.veilarboppfolging.client.pdl.PdlFolkeregisterStatusClient
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.InaktivertIArena
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.EndringPaaOppfolgingsBruker
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.LocalArenaOppfolging
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering.Companion.arenaSyncOppfolgingBrukerRegistrering
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ArenaIservKanIkkeReaktiveres
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.KunneAvsluttes
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.KunneIkkeAvsluttes
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.UtmeldingsService
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
-import no.nav.veilarboppfolging.service.utmelding.KanskjeIservBruker
 import no.nav.veilarboppfolging.utils.ArenaUtils
 import no.nav.veilarboppfolging.utils.SecureLog.secureLog
 import org.slf4j.LoggerFactory
@@ -22,13 +21,10 @@ import org.springframework.stereotype.Service
 @Service
 class OppfolgingsbrukerEndretIArenaService(
     private val oppfolgingService: OppfolgingService,
-    private val avsluttOppfolgingService: AvsluttOppfolgingService,
     private val startOppfolgingService: StartOppfolgingService,
     private val arenaOppfolgingService: ArenaOppfolgingService,
-    private val metricsService: MetricsService,
     private val oppfolgingsStatusRepository: OppfolgingsStatusRepository,
     private val pdlFolkeregisterStatusClient: PdlFolkeregisterStatusClient,
-    private val utmeldingsService: UtmeldingsService,
     private val kandidatForUtmeldingService: KandidatForUtmeldingService,
 ){
     val log = LoggerFactory.getLogger(this.javaClass)
@@ -80,42 +76,26 @@ class OppfolgingsbrukerEndretIArenaService(
                         kvalifiseringsgruppe,
                     )
                 )
-                // Rydd opp i utmeldingstabell i tilfelle det skulle ligge noe feil der
-                utmeldingsService.oppdaterUtmeldingsStatus(KanskjeIservBruker.of(endringOppfolgingsbruker, erBrukerUnderOppfolgingLokalt))
             }
             is VarArbsBleIserv -> {
                 secureLog.info("Bruker gikk fra ARBS til ISERV. aktorId={}", endringOppfolgingsbruker.aktorId)
                 log.info("Oppdaterer ikke utmeldingstabell for bruker som gikk fra ARBS til ISERV")
             }
-            is BleInaktivertMedKanReaktiveres -> {
-                val erForlengetEllerAktivKandidatForUtmelding: Boolean = oppfolgingService
-                    .hentGjeldendeOppfolgingsperiode(endringOppfolgingsbruker.aktorId)
-                    .map { kandidatForUtmeldingService.erAktivEllerForlengetKandidatForUtmelding(it.uuid) }
-                    .orElse(false)!!
-                if (!erForlengetEllerAktivKandidatForUtmelding) {
-                    log.warn("Person BleInaktivertMedKanReaktiveres men var ikke utmeldingskandidat, dette skal ikke skje")
-                    // Bare start grace-periode på 28 dager hvis det ikke finnes noe kandidat-tag på bruker
-                    utmeldingsService.oppdaterUtmeldingsStatus(KanskjeIservBruker.of(endringOppfolgingsbruker, erBrukerUnderOppfolgingLokalt))
-                }
-            }
+            is BleInaktivertMedKanReaktiveres,
             is BleInaktivertUtenKanReaktiveres -> {
-                // Rydd opp i utmeldingstabell i tilfelle det skulle ligge noe feil der
-                utmeldingsService.oppdaterUtmeldingsStatus(KanskjeIservBruker.of(endringOppfolgingsbruker, erBrukerUnderOppfolgingLokalt))
-                val avregistrering = ArenaIservKanIkkeReaktiveres(endringOppfolgingsbruker.aktorId)
-                val kunneAvsluttesResultat = avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(avregistrering)
-                when (kunneAvsluttesResultat) {
-                    is KunneAvsluttes -> {
-                        secureLog.info(
-                            "Automatisk avslutting av oppfølging på bruker. aktorId={}",
-                            endringOppfolgingsbruker.aktorId
-                        )
-                        log.info("Utgang: Oppfølging avsluttet automatisk pga. inaktiv bruker som ikke kan reaktiveres")
-                        metricsService.rapporterAutomatiskAvslutningAvOppfolging(true)
-                    }
-                    is KunneIkkeAvsluttes -> {
-                        log.info("ISERV bruker som ikke kunne reaktiveres ble ikke avsluttet likevel: ${kunneAvsluttesResultat.begrunnelse}")
-                    }
-                }
+                val oppfolgingsperiodeId = oppfolgingService.hentGjeldendeOppfolgingsperiode(endringOppfolgingsbruker.aktorId).getOrElse {
+                    log.error("Fant ikke oppfølgingsperiode for bruker som ble inaktivert i Arena")
+                    throw IllegalStateException("Fant ikke oppfølgingsperiode for bruker som ble inaktivert i Arena")
+                }.uuid
+                kandidatForUtmeldingService.handterUtmeldingsHendelse(
+                    fnr = Fnr.of(endringOppfolgingsbruker.fodselsnummer),
+                    hendelse = InaktivertIArena(
+                        oppfolgingsperiodeUuid = oppfolgingsperiodeId,
+                        iservFraDato = endringOppfolgingsbruker.iservFraDato,
+                        hendelseTidspunkt = endringOppfolgingsbruker.iservFraDato?.atStartOfDay()
+                            ?.atZone(ZoneId.systemDefault())?.toInstant() ?: Instant.now(),
+                    )
+                )
             }
             else -> {}
         }

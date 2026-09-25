@@ -1,4 +1,4 @@
-package no.nav.veilarboppfolging.kandidatForUtmelding
+package no.nav.veilarboppfolging.kandidatForUtmelding.hendelser
 
 import java.time.Instant
 import java.util.UUID
@@ -19,7 +19,7 @@ sealed class KandidatForUtmeldingHendelse(
     abstract val type: KandidatForUtmeldingHendelseType
     abstract val hendelseDataJson: PGobject?
 
-    abstract fun tilFilterhendelseRecord(fnr: Fnr): FilterhendelseRecord
+    abstract fun tilFilterhendelseRecord(fnr: Fnr): FilterhendelseRecord?
 
     private val erProd: Boolean = EnvironmentUtils.isProduction().getOrElse { false }
 
@@ -32,7 +32,9 @@ sealed class KandidatForUtmeldingHendelse(
             ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_SVARTE_NEI_I_BEKREFTELSE -> KandidatForUtmeldingTagDto.ARBEIDSSOKERPERIODE_AVSLUTTET_SVARTE_NEI_I_BEKREFTELSE
             ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET -> KandidatForUtmeldingTagDto.ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET
             ForlengelseHendelseType.FORLENGELSE_UTLOPT -> KandidatForUtmeldingTagDto.FORLENGELSE_UTLOPT
-            ForlengelseHendelseType.FORLENGELSE_OPPRETTET, ForlengelseHendelseType.FORLENGELSE_ENDRET,
+            ForlengelseHendelseType.FORLENGELSE_OPPRETTET,
+            ForlengelseHendelseType.FORLENGELSE_ENDRET,
+            InaktivertIArenaHendelseType.INAKTIVERT_I_ARENA
             -> null
         }
     }
@@ -50,6 +52,10 @@ enum class ForlengelseHendelseType : KandidatForUtmeldingHendelseType {
     FORLENGELSE_OPPRETTET,
     FORLENGELSE_ENDRET,
     FORLENGELSE_UTLOPT
+}
+
+enum class InaktivertIArenaHendelseType : KandidatForUtmeldingHendelseType {
+    INAKTIVERT_I_ARENA
 }
 
 enum class KandidatForUtmeldingHendelseUtfortAvType {

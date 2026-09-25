@@ -10,6 +10,11 @@ import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.veilarboppfolging.IntegrationTest
 import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.Kategori
 import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.Operasjon
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ArbeidssokerperiodeAvsluttetHendelseType
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ArbeidssøkerPeriodeAvsluttet
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseHendelseType
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseOpprettetEllerEndretHendelse
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.KandidatForUtmeldingHendelseUtfortAvType
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
