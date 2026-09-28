@@ -77,8 +77,10 @@ class RepubliserKandidatForUtmeldingService(
             val fnr = finnFnrForOppfolgingsperiode(kandidat.oppfolgingsperiodeId)
             val filterkategoriPersonId = filterkategoriRepository.hentEllerOpprettFilterhendelseId(kandidat.oppfolgingsperiodeId)
             val filterhendelseRecord = kandidat.sisteHendelse.tilFilterhendelseRecord(fnr)
-            logger.info("Republiserer kandidat for utmelding til OBO med key=$filterkategoriPersonId for oppfølgingsperiode ${kandidat.oppfolgingsperiodeId}")
-            kafkaProducerService.publiserFilterhendelse(filterkategoriPersonId, filterhendelseRecord)
+            filterhendelseRecord?.let {
+                logger.info("Republiserer kandidat for utmelding til OBO med key=$filterkategoriPersonId for oppfølgingsperiode ${kandidat.oppfolgingsperiodeId}")
+                kafkaProducerService.publiserFilterhendelse(filterkategoriPersonId, it)
+            }
         }
     }
 

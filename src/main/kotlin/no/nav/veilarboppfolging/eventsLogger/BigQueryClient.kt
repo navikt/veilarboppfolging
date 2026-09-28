@@ -4,9 +4,6 @@ import com.google.cloud.bigquery.BigQuery
 import com.google.cloud.bigquery.InsertAllRequest
 import com.google.cloud.bigquery.TableId
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
-import no.nav.veilarboppfolging.kandidatForUtmelding.ForlengelseHendelseType
-import no.nav.veilarboppfolging.kandidatForUtmelding.ForlengelseOpprettetEllerEndretHendelse
-import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingHendelse
 import no.nav.veilarboppfolging.oppfolgingsbruker.StartetAvType
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelse
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ArbeidsøkerRegSync_AlleredeUteAvOppfolging
@@ -28,6 +25,7 @@ import org.slf4j.LoggerFactory
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.*
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseOpprettetEllerEndretHendelse
 
 enum class BigQueryEventType {
     OPFOLGINGSPERIODE_START,

@@ -1,4 +1,4 @@
-package no.nav.veilarboppfolging.kandidatForUtmelding
+package no.nav.veilarboppfolging.kandidatForUtmelding.hendelser
 
 import java.net.URI
 import java.time.Instant
@@ -14,6 +14,7 @@ import org.postgresql.util.PGobject
 import java.time.ZonedDateTime
 import no.nav.common.json.JsonUtils
 import java.time.LocalDate
+import no.nav.veilarboppfolging.kandidatForUtmelding.beregnAvsluttesAutomatiskDato
 
 class ForlengelseUtløptHendelse(
     oppfolgingsperiodeUuid: UUID,
