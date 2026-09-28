@@ -1,14 +1,18 @@
 package no.nav.veilarboppfolging.oppfolgingsbruker.utgang
 
+import java.time.Instant
+import kotlin.jvm.optionals.getOrNull
 import no.nav.common.job.JobRunner
 import no.nav.common.job.leader_election.LeaderElectionClient
 import no.nav.common.types.identer.AktorId
-import no.nav.common.utils.fn.UnsafeRunnable
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.InaktivertIArena
 import no.nav.veilarboppfolging.repository.UtmeldingRepository
-import no.nav.veilarboppfolging.utils.SecureLog
+import no.nav.veilarboppfolging.service.OppfolgingService
 import org.slf4j.LoggerFactory
+import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
+import org.springframework.transaction.support.TransactionTemplate
 
 @Service
 class UtmeldEtter28Cron(
@@ -16,8 +20,11 @@ class UtmeldEtter28Cron(
     private val utmeldingsRepository: UtmeldingRepository,
     private val leaderElectionClient: LeaderElectionClient,
     private val kandidatForUtmeldingService: KandidatForUtmeldingService,
+    private val transactor: TransactionTemplate,
+    private val oppfolgingService: OppfolgingService,
 ) {
     private val log = LoggerFactory.getLogger(UtmeldEtter28Cron::class.java)
+    private val BATCH_SIZE = 1000
 
     enum class AvslutteOppfolgingResultat {
         AVSLUTTET_OK,
@@ -26,50 +33,74 @@ class UtmeldEtter28Cron(
         AVSLUTTET_FEILET
     }
 
-    // Utkommenteres da vi disse brukerne ikke vises i noe filter og derfor ikke bør kastes ut automatisk
-//    @Scheduled(cron = "0 0 * * * *")
-    fun scheduledAvslutteOppfolgingEtter28DagerIUtmelding() {
-        if (leaderElectionClient.isLeader) {
-            JobRunner.run(
-                "iserv28_avslutt_oppfolging",
-                UnsafeRunnable { automatiskAvslutteOppfolging()
-            })
+    @Scheduled(cron = "0 40 * * * *")
+    fun migrerFraUtmeldingstabell() {
+        if (!leaderElectionClient.isLeader) {
+            return
+        }
+        JobRunner.run("migrer_fra_utmeldingstabell") {
+            migrerBrukereFraGammelUtmeldingstabell()
         }
     }
 
-    fun automatiskAvslutteOppfolging() {
-        val start = System.currentTimeMillis()
-        val resultater = finnBrukereOgAvslutt()
-        log.info(
-            "Avslutter jobb for automatisk avslutning av brukere. Tid brukt: {} ms. Antall [Avsluttet/Ikke avsluttet/Ikke lenger under oppfølging/Feilet/Totalt]: [{}/{}/{}/{}/{}]",
-            System.currentTimeMillis() - start,
-            resultater.count { it == AvslutteOppfolgingResultat.AVSLUTTET_OK },
-            resultater.count { it == AvslutteOppfolgingResultat.IKKE_AVSLUTTET },
-            resultater.count { it == AvslutteOppfolgingResultat.IKKE_LENGER_UNDER_OPPFØLGING },
-            resultater.count { it == AvslutteOppfolgingResultat.AVSLUTTET_FEILET },
-            resultater.size
-        )
-    }
+    fun migrerBrukereFraGammelUtmeldingstabell() {
+        var currentOffset = 0
+        while (true) {
+            val alleBrukere = utmeldingsRepository.hentAlleBrukere(currentOffset, BATCH_SIZE)
+            if (alleBrukere.isEmpty()) {
+                break
+            }
+            currentOffset += alleBrukere.size
 
-    private fun finnBrukereOgAvslutt(): List<AvslutteOppfolgingResultat> {
-        try {
-            log.info("Starter jobb for automatisk avslutning av brukere")
-            val iservert28DagerBrukere = utmeldingsRepository.finnBrukereMedIservI28Dager()
-            log.info("Fant {} brukere som har vært ISERV mer enn 28 dager", iservert28DagerBrukere.size)
-            return iservert28DagerBrukere.map { utmeldingEntity ->
-                val aktorId = AktorId.of(utmeldingEntity.aktorId)
-                when (kandidatForUtmeldingService.erAktivUtmeldingskandidat(aktorId)) {
-                    true -> {
-                        log.info("Bruker var kandidat for utmelding, sletter fra gammel utmeldingsløsning")
-                        utmeldingService.slettFraUtmeldingTabell(aktorId)
+            log.info(
+                "Migrerer brukere fra gammel utmeldingstabell. CurrentOffset={} BatchSize={}",
+                currentOffset,
+                alleBrukere.size,
+            )
+
+            alleBrukere.forEach { utmeldingEntity ->
+                transactor.executeWithoutResult { _ ->
+                    val aktorId = AktorId.of(utmeldingEntity.aktorId)
+                    val oppfolgingsperiodeId = oppfolgingService.hentGjeldendeOppfolgingsperiode(aktorId).getOrNull()?.uuid
+                    if (oppfolgingsperiodeId == null) {
+                        log.info("Bruker har ingen gjeldende oppfølgingsperiode, fjerner fra utmeldingstabellen")
+                        slettBrukerFraUtmeldingstabell(aktorId)
+                        return@executeWithoutResult
                     }
-                    false -> utmeldingService.avsluttOppfolgingOgFjernFraUtmeldingsTabell(aktorId)
+
+                    val erKandidatForUtmelding = kandidatForUtmeldingService.erAktivEllerForlengetKandidatForUtmelding(oppfolgingsperiodeId)
+                    if (erKandidatForUtmelding) {
+                        log.info("Bruker med oppfølgingsperiode $oppfolgingsperiodeId er allerede kandidat for utmelding, fjerner fra utmeldingstabellen")
+                        slettBrukerFraUtmeldingstabell(aktorId)
+                        return@executeWithoutResult
+                    }
+
+                    val kandidatSomIkkeKanAvsluttes = kandidatForUtmeldingService.erLagretSomKandidatSomIkkeKanAvsluttes(oppfolgingsperiodeId)
+                    if (kandidatSomIkkeKanAvsluttes) {
+                        log.info("Bruker med oppfølgingsperiode $oppfolgingsperiodeId er allerede lagret som kandidat som ikke kan avsluttes, fjerner fra utmeldingstabellen")
+                        slettBrukerFraUtmeldingstabell(aktorId)
+                        return@executeWithoutResult
+                    }
+
+                    log.info("Lagrer inaktivert i arena-hendelse og fjerner bruker med oppfølgingsperiode $oppfolgingsperiodeId fra utmeldingstabellen")
+                    kandidatForUtmeldingService.handterUtmeldingsHendelse(
+                        hendelse = InaktivertIArena(
+                            oppfolgingsperiodeUuid = oppfolgingsperiodeId,
+                            iservFraDato = utmeldingEntity.iservSiden.toLocalDate(),
+                            hendelseTidspunkt = utmeldingEntity.iservSiden.toInstant() ?: Instant.now(),
+                        )
+                    )
+                    slettBrukerFraUtmeldingstabell(aktorId)
                 }
             }
-        } catch (e: Exception) {
-            SecureLog.secureLog.error("Feil ved automatisk avslutning av brukere", e)
-            return emptyList()
         }
+        log.info("Ferdig med å migrere $currentOffset brukere")
     }
 
+    private fun slettBrukerFraUtmeldingstabell(aktorId: AktorId) {
+        val resultat = utmeldingService.slettFraUtmeldingTabell(aktorId)
+        if (resultat == AvslutteOppfolgingResultat.AVSLUTTET_FEILET) {
+            throw RuntimeException("Feil ved sletting av bruker fra utmeldingstabell")
+        }
+    }
 }

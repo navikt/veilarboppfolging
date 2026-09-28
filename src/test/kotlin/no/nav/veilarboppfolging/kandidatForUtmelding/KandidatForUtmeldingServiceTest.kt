@@ -77,7 +77,7 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
                 kandidat.avsluttesAutomatiskDato.atZone(ZoneOffset.UTC)?.withZoneSameInstant(ZoneId.of("Europe/Oslo")),
                 within(1, ChronoUnit.SECONDS)
             )
-        assertThat(kandidatForUtmeldingRepository.hentAntallKandidaterSomIkkeKunneAvsluttes(oppfolgingsperiodeUuid)).isEqualTo(0)
+        assertThat(kandidatForUtmeldingRepository.erKandidatSomIkkeKunneAvsluttes(oppfolgingsperiodeUuid)).isFalse
     }
 
     @Test
@@ -106,7 +106,7 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
 
         assertThat(kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeId)).isNull()
         assertThat(filterkategoriRepository.hentFilterhendelseId(oppfolgingsperiodeId)).isNull()
-        assertThat(kandidatForUtmeldingRepository.hentAntallKandidaterSomIkkeKunneAvsluttes(oppfolgingsperiodeId)).isEqualTo(0)
+        assertThat(kandidatForUtmeldingRepository.erKandidatSomIkkeKunneAvsluttes(oppfolgingsperiodeId)).isFalse
     }
 
     @Test
@@ -136,7 +136,7 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
 
         assertThat(kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeId)).isNull()
         assertThat(filterkategoriRepository.hentFilterhendelseId(oppfolgingsperiodeId)).isNull()
-        assertThat(kandidatForUtmeldingRepository.hentAntallKandidaterSomIkkeKunneAvsluttes(oppfolgingsperiodeId)).isEqualTo(1)
+        assertThat(kandidatForUtmeldingRepository.erKandidatSomIkkeKunneAvsluttes(oppfolgingsperiodeId)).isTrue
     }
 
     @Test
@@ -162,7 +162,7 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
 
         val hendelse = kandidatForUtmeldingRepository.hentSisteHendelseForKandidat(oppfolgingsperiodeUuid)
         assertThat(hendelse).isNull()
-        assertThat(kandidatForUtmeldingRepository.hentAntallKandidaterSomIkkeKunneAvsluttes(oppfolgingsperiodeUuid)).isEqualTo(0)
+        assertThat(kandidatForUtmeldingRepository.erKandidatSomIkkeKunneAvsluttes(oppfolgingsperiodeUuid)).isFalse
         assertThat(kandidatForUtmeldingRepository.erAktivEllerForlengetKandidatForUtmelding(oppfolgingsperiodeUuid)).isFalse
     }
 
@@ -190,7 +190,7 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
         val hendelse = kandidatForUtmeldingRepository.hentSisteHendelseForKandidat(oppfolgingsperiodeUuid)
         assertThat(hendelse).isNotNull
         assertThat(hendelse?.type).isEqualTo(InaktivertIArenaHendelseType.INAKTIVERT_I_ARENA)
-        assertThat(kandidatForUtmeldingRepository.hentAntallKandidaterSomIkkeKunneAvsluttes(oppfolgingsperiodeUuid)).isEqualTo(1)
+        assertThat(kandidatForUtmeldingRepository.erKandidatSomIkkeKunneAvsluttes(oppfolgingsperiodeUuid)).isTrue
         assertThat(kandidatForUtmeldingRepository.erAktivEllerForlengetKandidatForUtmelding(oppfolgingsperiodeUuid)).isFalse
     }
 
@@ -422,7 +422,7 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
 
         assertThat(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID).get().underOppfolging).isTrue()
         assertThat(kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeUuid)).isNull()
-        assertThat(kandidatForUtmeldingRepository.hentAntallKandidaterSomIkkeKunneAvsluttes(oppfolgingsperiodeUuid)).isEqualTo(1)
+        assertThat(kandidatForUtmeldingRepository.erKandidatSomIkkeKunneAvsluttes(oppfolgingsperiodeUuid)).isTrue
     }
 
     @Test
@@ -495,7 +495,7 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
 
         assertThat(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID).get().underOppfolging).isTrue()
         assertThat(kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeUuid)).isNull()
-        assertThat(kandidatForUtmeldingRepository.hentAntallKandidaterSomIkkeKunneAvsluttes(oppfolgingsperiodeUuid)).isEqualTo(0)
+        assertThat(kandidatForUtmeldingRepository.erKandidatSomIkkeKunneAvsluttes(oppfolgingsperiodeUuid)).isFalse
 
         val filterhendelseId = filterkategoriRepository.hentFilterhendelseId(oppfolgingsperiodeUuid)
         assertThat(filterhendelseId).isNotNull()
@@ -541,7 +541,7 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
 
         assertThat(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID).get().underOppfolging).isTrue()
         assertThat(kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeUuid)).isNotNull()
-        assertThat(kandidatForUtmeldingRepository.hentAntallKandidaterSomIkkeKunneAvsluttes(oppfolgingsperiodeUuid)).isEqualTo(0)
+        assertThat(kandidatForUtmeldingRepository.erKandidatSomIkkeKunneAvsluttes(oppfolgingsperiodeUuid)).isFalse
         val sistSjekket = kandidatForUtmeldingRepository.hentSistSjekket(oppfolgingsperiodeUuid)
         assertThat(sistSjekket).isCloseTo(ZonedDateTime.now().toInstant(), 5000)
 

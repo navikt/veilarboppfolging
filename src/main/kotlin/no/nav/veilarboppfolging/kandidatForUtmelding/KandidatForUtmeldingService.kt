@@ -112,6 +112,10 @@ class KandidatForUtmeldingService(
         return kandidatForUtmeldingRepository.erAktivEllerForlengetKandidatForUtmelding(oppfolgingsperiodeId)
     }
 
+    fun erLagretSomKandidatSomIkkeKanAvsluttes(oppfolgingsperiodeId: UUID): Boolean {
+        return kandidatForUtmeldingRepository.erKandidatSomIkkeKunneAvsluttes(oppfolgingsperiodeId)
+    }
+
     fun hentUtmeldingsKandidatHendelser(aktorId: AktorId): List<KandidatForUtmeldingHendelse> {
         return kandidatForUtmeldingRepository.hentAlleKandidatForUtmeldingHendelser(aktorId)
     }
