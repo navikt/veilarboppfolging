@@ -1,7 +1,7 @@
 package no.nav.veilarboppfolging.kandidatForUtmelding.dto
 
-import no.nav.veilarboppfolging.kandidatForUtmelding.ForlengelseOpprettetEllerEndretHendelse
-import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingHendelseUtfortAvType
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseOpprettetEllerEndretHendelse
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.KandidatForUtmeldingHendelseUtfortAvType
 
 data class ForlengelseDto(
     val utfortAvType: KandidatForUtmeldingHendelseUtfortAvType,

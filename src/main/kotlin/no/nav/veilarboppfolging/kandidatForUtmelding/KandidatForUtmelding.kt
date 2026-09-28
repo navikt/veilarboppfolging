@@ -8,6 +8,11 @@ import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.util.UUID
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ArbeidssøkerPeriodeAvsluttet
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseOpprettetEllerEndretHendelse
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseUtløptHendelse
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.InaktivertIArena
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.KandidatForUtmeldingHendelse
 
 sealed class KandidatForUtmelding(
     val sisteHendelse: KandidatForUtmeldingHendelse,
@@ -15,6 +20,9 @@ sealed class KandidatForUtmelding(
 ) {
     companion object {
         fun fromHendelse(hendelse: KandidatForUtmeldingHendelse): KandidatForUtmelding {
+            if (hendelse is InaktivertIArena) {
+                throw IllegalArgumentException("InaktivertIArena-hendelser gjør ikke bruker til kandidat for utmelding")
+            }
             val avsluttesAutomatiskDato = beregnAvsluttesAutomatiskDato(hendelse)
             val forlengetTil = when (hendelse) {
                 is ForlengelseOpprettetEllerEndretHendelse -> hendelse.forlengetTil
@@ -39,6 +47,7 @@ sealed class KandidatForUtmelding(
                 is ArbeidssøkerPeriodeAvsluttet -> hendelseTid.plusDays(KARENSTID_DAGER)
                 is ForlengelseOpprettetEllerEndretHendelse ->  null
                 is ForlengelseUtløptHendelse -> hendelseTid.plusDays(KARENSTID_DAGER)
+                is InaktivertIArena -> null
             }
         }
 
@@ -55,6 +64,7 @@ class ForlengetKandidat(
     val forlengelseHendelse: ForlengelseOpprettetEllerEndretHendelse,
     val forlengetTil: LocalDate): KandidatForUtmelding(forlengelseHendelse)
 
-class AktivKandidatForUtmelding(sisteHendelse: KandidatForUtmeldingHendelse,
+class AktivKandidatForUtmelding(
+    sisteHendelse: KandidatForUtmeldingHendelse,
     val avsluttesAutomatiskDato: LocalDateTime
-): KandidatForUtmelding(sisteHendelse)
+) : KandidatForUtmelding(sisteHendelse)

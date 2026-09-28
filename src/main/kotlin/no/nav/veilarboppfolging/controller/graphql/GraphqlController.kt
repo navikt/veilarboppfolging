@@ -45,6 +45,7 @@ import no.nav.veilarboppfolging.kandidatForUtmelding.dto.KandidatForUtmeldingTag
 import no.nav.veilarboppfolging.kandidatForUtmelding.dto.UtmeldingskandidatDto
 import no.nav.veilarboppfolging.kandidatForUtmelding.dto.toDto
 import no.nav.veilarboppfolging.kandidatForUtmelding.dto.toKandidatForUtmeldingHendelseDto
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.InaktivertIArena
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ErBrukerUnderOppfolging
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.KanStarteOppfolgingDto
@@ -168,7 +169,7 @@ class GraphqlController(
 
     @SchemaMapping(typeName = "Utmeldingskandidat", field = "utmeldingskandidatHendelser")
     fun utmeldingskandidatHendelser(@LocalContextValue aktorId: AktorId): List<KandidatForUtmeldingHendelseDto> {
-        val hendelser = kandidatForUtmeldingService.hentUtmeldingsKandidatHendelser(aktorId)
+        val hendelser = kandidatForUtmeldingService.hentUtmeldingsKandidatHendelser(aktorId).filterNot { it is InaktivertIArena }
         return hendelser.map { it.toKandidatForUtmeldingHendelseDto() }
     }
 
