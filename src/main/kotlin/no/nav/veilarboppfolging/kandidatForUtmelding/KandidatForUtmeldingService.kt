@@ -7,6 +7,7 @@ import kotlin.jvm.optionals.getOrNull
 import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
+import no.nav.veilarboppfolging.eventsLogger.BigQueryClient
 import no.nav.veilarboppfolging.kandidatForUtmelding.dto.KandidatForUtmeldingTagDto
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ArbeidssøkerPeriodeAvsluttet
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseHendelseType
@@ -35,6 +36,7 @@ class KandidatForUtmeldingService(
     private val aktorOppslagClient: AktorOppslagClient,
     private val transactor: TransactionTemplate,
     private val kafkaProducerService: KafkaProducerService,
+    private val bigQueryClient: BigQueryClient,
     private val metricsService: MetricsService,
 ) {
     private val BATCH_SIZE = 1000
@@ -209,6 +211,8 @@ class KandidatForUtmeldingService(
     fun forlengKandidat(hendelse: ForlengelseOpprettetEllerEndretHendelse, fnr: Fnr) {
         logger.info("Lagrer forlengelse for oppfølgingsperiode ${hendelse.oppfolgingsperiodeUuid}")
         handterUtmeldingsHendelse(fnr, hendelse)
+        logger.info("Sender forlengelse til BigQuery for oppfølgingsperiode ${hendelse.oppfolgingsperiodeUuid}")
+        bigQueryClient.loggForlengelseHendelse(hendelse)
     }
 
     fun hentForlengelseType(oppfolgingsperiodeId: UUID): ForlengelseHendelseType {
