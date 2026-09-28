@@ -33,10 +33,8 @@ class IsOppfolgingstilfelleClient(
         val request = Request.Builder()
             .url("$baseUrl/api/system/v1/oppfolgingstilfelle/personident")
             .addHeader("Authorization", RestUtils.createBearerToken(tokenProvider.get()))
-            .post(
-                objectMapper.writeValueAsString(PersonIdentRequest(personident))
-                    .toRequestBody(mediaTypeJson)
-            )
+            .addHeader("nav-personident", personident)
+            .get()
             .build()
 
         httpClient.newCall(request).execute().use { response ->
@@ -58,10 +56,6 @@ class IsOppfolgingstilfelleClient(
         }
     }
 }
-
-data class PersonIdentRequest(
-    val personIdent: String,
-)
 
 enum class OppfolgingstilfelleStatus {
     SYKMELDT_MED_ARBEIDSGIVER,
