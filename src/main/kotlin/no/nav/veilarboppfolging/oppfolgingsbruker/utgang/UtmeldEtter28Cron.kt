@@ -33,7 +33,7 @@ class UtmeldEtter28Cron(
         AVSLUTTET_FEILET
     }
 
-    @Scheduled(cron = "0 40 * * * *")
+    @Scheduled(cron = "0 30 * * * *")
     fun migrerFraUtmeldingstabell() {
         if (!leaderElectionClient.isLeader) {
             return
