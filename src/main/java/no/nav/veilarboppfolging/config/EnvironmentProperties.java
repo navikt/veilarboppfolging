@@ -28,5 +28,7 @@ public record EnvironmentProperties(
     String aapUrl,
     String aoKontorUrl,
     String aapScope,
-    String aoKontorScope
+    String aoKontorScope,
+    String isOppfolgingstilfelleUrl,
+    String isOppfolgingstilfelleScope
 ) {}

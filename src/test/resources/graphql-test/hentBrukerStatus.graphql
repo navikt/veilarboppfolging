@@ -26,5 +26,6 @@ query hentBrukerStatus($fnr: String!) {
             veilederIdent
         }
         harAktiveTiltaksdeltakelser
+        sykmeldtStatus
     }
 }

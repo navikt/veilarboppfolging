@@ -43,6 +43,7 @@ import no.nav.veilarboppfolging.client.pdl.GTType
 import no.nav.veilarboppfolging.client.pdl.GeografiskTilknytningClient
 import no.nav.veilarboppfolging.client.pdl.GeografiskTilknytningNr
 import no.nav.veilarboppfolging.client.pdl.PdlFolkeregisterStatusClient
+import no.nav.veilarboppfolging.client.isoppfolgingstilfelle.IsOppfolgingstilfelleClient
 import no.nav.veilarboppfolging.client.tiltakshistorikk.TiltakshistorikkClient
 import no.nav.veilarboppfolging.client.ungdomsprogram.UngdomsprogramClient
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolginsBrukerOppslagResult
@@ -254,6 +255,9 @@ open class IntegrationTest {
 
     @MockitoBean
     lateinit var aoKontorClient: AoKontorClient
+
+    @MockitoBean
+    lateinit var isOppfolgingstilfelleClient: IsOppfolgingstilfelleClient
 
     @Autowired
     lateinit var kandidatForUtmeldingService: KandidatForUtmeldingService
