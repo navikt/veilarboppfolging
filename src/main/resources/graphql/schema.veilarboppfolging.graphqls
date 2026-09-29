@@ -122,6 +122,7 @@ type BrukerStatusDto {
     arena: BrukerStatusArenaDto
     veilederTilordning: VeilederTilordningDto
     harAktiveTiltaksdeltakelser: Boolean!
+    sykmeldtStatus: OppfolgingstilfelleStatus
     ident: String!
 }
 
@@ -139,6 +140,11 @@ type BrukerStatusManuellDto {
     begrunnelse: String
     endretAvType: String
     endretAvIdent: String
+}
+
+enum OppfolgingstilfelleStatus {
+    SYKMELDT_MED_ARBEIDSGIVER
+    SYKMELDT_UTEN_ARBEIDSGIVER
 }
 
 enum OppfolgingStartetBegrunnelse {
