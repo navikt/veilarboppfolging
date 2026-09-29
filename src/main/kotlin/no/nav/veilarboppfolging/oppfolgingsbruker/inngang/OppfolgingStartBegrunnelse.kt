@@ -25,12 +25,13 @@ enum class OppfolgingStartBegrunnelse {
        kan dermed starte oppfølging på testpersoner som er
        registrert som døde, svært unge eller uten lovlig opphold. */
     SYKMELDT_UTEN_ARBEIDSGIVER_4_UKER,
+    AAP_SØKNAD,
     ADMIN_START_OPPFOLGING_MED_FORRIGE_AO_KONTOR;
 
     fun toStartetBegrunnelseDTO(): StartetBegrunnelseDTO {
         return when (this) {
             ARBEIDSSOKER_REGISTRERING, ARENA_SYNC_ARBS -> StartetBegrunnelseDTO.ARBEIDSSOKER
-            MANUELL_REGISTRERING_VEILEDER, ADMIN_START_OPPFOLGING_MED_FORRIGE_AO_KONTOR -> StartetBegrunnelseDTO.MANUELL_REGISTRERING_VEILEDER
+            MANUELL_REGISTRERING_VEILEDER, ADMIN_START_OPPFOLGING_MED_FORRIGE_AO_KONTOR, AAP_SØKNAD -> StartetBegrunnelseDTO.MANUELL_REGISTRERING_VEILEDER
             else -> StartetBegrunnelseDTO.SYKEMELDT_MER_OPPFOLGING
         }
     }
