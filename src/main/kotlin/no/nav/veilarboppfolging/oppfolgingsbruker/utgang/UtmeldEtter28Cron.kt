@@ -9,6 +9,7 @@ import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.InaktivertIArena
 import no.nav.veilarboppfolging.repository.UtmeldingRepository
 import no.nav.veilarboppfolging.service.OppfolgingService
+import no.nav.veilarboppfolging.utils.SecureLog.secureLog
 import org.slf4j.LoggerFactory
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
@@ -50,7 +51,6 @@ class UtmeldEtter28Cron(
             if (alleBrukere.isEmpty()) {
                 break
             }
-            currentOffset += alleBrukere.size
 
             log.info(
                 "Migrerer brukere fra gammel utmeldingstabell. CurrentOffset={} BatchSize={}",
@@ -58,45 +58,55 @@ class UtmeldEtter28Cron(
                 alleBrukere.size,
             )
 
+            currentOffset += alleBrukere.size
+
             alleBrukere.forEach { utmeldingEntity ->
-                transactor.executeWithoutResult { _ ->
-                    val aktorId = AktorId.of(utmeldingEntity.aktorId)
-                    val gjeldendeOppfolgingsperiode = oppfolgingService.hentGjeldendeOppfolgingsperiode(aktorId).getOrNull()
-                    if (gjeldendeOppfolgingsperiode == null) {
-                        log.info("Bruker har ingen gjeldende oppfølgingsperiode, fjerner fra utmeldingstabellen")
-                        slettBrukerFraUtmeldingstabell(aktorId)
-                        return@executeWithoutResult
-                    }
-                    val oppfolgingsperiodeId = gjeldendeOppfolgingsperiode.uuid
-                    if (utmeldingEntity.iservSiden.isBefore(gjeldendeOppfolgingsperiode.startDato)) {
-                        log.info("Bruker har startet ny oppfølgingsperiode med id $oppfolgingsperiodeId etter iserv-datoen, fjerner fra utmeldingstabellen")
-                        slettBrukerFraUtmeldingstabell(aktorId)
-                        return@executeWithoutResult
-                    }
+                try {
+                    transactor.executeWithoutResult { _ ->
+                        val aktorId = AktorId.of(utmeldingEntity.aktorId)
+                        val gjeldendeOppfolgingsperiode =
+                            oppfolgingService.hentGjeldendeOppfolgingsperiode(aktorId).getOrNull()
+                        if (gjeldendeOppfolgingsperiode == null) {
+                            log.info("Bruker har ingen gjeldende oppfølgingsperiode, fjerner fra utmeldingstabellen")
+                            slettBrukerFraUtmeldingstabell(aktorId)
+                            return@executeWithoutResult
+                        }
+                        val oppfolgingsperiodeId = gjeldendeOppfolgingsperiode.uuid
+                        if (utmeldingEntity.iservSiden.isBefore(gjeldendeOppfolgingsperiode.startDato)) {
+                            log.info("Bruker har startet ny oppfølgingsperiode med id $oppfolgingsperiodeId etter iserv-datoen, fjerner fra utmeldingstabellen")
+                            slettBrukerFraUtmeldingstabell(aktorId)
+                            return@executeWithoutResult
+                        }
 
-                    val erKandidatForUtmelding = kandidatForUtmeldingService.erAktivEllerForlengetKandidatForUtmelding(oppfolgingsperiodeId)
-                    if (erKandidatForUtmelding) {
-                        log.info("Bruker med oppfølgingsperiode $oppfolgingsperiodeId er allerede kandidat for utmelding, fjerner fra utmeldingstabellen")
-                        slettBrukerFraUtmeldingstabell(aktorId)
-                        return@executeWithoutResult
-                    }
+                        val erKandidatForUtmelding =
+                            kandidatForUtmeldingService.erAktivEllerForlengetKandidatForUtmelding(oppfolgingsperiodeId)
+                        if (erKandidatForUtmelding) {
+                            log.info("Bruker med oppfølgingsperiode $oppfolgingsperiodeId er allerede kandidat for utmelding, fjerner fra utmeldingstabellen")
+                            slettBrukerFraUtmeldingstabell(aktorId)
+                            return@executeWithoutResult
+                        }
 
-                    val kandidatSomIkkeKanAvsluttes = kandidatForUtmeldingService.erLagretSomKandidatSomIkkeKanAvsluttes(oppfolgingsperiodeId)
-                    if (kandidatSomIkkeKanAvsluttes) {
-                        log.info("Bruker med oppfølgingsperiode $oppfolgingsperiodeId er allerede lagret som kandidat som ikke kan avsluttes, fjerner fra utmeldingstabellen")
-                        slettBrukerFraUtmeldingstabell(aktorId)
-                        return@executeWithoutResult
-                    }
+                        val kandidatSomIkkeKanAvsluttes =
+                            kandidatForUtmeldingService.erLagretSomKandidatSomIkkeKanAvsluttes(oppfolgingsperiodeId)
+                        if (kandidatSomIkkeKanAvsluttes) {
+                            log.info("Bruker med oppfølgingsperiode $oppfolgingsperiodeId er allerede lagret som kandidat som ikke kan avsluttes, fjerner fra utmeldingstabellen")
+                            slettBrukerFraUtmeldingstabell(aktorId)
+                            return@executeWithoutResult
+                        }
 
-                    log.info("Lagrer inaktivert i arena-hendelse og fjerner bruker med oppfølgingsperiode $oppfolgingsperiodeId fra utmeldingstabellen")
-                    kandidatForUtmeldingService.handterUtmeldingsHendelse(
-                        hendelse = InaktivertIArena(
-                            oppfolgingsperiodeUuid = oppfolgingsperiodeId,
-                            iservFraDato = utmeldingEntity.iservSiden.toLocalDate(),
-                            hendelseTidspunkt = utmeldingEntity.iservSiden.toInstant() ?: Instant.now(),
+                        log.info("Lagrer inaktivert i arena-hendelse og fjerner bruker med oppfølgingsperiode $oppfolgingsperiodeId fra utmeldingstabellen")
+                        kandidatForUtmeldingService.handterUtmeldingsHendelse(
+                            hendelse = InaktivertIArena(
+                                oppfolgingsperiodeUuid = oppfolgingsperiodeId,
+                                iservFraDato = utmeldingEntity.iservSiden.toLocalDate(),
+                                hendelseTidspunkt = utmeldingEntity.iservSiden.toInstant() ?: Instant.now(),
+                            )
                         )
-                    )
-                    slettBrukerFraUtmeldingstabell(aktorId)
+                        slettBrukerFraUtmeldingstabell(aktorId)
+                    }
+                } catch (e: Exception) {
+                    log.error("Feil ved migrering av bruker fra utmeldingstabell", e)
+                    secureLog.error("Feil ved migrering av bruker fra utmeldingstabell. aktorId=${utmeldingEntity.aktorId}", e)
                 }
             }
         }
