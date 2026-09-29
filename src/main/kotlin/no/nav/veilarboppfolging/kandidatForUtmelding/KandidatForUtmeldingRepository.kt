@@ -213,16 +213,14 @@ class KandidatForUtmeldingRepository(
         ) { rs, _ -> rs.getTimestamp("sist_sjekket") }.firstOrNull()
     }
 
-    @TestOnly
-    fun hentAntallKandidaterSomIkkeKunneAvsluttes(oppfolgingsperiodeId: UUID): Int {
-        return db.queryForObject(
-            """
-            SELECT COUNT(*) as antall
-            FROM kandidater_som_ikke_kunne_avsluttes
-            WHERE oppfolgingsperiode_uuid = :oppfolgingsperiodeId
-            """.trimIndent(),
-            mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeId.toString()),
-        ) { rs, _ -> rs.getInt("antall") }
+    fun erKandidatSomIkkeKunneAvsluttes(oppfolgingsperiodeId: UUID): Boolean {
+        val sql = """
+            SELECT 1 FROM kandidater_som_ikke_kunne_avsluttes WHERE oppfolgingsperiode_uuid = :oppfolgingsperiodeId
+        """.trimIndent()
+        return db.query(sql, mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeId.toString()))
+        { _, _ -> true }
+            .firstOrNull()
+            ?: false
     }
 
     fun hentSisteHendelseForKandidat(oppfolgingsperiodeId: UUID): KandidatForUtmeldingHendelse? {

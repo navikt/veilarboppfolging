@@ -82,4 +82,8 @@ public class UtmeldingRepository {
         );
     }
 
+    public List<UtmeldingEntity> hentAlleBrukere(Integer offset, Integer batchSize) {
+        String sql = "SELECT * FROM UTMELDING order by oppdatert_dato OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+        return db.query(sql, UtmeldingRepository::mapper, offset, batchSize);
+    }
 }

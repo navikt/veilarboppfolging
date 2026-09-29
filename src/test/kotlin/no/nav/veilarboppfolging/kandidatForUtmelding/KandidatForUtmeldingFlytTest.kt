@@ -41,7 +41,6 @@ import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.KandidatForUtmeld
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering.Companion.arbeidssokerRegistrering
-import no.nav.veilarboppfolging.repository.UtmeldingRepository
 import no.nav.veilarboppfolging.service.KafkaConsumerService
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.assertj.core.api.Assertions.assertThat
@@ -57,8 +56,6 @@ class KandidatForUtmeldingFlytTest(
     val arbeidssoekerperiodeConsumerService: ArbeidssøkerperiodeConsumerService,
     @Autowired
     val kafkaConsumerService: KafkaConsumerService,
-    @Autowired
-    val utmeldingRepository: UtmeldingRepository,
 ) : IntegrationTest() {
 
     private fun mockIdents(fnr: Fnr, aktorId: AktorId)  {

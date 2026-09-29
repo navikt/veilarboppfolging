@@ -112,6 +112,11 @@ import no.nav.veilarboppfolging.kandidatForUtmelding.ForlengelseDTO
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingController
 import no.nav.veilarboppfolging.kandidatForUtmelding.RepubliserKandidatForUtmeldingService
 import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.FilterhendelseRecord
+import no.nav.veilarboppfolging.oppfolgingsbruker.SystemRegistrant
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelseFraSystem
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.UtmeldEtter28Cron
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.UtmeldingsService
+import no.nav.veilarboppfolging.repository.UtmeldingRepository
 
 @EmbeddedKafka(partitions = 1)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -274,6 +279,15 @@ open class IntegrationTest {
     @Autowired
     lateinit var filterkategoriRepository: FilterkategoriRepository
 
+    @Autowired
+    lateinit var utmeldingRepository: UtmeldingRepository
+
+    @Autowired
+    lateinit var utmeldingsService: UtmeldingsService
+
+    @Autowired
+    lateinit var utmeldEtter28Cron: UtmeldEtter28Cron
+
     @BeforeEach
     fun beforeEach() {
         DbTestUtils.cleanupTestDb(jdbcTemplate)
@@ -281,6 +295,12 @@ open class IntegrationTest {
 
     fun startOppfolgingSomArbeidsoker(aktørId: AktorId, fnr: Fnr) {
         val bruker = OppfolgingsRegistrering.arbeidssokerRegistrering(fnr, aktørId, BrukerRegistrant(fnr))
+        startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(bruker)
+    }
+
+    fun startOppfolgingSomISyfo(aktørId: AktorId, fnr: Fnr) {
+        val bruker = OppfolgingsRegistrering.systemRegistrering(fnr, aktørId, SystemRegistrant("ISYFO"),
+            OppfolgingStartBegrunnelseFraSystem.SYKMELDT_UTEN_ARBEIDSGIVER_4_UKER, null)
         startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(bruker)
     }
 
