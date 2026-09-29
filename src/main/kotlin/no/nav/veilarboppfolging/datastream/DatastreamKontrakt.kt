@@ -45,7 +45,8 @@ object DatastreamKontrakt {
                         "MANUELL_REGISTRERING_BRUKER",
                         "MANUELL_REGISTRERING_VEILEDER",
                         "SYKMELDT_UTEN_ARBEIDSGIVER_4_UKER",
-                        "ADMIN_START_OPPFOLGING_MED_FORRIGE_AO_KONTOR"
+                        "ADMIN_START_OPPFOLGING_MED_FORRIGE_AO_KONTOR",
+                        "AAP_SØKNAD"
                     )
                 ),
                 Kolonne("startet_av"),
