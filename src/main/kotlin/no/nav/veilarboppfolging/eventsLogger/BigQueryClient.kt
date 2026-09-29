@@ -37,6 +37,7 @@ data class KandidaterForUtmeldingMetrikker(
     val antallUnderOppfolgingMedIserv: Int,
     val antallKandidaterForUtmeldingIkkeForlenget: Int,
     val antallKandidaterForUtmeldingForlenget: Int,
+    val antallKandidaterSomIkkeKunneUtmeldes: Int,
 )
 
 interface BigQueryClient {
@@ -151,6 +152,7 @@ class BigQueryClientImplementation(private val bigQuery: BigQuery): BigQueryClie
                 "antallUnderOppfolgingMedIserv" to metrikker.antallUnderOppfolgingMedIserv,
                 "antallKandidaterForUtmeldingIkkeForlenget" to metrikker.antallKandidaterForUtmeldingIkkeForlenget,
                 "antallKandidaterForUtmeldingForlenget" to metrikker.antallKandidaterForUtmeldingForlenget,
+                "antallKandidaterSomIkkeKunneUtmeldes" to metrikker.antallKandidaterSomIkkeKunneUtmeldes,
                 "timestamp" to ZonedDateTime.now().toOffsetDateTime().toString()
             )
         }
