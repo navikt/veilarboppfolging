@@ -27,3 +27,6 @@ spec:
     - team: teamsykefravr
       application: isoppfolgingstilfelle
       access: write
+    - team: aap
+      application: api-intern
+      access: write
