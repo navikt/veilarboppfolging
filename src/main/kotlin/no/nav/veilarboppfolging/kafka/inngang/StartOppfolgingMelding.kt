@@ -13,11 +13,13 @@ data class StartOppfolgingMelding(
     val registrant: Registrant,
 ) {
     enum class Aarsak {
+        AAP_SØKNAD,
         SYKMELDT_UTEN_ARBEIDSGIVER_4_UKER;
 
         fun toOppfolgingStartBegrunnelseFraSystem(): OppfolgingStartBegrunnelseFraSystem {
             return when (this) {
                 SYKMELDT_UTEN_ARBEIDSGIVER_4_UKER -> OppfolgingStartBegrunnelseFraSystem.SYKMELDT_UTEN_ARBEIDSGIVER_4_UKER
+                AAP_SØKNAD -> OppfolgingStartBegrunnelseFraSystem.AAP_SØKNAD
             }
         }
     }
