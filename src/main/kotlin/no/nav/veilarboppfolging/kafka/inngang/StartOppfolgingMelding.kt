@@ -26,6 +26,7 @@ data class StartOppfolgingMelding(
 
     enum class Kilde {
         ISYFO,
+        KELVIN
     }
 
     @JsonTypeInfo(
