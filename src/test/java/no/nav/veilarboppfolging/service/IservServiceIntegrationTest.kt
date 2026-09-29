@@ -19,6 +19,7 @@ import no.nav.veilarboppfolging.service.utmelding.KanskjeIservBruker
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertNotNull
 
 class IservServiceIntegrationTest : IntegrationTest() {
     private val iservFraDato: ZonedDateTime = ZonedDateTime.now()
@@ -117,7 +118,8 @@ class IservServiceIntegrationTest : IntegrationTest() {
         mockUngdomsprogram(FNR, erDeltaker = false)
         mockArbeidssoekerregisteret(FNR, erArbeidssoeker = false)
         mockAap(FNR, harAap = false)
-        insertIservBruker(AKTOR_ID, iservFraDato.minusDays(30))
+        // setter iservdatoen i fremtiden slik at den er etter startdato for oppfølgingsperioden
+        insertIservBruker(AKTOR_ID, iservFraDato.plusDays(1))
 
         utmeldEtter28Cron.migrerBrukereFraGammelUtmeldingstabell()
 
@@ -136,7 +138,8 @@ class IservServiceIntegrationTest : IntegrationTest() {
         mockUngdomsprogram(FNR, erDeltaker = false)
         mockArbeidssoekerregisteret(FNR, erArbeidssoeker = false)
         mockAap(FNR, harAap = false)
-        insertIservBruker(AKTOR_ID, iservFraDato.minusDays(30))
+        // setter iservdatoen i fremtiden slik at den er etter startdato for oppfølgingsperioden
+        insertIservBruker(AKTOR_ID, iservFraDato.plusDays(1))
 
         utmeldEtter28Cron.migrerBrukereFraGammelUtmeldingstabell()
 
@@ -145,6 +148,31 @@ class IservServiceIntegrationTest : IntegrationTest() {
         val utmeldingskandidatHendelser = kandidatForUtmeldingService.hentUtmeldingsKandidatHendelser(AKTOR_ID)
         assertEquals(1, utmeldingskandidatHendelser.size)
         assertEquals(InaktivertIArenaHendelseType.INAKTIVERT_I_ARENA, utmeldingskandidatHendelser.first().type)
+    }
+
+    @Test
+    fun `migrerBrukereFraGammelUtmeldingstabell - har blitt avsluttet og startet på nytt etter iserv-dato - sletter fra utmeldingstabell`() {
+        mockSytemBrukerAuthOk(AKTOR_ID, FNR)
+        startOppfolgingSomISyfo(AKTOR_ID, FNR)
+        setLocalArenaOppfolging(AKTOR_ID, Formidlingsgruppe.IARBS)
+        mockTiltakshistorikk(FNR, harAktiveDeltakelser = false)
+        mockUngdomsprogram(FNR, erDeltaker = false)
+        mockArbeidssoekerregisteret(FNR, erArbeidssoeker = false)
+        mockAap(FNR, harAap = false)
+        insertIservBruker(AKTOR_ID, iservFraDato.minusDays(30))
+        avsluttOppfolgingManueltSomVeileder(AKTOR_ID)
+        startOppfolgingSomArbeidsoker(AKTOR_ID, FNR)
+        val oppfolgingsperioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(AKTOR_ID)
+        assertEquals(2, oppfolgingsperioder.size)
+        val aktivPeriode = oppfolgingsperioder.firstOrNull { it.sluttDato != null }
+        assertNotNull(aktivPeriode)
+
+        utmeldEtter28Cron.migrerBrukereFraGammelUtmeldingstabell()
+
+        assertTrue(utmeldingRepository.eksisterendeIservBruker(AKTOR_ID).isEmpty)
+        assertTrue(oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(AKTOR_ID).isPresent)
+        val utmeldingskandidatHendelser = kandidatForUtmeldingService.hentUtmeldingsKandidatHendelser(AKTOR_ID)
+        assertEquals(0, utmeldingskandidatHendelser.size)
     }
 
     @Test
@@ -171,7 +199,8 @@ class IservServiceIntegrationTest : IntegrationTest() {
         mockAap(FNR, harAap = false)
         val oppfolgingsperiodeId = oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(AKTOR_ID).get().uuid
         lagreKandidatForUtmelding(FNR, oppfolgingsperiodeId)
-        insertIservBruker(AKTOR_ID, iservFraDato.minusDays(30))
+        // setter iservdatoen i fremtiden slik at den er etter startdato for oppfølgingsperioden
+        insertIservBruker(AKTOR_ID, iservFraDato.plusDays(1))
 
         utmeldEtter28Cron.migrerBrukereFraGammelUtmeldingstabell()
 
@@ -205,7 +234,8 @@ class IservServiceIntegrationTest : IntegrationTest() {
             oppfolgingsperiodeId = oppfolgingsperiodeId,
             begrunnelse = "Har AAP",
         )
-        insertIservBruker(AKTOR_ID, iservFraDato.minusDays(30))
+        // setter iservdatoen i fremtiden slik at den er etter startdato for oppfølgingsperioden
+        insertIservBruker(AKTOR_ID, iservFraDato.plusDays(1))
 
         utmeldEtter28Cron.migrerBrukereFraGammelUtmeldingstabell()
 

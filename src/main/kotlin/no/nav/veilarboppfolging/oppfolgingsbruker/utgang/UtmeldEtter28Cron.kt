@@ -61,9 +61,15 @@ class UtmeldEtter28Cron(
             alleBrukere.forEach { utmeldingEntity ->
                 transactor.executeWithoutResult { _ ->
                     val aktorId = AktorId.of(utmeldingEntity.aktorId)
-                    val oppfolgingsperiodeId = oppfolgingService.hentGjeldendeOppfolgingsperiode(aktorId).getOrNull()?.uuid
-                    if (oppfolgingsperiodeId == null) {
+                    val gjeldendeOppfolgingsperiode = oppfolgingService.hentGjeldendeOppfolgingsperiode(aktorId).getOrNull()
+                    if (gjeldendeOppfolgingsperiode == null) {
                         log.info("Bruker har ingen gjeldende oppfølgingsperiode, fjerner fra utmeldingstabellen")
+                        slettBrukerFraUtmeldingstabell(aktorId)
+                        return@executeWithoutResult
+                    }
+                    val oppfolgingsperiodeId = gjeldendeOppfolgingsperiode.uuid
+                    if (utmeldingEntity.iservSiden.isBefore(gjeldendeOppfolgingsperiode.startDato)) {
+                        log.info("Bruker har startet ny oppfølgingsperiode med id $oppfolgingsperiodeId etter iserv-datoen, fjerner fra utmeldingstabellen")
                         slettBrukerFraUtmeldingstabell(aktorId)
                         return@executeWithoutResult
                     }
