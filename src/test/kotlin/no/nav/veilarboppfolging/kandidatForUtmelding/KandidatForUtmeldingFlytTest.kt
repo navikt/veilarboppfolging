@@ -150,7 +150,6 @@ class KandidatForUtmeldingFlytTest(
         publiserAvsluttArbeidssokerPeriode(fnr)
 
         assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId)).describedAs("Skal være lagret som kandidat for utmelding").isNotNull()
-        assertThat(utmeldingRepository.eksisterendeIservBruker(aktorId)).describedAs("Skal IKKE finnes i gammel utmeldings-tabell").isEmpty()
     }
 
     @Test

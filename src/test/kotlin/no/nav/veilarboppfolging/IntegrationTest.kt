@@ -3,6 +3,7 @@ package no.nav.veilarboppfolging
 import com.nimbusds.jwt.JWTClaimsSet
 import java.time.LocalDate
 import java.time.ZonedDateTime
+import java.time.temporal.ChronoUnit
 import java.util.Optional
 import java.util.UUID
 import no.nav.common.auth.context.AuthContextHolder
@@ -21,6 +22,7 @@ import no.nav.paw.arbeidssokerregisteret.api.v1.AvsluttetAarsakType
 import no.nav.poao_tilgang.api.dto.response.Diskresjonskode
 import no.nav.poao_tilgang.api.dto.response.TilgangsattributterResponse
 import no.nav.poao_tilgang.client.Decision
+import no.nav.poao_tilgang.client.NavAnsattTilgangTilEksternBrukerKjernereglerPolicyInput
 import no.nav.poao_tilgang.client.NavAnsattTilgangTilEksternBrukerPolicyInput
 import no.nav.poao_tilgang.client.NavAnsattTilgangTilNavEnhetMedSperrePolicyInput
 import no.nav.poao_tilgang.client.NavAnsattTilgangTilNavEnhetPolicyInput
@@ -33,9 +35,11 @@ import no.nav.pto_schema.enums.arena.Hovedmaal
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
 import no.nav.tms.varsel.builder.BuilderEnvironment
 import no.nav.veilarboppfolging.client.aap.AapClient
+import no.nav.veilarboppfolging.client.aoKontor.AoKontorClient
 import no.nav.veilarboppfolging.client.arbeidssoekerregisteret.ArbeidssoekerregisteretClient
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirClient
 import no.nav.veilarboppfolging.client.digdir_krr.KRRData
+import no.nav.veilarboppfolging.client.isoppfolgingstilfelle.IsOppfolgingstilfelleClient
 import no.nav.veilarboppfolging.client.norg.INorgTilhorighetClient
 import no.nav.veilarboppfolging.client.oppgave.OppgaveClient
 import no.nav.veilarboppfolging.client.pdl.FregStatusOgStatsborgerskap
@@ -43,7 +47,6 @@ import no.nav.veilarboppfolging.client.pdl.GTType
 import no.nav.veilarboppfolging.client.pdl.GeografiskTilknytningClient
 import no.nav.veilarboppfolging.client.pdl.GeografiskTilknytningNr
 import no.nav.veilarboppfolging.client.pdl.PdlFolkeregisterStatusClient
-import no.nav.veilarboppfolging.client.isoppfolgingstilfelle.IsOppfolgingstilfelleClient
 import no.nav.veilarboppfolging.client.tiltakshistorikk.TiltakshistorikkClient
 import no.nav.veilarboppfolging.client.ungdomsprogram.UngdomsprogramClient
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolginsBrukerOppslagResult
@@ -59,16 +62,24 @@ import no.nav.veilarboppfolging.config.KafkaProperties
 import no.nav.veilarboppfolging.controller.OppfolgingV3Controller
 import no.nav.veilarboppfolging.controller.SakController
 import no.nav.veilarboppfolging.controller.v3.request.OppfolgingRequest
+import no.nav.veilarboppfolging.kandidatForUtmelding.FilterkategoriRepository
+import no.nav.veilarboppfolging.kandidatForUtmelding.FjernKandidatForUtmeldingService
+import no.nav.veilarboppfolging.kandidatForUtmelding.ForlengelseDTO
+import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingController
+import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingRepository
+import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService
+import no.nav.veilarboppfolging.kandidatForUtmelding.RepubliserKandidatForUtmeldingService
+import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.FilterhendelseRecord
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ArbeidssokerperiodeAvsluttetHendelseType
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ArbeidssøkerPeriodeAvsluttet
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.KandidatForUtmeldingHendelseUtfortAvType
-import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingRepository
-import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.BrukerRegistrant
+import no.nav.veilarboppfolging.oppfolgingsbruker.SystemRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.LocalArenaOppfolging
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.AktiverBrukerManueltService
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelseFraSystem
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ManuellAvregistrering
 import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.OppfolgingsHendelseDto
@@ -103,20 +114,6 @@ import org.springframework.kafka.test.context.EmbeddedKafka
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.web.context.WebApplicationContext
-import java.time.temporal.ChronoUnit
-import no.nav.poao_tilgang.client.NavAnsattTilgangTilEksternBrukerKjernereglerPolicyInput
-import no.nav.veilarboppfolging.client.aoKontor.AoKontorClient
-import no.nav.veilarboppfolging.kandidatForUtmelding.FilterkategoriRepository
-import no.nav.veilarboppfolging.kandidatForUtmelding.FjernKandidatForUtmeldingService
-import no.nav.veilarboppfolging.kandidatForUtmelding.ForlengelseDTO
-import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingController
-import no.nav.veilarboppfolging.kandidatForUtmelding.RepubliserKandidatForUtmeldingService
-import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.FilterhendelseRecord
-import no.nav.veilarboppfolging.oppfolgingsbruker.SystemRegistrant
-import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelseFraSystem
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.UtmeldEtter28Cron
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.UtmeldingsService
-import no.nav.veilarboppfolging.repository.UtmeldingRepository
 
 @EmbeddedKafka(partitions = 1)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -278,15 +275,6 @@ open class IntegrationTest {
 
     @Autowired
     lateinit var filterkategoriRepository: FilterkategoriRepository
-
-    @Autowired
-    lateinit var utmeldingRepository: UtmeldingRepository
-
-    @Autowired
-    lateinit var utmeldingsService: UtmeldingsService
-
-    @Autowired
-    lateinit var utmeldEtter28Cron: UtmeldEtter28Cron
 
     @BeforeEach
     fun beforeEach() {
