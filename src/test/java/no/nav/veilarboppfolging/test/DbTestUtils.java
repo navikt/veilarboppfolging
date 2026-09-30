@@ -23,11 +23,11 @@ public class DbTestUtils {
             "OPPFOLGINGSPERIODE",
             "OPPFOLGINGSTATUS",
             "KVP",
-            "UTMELDING",
             "OPPFOLGINGSENHET_ENDRET",
             "KAFKA_PRODUCER_RECORD",
             "ao_kontor",
             "filterkategori_id_mapping",
+            "kandidater_som_ikke_kunne_avsluttes",
             "kandidater_for_utmelding_hendelser",
             "kandidater_for_utmelding"
             );
