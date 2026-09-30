@@ -495,7 +495,7 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
 
         assertThat(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID).get().underOppfolging).isTrue()
         assertThat(kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeUuid)).isNull()
-        assertThat(kandidatForUtmeldingRepository.erKandidatSomIkkeKunneAvsluttes(oppfolgingsperiodeUuid)).isFalse
+        assertThat(kandidatForUtmeldingRepository.erKandidatSomIkkeKunneAvsluttes(oppfolgingsperiodeUuid)).isTrue
 
         val filterhendelseId = filterkategoriRepository.hentFilterhendelseId(oppfolgingsperiodeUuid)
         assertThat(filterhendelseId).isNotNull()

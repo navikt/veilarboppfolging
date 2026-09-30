@@ -22,6 +22,7 @@ import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.InaktivertIArenaH
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.KandidatForUtmeldingHendelse
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.KandidatForUtmeldingHendelseType
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.KandidatForUtmeldingHendelseUtfortAvType
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvslutningsBegrunnelse
 
 @Repository
 class KandidatForUtmeldingRepository(
@@ -49,7 +50,7 @@ class KandidatForUtmeldingRepository(
     fun lagreKandidatSomIkkeKunneAvsluttesOgHendelse(
         hendelse: KandidatForUtmeldingHendelse,
         oppfolgingsperiodeId: UUID,
-        begrunnelse: String?,
+        begrunnelse: AvslutningsBegrunnelse?,
     ) {
         val hendelseId = insertUtmeldingsHendelse(hendelse)
         db.update(
@@ -60,7 +61,7 @@ class KandidatForUtmeldingRepository(
             mapOf(
                 "oppfolgingsperiodeId" to oppfolgingsperiodeId.toString(),
                 "sisteUtmeldingshendelseId" to hendelseId,
-                "begrunnelse" to begrunnelse,
+                "begrunnelse" to begrunnelse?.name,
             ),
         )
     }
@@ -128,7 +129,7 @@ class KandidatForUtmeldingRepository(
             .firstOrNull()
     }
 
-    fun lagreKandidatSomIkkeKunneAvsluttes(oppfolgingsperiodeId: UUID, begrunnelse: String?) {
+    fun lagreKandidatSomIkkeKunneAvsluttes(oppfolgingsperiodeId: UUID, begrunnelse: AvslutningsBegrunnelse?) {
         db.update(
             """
             INSERT INTO kandidater_som_ikke_kunne_avsluttes(oppfolgingsperiode_uuid, siste_utmeldingshendelse_id, begrunnelse)
@@ -138,7 +139,7 @@ class KandidatForUtmeldingRepository(
             """.trimIndent(),
             mapOf(
                 "oppfolgingsperiodeId" to oppfolgingsperiodeId.toString(),
-                "begrunnelse" to begrunnelse,
+                "begrunnelse" to begrunnelse?.name,
             ),
         )
     }
