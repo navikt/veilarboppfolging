@@ -57,6 +57,8 @@ class KandidatForUtmeldingRepository(
             """
             INSERT INTO kandidater_som_ikke_kunne_avsluttes(oppfolgingsperiode_uuid, siste_utmeldingshendelse_id, begrunnelse)
             VALUES (:oppfolgingsperiodeId, :sisteUtmeldingshendelseId, :begrunnelse)
+            ON CONFLICT (oppfolgingsperiode_uuid)
+            DO UPDATE SET siste_utmeldingshendelse_id = :sisteUtmeldingshendelseId, begrunnelse = :begrunnelse
             """.trimIndent(),
             mapOf(
                 "oppfolgingsperiodeId" to oppfolgingsperiodeId.toString(),
@@ -136,6 +138,9 @@ class KandidatForUtmeldingRepository(
             SELECT oppfolgingsperiode_uuid, siste_utmeldingshendelse_id, :begrunnelse
             FROM kandidater_for_utmelding
             WHERE oppfolgingsperiode_uuid = :oppfolgingsperiodeId
+            ON CONFLICT (oppfolgingsperiode_uuid) DO UPDATE
+            SET siste_utmeldingshendelse_id = excluded.siste_utmeldingshendelse_id,
+                begrunnelse = excluded.begrunnelse
             """.trimIndent(),
             mapOf(
                 "oppfolgingsperiodeId" to oppfolgingsperiodeId.toString(),
