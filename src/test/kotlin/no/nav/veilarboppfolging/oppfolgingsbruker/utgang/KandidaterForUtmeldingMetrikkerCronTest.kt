@@ -30,6 +30,7 @@ class KandidaterForUtmeldingMetrikkerCronTest {
         Mockito.`when`(oppfolgingsStatusRepository.hentAntallUnderOppfolgingMedIserv()).thenReturn(4)
         Mockito.`when`(kandidatForUtmeldingRepository.hentAntallKandidaterForUtmeldingIkkeForlenget()).thenReturn(6)
         Mockito.`when`(kandidatForUtmeldingRepository.hentAntallKandidaterForUtmeldingForlenget()).thenReturn(4)
+        Mockito.`when`(kandidatForUtmeldingRepository.hentAntallKandidaterSomIkkeKanUtmeldes()).thenReturn(13)
 
         cron.loggKandidaterForUtmeldingMetrikker()
 
@@ -41,6 +42,7 @@ class KandidaterForUtmeldingMetrikkerCronTest {
                 antallUnderOppfolgingMedIserv = 4,
                 antallKandidaterForUtmeldingIkkeForlenget = 6,
                 antallKandidaterForUtmeldingForlenget = 4,
+                antallKandidaterSomIkkeKunneUtmeldes = 13
             )
         )
     }
