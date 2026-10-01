@@ -186,6 +186,10 @@ class KandidatForUtmeldingService(
                     val avslutningsstatus = avsluttOppfolgingService.hentAvslutningstatusForManuellAvslutning(fnr)
                     if (!avslutningsstatus.kanAvslutte) {
                         logger.info("Kandidat med oppfølgingsperiode ${kandidat.oppfolgingsperiodeId} kan ikke avsluttes, fjerner fra kandidat for utmelding")
+                        kandidatForUtmeldingRepository.lagreKandidatSomIkkeKunneAvsluttes(
+                            kandidat.oppfolgingsperiodeId,
+                            avslutningsstatus.begrunnelse
+                        )
                         fjernKandidatForUtmeldingService.fjernKandidatForUtmelding(kandidat.oppfolgingsperiodeId)
                         return@executeWithoutResult
                     } else {

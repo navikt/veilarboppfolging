@@ -28,17 +28,17 @@ sealed class KunneAvsluttesResultat(val kanAvsluttesInput: KanAvsluttesInput) {
             }
         }
 
-        private fun kanAvsluttesIntern(input: KanAvsluttesInput, avregistreringsType: AvregistreringsType): String? {
+        private fun kanAvsluttesIntern(input: KanAvsluttesInput, avregistreringsType: AvregistreringsType): AvslutningsBegrunnelse? {
             /* Admin kan avslutte alt */
             if (avregistreringsType == AvregistreringsType.AdminAvregistrering) return null
 
-            if (!input.erUnderOppfolging) return "bruker var ikke under oppfølging"
-            if (input.underKvp) return "bruker var under kvp"
-            if (input.harAktiveTiltaksdeltakelser) return "bruker hadde aktive tiltaksdeltakelser"
-            if (input.erDeltakerIUngdomsprogrammet) return "bruker er deltaker i ungdomsprogrammet"
-            if (input.erArbeidssoeker) return "bruker er registrert som arbeidssøker"
-            if (input.harAap) return  "bruker mottar eller har søkt om AAP"
-            if (!avregistreringsType.erManuellAvregistrering() && input.erOppfolgingForlenget) return "oppfølgingen er forlenget"
+            if (!input.erUnderOppfolging) return AvslutningsBegrunnelse.BRUKER_VAR_IKKE_UNDER_OPPFOLGING
+            if (input.underKvp) return AvslutningsBegrunnelse.BRUKER_VAR_UNDER_KVP
+            if (input.harAktiveTiltaksdeltakelser) return AvslutningsBegrunnelse.BRUKER_HAR_AKTIVE_TILTAKSDELTAKELSER
+            if (input.erDeltakerIUngdomsprogrammet) return AvslutningsBegrunnelse.BRUKER_ER_DELTAKER_I_UNGDOMSPROGRAMMET
+            if (input.erArbeidssoeker) return AvslutningsBegrunnelse.BRUKER_ER_REGISTRERT_SOM_ARBEIDSSOKER
+            if (input.harAap) return AvslutningsBegrunnelse.BRUKER_MOTTAR_ELLER_HAR_SOKT_OM_AAP
+            if (!avregistreringsType.erManuellAvregistrering() && input.erOppfolgingForlenget) return AvslutningsBegrunnelse.OPPFOLGINGEN_ER_FORLENGET
             return null
         }
     }
@@ -61,7 +61,16 @@ class KunneAvsluttes(
 class KunneIkkeAvsluttes(
     val avregistrering: Avregistrering,
     val erIserv: Boolean,
-    val begrunnelse: String? = null,
+    val begrunnelse: AvslutningsBegrunnelse? = null,
     kanAvsluttesInput: KanAvsluttesInput,
 ): KunneAvsluttesResultat(kanAvsluttesInput)
 
+enum class AvslutningsBegrunnelse(val begrunnelse: String) {
+    BRUKER_VAR_IKKE_UNDER_OPPFOLGING("bruker var ikke under oppfølging"),
+    BRUKER_HAR_AKTIVE_TILTAKSDELTAKELSER("bruker hadde aktive tiltaksdeltakelser"),
+    BRUKER_ER_DELTAKER_I_UNGDOMSPROGRAMMET("bruker er deltaker i ungdomsprogrammet"),
+    BRUKER_ER_REGISTRERT_SOM_ARBEIDSSOKER("bruker er registrert som arbeidssøker"),
+    BRUKER_MOTTAR_ELLER_HAR_SOKT_OM_AAP("bruker mottar eller har søkt om AAP"),
+    OPPFOLGINGEN_ER_FORLENGET("oppfølgingen er forlenget"),
+    BRUKER_VAR_UNDER_KVP("bruker var under kvp"),
+}
