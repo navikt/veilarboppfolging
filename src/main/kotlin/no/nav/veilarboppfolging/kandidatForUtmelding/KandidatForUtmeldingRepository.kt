@@ -149,6 +149,14 @@ class KandidatForUtmeldingRepository(
         )
     }
 
+    fun fjernKandidatSomIkkeKunneAvsluttes(oppfolgingsperiodeId: UUID) {
+        val sql = """
+            DELETE FROM kandidater_som_ikke_kunne_avsluttes
+            WHERE oppfolgingsperiode_uuid = :oppfolgingsperiodeId
+        """.trimIndent()
+        db.update(sql, mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeId.toString()))
+    }
+
     fun hentKandidatMedForlengelse(oppfolgingsperiodeId: UUID): ForlengetKandidat? {
         return db.query(
             """

@@ -56,6 +56,7 @@ open class StartOppfolgingService(
                 val periode = oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId).getOrNull()
                     ?: throw IllegalStateException("Fant ikke gjeldende oppfolgingsperiode for bruker som er under oppfølging")
                 fjernKandidatForUtmeldingService.fjernKandidatForUtmelding(periode.uuid)
+                fjernKandidatForUtmeldingService.fjernKandidatSomIkkeKanAvsluttes(periode.uuid)
                 return@executeWithoutResult
             }
             if (maybeOppfolging.isEmpty) {

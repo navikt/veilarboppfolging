@@ -51,6 +51,11 @@ class FjernKandidatForUtmeldingService(
         }
     }
 
+    fun fjernKandidatSomIkkeKanAvsluttes(oppfolgingsperiodeId: UUID) {
+        logger.info("Fjerner evt kandidat som ikke kunne avsluttes, oppfølgingsperiodeId $oppfolgingsperiodeId")
+        kandidatForUtmeldingRepository.fjernKandidatSomIkkeKunneAvsluttes(oppfolgingsperiodeId)
+    }
+
     fun erOppfolgingForlenget(oppfolgingsperiodeId: UUID): Boolean {
         return kandidatForUtmeldingRepository.hentKandidatMedIkkeUtloptForlengelse(oppfolgingsperiodeId) != null
     }

@@ -90,6 +90,7 @@ class ReaktiveringService(
                                 )
                             )
                             fjernkandidatForUtmeldingService.fjernKandidatForUtmelding(sistePeriode.uuid)
+                            fjernkandidatForUtmeldingService.fjernKandidatSomIkkeKanAvsluttes(sistePeriode.uuid)
                             return@execute ReaktiveringSuccess(arenaKode)
                         }
                     }
