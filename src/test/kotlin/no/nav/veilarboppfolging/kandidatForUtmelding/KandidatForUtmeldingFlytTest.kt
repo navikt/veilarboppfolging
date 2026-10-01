@@ -11,7 +11,6 @@ import no.nav.common.json.JsonUtils
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.EnhetId
 import no.nav.common.types.identer.Fnr
-import no.nav.common.types.identer.NavIdent
 import no.nav.paw.arbeidssokerregisteret.api.v1.Aarsaksinformasjon
 import no.nav.paw.arbeidssokerregisteret.api.v1.AvslutningsInfo
 import no.nav.paw.arbeidssokerregisteret.api.v1.AvsluttetAarsakType
@@ -37,10 +36,10 @@ import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.Arbeidssokerperio
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ArbeidssøkerPeriodeAvsluttet
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseHendelseType
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseOpprettetEllerEndretHendelse
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.InaktivertIArena
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.KandidatForUtmeldingHendelseUtfortAvType
-import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering
-import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering.Companion.arbeidssokerRegistrering
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvslutningsBegrunnelse
 import no.nav.veilarboppfolging.service.KafkaConsumerService
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.assertj.core.api.Assertions.assertThat
@@ -153,42 +152,7 @@ class KandidatForUtmeldingFlytTest(
     }
 
     @Test
-    fun `Sletter kandidat-for-utmelding når ny oppfølgingsperiode startes manuelt av veileder`() {
-        val fnr = randomFnr()
-        val aktorId = randomAktorId()
-        mockIdents(fnr, aktorId)
-        mockVeilarbArenaOppfolgingsBruker(fnr, Formidlingsgruppe.ISERV)
-        startOppfolgingSomArbeidsoker(aktorId, fnr)
-        val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(fnr).get().uuid
-        kandidatForUtmeldingRepository.lagreKandidat(
-            ArbeidssøkerPeriodeAvsluttet(
-                oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
-                utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
-                utfortAv = "A123123",
-                kilde = "arbeidssøkerregisteret",
-                hendelseTidspunkt = ZonedDateTime.now().toInstant(),
-                arbeidssokerperiodeAvsluttetHendelseType = ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
-                avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
-            ).let { KandidatForUtmelding.fromHendelse(it) }
-        )
-        filterkategoriRepository.hentEllerOpprettFilterhendelseId(oppfolgingsperiodeUuid)
-
-        avsluttOppfolgingManueltSomVeileder(aktorId)
-
-        val registrering = OppfolgingsRegistrering.manuellRegistreringVeileder(
-            fnr,
-            aktorId,
-            VeilederRegistrant(NavIdent("veileder")),
-            null,
-            true
-        )
-        startOppfolging(aktorId, registrering)
-
-        assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId)).isNull()
-    }
-
-    @Test
-    fun `Sletter kandidat-for-utmelding når ny oppfølgingsperiode startes manuelt av bruker`() {
+    fun `Sletter kandidat-for-utmelding når oppfølgingsperiode avsluttes`() {
         val fnr = randomFnr()
         val aktorId = randomAktorId()
         mockIdents(fnr, aktorId)
@@ -210,38 +174,32 @@ class KandidatForUtmeldingFlytTest(
 
         avsluttOppfolgingManueltSomVeileder(aktorId)
 
-        val registrering = OppfolgingsRegistrering.manuellRegistreringBruker(fnr, aktorId)
-        startOppfolging(aktorId, registrering)
-
         assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId)).isNull()
+        assertThat(kandidatForUtmeldingService.erLagretSomKandidatSomIkkeKanAvsluttes(oppfolgingsperiodeUuid)).isFalse()
     }
 
     @Test
-    fun `Sletter kandidat-for-utmelding når ny oppfølgingsperiode avsluttes manuelt av veileder`() {
+    fun `Sletter kandidat-som-ikke-kan-avsluttes når oppfølgingsperiode avsluttes`() {
         val fnr = randomFnr()
         val aktorId = randomAktorId()
         mockIdents(fnr, aktorId)
         mockVeilarbArenaOppfolgingsBruker(fnr, Formidlingsgruppe.ISERV)
         startOppfolgingSomArbeidsoker(aktorId, fnr)
         val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(fnr).get().uuid
-        kandidatForUtmeldingRepository.lagreKandidat(
-            ArbeidssøkerPeriodeAvsluttet(
+        kandidatForUtmeldingRepository.lagreKandidatSomIkkeKunneAvsluttesOgHendelse(
+            hendelse = InaktivertIArena(
                 oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
-                utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
-                utfortAv = "A123123",
-                kilde = "kilde",
-                hendelseTidspunkt = ZonedDateTime.now().toInstant(),
-                arbeidssokerperiodeAvsluttetHendelseType = ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
-                avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
-            ).let { KandidatForUtmelding.fromHendelse(it) }
+                iservFraDato = LocalDate.now(),
+                hendelseTidspunkt = Instant.now(),
+            ),
+            oppfolgingsperiodeId = oppfolgingsperiodeUuid,
+            begrunnelse = AvslutningsBegrunnelse.BRUKER_MOTTAR_ELLER_HAR_SOKT_OM_AAP,
         )
-        filterkategoriRepository.hentEllerOpprettFilterhendelseId(oppfolgingsperiodeUuid)
 
         avsluttOppfolgingManueltSomVeileder(aktorId)
-        val registrering = arbeidssokerRegistrering(fnr, aktorId, VeilederRegistrant(NavIdent("veileder")))
-        startOppfolging(aktorId, registrering)
 
         assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId)).isNull()
+        assertThat(kandidatForUtmeldingService.erLagretSomKandidatSomIkkeKanAvsluttes(oppfolgingsperiodeUuid)).isFalse()
     }
 
     @Test

@@ -16,6 +16,7 @@ import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseUtløp
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.InaktivertIArena
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.KandidatForUtmeldingHendelse
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ArenaIservKanIkkeReaktiveres
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvslutningsBegrunnelse
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.KandidatUtmeldtEtter28Dager
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.KunneIkkeAvsluttes
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
@@ -149,10 +150,7 @@ class KandidatForUtmeldingService(
                 val resultat =
                     avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(KandidatUtmeldtEtter28Dager(aktorId))
                 if (resultat is KunneIkkeAvsluttes) {
-                    kandidatForUtmeldingRepository.lagreKandidatSomIkkeKunneAvsluttes(
-                        kandidat.oppfolgingsperiodeId,
-                        resultat.begrunnelse
-                    )
+                    lagreKandidatSomIkkeKunneAvsluttes(kandidat.oppfolgingsperiodeId, resultat.begrunnelse)
                     fjernKandidatForUtmeldingService.fjernKandidatForUtmelding(kandidat.oppfolgingsperiodeId)
                     logger.info("Kandidat med oppfølgingsperiode ${kandidat.oppfolgingsperiodeId} kunne ikke avsluttes automatisk og ble flyttet ut av aktiv liste")
                 }
@@ -186,10 +184,7 @@ class KandidatForUtmeldingService(
                     val avslutningsstatus = avsluttOppfolgingService.hentAvslutningstatusForManuellAvslutning(fnr)
                     if (!avslutningsstatus.kanAvslutte) {
                         logger.info("Kandidat med oppfølgingsperiode ${kandidat.oppfolgingsperiodeId} kan ikke avsluttes, fjerner fra kandidat for utmelding")
-                        kandidatForUtmeldingRepository.lagreKandidatSomIkkeKunneAvsluttes(
-                            kandidat.oppfolgingsperiodeId,
-                            avslutningsstatus.begrunnelse
-                        )
+                        lagreKandidatSomIkkeKunneAvsluttes(kandidat.oppfolgingsperiodeId, avslutningsstatus.begrunnelse)
                         fjernKandidatForUtmeldingService.fjernKandidatForUtmelding(kandidat.oppfolgingsperiodeId)
                         return@executeWithoutResult
                     } else {
@@ -213,6 +208,18 @@ class KandidatForUtmeldingService(
         val aktorId = oppfolgingsPeriodeRepository.hentOppfolgingsperiode(oppfolgingsperiodeId.toString())
             .getOrElse { throw IllegalStateException("Oppfølgingsperiode med id $oppfolgingsperiodeId finnes ikke") }?.aktorId
         return aktorOppslagClient.hentFnr(AktorId(aktorId)) to AktorId(aktorId)
+    }
+
+    private fun lagreKandidatSomIkkeKunneAvsluttes(oppfolgingsperiodeId: UUID, begrunnelse: AvslutningsBegrunnelse?) {
+        val oppfolgingsperiode = oppfolgingsPeriodeRepository.hentOppfolgingsperiode(oppfolgingsperiodeId.toString())
+            .getOrElse { throw IllegalStateException("Oppfølgingsperiode med id $oppfolgingsperiodeId finnes ikke") }
+        if (oppfolgingsperiode.sluttDato == null) {
+            logger.info("Lagrer kandidat med oppfølgingsperiode $oppfolgingsperiodeId som kandidat som ikke kan avsluttes")
+            kandidatForUtmeldingRepository.lagreKandidatSomIkkeKunneAvsluttes(
+                oppfolgingsperiodeId,
+                begrunnelse
+            )
+        }
     }
 
     fun forlengKandidat(hendelse: ForlengelseOpprettetEllerEndretHendelse, fnr: Fnr) {
