@@ -23,31 +23,27 @@ class ResolveEndringPaaOppfolgingsbrukerEventTest {
         val aktorId = randomAktorId()
         val nåværendeOppfølgingstatus =
             oppfølgingEntity(aktorId = aktorId.get(), localArenaOppfølging = localArenaOppfolging(kvalifiseringsgruppe = VURDU, formidlingsgruppe = IARBS))
-        val oppfolgingsbrukerEndret = oppfølgingsBrukerEndret(fnr = randomFnr().get(), formidlingsgruppe = IARBS, kvalifiseringsgruppe = VURDU)
 
         val endring = resolveEndringPaaOppfolgingsbrukerEvent(
-            endringPaaOppfolgingsBruker = EndringPaaOppfolgingsBruker.from(oppfolgingsbrukerEndret, aktorId),
+            formidlingsgruppe = IARBS,
             nåværendeOppfolgingsstatus = nåværendeOppfølgingstatus,
-            getKanReaktiveresIArena = { Optional.of(true) },
         )
 
         assertThat(endring).isInstanceOf(IrrelevantEndring::class.java)
     }
 
     @Test
-    fun `Endring på oppfølgingsbruker som har blitt sykmeldt uten arbeidsgiver er BleSykmeldtUtenArbeidsgiver`() {
+    fun `Endring på oppfølgingsbruker som har blitt sykmeldt uten arbeidsgiver er IrrelevantEndring`() {
         val aktorId = randomAktorId()
         val nåværendeOppfølgingstatus =
             oppfølgingEntity(aktorId = aktorId.get(), localArenaOppfølging = localArenaOppfolging(kvalifiseringsgruppe = IVURD, formidlingsgruppe = IARBS))
-        val oppfolgingsbrukerEndret = oppfølgingsBrukerEndret(fnr = randomFnr().get(), formidlingsgruppe = IARBS, kvalifiseringsgruppe = VURDU)
 
         val endring = resolveEndringPaaOppfolgingsbrukerEvent(
-            endringPaaOppfolgingsBruker = EndringPaaOppfolgingsBruker.from(oppfolgingsbrukerEndret, aktorId),
+            formidlingsgruppe = IARBS,
             nåværendeOppfolgingsstatus = nåværendeOppfølgingstatus,
-            getKanReaktiveresIArena = { Optional.of(true) },
         )
 
-        assertThat(endring).isInstanceOf(BleSykmeldtUtenArbeidsgiver::class.java)
+        assertThat(endring).isInstanceOf(IrrelevantEndring::class.java)
     }
 
     @Test
@@ -55,14 +51,12 @@ class ResolveEndringPaaOppfolgingsbrukerEventTest {
         val aktorId = randomAktorId()
         val nåværendeOppfølgingstatus =
             oppfølgingEntity(aktorId = aktorId.get(), localArenaOppfølging = localArenaOppfolging(kvalifiseringsgruppe = BATT, formidlingsgruppe = ARBS))
-        val oppfolgingsbrukerEndret = oppfølgingsBrukerEndret(fnr = randomFnr().get(), formidlingsgruppe = ISERV, kvalifiseringsgruppe = BATT)
 
         val endring = resolveEndringPaaOppfolgingsbrukerEvent(
-            endringPaaOppfolgingsBruker = EndringPaaOppfolgingsBruker.from(oppfolgingsbrukerEndret, aktorId),
+            formidlingsgruppe = ISERV,
             nåværendeOppfolgingsstatus = nåværendeOppfølgingstatus,
-            getKanReaktiveresIArena = { Optional.of(true) },
         )
 
-        assertThat(endring).isInstanceOf(VarArbsBleIserv::class.java)
+        assertThat(endring).isInstanceOf(BleInaktivertVarArbs::class.java)
     }
 }

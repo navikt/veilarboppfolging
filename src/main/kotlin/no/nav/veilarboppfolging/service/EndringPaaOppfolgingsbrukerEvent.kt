@@ -2,67 +2,40 @@ package no.nav.veilarboppfolging.service
 
 
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
-import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
-import no.nav.veilarboppfolging.oppfolgingsbruker.arena.EndringPaaOppfolgingsBruker
 import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity
-import java.util.*
 
 fun resolveEndringPaaOppfolgingsbrukerEvent(
-    endringPaaOppfolgingsBruker: EndringPaaOppfolgingsBruker,
+    formidlingsgruppe: Formidlingsgruppe,
     nåværendeOppfolgingsstatus: OppfolgingEntity?,
-    getKanReaktiveresIArena: () -> Optional<Boolean>,
 ): OppfolgingsbrukerEndretEvent {
-    val erSykmeldtUtenArbeidsgiver =  sykmeldtUtenArbeidsgiver(endringPaaOppfolgingsBruker.kvalifiseringsgruppe, endringPaaOppfolgingsBruker.formidlingsgruppe)
-    val varSykmeldtUtenArbeidsgiver = nåværendeOppfolgingsstatus?.localArenaOppfolging?.orElse(null)?.let { sykmeldtUtenArbeidsgiver(it.kvalifiseringsgruppe, it.formidlingsgruppe) } ?: false
-    if (erSykmeldtUtenArbeidsgiver && !varSykmeldtUtenArbeidsgiver) return BleSykmeldtUtenArbeidsgiver()
-
-    val erInaktivIArena = Formidlingsgruppe.ISERV == endringPaaOppfolgingsBruker.formidlingsgruppe
+    val erInaktivIArena = Formidlingsgruppe.ISERV == formidlingsgruppe
     val varInaktivIArena = nåværendeOppfolgingsstatus?.localArenaOppfolging?.orElse(null)?.formidlingsgruppe == Formidlingsgruppe.ISERV
     val erUnderOppfolging = nåværendeOppfolgingsstatus?.underOppfolging ?: false
-    val varArbsIArena = nåværendeOppfolgingsstatus?.localArenaOppfolging?.orElse(null)?.formidlingsgruppe == Formidlingsgruppe.ARBS
 
+    if (!erUnderOppfolging) return IrrelevantEndring()
+    if (!erInaktivIArena) return IrrelevantEndring()
     if (erInaktivIArena && varInaktivIArena) return IrrelevantEndring()
 
-    if (erInaktivIArena && varArbsIArena) return VarArbsBleIserv()
+    val varArbsIArena = nåværendeOppfolgingsstatus?.localArenaOppfolging?.orElse(null)?.formidlingsgruppe == Formidlingsgruppe.ARBS
 
-    if (erUnderOppfolging && erInaktivIArena && !varInaktivIArena) {
-        val kanReaktiveres = getKanReaktiveresIArena()
-        // Ikke helt riktig men bør ikke gjøre noen skade å returnere IrrelevantEndring
-        if (kanReaktiveres.isEmpty) return IrrelevantEndring()
-
-        return when (kanReaktiveres.get()) {
-            true -> BleInaktivertMedKanReaktiveres()
-            false -> BleInaktivertUtenKanReaktiveres()
-        }
-    } else {
-        return IrrelevantEndring()
-    }
+    return if (erInaktivIArena && varArbsIArena)
+        BleInaktivertVarArbs()
+    else
+        BleInaktivertVarIarbs()
 }
-
-private fun sykmeldtUtenArbeidsgiver(kvalifiseringsgruppe: Kvalifiseringsgruppe, formidlingsgruppe: Formidlingsgruppe) =
-    Kvalifiseringsgruppe.VURDU == kvalifiseringsgruppe &&
-            formidlingsgruppe != Formidlingsgruppe.ISERV
 
 sealed interface OppfolgingsbrukerEndretEvent {
     fun loggMessage(): String
 }
 
-class BleSykmeldtUtenArbeidsgiver : OppfolgingsbrukerEndretEvent {
-    override fun loggMessage(): String = "BleSykmeldtUtenArbeidsgiver"
-}
-
-class BleInaktivertUtenKanReaktiveres : OppfolgingsbrukerEndretEvent {
+class BleInaktivertVarIarbs : OppfolgingsbrukerEndretEvent {
     override fun loggMessage(): String = "Bruker ble inaktivert, kunne ikke reaktiveres"
-}
-
-class BleInaktivertMedKanReaktiveres : OppfolgingsbrukerEndretEvent {
-    override fun loggMessage(): String = "Bruker ble inaktivert, kan reaktiveres"
 }
 
 class IrrelevantEndring : OppfolgingsbrukerEndretEvent {
     override fun loggMessage(): String = "Irrelevant endring – gjør ingenting"
 }
 
-class VarArbsBleIserv : OppfolgingsbrukerEndretEvent {
+class BleInaktivertVarArbs : OppfolgingsbrukerEndretEvent {
     override fun loggMessage(): String = "Bruker var ARBS og ble ISERV, ignoreres"
 }
