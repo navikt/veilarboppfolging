@@ -81,7 +81,6 @@ class KandidatForUtmeldingService(
             } else {
                 val kandidat = KandidatForUtmelding.fromHendelse(hendelse)
                 kandidatForUtmeldingRepository.lagreKandidat(kandidat)
-
                 sendUtmeldingskandidatTilObo(hendelse, fnr)
             }
         }

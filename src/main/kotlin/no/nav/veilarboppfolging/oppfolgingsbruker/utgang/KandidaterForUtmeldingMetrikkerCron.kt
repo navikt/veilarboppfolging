@@ -34,11 +34,13 @@ class KandidaterForUtmeldingMetrikkerCron(
         val antallUnderOppfolgingMedIserv = oppfolgingsStatusRepository.hentAntallUnderOppfolgingMedIserv()
         val antallKandidaterForUtmeldingIkkeForlenget = kandidatForUtmeldingRepository.hentAntallKandidaterForUtmeldingIkkeForlenget()
         val antallKandidaterForUtmeldingForlenget = kandidatForUtmeldingRepository.hentAntallKandidaterForUtmeldingForlenget()
+        val antallKandidaterSomIkkeKunneUtmeldes = kandidatForUtmeldingRepository.hentAntallKandidaterSomIkkeKanUtmeldes()
         val metrikker = KandidaterForUtmeldingMetrikker(
             antallKandidaterForUtmelding = antallKandidaterForUtmelding,
             antallUnderOppfolgingMedIserv = antallUnderOppfolgingMedIserv,
             antallKandidaterForUtmeldingIkkeForlenget = antallKandidaterForUtmeldingIkkeForlenget,
             antallKandidaterForUtmeldingForlenget = antallKandidaterForUtmeldingForlenget,
+            antallKandidaterSomIkkeKunneUtmeldes = antallKandidaterSomIkkeKunneUtmeldes
         )
         bigQueryClient.loggKandidaterForUtmeldingMetrikker(metrikker)
     }
