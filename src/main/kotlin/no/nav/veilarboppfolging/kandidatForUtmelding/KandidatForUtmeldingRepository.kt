@@ -360,6 +360,14 @@ class KandidatForUtmeldingRepository(
         return db.queryForObject(sql, emptyMap<String, Any>()) { rs, _ -> rs.getInt("antall") }
     }
 
+    fun hentAntallKandidaterSomIkkeKanUtmeldes(): Int {
+        val sql = """
+            SELECT COUNT(*) AS antall
+            FROM kandidater_som_ikke_kunne_avsluttes
+        """.trimIndent()
+        return db.queryForObject(sql, emptyMap<String, Any>()) { rs, _ -> rs.getInt("antall") }
+    }
+
     fun resultSetToUtmeldingsHendelse(resultSet: ResultSet): KandidatForUtmeldingHendelse {
         val hendelsetype = resultSet.getString("hendelse")
         return when (getEnumType(hendelsetype)) {
