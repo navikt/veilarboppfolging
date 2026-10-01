@@ -129,11 +129,15 @@ class KandidatForUtmeldingService(
         logger.info("Behandler ${kandidaterMedUtloptForlengelse.size} kandidater med utløpt forlengelse")
 
         kandidaterMedUtloptForlengelse.forEach { kandidat ->
-            transactor.executeWithoutResult { _ ->
-                val (fnr) = finnFnrForOppfolgingsperiode(kandidat.oppfolgingsperiodeUuid)
-                val now = ZonedDateTime.now().toInstant()
-                val utløptHendelse = ForlengelseUtløptHendelse(kandidat.oppfolgingsperiodeUuid, now)
-                handterUtmeldingsHendelse(fnr, utløptHendelse)
+            try {
+                transactor.executeWithoutResult { _ ->
+                    val (fnr) = finnFnrForOppfolgingsperiode(kandidat.oppfolgingsperiodeUuid)
+                    val now = ZonedDateTime.now().toInstant()
+                    val utløptHendelse = ForlengelseUtløptHendelse(kandidat.oppfolgingsperiodeUuid, now)
+                    handterUtmeldingsHendelse(fnr, utløptHendelse)
+                }
+            } catch (e: Exception) {
+                logger.error("Feil ved behandling av forlenget kandidat med oppfølgingsperiodeid ${kandidat.oppfolgingsperiodeUuid}", e)
             }
         }
         logger.info("Ferdig med å behandle kandidater med utløpt forlengelse")
@@ -145,15 +149,19 @@ class KandidatForUtmeldingService(
         logger.info("Behandler ${kandidaterSomSkalAutomatiskAvsluttes.size} kandidater med passert avsluttes_automatisk_dato")
 
         kandidaterSomSkalAutomatiskAvsluttes.forEach { kandidat ->
-            transactor.executeWithoutResult { _ ->
-                val (_, aktorId) = finnFnrForOppfolgingsperiode(kandidat.oppfolgingsperiodeId)
-                val resultat =
-                    avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(KandidatUtmeldtEtter28Dager(aktorId))
-                if (resultat is KunneIkkeAvsluttes) {
-                    lagreKandidatSomIkkeKunneAvsluttes(kandidat.oppfolgingsperiodeId, resultat.begrunnelse)
-                    fjernKandidatForUtmeldingService.fjernKandidatForUtmelding(kandidat.oppfolgingsperiodeId)
-                    logger.info("Kandidat med oppfølgingsperiode ${kandidat.oppfolgingsperiodeId} kunne ikke avsluttes automatisk og ble flyttet ut av aktiv liste")
+            try {
+                transactor.executeWithoutResult { _ ->
+                    val (_, aktorId) = finnFnrForOppfolgingsperiode(kandidat.oppfolgingsperiodeId)
+                    val resultat =
+                        avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(KandidatUtmeldtEtter28Dager(aktorId))
+                    if (resultat is KunneIkkeAvsluttes) {
+                        lagreKandidatSomIkkeKunneAvsluttes(kandidat.oppfolgingsperiodeId, resultat.begrunnelse)
+                        fjernKandidatForUtmeldingService.fjernKandidatForUtmelding(kandidat.oppfolgingsperiodeId)
+                        logger.info("Kandidat med oppfølgingsperiode ${kandidat.oppfolgingsperiodeId} kunne ikke avsluttes automatisk og ble flyttet ut av aktiv liste")
+                    }
                 }
+            } catch (e: Exception) {
+                logger.error("Feil ved automatisk avslutning for kandidat med oppfølgingsperiodeid ${kandidat.oppfolgingsperiodeId}", e)
             }
         }
 
@@ -179,17 +187,21 @@ class KandidatForUtmeldingService(
             )
 
             alleKandidater.forEach { kandidat ->
-                transactor.executeWithoutResult { _ ->
-                    val (fnr, _) = finnFnrForOppfolgingsperiode(kandidat.oppfolgingsperiodeId)
-                    val avslutningsstatus = avsluttOppfolgingService.hentAvslutningstatusForManuellAvslutning(fnr)
-                    if (!avslutningsstatus.kanAvslutte) {
-                        logger.info("Kandidat med oppfølgingsperiode ${kandidat.oppfolgingsperiodeId} kan ikke avsluttes, fjerner fra kandidat for utmelding")
-                        lagreKandidatSomIkkeKunneAvsluttes(kandidat.oppfolgingsperiodeId, avslutningsstatus.begrunnelse)
-                        fjernKandidatForUtmeldingService.fjernKandidatForUtmelding(kandidat.oppfolgingsperiodeId)
-                        return@executeWithoutResult
-                    } else {
-                        kandidatForUtmeldingRepository.oppdaterSistSjekket(kandidat.oppfolgingsperiodeId)
+                try {
+                    transactor.executeWithoutResult { _ ->
+                        val (fnr, _) = finnFnrForOppfolgingsperiode(kandidat.oppfolgingsperiodeId)
+                        val avslutningsstatus = avsluttOppfolgingService.hentAvslutningstatusForManuellAvslutning(fnr)
+                        if (!avslutningsstatus.kanAvslutte) {
+                            logger.info("Kandidat med oppfølgingsperiode ${kandidat.oppfolgingsperiodeId} kan ikke avsluttes, fjerner fra kandidat for utmelding")
+                            lagreKandidatSomIkkeKunneAvsluttes(kandidat.oppfolgingsperiodeId, avslutningsstatus.begrunnelse)
+                            fjernKandidatForUtmeldingService.fjernKandidatForUtmelding(kandidat.oppfolgingsperiodeId)
+                            return@executeWithoutResult
+                        } else {
+                            kandidatForUtmeldingRepository.oppdaterSistSjekket(kandidat.oppfolgingsperiodeId)
+                        }
                     }
+                } catch (e: Exception) {
+                    logger.error("Feil ved sjekk av om kandidat med oppfølgingsperiodeid ${kandidat.oppfolgingsperiodeId} kan avsluttes", e)
                 }
             }
         }
