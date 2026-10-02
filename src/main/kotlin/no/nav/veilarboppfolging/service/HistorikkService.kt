@@ -129,8 +129,8 @@ class HistorikkService(
             OppfolgingStartBegrunnelse.ARENA_SYNC_ARBS -> "Registrert som arbeidssøker i arena"
             OppfolgingStartBegrunnelse.ARENA_SYNC_IARBS -> "Registrert som sykmeldt uten arbeidsgiver (VURDU) i Arena"
             OppfolgingStartBegrunnelse.MANUELL_REGISTRERING_VEILEDER -> "Veileder startet arbeidsrettet oppfølging på bruker"
-            OppfolgingStartBegrunnelse.AAP_SØKNAD -> "Startet arbeidsrettet oppfølging på bruker på grunn av AAP søknad"
-            OppfolgingStartBegrunnelse.SYKMELDT_UTEN_ARBEIDSGIVER_4_UKER -> "Startet arbeidsrettet oppfølging fordi bruker har vært sykmeldt uten arbeidsgiver i 4 uker"
+            OppfolgingStartBegrunnelse.AAP_SØKNAD -> "Bruker har søkt om AAP"
+            OppfolgingStartBegrunnelse.SYKMELDT_UTEN_ARBEIDSGIVER_4_UKER -> "Bruker har vært sykmeldt uten arbeidsgiver i 4 uker"
             else -> "Startet arbeidsrettet oppfølging på bruker"
         }
     }
