@@ -3,7 +3,6 @@ package no.nav.veilarboppfolging.oppfolgingsbruker.kanStarteOppfolging
 import no.nav.veilarboppfolging.client.pdl.ForenkletFolkeregisterStatus
 import no.nav.veilarboppfolging.client.pdl.FregStatusOgStatsborgerskap
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ALLEREDE_UNDER_OPPFOLGING
-import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.DOD
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.FREG_STATUS_KREVER_MANUELL_GODKJENNING_PGA_DNUMMER_IKKE_EOS
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.FREG_STATUS_KREVER_MANUELL_GODKJENNING_PGA_IKKE_BOSATT
@@ -13,9 +12,6 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.IKKE_TILGANG_EGNE_ANSA
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.IKKE_TILGANG_FORTROLIG_ADRESSE
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.KanStarteOppfolgingDto
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.KanStarteOppfolgingSjekk.Companion.sjekkKanStarteOppfolgingPaBrukerForVeileder
-import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OPPFOLGING_OK
-import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.TILGANG_OK
-import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.toKanStarteOppfolging
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
@@ -49,52 +45,6 @@ class KanStarteOppfolgingTest {
         val brukerUnder18 = lazy { true }
         val result = sjekkKanStarteOppfolgingPaBrukerForVeileder(brukerUnder18,oppfolgingStatus, harTilgang, folkeregisterStatus)
         assertEquals(result, KanStarteOppfolgingDto.DOD)
-    }
-
-    @Test
-    fun `ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT skal være en ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT`() {
-        val harTilgang = lazy { TILGANG_OK }
-        val oppfolgingStatus = lazy { ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT }
-        val folkeregisterStatus = lazy { FREG_STATUS_OK }
-        val brukerUnder18 = lazy { true }
-        val result = sjekkKanStarteOppfolgingPaBrukerForVeileder(brukerUnder18, oppfolgingStatus, harTilgang, folkeregisterStatus)
-        assertEquals(result, KanStarteOppfolgingDto.ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT)
-    }
-
-    @Test
-    fun `ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT skal være en OK men skal fortsatt kreve tilgang`() {
-        val harTilgang = lazy { IKKE_TILGANG_EGNE_ANSATTE }
-        val oppfolgingStatus = lazy { ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT }
-        val folkeregisterStatus = lazy { FREG_STATUS_OK }
-        val brukerUnder18 = lazy { true }
-        val result = sjekkKanStarteOppfolgingPaBrukerForVeileder(brukerUnder18, oppfolgingStatus, harTilgang, folkeregisterStatus)
-        assertEquals(result, KanStarteOppfolgingDto.IKKE_TILGANG_EGNE_ANSATTE)
-    }
-
-    @Test
-    fun `ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT + ikkeBosatt skal være en OK men fortsatt kreve manuell godkjenning av lovlig opphold`() {
-        val harTilgang = lazy { TILGANG_OK }
-        val oppfolgingStatus = lazy { ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT }
-        val folkeregisterStatus = lazy { FREG_STATUS_KREVER_MANUELL_GODKJENNING_PGA_IKKE_BOSATT }
-        val brukerUnder18 = lazy { true }
-        val result = sjekkKanStarteOppfolgingPaBrukerForVeileder(brukerUnder18, oppfolgingStatus, harTilgang, folkeregisterStatus)
-        assertEquals(
-            result,
-            KanStarteOppfolgingDto.ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT_MEN_KREVER_MANUELL_GODKJENNING_PGA_IKKE_BOSATT
-        )
-    }
-
-    @Test
-    fun `ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT + dnummer og ikke eu eller eos skal være en OK men fortsatt kreve manuell godkjenning av lovlig opphold`() {
-        val harTilgang = lazy { TILGANG_OK }
-        val oppfolgingStatus = lazy { ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT }
-        val folkeregisterStatus = lazy { FREG_STATUS_KREVER_MANUELL_GODKJENNING_PGA_DNUMMER_IKKE_EOS }
-        val brukerUnder18 = lazy { true }
-        val result = sjekkKanStarteOppfolgingPaBrukerForVeileder(brukerUnder18, oppfolgingStatus, harTilgang, folkeregisterStatus)
-        assertEquals(
-            result,
-            KanStarteOppfolgingDto.ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT_MEN_KREVER_MANUELL_GODKJENNING_PGA_DNUMMER_IKKE_EOS
-        )
     }
 
     @Test

@@ -18,8 +18,7 @@ enum class KanStarteOppfolgingEksterneDto {
             brukerErUnder18: Lazy<Boolean>,
         ): KanStarteOppfolgingEksterneDto {
             return when (erBrukerUnderOppfolging.value) {
-                is ALLEREDE_UNDER_OPPFOLGING,
-                ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT -> ALLEREDE_UNDER_OPPFOLGING
+                is ALLEREDE_UNDER_OPPFOLGING -> ALLEREDE_UNDER_OPPFOLGING
                 is OPPFOLGING_OK -> {
                     if (brukerErUnder18.value) {
                         return JA_MED_MANUELL_GODKJENNING_PGA_UNDER_18

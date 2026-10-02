@@ -395,7 +395,7 @@ class GraphqlController(
 
     private fun kanStarteOppfolgingIntern(erUnderOppfolging: Boolean, fnr: Fnr): KanStarteOppfolgingDto {
         val gyldigOppfolging = lazy {
-            ErBrukerUnderOppfolging.evaluate(erUnderOppfolging, arenaService.brukerErIservIArena(fnr))
+            ErBrukerUnderOppfolging.evaluate(erUnderOppfolging)
         }
         val gyldigTilgang = lazy { evaluerNavAnsattTilgangTilEksternBrukerUtenGeografiskTilgangskontroll(fnr.get()).toKanStarteOppfolging() }
         val folkeregisterstatus = lazy { pdlFolkeregisterStatusClient.hentFolkeregisterStatus(fnr) }
@@ -407,7 +407,7 @@ class GraphqlController(
     @SchemaMapping(typeName = "OppfolgingDto", field = "kanStarteOppfolgingEkstern")
     fun kanStarteOppfolgingEkstern(oppfolgingDto: OppfolgingDto, @LocalContextValue erUnderOppfolging: Boolean, @LocalContextValue fnr: Fnr): KanStarteOppfolgingEksterneDto? {
         val gyldigOppfolging = lazy {
-            ErBrukerUnderOppfolging.evaluate(erUnderOppfolging, arenaService.brukerErIservIArena(fnr))
+            ErBrukerUnderOppfolging.evaluate(erUnderOppfolging)
         }
         val folkeregisterstatus = lazy { pdlFolkeregisterStatusClient.hentFolkeregisterStatus(fnr) }
         val brukerErUnder18 = lazy { folkeregisterstatus.value.under18 }
