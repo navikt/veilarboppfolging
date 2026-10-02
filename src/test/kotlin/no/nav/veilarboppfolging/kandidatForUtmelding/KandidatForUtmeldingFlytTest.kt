@@ -126,8 +126,26 @@ class KandidatForUtmeldingFlytTest(
         kafkaConsumerService.consumeEndringPaOppfolgingBruker(oppfolginsBrukerEndretTilISERV)
     }
 
+    private fun publiserBrukerBleARBS(fnr: Fnr) {
+        val oppfolginsBrukerEndretTilARBS = ConsumerRecord(
+            "topic", 0, 0, "key", TestUtils.oppfølgingsBrukerEndret(
+                fnr.get(), formidlingsgruppe = Formidlingsgruppe.ARBS
+            )
+        )
+        kafkaConsumerService.consumeEndringPaOppfolgingBruker(oppfolginsBrukerEndretTilARBS)
+    }
+
+    private fun publiserBrukerBleIARBS(fnr: Fnr) {
+        val oppfolginsBrukerEndretTilIARBS = ConsumerRecord(
+            "topic", 0, 0, "key", TestUtils.oppfølgingsBrukerEndret(
+                fnr.get(), formidlingsgruppe = Formidlingsgruppe.IARBS
+            )
+        )
+        kafkaConsumerService.consumeEndringPaOppfolgingBruker(oppfolginsBrukerEndretTilIARBS)
+    }
+
     @Test
-    fun `skal bli lagret som kandidat for utmelding hvis bruker først ble ISERV, så ble arbeidssokerperioden avsluttet`() {
+    fun `skal bli lagret som kandidat for utmelding hvis arbs-bruker først ble ISERV, så ble arbeidssokerperioden avsluttet`() {
         val fnr = randomFnr()
         val aktorId = randomAktorId()
         mockIdents(fnr, aktorId)
@@ -145,10 +163,35 @@ class KandidatForUtmeldingFlytTest(
         mockAap(fnr, harAap = false)
 
         publiserStartArbeidssokerPeriode(fnr, arbeidsoekerPeriodeStartet)
+        publiserBrukerBleARBS(fnr)
         publiserBrukerBleISERV(fnr, ISERV_FRA_DATO)
         publiserAvsluttArbeidssokerPeriode(fnr)
 
         assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId)).describedAs("Skal være lagret som kandidat for utmelding").isNotNull()
+    }
+
+    @Test
+    fun `skal ikke bli lagret som kandidat for utmelding hvis IARBS-bruker ble ISERV`() {
+        val fnr = randomFnr()
+        val aktorId = randomAktorId()
+        mockIdents(fnr, aktorId)
+        mockSytemBrukerAuthOk(aktorId, fnr)
+        val ISERV_FRA_DATO = LocalDate.of(2024, 10, 2)
+        mockVeilarbArenaOppfolgingsBruker(
+            fnr,
+            Formidlingsgruppe.ISERV,
+            iservFraDato = ISERV_FRA_DATO.atStartOfDay(ZoneId.systemDefault())
+        )
+        mockTiltakshistorikk(fnr, harAktiveDeltakelser = false)
+        mockUngdomsprogram(fnr, erDeltaker = false)
+        mockArbeidssoekerregisteret(fnr, erArbeidssoeker = false)
+        mockAap(fnr, harAap = false)
+
+        startOppfolging(aktorId, OppfolgingsRegistrering.manuellRegistreringBruker(fnr, aktorId))
+        publiserBrukerBleIARBS(fnr)
+        publiserBrukerBleISERV(fnr, ISERV_FRA_DATO)
+
+        assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId)).describedAs("Skal ikke være lagret som kandidat for utmelding").isNull()
     }
 
     @Test

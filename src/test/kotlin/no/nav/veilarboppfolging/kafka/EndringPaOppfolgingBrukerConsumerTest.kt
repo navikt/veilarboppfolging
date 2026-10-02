@@ -23,10 +23,15 @@ import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolginsBrukerOppslag
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsStatus
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient
 import no.nav.veilarboppfolging.config.ApplicationConfig.SYSTEM_USER_NAME
+import no.nav.veilarboppfolging.ident.randomAktorId
+import no.nav.veilarboppfolging.ident.randomFnr
 import no.nav.veilarboppfolging.kafka.TestUtils.oppfølgingsBrukerEndret
+import no.nav.veilarboppfolging.oppfolgingsbruker.SystemRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingTilstandOppslagResult
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.GetOppfolginsstatusFailure
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.GetOppfolginsstatusSuccess
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelseFraSystem
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ArenaIservKanIkkeReaktiveres
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvregistreringsType
 import no.nav.veilarboppfolging.service.KafkaConsumerService
@@ -74,28 +79,18 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
     }
 
     @Test
-    fun `Skal starte oppfølging for bruker som har blitt sykmeldt uten arbeidsgiver`() {
+    fun `Skal ikke starte oppfølging for bruker som har blitt sykmeldt uten arbeidsgiver`() {
         meldingFraVeilarbArenaPåBrukerMedStatus(fnr = fnr, formidlingsgruppe = Formidlingsgruppe.IARBS, kvalifiseringsgruppe = Kvalifiseringsgruppe.VURDU)
         val oppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId)
         assert(oppfolging.isPresent) { "Oppfolgingsstatus fra arena var null" }
-        assertTrue(oppfolging.get().underOppfolging)
-    }
-
-    @Test
-    fun `Skal ikke starte oppfølging for bruker under 18 som har blitt sykmeldt uten arbeidsgiver`() {
-        mockPdlFolkeregisterStatus(fnr, FregStatusOgStatsborgerskap(
-            fregStatus = ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven,
-            statsborgerskap = listOf("NOR"),
-            under18 = true,
-        ))
-        meldingFraVeilarbArenaPåBrukerMedStatus(fnr = fnr, formidlingsgruppe = Formidlingsgruppe.IARBS, kvalifiseringsgruppe = Kvalifiseringsgruppe.VURDU)
-        val oppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId)
         assertFalse(oppfolging.get().underOppfolging)
     }
 
     @Test
     fun `Skal ikke starte oppfølging når bruker ble avsluttet manuelt og fortsatt er sykmeldt uten arbeidsgiver`() {
-        meldingFraVeilarbArenaPåBrukerMedStatus(fnr = fnr, formidlingsgruppe = Formidlingsgruppe.IARBS, kvalifiseringsgruppe = Kvalifiseringsgruppe.VURDU)
+        startOppfolging(aktorId,
+            OppfolgingsRegistrering.systemRegistrering(fnr, aktorId, SystemRegistrant("kelvin"), OppfolgingStartBegrunnelseFraSystem.AAP_SØKNAD, kontor = null)
+        )
         val oppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId)
         assertTrue(oppfolging.get().underOppfolging)
         oppfolgingsPeriodeRepository.avsluttSistePeriodeOgAvsluttOppfolging(aktorId, "A111111", "begrunnelse",
@@ -161,8 +156,8 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
         val statusEtterEndring = arenaOppfolgingService.hentArenaOppfolginsstatusMedHovedmaal(fnr)
         assert(statusEtterEndring is GetOppfolginsstatusSuccess) { "skal ha oppfølgingststatus når dem er kommet inn via topic" }
         assertEquals(hovedmaal.name, (statusEtterEndring as GetOppfolginsstatusSuccess).result.hovedmaalkode)
-        assertEquals(formidlingsgruppe.name, (statusEtterEndring as GetOppfolginsstatusSuccess).result.formidlingsgruppe)
-        assertEquals(kvalifiseringsgruppe.name, (statusEtterEndring as GetOppfolginsstatusSuccess).result.servicegruppe)
+        assertEquals(formidlingsgruppe.name, (statusEtterEndring).result.formidlingsgruppe)
+        assertEquals(kvalifiseringsgruppe.name, (statusEtterEndring).result.servicegruppe)
     }
 
     @Test
@@ -210,16 +205,6 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
         assert(oppfolgingsStatus is GetOppfolginsstatusFailure)
     }
 
-    private fun arena_sier_KAN_reaktiveres() {
-        val arenaOppfolging = VeilarbArenaOppfolgingsStatus(
-            null,
-            "ISERV",
-            "VURDU",
-            "8989",
-        )
-        `when`(veilarbarenaClient.getArenaOppfolgingsstatus(fnr)).thenReturn(Optional.of(arenaOppfolging))
-    }
-
     private fun arena_sier_kan_IKKE_reaktiveres() {
         val arenaOppfolging = VeilarbArenaOppfolgingsStatus(
             null,
@@ -237,7 +222,7 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
     }
 
     @Test
-    fun `skal starte oppfølging på syfo-bruker når 14a i arena`() {
+    fun `skal ikke starte oppfølging på syfo-bruker når 14a i arena`() {
         mockEnhetINorg("8989", "Nav enhet")
 
         val localStatus = oppfolgingsStatusRepository.hentOppfolging(aktorId)
@@ -327,47 +312,15 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
     }
 
     @Test
-    fun `skal ikke utmeldes hvis arena sier kanReaktiveres selv om kanIkkeReaktiveres lokalt skulle tilsi det`() {
+    fun `skal utmeldes hvis arena sier ikke ISERV og bruker var IARBS`() {
+        val fnr = randomFnr()
+        val aktorId = randomAktorId()
+        mockInternBrukerAuthOk(UUID.randomUUID(), aktorId, fnr)
         mockEnhetINorg("8989", "Nav enhet")
 
-        meldingFraVeilarbArenaPåBrukerMedStatus(
-            fnr = fnr,
-            enhetId = "8989",
-            hovedmaal = null,
-            formidlingsgruppe = Formidlingsgruppe.IARBS,
-            kvalifiseringsgruppe = Kvalifiseringsgruppe.VURDU,
+        startOppfolging(aktorId,
+            OppfolgingsRegistrering.systemRegistrering(fnr, aktorId, SystemRegistrant("kelvin"), OppfolgingStartBegrunnelseFraSystem.AAP_SØKNAD, kontor = null)
         )
-
-        arena_sier_KAN_reaktiveres()
-
-        erSystemBruker()
-        meldingFraVeilarbArenaPåBrukerMedStatus(
-            fnr = fnr,
-            enhetId = "8989",
-            hovedmaal = null,
-            formidlingsgruppe = Formidlingsgruppe.ISERV,
-            kvalifiseringsgruppe = Kvalifiseringsgruppe.VURDU,
-            iservFraDato = LocalDate.now().minusDays(1)
-        )
-
-        val statusEtterEndring = oppfolgingsStatusRepository.hentOppfolging(aktorId)
-        assert(statusEtterEndring.isPresent)
-        assertThat(statusEtterEndring.get().underOppfolging).isTrue()
-    }
-
-    @Test
-    fun `skal utmeldes hvis arena sier ikke kanReaktiveres + ISERV selv om kanIkkeReaktiveres lokalt skulle tilsi det motsatte`() {
-        mockEnhetINorg("8989", "Nav enhet")
-
-        meldingFraVeilarbArenaPåBrukerMedStatus(
-            fnr = fnr,
-            enhetId = "8989",
-            hovedmaal = null,
-            formidlingsgruppe = Formidlingsgruppe.IARBS,
-            kvalifiseringsgruppe = Kvalifiseringsgruppe.VURDU,
-        )
-
-        arena_sier_kan_IKKE_reaktiveres()
 
         erSystemBruker()
         meldingFraVeilarbArenaPåBrukerMedStatus(
@@ -391,7 +344,6 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
     @Test
     fun `skal ikke utmeldes hvis bruker går fra ARBS til ISERV, men oppdaterer lokal Arenastatus`() {
         mockEnhetINorg("8989", "Nav enhet")
-        arena_sier_kan_IKKE_reaktiveres()
         erSystemBruker()
 
         startOppfolgingSomArbeidsoker(aktorId, fnr)
@@ -433,11 +385,6 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
     fun mockEnhetINorg(id: String, navn: String) {
         val enhet = Enhet().also { it.navn = navn }
         `when`(norg2Client.hentEnhet(id)).thenReturn(enhet)
-    }
-
-    fun meldingFraVeilarbArenaPåBrukerMedEnhet(fnr: Fnr, enhetId: String) {
-        val record = ConsumerRecord("topic", 0, 0, "key", oppfølgingsBrukerEndret(fnr.get(), enhetId = enhetId))
-        kafkaConsumerService.consumeEndringPaOppfolgingBruker(record)
     }
 
     fun meldingFraVeilarbArenaPåBrukerMedStatus(fnr: Fnr, formidlingsgruppe: Formidlingsgruppe, kvalifiseringsgruppe: Kvalifiseringsgruppe?, hovedmaal: Hovedmaal? = null, enhetId: String = "0101", iservFraDato: LocalDate? = null) {

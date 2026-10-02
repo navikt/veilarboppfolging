@@ -34,17 +34,13 @@ class OppfolgingsbrukerEndretIArenaServiceTest {
 
     private val oppfolgingService: OppfolgingService = mock(OppfolgingService::class.java)
     private val startOppfolgingService: StartOppfolgingService = mock(StartOppfolgingService::class.java)
-    private val arenaOppfolgingService: ArenaOppfolgingService = mock(ArenaOppfolgingService::class.java)
     private val oppfolgingsStatusRepository: OppfolgingsStatusRepository = mock(OppfolgingsStatusRepository::class.java)
     private val pdlFolkeregisterStatusClient: PdlFolkeregisterStatusClient = mock(PdlFolkeregisterStatusClient::class.java)
     private val kandidatForUtmeldingService: KandidatForUtmeldingService = mock(KandidatForUtmeldingService::class.java)
 
     val oppfolgingsbrukerEndretIArenaService = OppfolgingsbrukerEndretIArenaService(
         oppfolgingService = oppfolgingService,
-        startOppfolgingService = startOppfolgingService,
-        arenaOppfolgingService = arenaOppfolgingService,
         oppfolgingsStatusRepository = oppfolgingsStatusRepository,
-        pdlFolkeregisterStatusClient = pdlFolkeregisterStatusClient,
         kandidatForUtmeldingService = kandidatForUtmeldingService,
     )
 
@@ -54,7 +50,6 @@ class OppfolgingsbrukerEndretIArenaServiceTest {
     @Test
     fun `brukere som kan reaktiveres i Arena skal delegeres til kandidatForUtmeldingService`() {
         oppfolgingStatus(underOppfolging = true)
-        kanReaktiveres()
         val melding = meldingFraArena(Formidlingsgruppe.ISERV, Kvalifiseringsgruppe.BATT)
 
         oppfolgingsbrukerEndretIArenaService.oppdaterOppfolgingMedStatusFraArena(melding)
@@ -65,7 +60,6 @@ class OppfolgingsbrukerEndretIArenaServiceTest {
     @Test
     fun `brukere som ikke kan reaktiveres i Arena skal delegeres til kandidatForUtmeldingService`() {
         oppfolgingStatus(underOppfolging = true)
-        kanIkkeReaktiveres()
         val melding = meldingFraArena(Formidlingsgruppe.ISERV, Kvalifiseringsgruppe.BATT)
 
         oppfolgingsbrukerEndretIArenaService.oppdaterOppfolgingMedStatusFraArena(melding)
@@ -74,22 +68,20 @@ class OppfolgingsbrukerEndretIArenaServiceTest {
     }
 
     @Test
-    fun `skal starte oppfølging på brukere som ble sykmeldt uten arbeidsgiver`() {
+    fun `skal ikke starte oppfølging på brukere som ble sykmeldt uten arbeidsgiver`() {
         oppfolgingStatus(underOppfolging = false)
-        kanIkkeReaktiveres()
         brukerSomErOver18()
         val melding = meldingFraArena(Formidlingsgruppe.IARBS, Kvalifiseringsgruppe.VURDU)
 
         oppfolgingsbrukerEndretIArenaService.oppdaterOppfolgingMedStatusFraArena(melding)
 
-        verify(startOppfolgingService, times(1))
+        verify(startOppfolgingService, never())
             .startOppfolgingHvisIkkeAlleredeStartet(any())
     }
 
     @Test
     fun `skal ikke starte oppfølging på bruker under 18 som ble sykmeldt uten arbeidsgiver`() {
         oppfolgingStatus(underOppfolging = false)
-        kanIkkeReaktiveres()
         brukerSomErUnder18()
         val melding = meldingFraArena(Formidlingsgruppe.IARBS, Kvalifiseringsgruppe.VURDU)
 
@@ -141,7 +133,6 @@ class OppfolgingsbrukerEndretIArenaServiceTest {
     @Test
     fun `skal ignorere brukere som går fra ARBS til ISERV`() {
         oppfolgingStatusArbs()
-        kanReaktiveres()
         val melding = meldingFraArena(Formidlingsgruppe.ISERV, Kvalifiseringsgruppe.BATT)
 
         oppfolgingsbrukerEndretIArenaService.oppdaterOppfolgingMedStatusFraArena(melding)
@@ -210,13 +201,6 @@ class OppfolgingsbrukerEndretIArenaServiceTest {
                 )
             )
         )
-    }
-
-    private fun kanReaktiveres() {
-        `when`(arenaOppfolgingService.kanEnkeltReaktiveres(FNR)).thenReturn(Optional.of(true))
-    }
-    private fun kanIkkeReaktiveres() {
-        `when`(arenaOppfolgingService.kanEnkeltReaktiveres(FNR)).thenReturn(Optional.of(false))
     }
 
     private fun brukerSomErOver18() {

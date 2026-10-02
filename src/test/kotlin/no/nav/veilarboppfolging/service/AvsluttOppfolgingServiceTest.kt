@@ -98,16 +98,6 @@ class AvsluttOppfolgingServiceTest {
 
             ))
     }
-    private fun kanReaktiveres() {
-        `when`(arenaOppfolgingService.kanEnkeltReaktiveres(TEST_FNR)).thenReturn(
-            Optional.of<Boolean>(true)
-        )
-    }
-    private fun kanIkkeReaktiveres() {
-        `when`(arenaOppfolgingService.kanEnkeltReaktiveres(TEST_FNR)).thenReturn(
-            Optional.of<Boolean>(false)
-        )
-    }
 
     @BeforeEach
     fun beforeEach() {
@@ -118,7 +108,6 @@ class AvsluttOppfolgingServiceTest {
     @Test
     fun `skal avslutte oppfolging pa bruker som er under oppfolging i veilarboppfolging men er ISERV i arena og ikke kan reaktiveres`() {
         brukerErUnderOppfolgingLokalt()
-        kanIkkeReaktiveres()
         mockBrukerIdenter()
         `when`(kvpService.erUnderKvp(TEST_AKTOR_ID)).thenReturn(false)
 
@@ -133,7 +122,6 @@ class AvsluttOppfolgingServiceTest {
     @Test
     fun `skal ikke avslutte oppfolging pa bruker som er under kvp`() {
         brukerErUnderOppfolgingLokalt()
-        kanIkkeReaktiveres()
         mockBrukerIdenter()
         `when`(kvpService.erUnderKvp(TEST_AKTOR_ID)).thenReturn(true)
         `when`(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(listOf(TEST_FNR))).thenReturn(false)
@@ -155,7 +143,6 @@ class AvsluttOppfolgingServiceTest {
     @Test
     fun `skal ikke avslutte oppfolging pa bruker som har aktive tiltaksdeltakelser`() {
         brukerErUnderOppfolgingLokalt()
-        kanIkkeReaktiveres()
         mockBrukerIdenter()
         `when`(kvpService.erUnderKvp(TEST_AKTOR_ID)).thenReturn(false)
         `when`(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(listOf(TEST_FNR))).thenReturn(true)
@@ -175,7 +162,6 @@ class AvsluttOppfolgingServiceTest {
     @Test
     fun `skal ikke avslutte oppfolging pa bruker som er deltaker i ungdomsprogrammet`() {
         brukerErUnderOppfolgingLokalt()
-        kanIkkeReaktiveres()
         mockBrukerIdenter()
         `when`(kvpService.erUnderKvp(TEST_AKTOR_ID)).thenReturn(false)
         `when`(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(listOf(TEST_FNR))).thenReturn(false)
@@ -211,7 +197,6 @@ class AvsluttOppfolgingServiceTest {
     @Test
     fun `skal ikke avslutte oppfolging pa bruker som har forlenget oppfolging`() {
         brukerErUnderOppfolgingLokalt()
-        kanIkkeReaktiveres()
         mockBrukerIdenter()
         `when`(kvpService.erUnderKvp(TEST_AKTOR_ID)).thenReturn(false)
         `when`(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(listOf(TEST_FNR))).thenReturn(false)
@@ -231,7 +216,6 @@ class AvsluttOppfolgingServiceTest {
     @Test
     fun `skal avslutte oppfolging pa bruker som er kandidat med forlenget oppfolging hvis det er en manuell avregistrering`() {
         brukerErUnderOppfolgingLokalt()
-        kanIkkeReaktiveres()
         mockBrukerIdenter()
         `when`(kvpService.erUnderKvp(TEST_AKTOR_ID)).thenReturn(false)
         `when`(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(listOf(TEST_FNR))).thenReturn(false)
