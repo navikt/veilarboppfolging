@@ -4,7 +4,6 @@ import no.nav.pto_schema.kafka.json.topic.SisteOppfolgingsperiodeV1;
 import no.nav.pto_schema.kafka.json.topic.SisteTilordnetVeilederV1;
 import no.nav.veilarboppfolging.controller.response.*;
 import no.nav.veilarboppfolging.domain.AvslutningStatusData;
-import no.nav.veilarboppfolging.domain.OppfolgingStatusData;
 import no.nav.veilarboppfolging.kafka.dto.OppfolgingsperiodeDTO;
 import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity;
 import no.nav.veilarboppfolging.repository.entity.MaalEntity;
@@ -63,32 +62,6 @@ public class DtoMappers {
                 avslutningStatusData.getErDeltakerIUngdomsprogrammet(),
                 avslutningStatusData.getErArbeidssoeker(),
                 avslutningStatusData.getHarAap()
-        );
-    }
-
-    public static OppfolgingStatus tilDto(OppfolgingStatusData oppfolgingStatusData, boolean erInternBruker) {
-        return new OppfolgingStatus(
-                oppfolgingStatusData.getFnr(),
-                oppfolgingStatusData.getAktorId(),
-                erInternBruker ? oppfolgingStatusData.getVeilederId() : null,
-                oppfolgingStatusData.getReservasjonKRR(),
-                oppfolgingStatusData.getRegistrertKRR(),
-                oppfolgingStatusData.getKanVarsles(),
-                oppfolgingStatusData.getManuell(),
-                oppfolgingStatusData.getUnderOppfolging(),
-                oppfolgingStatusData.getUnderKvp(),
-                oppfolgingStatusData.getOppfolgingUtgang(),
-                erInternBruker ? oppfolgingStatusData.getKanStarteOppfolging() : null,
-                null,
-                oppfolgingStatusData.getOppfolgingsperioder().stream().map(o -> tilOppfolgingPeriodeDTO(o, erInternBruker)).collect(toList()),
-                erInternBruker ? oppfolgingStatusData.getHarSkriveTilgang() : true,
-                erInternBruker ? oppfolgingStatusData.getInaktivIArena() : null,
-                oppfolgingStatusData.getKanReaktiveres(),
-                oppfolgingStatusData.getInaktiveringsdato(),
-                oppfolgingStatusData.getErSykmeldtMedArbeidsgiver(),
-                oppfolgingStatusData.getServicegruppe(),
-                oppfolgingStatusData.getFormidlingsgruppe(),
-                oppfolgingStatusData.getRettighetsgruppe()
         );
     }
 

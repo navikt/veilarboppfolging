@@ -1,26 +1,15 @@
 package no.nav.veilarboppfolging.controller
 
-import java.time.LocalDate
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.poao_tilgang.client.TilgangType
 import no.nav.veilarboppfolging.BadRequestException
 import no.nav.veilarboppfolging.client.aoKontor.AoKontorClient
-import no.nav.veilarboppfolging.client.veilarbarena.AlleredeUnderoppfolgingError
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaRegistreringResultat
-import no.nav.veilarboppfolging.client.veilarbarena.BrukerErUtmeldingskandidat
-import no.nav.veilarboppfolging.client.veilarbarena.FeilFraArenaError
-import no.nav.veilarboppfolging.client.veilarbarena.ReaktiveringSuccess
 import no.nav.veilarboppfolging.client.veilarbarena.RegistrerIArenaError
 import no.nav.veilarboppfolging.client.veilarbarena.RegistrerIArenaSuccess
 import no.nav.veilarboppfolging.client.veilarbarena.RegistrerIkkeArbeidssokerDto
-import no.nav.veilarboppfolging.client.veilarbarena.UkjentFeilUnderReaktiveringError
-import no.nav.veilarboppfolging.controller.response.AvslutningsStatusDto
-import no.nav.veilarboppfolging.controller.response.Bruker
-import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeDTO
-import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeMinimalDTO
-import no.nav.veilarboppfolging.controller.response.OppfolgingStatus
-import no.nav.veilarboppfolging.controller.response.VeilederTilgang
+import no.nav.veilarboppfolging.controller.response.*
 import no.nav.veilarboppfolging.controller.v2.response.UnderOppfolgingV2Response
 import no.nav.veilarboppfolging.controller.v3.request.KvpRequest
 import no.nav.veilarboppfolging.controller.v3.request.OppfolgingRequest
@@ -30,24 +19,15 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.AktiverBrukerManueltService
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity
 import no.nav.veilarboppfolging.repository.enums.KodeverkBruker
-import no.nav.veilarboppfolging.service.AuthService
-import no.nav.veilarboppfolging.service.AvsluttOppfolgingService
-import no.nav.veilarboppfolging.service.KontaktBrukerService
-import no.nav.veilarboppfolging.service.KvpService
-import no.nav.veilarboppfolging.service.ManuellStatusService
-import no.nav.veilarboppfolging.service.OppfolgingService
-import no.nav.veilarboppfolging.service.ReaktiveringService
+import no.nav.veilarboppfolging.service.*
 import no.nav.veilarboppfolging.utils.DtoMappers
 import no.nav.veilarboppfolging.utils.auth.AllowListApplicationName
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
+import java.time.LocalDate
 
 @RestController
 @RequestMapping("/api/v3")
@@ -59,7 +39,6 @@ class OppfolgingV3Controller(
     val kvpService: KvpService,
     val aktiverBrukerManueltService: AktiverBrukerManueltService,
     val arenaOppfolgingService: ArenaOppfolgingService,
-    val reaktiveringService: ReaktiveringService,
     val kontaktBrukerService: KontaktBrukerService,
     val aoKontorClient: AoKontorClient
 ) {
@@ -84,16 +63,6 @@ class OppfolgingV3Controller(
             id = authService.innloggetBrukerIdent,
             erVeileder = authService.erInternBruker(),
             erBruker = authService.erEksternBruker()
-        )
-    }
-
-    @PostMapping("/oppfolging/hent-status")
-    fun hentOppfolgingsStatus(@RequestBody(required = false) oppfolgingRequest: OppfolgingRequest?): OppfolgingStatus? {
-        val maybeFodselsnummer = oppfolgingRequest?.fnr
-        val fodselsnummer = authService.hentIdentForEksternEllerIntern(maybeFodselsnummer)
-        return DtoMappers.tilDto(
-            oppfolgingService.hentOppfolgingsStatus(fodselsnummer),
-            authService.erInternBruker()
         )
     }
 
@@ -195,29 +164,6 @@ class OppfolgingV3Controller(
         return oppfolgingService.hentHarFlereAktorIderMedOppfolging(fodselsnummer)
     }
 
-
-    @PostMapping("/oppfolging/reaktiver")
-    fun reaktiverBrukerIArena(@RequestBody reaktiverRequestDto: ReaktiverRequestDto): ResponseEntity<*> {
-        authService.skalVereInternBruker()
-        authService.sjekkAtApplikasjonErIAllowList(ALLOWLIST)
-
-        val reaktiveringResult = reaktiveringService.reaktiverBrukerIArena(reaktiverRequestDto.fnr)
-        return when (reaktiveringResult) {
-            is ReaktiveringSuccess -> ResponseEntity(ReaktiverDto(true, reaktiveringResult.kode), HttpStatus.OK)
-            is AlleredeUnderoppfolgingError -> ResponseEntity("Allerede under oppfolging", HttpStatus.CONFLICT)
-            is FeilFraArenaError -> ResponseEntity(reaktiveringResult.arenaResultat, HttpStatus.CONFLICT)
-            is UkjentFeilUnderReaktiveringError -> {
-                logger.error("Ukjent feil under reaktivering av bruker", reaktiveringResult.throwable)
-                ResponseEntity("Noe gikk veldig galt", HttpStatus.INTERNAL_SERVER_ERROR)
-            }
-
-            is BrukerErUtmeldingskandidat -> ResponseEntity(
-                "Bruker er utmeldingskandidat - skal ikke kunne reaktiveres",
-                HttpStatus.CONFLICT
-            )
-        }
-    }
-
     @PostMapping("/oppfolging/startOppfolgingsperiode")
     fun aktiverBruker(@RequestBody startOppfolging: StartOppfolgingDto): ResponseEntity<RegistrerIkkeArbeidssokerDto> {
         val fnrTilNyBruker = if (authService.erEksternBruker()) {
@@ -317,19 +263,12 @@ class StartOppfolgingDto(
     val kontorSattAvVeileder: String?
 )
 
-data class ReaktiverRequestDto(val fnr: Fnr)
-
 enum class HenviserSystem {
     DEMO,
     SYFO,
     AAP,
     INNGAR_EKSTERN
 }
-
-data class ReaktiverDto(
-    val ok: Boolean,
-    val kode: ArenaRegistreringResultat,
-)
 
 data class KontaktBrukerDto(
     val frist: LocalDate,

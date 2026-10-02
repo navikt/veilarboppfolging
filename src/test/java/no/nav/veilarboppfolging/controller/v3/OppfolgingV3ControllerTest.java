@@ -6,13 +6,14 @@ import no.nav.poao_tilgang.client.Decision;
 import no.nav.poao_tilgang.client.TilgangType;
 import no.nav.veilarboppfolging.ForbiddenException;
 import no.nav.veilarboppfolging.client.aoKontor.AoKontorClient;
-import no.nav.veilarboppfolging.client.veilarbarena.*;
+import no.nav.veilarboppfolging.client.veilarbarena.ArenaRegistreringResultat;
+import no.nav.veilarboppfolging.client.veilarbarena.RegistrerIArenaSuccess;
+import no.nav.veilarboppfolging.client.veilarbarena.RegistrerIkkeArbeidssokerDto;
 import no.nav.veilarboppfolging.controller.KontaktBrukerDto;
 import no.nav.veilarboppfolging.controller.OppfolgingV3Controller;
 import no.nav.veilarboppfolging.controller.response.VeilederTilgang;
 import no.nav.veilarboppfolging.controller.v3.request.OppfolgingRequest;
 import no.nav.veilarboppfolging.domain.AvslutningStatusData;
-import no.nav.veilarboppfolging.domain.OppfolgingStatusData;
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService;
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.AktiverBrukerManueltService;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
@@ -63,8 +64,6 @@ class OppfolgingV3ControllerTest {
     @MockitoBean
     private ArenaOppfolgingService arenaOppfolgingService;
     @MockitoBean
-    private ReaktiveringService reaktiveringService;
-    @MockitoBean
     private KontaktBrukerService kontaktBrukerService;
     @MockitoBean
     private AvsluttOppfolgingService avsluttOppfolgingService;
@@ -99,27 +98,6 @@ class OppfolgingV3ControllerTest {
 
         String expectedJson = "{\"id\":\"Z112233\",\"erVeileder\":true,\"erBruker\":false}";
         mockMvc.perform(get("/api/v3/oppfolging/me"))
-                .andExpect(content().json(expectedJson, true));
-    }
-
-    @Test
-    void hentOppfolgingsStatus_skal_returnere_oppfolgingstatus() throws Exception {
-        when(authService.erInternBruker()).thenReturn(true);
-        when(authService.hentIdentForEksternEllerIntern(TEST_FNR)).thenReturn(TEST_FNR);
-        when(oppfolgingService.hentOppfolgingsStatus(TEST_FNR)).thenReturn(
-                new OppfolgingStatusData(TEST_FNR.get(), TEST_AKTOR_ID.get(), null, false, true,
-                        false, true, false, false, true,
-                        Collections.emptyList(), Collections.emptyList(), true, null, false, null,
-        false, "servicegruppe", "formidlingsgruppe", "rettighetsgruppe", null
-                ));
-
-        String expectedJson = "{\"fnr\":\"12345678900\",\"aktorId\":\"11122233334445\",\"veilederId\":null,\"reservasjonKRR\":false,\"registrertKRR\":true,\"kanVarsles\":true,\"manuell\":false,\"underOppfolging\":true,\"underKvp\":false,\"oppfolgingUtgang\":null,\"kanStarteOppfolging\":false,\"avslutningStatus\":null,\"oppfolgingsPerioder\":[],\"harSkriveTilgang\":true,\"inaktivIArena\":null,\"kanReaktiveres\":false,\"inaktiveringsdato\":null,\"erSykmeldtMedArbeidsgiver\":false,\"servicegruppe\":\"servicegruppe\",\"formidlingsgruppe\":\"formidlingsgruppe\",\"rettighetsgruppe\":\"rettighetsgruppe\"}";
-
-        mockMvc.perform(post("/api/v3/oppfolging/hent-status")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"fnr\":\"12345678900\"}")
-                )
-                .andExpect(status().is(200))
                 .andExpect(content().json(expectedJson, true));
     }
 
@@ -349,18 +327,6 @@ class OppfolgingV3ControllerTest {
                         .content("{\"fnr\":\"12345678900\",\"henviserSystem\":\"AAP\"}")
                 )
                 .andExpect(status().is(403));
-    }
-
-    @Test
-    void reaktiver_skal_returnere_ok() throws Exception {
-        when(reaktiveringService.reaktiverBrukerIArena(TEST_FNR))
-                .thenReturn(new ReaktiveringSuccess(ArenaRegistreringResultat.OK_REGISTRERT_I_ARENA));
-        mockMvc.perform(post("/api/v3/oppfolging/reaktiver")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"fnr\":\"12345678900\"}")
-                )
-                .andExpect(content().string("{\"ok\":true,\"kode\":\"OK_REGISTRERT_I_ARENA\"}"))
-                .andExpect(status().is(200));
     }
 
     @Test

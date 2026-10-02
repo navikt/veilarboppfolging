@@ -44,29 +44,24 @@ public class OppfolgingController {
         );
     }
 
-    // TODO: Ikke returner OppfolgingStatus
     @PostMapping("/settManuell")
-    public OppfolgingStatus settTilManuell(@RequestBody VeilederBegrunnelseDTO dto, @RequestParam("fnr") Fnr fnr) {
+    public void settTilManuell(@RequestBody VeilederBegrunnelseDTO dto, @RequestParam("fnr") Fnr fnr) {
         authService.skalVereInternBruker();
 
         manuellStatusService.oppdaterManuellStatus(
                 fnr, true, dto.getBegrunnelse(),
                 KodeverkBruker.NAV, authService.getInnloggetVeilederIdent()
         );
-
-        return tilDto(oppfolgingService.hentOppfolgingsStatus(fnr), authService.erInternBruker());
     }
 
-    // TODO: Ikke returner OppfolgingStatus
     @PostMapping("/settDigital")
-    public OppfolgingStatus settTilDigital(
+    public void settTilDigital(
             @RequestBody(required = false) VeilederBegrunnelseDTO dto,
             @RequestParam(value = "fnr", required = false) Fnr fnr) {
         Fnr fodselsnummer = authService.hentIdentForEksternEllerIntern(fnr);
 
         if (authService.erEksternBruker()) {
             manuellStatusService.settDigitalBruker(fodselsnummer);
-            return tilDto(oppfolgingService.hentOppfolgingsStatus(fodselsnummer), authService.erInternBruker());
         }
 
         // Påkrevd for intern bruker
@@ -78,8 +73,6 @@ public class OppfolgingController {
                 fodselsnummer, false, dto.getBegrunnelse(),
                 KodeverkBruker.NAV, hentBrukerInfo().getId()
         );
-
-        return tilDto(oppfolgingService.hentOppfolgingsStatus(fodselsnummer), authService.erInternBruker());
     }
 
     @PostMapping("/startKvp")

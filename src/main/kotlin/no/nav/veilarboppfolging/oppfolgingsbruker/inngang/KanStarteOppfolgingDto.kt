@@ -32,17 +32,6 @@ sealed class KanStarteOppfolgingSjekk {
 
             return when (erBrukerUnderOppfolging.value) {
                 ALLEREDE_UNDER_OPPFOLGING -> KanStarteOppfolgingDto.kanStarteOppfolging(erBrukerUnderOppfolging.value)
-                ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT -> {
-                    if (fregStatusSjekkResultat.value is FREG_STATUS_KREVER_MANUELL_GODKJENNING) {
-                        return when (fregStatusSjekkResultat.value as FREG_STATUS_KREVER_MANUELL_GODKJENNING) {
-                            is FREG_STATUS_KREVER_MANUELL_GODKJENNING_PGA_IKKE_BOSATT ->
-                                KanStarteOppfolgingDto.ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT_MEN_KREVER_MANUELL_GODKJENNING_PGA_IKKE_BOSATT
-                            is FREG_STATUS_KREVER_MANUELL_GODKJENNING_PGA_DNUMMER_IKKE_EOS ->
-                                KanStarteOppfolgingDto.ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT_MEN_KREVER_MANUELL_GODKJENNING_PGA_DNUMMER_IKKE_EOS
-                        }
-                    } else
-                        KanStarteOppfolgingDto.ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT
-                }
                 OPPFOLGING_OK -> {
                     if (fregStatusSjekkResultat.value is FREG_STATUS_KREVER_MANUELL_GODKJENNING) {
                         when (fregStatusSjekkResultat.value as FREG_STATUS_KREVER_MANUELL_GODKJENNING) {
@@ -77,10 +66,9 @@ sealed class KanStarteOppfolgingSjekk {
 
 sealed class ErBrukerUnderOppfolging(): KanStarteOppfolgingSjekk() {
     companion object {
-        fun evaluate(erUnderOppfolging: Boolean, brukerErIservIArena: Boolean): ErBrukerUnderOppfolging {
+        fun evaluate(erUnderOppfolging: Boolean): ErBrukerUnderOppfolging {
             return if (erUnderOppfolging) {
-                if (brukerErIservIArena) ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT
-                else ALLEREDE_UNDER_OPPFOLGING
+                ALLEREDE_UNDER_OPPFOLGING
             } else {
                 OPPFOLGING_OK
             }
@@ -90,7 +78,6 @@ sealed class ErBrukerUnderOppfolging(): KanStarteOppfolgingSjekk() {
 
 object OPPFOLGING_OK: ErBrukerUnderOppfolging()
 object ALLEREDE_UNDER_OPPFOLGING: ErBrukerUnderOppfolging()
-object ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT: ErBrukerUnderOppfolging()
 
 sealed class VeilederHarTilgang: KanStarteOppfolgingSjekk()
 object TILGANG_OK: VeilederHarTilgang()
@@ -117,9 +104,6 @@ enum class KanStarteOppfolgingDto {
     JA_MED_MANUELL_GODKJENNING_PGA_DNUMMER_IKKE_EOS,
     JA_MED_MANUELL_GODKJENNING_PGA_DNUMMER_IKKE_EOS_UNDER_18,
     ALLEREDE_UNDER_OPPFOLGING,
-    ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT,
-    ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT_MEN_KREVER_MANUELL_GODKJENNING_PGA_IKKE_BOSATT,
-    ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT_MEN_KREVER_MANUELL_GODKJENNING_PGA_DNUMMER_IKKE_EOS,
     DOD,
     IKKE_LOVLIG_OPPHOLD,
     UKJENT_STATUS_FOLKEREGISTERET,
@@ -146,7 +130,6 @@ enum class KanStarteOppfolgingDto {
                 is IKKE_TILGANG_FORTROLIG_ADRESSE -> IKKE_TILGANG_FORTROLIG_ADRESSE
                 is IKKE_TILGANG_STRENGT_FORTROLIG_ADRESSE -> IKKE_TILGANG_STRENGT_FORTROLIG_ADRESSE
                 is INGEN_STATUS_FOLKEREGISTERET -> INGEN_STATUS_FOLKEREGISTERET
-                is ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT -> ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT
             }
         }
     }

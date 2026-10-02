@@ -1,7 +1,5 @@
 package no.nav.veilarboppfolging.oppfolgingsbruker.arena
 
-import java.time.LocalDate
-import java.util.Optional
 import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.client.norg2.Norg2Client
 import no.nav.common.types.identer.EnhetId
@@ -10,18 +8,14 @@ import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.pto_schema.enums.arena.Hovedmaal
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
 import no.nav.veilarboppfolging.FantIkkeBrukerIArenaException
-import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolgingTilstand
-import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolginsBrukerOppslagResult
-import no.nav.veilarboppfolging.client.veilarbarena.RegistrerIArenaResult
-import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsBruker
-import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsStatus
-import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient
+import no.nav.veilarboppfolging.client.veilarbarena.*
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.OppfolgingEnhetMedVeilederResponse.Oppfolgingsenhet
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
 import no.nav.veilarboppfolging.service.AuthService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
+import java.util.*
 import kotlin.jvm.optionals.getOrNull
 
 @Service
@@ -34,17 +28,6 @@ class ArenaOppfolgingService @Autowired constructor(
     private val norg2Client: Norg2Client,
 ) {
     private val log = LoggerFactory.getLogger(ArenaOppfolgingService::class.java)
-
-    fun kanEnkeltReaktiveres(fnr: Fnr): Optional<Boolean> {
-        return veilarbarenaClient.getArenaOppfolgingsstatus(fnr)
-            .flatMap { Optional.ofNullable(it.kanEnkeltReaktiveres) }
-    }
-
-    fun brukerErIservIArena(fnr: Fnr): Boolean {
-        return veilarbarenaClient.getArenaOppfolgingsstatus(fnr)
-            .map { it.formidlingsgruppe == Formidlingsgruppe.ISERV.name }
-            .orElse(false) // Nei hvis bruker ikke finnes i arena eller ikke får svar fra arena
-    }
 
     /**
      *  Brukes kun hvis man trenger [VeilarbArenaOppfolgingsStatus.kanEnkeltReaktiveres] , dette feltet kommer ikke på topic og kan derfor ikke caches i lokalt
@@ -77,20 +60,6 @@ class ArenaOppfolgingService @Autowired constructor(
             is ArenaOppfolginsBrukerOppslagResult.Success -> ArenaOppfolgingTilstandOppslagResult.Success(
                 ArenaOppfolgingTilstand.fraArenaBruker(result.oppfolgingsBruker)
             )
-        }
-    }
-
-    fun hentIservDatoOgFormidlingsGruppe(fnr: Fnr): IservDatoOgFormidlingsGruppe? {
-        val arenaOppfolingTilstandResult = hentArenaOppfolgingTilstand(fnr)
-        return when(arenaOppfolingTilstandResult) {
-            is ArenaOppfolgingTilstandOppslagResult.Fail, is ArenaOppfolgingTilstandOppslagResult.NotFound  -> null
-            is ArenaOppfolgingTilstandOppslagResult.Success -> {
-                val iservDato = arenaOppfolingTilstandResult.arenaOppfolgingTilstand.inaktiveringsdato
-                val formidlingsgruppe = arenaOppfolingTilstandResult.arenaOppfolgingTilstand.formidlingsgruppe?.let {
-                    Formidlingsgruppe.valueOf(it)
-                }
-                IservDatoOgFormidlingsGruppe(iservDato, formidlingsgruppe)
-            }
         }
     }
 
@@ -167,9 +136,4 @@ data class OppfolgingsData(
     var kvalifiseringsgruppe: Kvalifiseringsgruppe,
     var formidlingsgruppe: Formidlingsgruppe,
     var hovedmaal: Hovedmaal?
-)
-
-data class IservDatoOgFormidlingsGruppe(
-    val iservDato: LocalDate?,
-    val formidlingsGruppe: Formidlingsgruppe?
 )

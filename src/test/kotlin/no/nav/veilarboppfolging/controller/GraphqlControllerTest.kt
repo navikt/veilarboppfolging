@@ -233,30 +233,6 @@ class GraphqlControllerTest: IntegrationTest() {
     }
 
     @Test
-    fun `skal returnere kanStarteOppfolging - ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT når bruker allerede under oppfølging men ISERV+kanReaktiveres i Arena`() {
-        val veilederUuid = UUID.randomUUID()
-        val fnr = randomFnr()
-        val aktorId = randomAktorId()
-        setBrukerUnderOppfolging(aktorId, fnr)
-        mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Permit)
-        mockPoaoTilgangHarTilgangTilBrukerUtenGeografiskTilgangskontroll(veilederUuid, fnr, Decision.Permit)
-        mockPdlFolkeregisterStatus(fnr, FregStatusOgStatsborgerskap(
-            fregStatus = ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven,
-            statsborgerskap = norskStatsborgerskap,
-            under18 = false,
-        ))
-        mockInternBrukerAuthOk(veilederUuid, aktorId, fnr)
-        mockVeilarbArenaOppfolgingsStatus(fnr= fnr, formidlingsgruppe = Formidlingsgruppe.ISERV, kanEnkeltReaktiveres = true)
-        /* Query is hidden in test/resources/graphl-test :) */
-        val result = tester.documentName("kanStarteOppfolging").variable("fnr", fnr.get()).execute()
-        result.errors().verify()
-        result.path("oppfolging").matchesJson("""
-            { "kanStarteOppfolging": "ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT" }
-        """.trimIndent())
-
-    }
-
-    @Test
     fun `skal returnere kanStarteOppfolging - ALLEREDE_UNDER_OPPFOLGING når bruker allerede under oppfølging`() {
         val veilederUuid = UUID.randomUUID()
         val fnr = randomFnr()
