@@ -101,27 +101,6 @@ class OppfolgingV3ControllerTest {
     }
 
     @Test
-    void hentOppfolgingsStatus_skal_returnere_oppfolgingstatus() throws Exception {
-        when(authService.erInternBruker()).thenReturn(true);
-        when(authService.hentIdentForEksternEllerIntern(TEST_FNR)).thenReturn(TEST_FNR);
-        when(oppfolgingService.hentOppfolgingsStatus(TEST_FNR)).thenReturn(
-                new OppfolgingStatusData(TEST_FNR.get(), TEST_AKTOR_ID.get(), null, false, true,
-                        false, true, false, false, true,
-                        Collections.emptyList(), Collections.emptyList(), true, null, false, null,
-        false, "servicegruppe", "formidlingsgruppe", "rettighetsgruppe", null
-                ));
-
-        String expectedJson = "{\"fnr\":\"12345678900\",\"aktorId\":\"11122233334445\",\"veilederId\":null,\"reservasjonKRR\":false,\"registrertKRR\":true,\"kanVarsles\":true,\"manuell\":false,\"underOppfolging\":true,\"underKvp\":false,\"oppfolgingUtgang\":null,\"kanStarteOppfolging\":false,\"avslutningStatus\":null,\"oppfolgingsPerioder\":[],\"harSkriveTilgang\":true,\"inaktivIArena\":null,\"kanReaktiveres\":false,\"inaktiveringsdato\":null,\"erSykmeldtMedArbeidsgiver\":false,\"servicegruppe\":\"servicegruppe\",\"formidlingsgruppe\":\"formidlingsgruppe\",\"rettighetsgruppe\":\"rettighetsgruppe\"}";
-
-        mockMvc.perform(post("/api/v3/oppfolging/hent-status")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"fnr\":\"12345678900\"}")
-                )
-                .andExpect(status().is(200))
-                .andExpect(content().json(expectedJson, true));
-    }
-
-    @Test
     void hentAvslutningStatus_skal_returnere_avslutningstatus() throws Exception {
         when(avsluttOppfolgingService.hentAvslutningstatusForManuellAvslutning(TEST_FNR)).thenReturn(
                 new AvslutningStatusData(true, true, false, LocalDate.parse("2023-01-01"), false, false, false, false, false, null)

@@ -66,16 +66,6 @@ class OppfolgingV3Controller(
         )
     }
 
-    @PostMapping("/oppfolging/hent-status")
-    fun hentOppfolgingsStatus(@RequestBody(required = false) oppfolgingRequest: OppfolgingRequest?): OppfolgingStatus? {
-        val maybeFodselsnummer = oppfolgingRequest?.fnr
-        val fodselsnummer = authService.hentIdentForEksternEllerIntern(maybeFodselsnummer)
-        return DtoMappers.tilDto(
-            oppfolgingService.hentOppfolgingsStatus(fodselsnummer),
-            authService.erInternBruker()
-        )
-    }
-
     @PostMapping("/oppfolging/hent-avslutning-status")
     fun hentAvslutningStatus(@RequestBody oppfolgingRequest: OppfolgingRequest): AvslutningsStatusDto {
         authService.skalVereInternBruker()
