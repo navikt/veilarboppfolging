@@ -63,8 +63,6 @@ class OppfolgingV3ControllerTest {
     @MockitoBean
     private ArenaOppfolgingService arenaOppfolgingService;
     @MockitoBean
-    private ReaktiveringService reaktiveringService;
-    @MockitoBean
     private KontaktBrukerService kontaktBrukerService;
     @MockitoBean
     private AvsluttOppfolgingService avsluttOppfolgingService;
@@ -349,18 +347,6 @@ class OppfolgingV3ControllerTest {
                         .content("{\"fnr\":\"12345678900\",\"henviserSystem\":\"AAP\"}")
                 )
                 .andExpect(status().is(403));
-    }
-
-    @Test
-    void reaktiver_skal_returnere_ok() throws Exception {
-        when(reaktiveringService.reaktiverBrukerIArena(TEST_FNR))
-                .thenReturn(new ReaktiveringSuccess(ArenaRegistreringResultat.OK_REGISTRERT_I_ARENA));
-        mockMvc.perform(post("/api/v3/oppfolging/reaktiver")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"fnr\":\"12345678900\"}")
-                )
-                .andExpect(content().string("{\"ok\":true,\"kode\":\"OK_REGISTRERT_I_ARENA\"}"))
-                .andExpect(status().is(200));
     }
 
     @Test

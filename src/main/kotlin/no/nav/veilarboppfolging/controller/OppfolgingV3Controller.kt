@@ -36,7 +36,6 @@ import no.nav.veilarboppfolging.service.KontaktBrukerService
 import no.nav.veilarboppfolging.service.KvpService
 import no.nav.veilarboppfolging.service.ManuellStatusService
 import no.nav.veilarboppfolging.service.OppfolgingService
-import no.nav.veilarboppfolging.service.ReaktiveringService
 import no.nav.veilarboppfolging.utils.DtoMappers
 import no.nav.veilarboppfolging.utils.auth.AllowListApplicationName
 import org.slf4j.LoggerFactory
@@ -59,7 +58,6 @@ class OppfolgingV3Controller(
     val kvpService: KvpService,
     val aktiverBrukerManueltService: AktiverBrukerManueltService,
     val arenaOppfolgingService: ArenaOppfolgingService,
-    val reaktiveringService: ReaktiveringService,
     val kontaktBrukerService: KontaktBrukerService,
     val aoKontorClient: AoKontorClient
 ) {
@@ -193,29 +191,6 @@ class OppfolgingV3Controller(
         val maybeFodselsnummer = oppfolgingRequest?.fnr
         val fodselsnummer = authService.hentIdentForEksternEllerIntern(maybeFodselsnummer)
         return oppfolgingService.hentHarFlereAktorIderMedOppfolging(fodselsnummer)
-    }
-
-
-    @PostMapping("/oppfolging/reaktiver")
-    fun reaktiverBrukerIArena(@RequestBody reaktiverRequestDto: ReaktiverRequestDto): ResponseEntity<*> {
-        authService.skalVereInternBruker()
-        authService.sjekkAtApplikasjonErIAllowList(ALLOWLIST)
-
-        val reaktiveringResult = reaktiveringService.reaktiverBrukerIArena(reaktiverRequestDto.fnr)
-        return when (reaktiveringResult) {
-            is ReaktiveringSuccess -> ResponseEntity(ReaktiverDto(true, reaktiveringResult.kode), HttpStatus.OK)
-            is AlleredeUnderoppfolgingError -> ResponseEntity("Allerede under oppfolging", HttpStatus.CONFLICT)
-            is FeilFraArenaError -> ResponseEntity(reaktiveringResult.arenaResultat, HttpStatus.CONFLICT)
-            is UkjentFeilUnderReaktiveringError -> {
-                logger.error("Ukjent feil under reaktivering av bruker", reaktiveringResult.throwable)
-                ResponseEntity("Noe gikk veldig galt", HttpStatus.INTERNAL_SERVER_ERROR)
-            }
-
-            is BrukerErUtmeldingskandidat -> ResponseEntity(
-                "Bruker er utmeldingskandidat - skal ikke kunne reaktiveres",
-                HttpStatus.CONFLICT
-            )
-        }
     }
 
     @PostMapping("/oppfolging/startOppfolgingsperiode")

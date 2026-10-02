@@ -12,6 +12,9 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.IKKE_TILGANG_EGNE_ANSA
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.IKKE_TILGANG_FORTROLIG_ADRESSE
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.KanStarteOppfolgingDto
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.KanStarteOppfolgingSjekk.Companion.sjekkKanStarteOppfolgingPaBrukerForVeileder
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OPPFOLGING_OK
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.TILGANG_OK
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.toKanStarteOppfolging
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 

@@ -4,6 +4,7 @@ import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.givenThat
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo
 import com.github.tomakehurst.wiremock.junit5.WireMockTest
+import java.time.LocalDate
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import no.nav.common.types.identer.Fnr
@@ -18,14 +19,16 @@ class IsOppfolgingstilfelleClientTest {
     @Test
     fun `hentStatus - aktivt tilfelle med arbeidsgiver - returnerer riktig status`(wmRuntimeInfo: WireMockRuntimeInfo) {
         val apiUrl = "http://localhost:" + wmRuntimeInfo.httpPort
+        val start = LocalDate.now().minusDays(30)
+        val end = LocalDate.now().plusDays(1)
         @Language("JSON")
         val response = """
             {
               "oppfolgingstilfelleList": [
                 {
                   "arbeidstakerAtTilfelleEnd": true,
-                  "start": "2026-09-01",
-                  "end": "2026-10-01",
+                  "start": "$start",
+                  "end": "$end",
                   "antallSykedager": 10,
                   "varighetUker": 4,
                   "virksomhetsnummerList": ["123456789"]
@@ -54,14 +57,16 @@ class IsOppfolgingstilfelleClientTest {
     @Test
     fun `hentStatus - aktivt tilfelle uten arbeidsgiver - returnerer riktig status`(wmRuntimeInfo: WireMockRuntimeInfo) {
         val apiUrl = "http://localhost:" + wmRuntimeInfo.httpPort
+        val start = LocalDate.now().minusDays(30)
+        val end = LocalDate.now().plusDays(1)
         @Language("JSON")
         val response = """
             {
               "oppfolgingstilfelleList": [
                 {
                   "arbeidstakerAtTilfelleEnd": false,
-                  "start": "2026-09-01",
-                  "end": "2026-10-01",
+                  "start": "$start",
+                  "end": "$end",
                   "antallSykedager": 10,
                   "varighetUker": 4,
                   "virksomhetsnummerList": ["123456789"]
@@ -90,14 +95,16 @@ class IsOppfolgingstilfelleClientTest {
     @Test
     fun `hentStatus - ingen aktivt tilfelle - returnerer null`(wmRuntimeInfo: WireMockRuntimeInfo) {
         val apiUrl = "http://localhost:" + wmRuntimeInfo.httpPort
+        val start = LocalDate.now().minusDays(60)
+        val end = LocalDate.now().minusDays(30)
         @Language("JSON")
         val response = """
             {
               "oppfolgingstilfelleList": [
                 {
                   "arbeidstakerAtTilfelleEnd": true,
-                  "start": "2026-01-01",
-                  "end": "2026-01-31",
+                  "start": "$start",
+                  "end": "$end",
                   "antallSykedager": 10,
                   "varighetUker": 4,
                   "virksomhetsnummerList": ["123456789"]
