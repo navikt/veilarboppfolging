@@ -127,21 +127,21 @@ class KandidatForUtmeldingFlytTest(
     }
 
     private fun publiserBrukerBleARBS(fnr: Fnr) {
-        val oppfolginsBrukerEndretTilISERV = ConsumerRecord(
+        val oppfolginsBrukerEndretTilARBS = ConsumerRecord(
             "topic", 0, 0, "key", TestUtils.oppfølgingsBrukerEndret(
                 fnr.get(), formidlingsgruppe = Formidlingsgruppe.ARBS
             )
         )
-        kafkaConsumerService.consumeEndringPaOppfolgingBruker(oppfolginsBrukerEndretTilISERV)
+        kafkaConsumerService.consumeEndringPaOppfolgingBruker(oppfolginsBrukerEndretTilARBS)
     }
 
     private fun publiserBrukerBleIARBS(fnr: Fnr) {
-        val oppfolginsBrukerEndretTilISERV = ConsumerRecord(
+        val oppfolginsBrukerEndretTilIARBS = ConsumerRecord(
             "topic", 0, 0, "key", TestUtils.oppfølgingsBrukerEndret(
                 fnr.get(), formidlingsgruppe = Formidlingsgruppe.IARBS
             )
         )
-        kafkaConsumerService.consumeEndringPaOppfolgingBruker(oppfolginsBrukerEndretTilISERV)
+        kafkaConsumerService.consumeEndringPaOppfolgingBruker(oppfolginsBrukerEndretTilIARBS)
     }
 
     @Test
