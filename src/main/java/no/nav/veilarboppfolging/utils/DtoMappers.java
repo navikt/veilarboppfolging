@@ -4,7 +4,6 @@ import no.nav.pto_schema.kafka.json.topic.SisteOppfolgingsperiodeV1;
 import no.nav.pto_schema.kafka.json.topic.SisteTilordnetVeilederV1;
 import no.nav.veilarboppfolging.controller.response.*;
 import no.nav.veilarboppfolging.domain.AvslutningStatusData;
-import no.nav.veilarboppfolging.domain.OppfolgingStatusData;
 import no.nav.veilarboppfolging.kafka.dto.OppfolgingsperiodeDTO;
 import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity;
 import no.nav.veilarboppfolging.repository.entity.MaalEntity;
