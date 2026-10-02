@@ -25,7 +25,7 @@ class IsOppfolgingstilfelleClientTest {
                 {
                   "arbeidstakerAtTilfelleEnd": true,
                   "start": "2026-09-01",
-                  "end": "2026-10-01",
+                  "end": "2126-10-01",
                   "antallSykedager": 10,
                   "varighetUker": 4,
                   "virksomhetsnummerList": ["123456789"]
@@ -61,7 +61,7 @@ class IsOppfolgingstilfelleClientTest {
                 {
                   "arbeidstakerAtTilfelleEnd": false,
                   "start": "2026-09-01",
-                  "end": "2026-10-01",
+                  "end": "2126-10-01",
                   "antallSykedager": 10,
                   "varighetUker": 4,
                   "virksomhetsnummerList": ["123456789"]
