@@ -89,7 +89,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
 
         oppfolgingService = new OppfolgingService(
                 mock(KvpService.class),
-                mock(ArenaOppfolgingService.class), authService,
+                authService,
                 oppfolgingsStatusRepository, oppfolgingsPeriodeRepository,
                 manuellStatusService,
                 new KvpRepository(db, namedParameterJdbcTemplate, transactor), maalRepository,
