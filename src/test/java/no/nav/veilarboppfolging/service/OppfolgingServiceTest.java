@@ -29,7 +29,6 @@ import no.nav.veilarboppfolging.controller.response.UnderOppfolgingDTO;
 import no.nav.veilarboppfolging.controller.response.VeilederTilgang;
 import no.nav.veilarboppfolging.domain.AvslutningStatusData;
 import no.nav.veilarboppfolging.domain.Oppfolging;
-import no.nav.veilarboppfolging.domain.OppfolgingStatusData;
 import no.nav.veilarboppfolging.eventsLogger.BigQueryClient;
 import no.nav.veilarboppfolging.kafka.dto.OppfolgingsperiodeDTO;
 import no.nav.veilarboppfolging.kandidatForUtmelding.FjernKandidatForUtmeldingService;
@@ -622,12 +621,6 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     private void settTilstandFormidlingsgruppe(String formidlingsgruppe) {
         arenaOppfolgingTilstand = new ArenaOppfolgingTilstand(
                 formidlingsgruppe, arenaOppfolgingTilstand.getServicegruppe(), arenaOppfolgingTilstand.getInaktiveringsdato());
-        stubArenaTilstand();
-    }
-
-    private void settTilstandServicegruppe(String servicegruppe) {
-        arenaOppfolgingTilstand = new ArenaOppfolgingTilstand(
-                arenaOppfolgingTilstand.getFormidlingsgruppe(), servicegruppe, arenaOppfolgingTilstand.getInaktiveringsdato());
         stubArenaTilstand();
     }
 
