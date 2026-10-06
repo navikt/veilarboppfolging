@@ -1,5 +1,6 @@
 package no.nav.veilarboppfolging.service;
 
+import java.time.ZonedDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -27,7 +28,7 @@ import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsStatu
 import no.nav.veilarboppfolging.controller.response.UnderOppfolgingDTO;
 import no.nav.veilarboppfolging.controller.response.VeilederTilgang;
 import no.nav.veilarboppfolging.domain.AvslutningStatusData;
-import no.nav.veilarboppfolging.domain.OppfolgingStatusData;
+import no.nav.veilarboppfolging.domain.Oppfolging;
 import no.nav.veilarboppfolging.eventsLogger.BigQueryClient;
 import no.nav.veilarboppfolging.kafka.dto.OppfolgingsperiodeDTO;
 import no.nav.veilarboppfolging.kandidatForUtmelding.FjernKandidatForUtmeldingService;
@@ -39,7 +40,9 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingTilstandO
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering;
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.*;
 import no.nav.veilarboppfolging.repository.*;
+import no.nav.veilarboppfolging.repository.entity.ManuellStatusEntity;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
+import no.nav.veilarboppfolging.repository.enums.KodeverkBruker;
 import no.nav.veilarboppfolging.test.DbTestUtils;
 import no.nav.veilarboppfolging.test.IsolatedDatabaseTest;
 import no.nav.veilarboppfolging.utils.OppfolgingsperiodeUtils;
@@ -125,7 +128,6 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         );
         oppfolgingService = new OppfolgingService(
                 kvpService,
-                arenaOppfolgingService,
                 authService,
                 oppfolgingsStatusRepository,
                 oppfolgingsPeriodeRepository,
@@ -408,32 +410,8 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
     @Test
     public void skal_krasje_nar_aktorId_er_ukjent() {
-        doNothing().when(authService).sjekkLesetilgangMedFnr(fnr);
         doThrow(new IngenGjeldendeIdentException()).when(authService).getAktorIdOrThrow(fnr);
-        assertThrows(IngenGjeldendeIdentException.class, this::hentOppfolgingStatus);
-    }
-
-    @Test
-    public void riktigFnr() {
-        OppfolgingStatusData oppfolgingStatusData = hentOppfolgingStatus();
-        assertEquals(fnr.get(), oppfolgingStatusData.getFnr());
-    }
-
-    @Test
-    public void riktigServicegruppe() {
-        String servicegruppe = "BATT";
-        settTilstandServicegruppe(servicegruppe);
-        settStatus(null, servicegruppe, null);
-
-        OppfolgingStatusData oppfolgingStatusData = hentOppfolgingStatus();
-        assertEquals(servicegruppe, oppfolgingStatusData.getServicegruppe());
-    }
-
-    @Test
-    public void hentOppfolgingStatus_brukerSomIkkeErUnderOppfolgingOppdateresIkkeDersomIkkeUnderOppfolgingIArena() {
-        OppfolgingStatusData oppfolgingStatusData = hentOppfolgingStatus();
-
-        assertFalse(oppfolgingStatusData.getUnderOppfolging());
+        assertThrows(IngenGjeldendeIdentException.class, () -> oppfolgingService.erUnderOppfolging(fnr));
     }
 
     @Test
@@ -443,36 +421,19 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
         gittInaktivOppfolgingStatus(true);
 
-        OppfolgingStatusData status = hentOppfolgingStatus();
+        Optional<Oppfolging> status = oppfolgingService.hentOppfolging(aktorId);
 
-        assertTrue(status.getKanReaktiveres());
-        assertTrue(status.getInaktivIArena());
-        assertTrue(status.getUnderOppfolging());
+        assertEquals("ISERV", arenaOppfolgingService.hentArenaOppfolgingsStatus(fnr).get().getFormidlingsgruppe());
+        assertTrue(status.get().getUnderOppfolging());
     }
 
     @Test
     public void hentOppfolgingStatus_brukerSomErKRRSkalVareManuell() {
+        startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.Companion.arbeidssokerRegistrering(fnr, aktorId, new VeilederRegistrant(NAV_IDENT)));
         gittReservasjonIKrr(true);
-        OppfolgingStatusData status = hentOppfolgingStatus();
+        Optional<Oppfolging> status = oppfolgingService.hentOppfolging(aktorId);
 
-        assertTrue(status.getReservasjonKRR());
-        assertTrue(status.getManuell());
-    }
-
-    @Test
-    public void utenReservasjon() {
-        gittReservasjonIKrr(false);
-        OppfolgingStatusData oppfolgingStatusData = hentOppfolgingStatus();
-        assertFalse(oppfolgingStatusData.getReservasjonKRR());
-    }
-
-    @Test
-    public void ikkeArbeidssokerIkkeUnderOppfolging() {
-        gittArenaOppfolgingStatus("IARBS", "");
-
-        var oppfolgingOgVilkarStatus = hentOppfolgingStatus();
-
-        assertFalse(oppfolgingOgVilkarStatus.getUnderOppfolging());
+        assertTrue(status.get().getGjeldendeManuellStatus().getManuell());
     }
 
     @Test
@@ -663,12 +624,6 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         stubArenaTilstand();
     }
 
-    private void settTilstandServicegruppe(String servicegruppe) {
-        arenaOppfolgingTilstand = new ArenaOppfolgingTilstand(
-                arenaOppfolgingTilstand.getFormidlingsgruppe(), servicegruppe, arenaOppfolgingTilstand.getInaktiveringsdato());
-        stubArenaTilstand();
-    }
-
     private void settStatus(String formidlingsgruppe, String servicegruppe, Boolean kanEnkeltReaktiveres) {
         arenaOppfolgingStatus = new VeilarbArenaOppfolgingsStatus(
                 arenaOppfolgingStatus.getRettighetsgruppe(),
@@ -692,14 +647,19 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         stubArenaTilstand();
     }
 
-    private OppfolgingStatusData hentOppfolgingStatus() {
-        return oppfolgingService.hentOppfolgingsStatus(fnr);
-    }
-
     private void gittReservasjonIKrr(boolean reservert) {
         KRRData kontaktinfo = new KRRData(false, "fnr", false, reservert);
 
         when(manuellStatusService.hentDigdirKontaktinfo(fnr)).thenReturn(kontaktinfo);
+        when(manuellStatusService.hentManuellStatus(aktorId)).thenReturn(Optional.of(new ManuellStatusEntity(
+                1L,
+                aktorId.get(),
+                true,
+                ZonedDateTime.now(),
+                "Bruker ble reserver i KRR",
+                KodeverkBruker.SYSTEM,
+                "veilederident"
+        )));
     }
 
     private void startOppfolgingForBruker() {

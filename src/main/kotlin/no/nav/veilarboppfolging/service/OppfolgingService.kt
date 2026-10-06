@@ -4,15 +4,10 @@ import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.poao_tilgang.client.TilgangType
-import no.nav.pto_schema.enums.arena.Formidlingsgruppe
-import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
 import no.nav.veilarboppfolging.client.tiltakshistorikk.TiltakshistorikkClient
-import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsStatus
 import no.nav.veilarboppfolging.controller.response.UnderOppfolgingDTO
 import no.nav.veilarboppfolging.controller.response.VeilederTilgang
 import no.nav.veilarboppfolging.domain.Oppfolging
-import no.nav.veilarboppfolging.domain.OppfolgingStatusData
-import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.LocalArenaOppfolging
 import no.nav.veilarboppfolging.repository.BrukerOppslagFlereOppfolgingAktorRepository
 import no.nav.veilarboppfolging.repository.KvpRepository
@@ -23,21 +18,16 @@ import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity
 import no.nav.veilarboppfolging.repository.entity.MaalEntity
 import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity
-import no.nav.veilarboppfolging.utils.ArenaUtils
-import no.nav.veilarboppfolging.utils.EnumUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
-import java.time.LocalDate
 import java.util.Optional
 
 @Service
 class OppfolgingService @Autowired constructor(
     private val kvpService: KvpService,
-    private val arenaOppfolgingService: ArenaOppfolgingService,
     private val authService: AuthService,
     private val oppfolgingsStatusRepository: OppfolgingsStatusRepository,
     private val oppfolgingsPeriodeRepository: OppfolgingsPeriodeRepository,  // TODO: Når vi får splittet servicenen bedre så skal det ikke være behov for å bruke @Lazy
@@ -50,12 +40,6 @@ class OppfolgingService @Autowired constructor(
     private val aktorOppslagClient: AktorOppslagClient
 ) {
     private val log: Logger = LoggerFactory.getLogger(this.javaClass)
-
-    @Transactional // TODO: kan denne være read only?
-    fun hentOppfolgingsStatus(fnr: Fnr): OppfolgingStatusData {
-        authService.sjekkLesetilgangMedFnr(fnr)
-        return getOppfolgingStatusData(fnr)
-    }
 
     private fun hentAktorIderMedOppfolging(fnr: Fnr?): List<AktorId> {
         authService.sjekkLesetilgangMedFnr(fnr)
@@ -199,74 +183,6 @@ class OppfolgingService @Autowired constructor(
         val aktorId = authService.getAktorIdOrThrow(fnr)
         authService.sjekkLesetilgangMedAktorId(aktorId)
         return oppfolgingsStatusRepository.hentOppfolging(aktorId).orElse(null)
-    }
-
-    private fun getOppfolgingStatusData(fnr: Fnr): OppfolgingStatusData {
-        val aktorId = authService.getAktorIdOrThrow(fnr)
-        val maybeOppfolging = hentOppfolging(aktorId)
-        val erManuell = manuellStatusService.erManuell(aktorId)
-        val digdirKontaktinfo = manuellStatusService.hentDigdirKontaktinfo(fnr)
-        // TODO: Burde kanskje heller feile istedenfor å bruke Optional
-        val maybeArenaOppfolging: Optional<VeilarbArenaOppfolgingsStatus> =
-            arenaOppfolgingService.hentArenaOppfolgingsStatus(fnr)
-        val harSkrivetilgangTilBruker = harVeilederTilgangTilKontorsperretEnhet(aktorId)
-
-        val erInaktivIArena = maybeArenaOppfolging.map({ ao ->
-            ArenaUtils.erIserv(
-                EnumUtils.valueOf(Formidlingsgruppe::class.java, ao.formidlingsgruppe)
-            )
-        }).orElse(null)
-
-        val maybeKanEnkeltReaktiveres = maybeArenaOppfolging
-            .flatMap({ it -> Optional.ofNullable<Boolean?>(it.kanEnkeltReaktiveres) })
-
-        val kanReaktiveres = maybeKanEnkeltReaktiveres
-            .map({ kr ->
-                maybeOppfolging.map(Oppfolging::underOppfolging).orElse(false) && kr
-            })
-            .orElse(null)
-
-        val erSykmeldtMedArbeidsgiver = maybeArenaOppfolging
-            .map({ ao ->
-                ArenaUtils.erIARBSUtenOppfolging(
-                    EnumUtils.valueOf(
-                        Formidlingsgruppe::class.java,
-                        ao.formidlingsgruppe
-                    ), EnumUtils.valueOf(Kvalifiseringsgruppe::class.java, ao.servicegruppe)
-                )
-            })
-            .orElse(null)
-
-        val inaktiveringsDato = maybeArenaOppfolging
-            .map<LocalDate?>(VeilarbArenaOppfolgingsStatus::inaktiveringsdato)
-            .orElse(null)
-
-        return OppfolgingStatusData(
-            fnr.get(),
-            aktorId.get(),
-            maybeOppfolging.map<String?>(Oppfolging::veilederId).orElse(null),
-            digdirKontaktinfo.reservert,
-            digdirKontaktinfo.aktiv,
-            erManuell || digdirKontaktinfo.reservert,
-            maybeOppfolging.map(Oppfolging::underOppfolging).orElse(false),
-            maybeOppfolging.map({ oppfolging -> oppfolging.gjeldendeKvp != null })
-                .orElse(false) ?: false,
-            maybeOppfolging.map({ oppfolging -> !oppfolging.underOppfolging })
-                .orElse(true) ?: false,
-            !erManuell && digdirKontaktinfo.kanVarsles,
-            maybeOppfolging.map(Oppfolging::oppfolgingsperioder)
-                .orElse(listOf()) ?: listOf(),
-            mutableListOf(),  //KVP-perioder ble aldri satt før konvertering OppfolgingStatusData-klassen til Kotlin,
-            harSkrivetilgangTilBruker,
-            erInaktivIArena,
-            kanReaktiveres,
-            inaktiveringsDato,
-            erSykmeldtMedArbeidsgiver,
-            maybeArenaOppfolging.map<String?>(VeilarbArenaOppfolgingsStatus::servicegruppe).orElse(null),
-            maybeArenaOppfolging.map<String?>(VeilarbArenaOppfolgingsStatus::formidlingsgruppe).orElse(null),
-            maybeArenaOppfolging.map<String?>(VeilarbArenaOppfolgingsStatus::rettighetsgruppe).orElse(null),
-            null
-        )
     }
 
     fun harVeilederTilgangTilKontorsperretEnhet(aktorId: AktorId?): Boolean {
