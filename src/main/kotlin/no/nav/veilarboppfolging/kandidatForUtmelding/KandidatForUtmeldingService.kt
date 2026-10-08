@@ -247,7 +247,7 @@ class KandidatForUtmeldingService(
 
     fun hentForlengelseType(oppfolgingsperiodeId: UUID): ForlengelseHendelseType {
         val hendelseType =
-            kandidatForUtmeldingRepository.hentSisteHendelseForAktivKandidat(oppfolgingsperiodeId)?.type
+            kandidatForUtmeldingRepository.hentSisteHendelseForAktivEllerForlengetKandidat(oppfolgingsperiodeId)?.type
                 ?: throw IllegalStateException("Fant ingen kandidat for utmelding-hendelser for oppfølgingsperiode $oppfolgingsperiodeId")
         return if (hendelseType == ForlengelseHendelseType.FORLENGELSE_OPPRETTET || hendelseType == ForlengelseHendelseType.FORLENGELSE_ENDRET) {
             ForlengelseHendelseType.FORLENGELSE_ENDRET
