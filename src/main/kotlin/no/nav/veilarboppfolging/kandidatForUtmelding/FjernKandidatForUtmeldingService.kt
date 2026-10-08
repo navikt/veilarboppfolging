@@ -8,6 +8,7 @@ import no.nav.common.types.identer.NorskIdent
 import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.FilterhendelseRecord
 import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.Kategori
 import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.Operasjon
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.KandidatForUtmeldingHendelse
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.service.KafkaProducerService
 import org.slf4j.LoggerFactory
@@ -60,7 +61,7 @@ class FjernKandidatForUtmeldingService(
         return kandidatForUtmeldingRepository.hentKandidatMedIkkeUtloptForlengelse(oppfolgingsperiodeId) != null
     }
 
-    fun erAktivEllerForlengetKandidatForUtmelding(oppfolgingsperiodeId: UUID): Boolean {
-        return kandidatForUtmeldingRepository.erAktivEllerForlengetKandidatForUtmelding(oppfolgingsperiodeId)
+    fun hentSisteHendelseForAktivEllerForlengetKandidat(oppfolgingsperiodeId: UUID): KandidatForUtmeldingHendelse? {
+        return kandidatForUtmeldingRepository.hentSisteHendelseForAktivEllerForlengetKandidat(oppfolgingsperiodeId)
     }
 }

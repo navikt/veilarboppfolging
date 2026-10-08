@@ -154,7 +154,7 @@ class AvsluttOppfolgingService(
             val perioder: List<OppfolgingsperiodeEntity> = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId)
             val sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder)
 
-            val erKandidatForUtmelding = fjernKandidatForUtmeldingService.erAktivEllerForlengetKandidatForUtmelding(sistePeriode.uuid)
+            val aktivEllerForlengetKandidat = fjernKandidatForUtmeldingService.hentSisteHendelseForAktivEllerForlengetKandidat(sistePeriode.uuid)
 
             arbeidsoppfolgingskontorRepository.slettNavKontor(sistePeriode.uuid)
             fjernKandidatForUtmeldingService.fjernKandidatForUtmelding(sistePeriode.uuid)
@@ -169,7 +169,11 @@ class AvsluttOppfolgingService(
             kafkaProducerService.publiserSkjulAoMinSideMicrofrontend(aktorId, fnr)
 
             // oppfolgingsperiodeEndretService.oppdaterSisteOppfolgingsperiodeV2MedAvsluttetStatus(sistePeriode); // TODO I en overgangsperiode lytter vi heller på tombstone fra ao-oppfolgingskontor
-            bigQueryClient.loggAvsluttOppfolgingsperiode(sistePeriode.uuid, avregistrering, aktivIArena, erKandidatForUtmelding)
+            bigQueryClient.loggAvsluttOppfolgingsperiode(
+                sistePeriode.uuid,
+                avregistrering,
+                aktivIArena,
+                aktivEllerForlengetKandidat?.type)
         }
     }
 
