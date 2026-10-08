@@ -413,17 +413,21 @@ fun ResultSet.toArbeidssøkerPeriodeAvsluttet() = ArbeidssøkerPeriodeAvsluttet(
     arbeidssokerperiodeAvsluttetHendelseType = ArbeidssokerperiodeAvsluttetHendelseType.valueOf(getString("hendelse")),
 )
 
-fun ResultSet.toForlengelseOpprettetEllerEndretHendelse() = ForlengelseOpprettetEllerEndretHendelse(
-    oppfolgingsperiodeUuid = UUID.fromString(getString("oppfolgingsperiode_uuid")),
-    utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.valueOf(getString("utfort_av_type")),
-    utfortAv = getString("utfort_av"),
-    kilde = getString("kilde"),
-    hendelseTidspunkt = getTimestamp("hendelse_tidspunkt").toLocalDateTime().toInstant(ZoneOffset.UTC),
-    forlengelseHendelseType = ForlengelseHendelseType.valueOf(getString("hendelse")),
-    forlengetTil = getStringOrNull("hendelse_data")
-        ?.let { JsonUtils.fromJson(it, ForlengelseOpprettetEllerEndretHendelse.Detaljer::class.java).forlengetTil }
-        ?: throw IllegalArgumentException("Hendelse av type FORLENGELSE_OPPRETTET eller FORLENGELSE_ENDRET må ha forlengetTil")
-)
+fun ResultSet.toForlengelseOpprettetEllerEndretHendelse(): ForlengelseOpprettetEllerEndretHendelse {
+    val hendelseData = getStringOrNull("hendelse_data")
+        ?.let { JsonUtils.fromJson(it, ForlengelseOpprettetEllerEndretHendelse.Detaljer::class.java) }
+        ?: throw IllegalArgumentException("Hendelse av type FORLENGELSE_OPPRETTET eller FORLENGELSE_ENDRET må ha hendelsedata")
+
+    return ForlengelseOpprettetEllerEndretHendelse(
+        oppfolgingsperiodeUuid = UUID.fromString(getString("oppfolgingsperiode_uuid")),
+        utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.valueOf(getString("utfort_av_type")),
+        utfortAv = getString("utfort_av"),
+        kilde = getString("kilde"),
+        hendelseTidspunkt = getTimestamp("hendelse_tidspunkt").toLocalDateTime().toInstant(ZoneOffset.UTC),
+        forrigeHendelseType = hendelseData.forrigeHendelseType,
+        forlengetTil = hendelseData.forlengetTil,
+    )
+}
 
 
 fun ResultSet.toForlengelseUtløptHendelse() = ForlengelseUtløptHendelse(
