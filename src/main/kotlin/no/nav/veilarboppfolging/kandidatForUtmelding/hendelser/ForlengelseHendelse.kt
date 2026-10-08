@@ -53,7 +53,7 @@ class ForlengelseOpprettetEllerEndretHendelse(
     utfortAv: String?,
     kilde: String,
     val forlengetTil: LocalDate,
-    forlengelseHendelseType: ForlengelseHendelseType
+    val forrigeHendelseType:  KandidatForUtmeldingHendelseType
 ): KandidatForUtmeldingHendelse(
     oppfolgingsperiodeUuid,
     utfortAvType,
@@ -61,7 +61,11 @@ class ForlengelseOpprettetEllerEndretHendelse(
     kilde,
     hendelseTidspunkt,
 ) {
-    override val type: KandidatForUtmeldingHendelseType = forlengelseHendelseType
+    override val type: KandidatForUtmeldingHendelseType = when (forrigeHendelseType) {
+        ForlengelseHendelseType.FORLENGELSE_OPPRETTET -> ForlengelseHendelseType.FORLENGELSE_ENDRET
+        ForlengelseHendelseType.FORLENGELSE_ENDRET -> ForlengelseHendelseType.FORLENGELSE_ENDRET
+        else -> ForlengelseHendelseType.FORLENGELSE_OPPRETTET
+    }
     data class Detaljer(
         val forlengetTil: LocalDate,
     )

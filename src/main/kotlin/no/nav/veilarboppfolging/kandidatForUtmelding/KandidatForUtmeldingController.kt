@@ -64,14 +64,15 @@ class KandidatForUtmeldingController(
         }
         forlengelseDTO.valider()
 
-        val forlengelseType = kandidatForUtmeldingService.hentForlengelseType(oppfolgingsperiodeId)
+        val forrigeHendelseType = kandidatForUtmeldingService.hentForlengelseType(oppfolgingsperiodeId)
 
         val forlengelseHendelse = ForlengelseOpprettetEllerEndretHendelse(
             oppfolgingsperiodeUuid = oppfolgingsperiodeId,
             utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
             utfortAv = authService.innloggetVeilederIdent,
             kilde = "veilarboppfolging",
-            forlengelseHendelseType = forlengelseType,
+            forrigeHendelseType
+//            forlengelseHendelseType = forlengelseType,
             hendelseTidspunkt = ZonedDateTime.now().toInstant(),
             forlengetTil = forlengelseDTO.forlengetTil,
         )

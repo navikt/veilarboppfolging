@@ -15,6 +15,7 @@ import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseOppret
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseUtløptHendelse
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.InaktivertIArena
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.KandidatForUtmeldingHendelse
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.KandidatForUtmeldingHendelseType
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ArenaIservKanIkkeReaktiveres
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvslutningsBegrunnelse
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.KandidatUtmeldtEtter28Dager
@@ -245,10 +246,9 @@ class KandidatForUtmeldingService(
         bigQueryClient.loggForlengelseHendelse(hendelse)
     }
 
-    fun hentForlengelseType(oppfolgingsperiodeId: UUID): ForlengelseHendelseType {
-        val hendelseType =
-            kandidatForUtmeldingRepository.hentSisteHendelseForAktivEllerForlengetKandidat(oppfolgingsperiodeId)?.type
-                ?: throw IllegalStateException("Fant ingen kandidat for utmelding-hendelser for oppfølgingsperiode $oppfolgingsperiodeId")
+    fun hentForlengelseType(oppfolgingsperiodeId: UUID): KandidatForUtmeldingHendelseType? {
+        return kandidatForUtmeldingRepository.hentSisteHendelseForAktivEllerForlengetKandidat(oppfolgingsperiodeId)?.type
+//                ?: throw IllegalStateException("Fant ingen kandidat for utmelding-hendelser for oppfølgingsperiode $oppfolgingsperiodeId")
         return if (hendelseType == ForlengelseHendelseType.FORLENGELSE_OPPRETTET || hendelseType == ForlengelseHendelseType.FORLENGELSE_ENDRET) {
             ForlengelseHendelseType.FORLENGELSE_ENDRET
         } else {
