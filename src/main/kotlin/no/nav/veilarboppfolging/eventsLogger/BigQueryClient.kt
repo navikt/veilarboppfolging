@@ -53,14 +53,15 @@ class BigQueryClientImplementation(private val bigQuery: BigQuery): BigQueryClie
 
     val log = LoggerFactory.getLogger(this.javaClass)
 
-    override fun loggForlengelseHendelse(hendelse: ForlengelseOpprettetEllerEndretHendelse) {
+    override fun loggForlengelseHendelse(hendelse: ForlengelseOpprettetEllerEndretHendelse, kandidatForUtmeldingHendelseType: KandidatForUtmeldingHendelseType?) {
         insertIntoOppfolgingEvents(forlengelseMetrikkerTable) {
             mapOf(
                 "hendelse" to hendelse.type.toString(),
                 "forlenget_til" to hendelse.forlengetTil.toString(),
                 "oppfolgingsperiode_id" to hendelse.oppfolgingsperiodeUuid.toString(),
                 "hendelse_opprettet" to ZonedDateTime.ofInstant(hendelse.hendelseTidspunkt, ZoneId.of("Europe/Oslo")).toOffsetDateTime().toString(),
-                "timestamp" to ZonedDateTime.now().toOffsetDateTime().toString()
+                "timestamp" to ZonedDateTime.now().toOffsetDateTime().toString(),
+                "forrige_hendelse" to kandidatForUtmeldingHendelseType?.name
             )
         }
     }
