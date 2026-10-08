@@ -44,37 +44,6 @@ public class OppfolgingController {
         );
     }
 
-    @PostMapping("/settManuell")
-    public void settTilManuell(@RequestBody VeilederBegrunnelseDTO dto, @RequestParam("fnr") Fnr fnr) {
-        authService.skalVereInternBruker();
-
-        manuellStatusService.oppdaterManuellStatus(
-                fnr, true, dto.getBegrunnelse(),
-                KodeverkBruker.NAV, authService.getInnloggetVeilederIdent()
-        );
-    }
-
-    @PostMapping("/settDigital")
-    public void settTilDigital(
-            @RequestBody(required = false) VeilederBegrunnelseDTO dto,
-            @RequestParam(value = "fnr", required = false) Fnr fnr) {
-        Fnr fodselsnummer = authService.hentIdentForEksternEllerIntern(fnr);
-
-        if (authService.erEksternBruker()) {
-            manuellStatusService.settDigitalBruker(fodselsnummer);
-        }
-
-        // Påkrevd for intern bruker
-        if (dto == null) {
-            throw new BadRequestException("VeilederBegrunnelseDTO er påkrevd");
-        }
-
-        manuellStatusService.oppdaterManuellStatus(
-                fodselsnummer, false, dto.getBegrunnelse(),
-                KodeverkBruker.NAV, hentBrukerInfo().getId()
-        );
-    }
-
     @PostMapping("/startKvp")
     public ResponseEntity startKvp(@RequestBody StartKvpDTO startKvp, @RequestParam("fnr") Fnr fnr) {
         authService.skalVereInternBruker();
