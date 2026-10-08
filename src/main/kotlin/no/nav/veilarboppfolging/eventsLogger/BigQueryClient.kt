@@ -65,7 +65,7 @@ class BigQueryClientImplementation(private val bigQuery: BigQuery): BigQueryClie
         }
     }
 
-    override fun loggAvsluttOppfolgingsperiode(oppfolgingPeriodeId: UUID, avregistrering: Avregistrering, aktivIArena: Boolean?, erKandidatForUtmelding: Boolean?) {
+    override fun loggAvsluttOppfolgingsperiode(oppfolgingPeriodeId: UUID, avregistrering: Avregistrering, aktivIArena: Boolean?, erKandidatForUtmelding: Boolean?, kandidatForUtmeldingHendelseType: KandidatForUtmeldingHendelseType) {
         val erAutomatiskAvsluttet = !avregistrering.getAvregistreringsType().erManuellAvregistrering()
         insertIntoOppfolgingEvents(oppfolgingsperiodeEventsTable) {
             mapOf(
@@ -75,7 +75,8 @@ class BigQueryClientImplementation(private val bigQuery: BigQuery): BigQueryClie
                 "event" to BigQueryEventType.OPPFOLGINGSPERIODE_SLUTT.name,
                 "avregistreringsType" to avregistrering.getAvregistreringsType().name,
                 "erAktivIArena" to aktivIArena,
-                "erKandidatForUtmelding" to erKandidatForUtmelding
+                "erKandidatForUtmelding" to erKandidatForUtmelding,
+                "kandidatForUtmeldingHendelseType" to kandidatForUtmeldingHendelseType
             )
         }
     }
