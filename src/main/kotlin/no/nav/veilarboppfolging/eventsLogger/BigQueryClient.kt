@@ -30,7 +30,7 @@ data class KandidaterForUtmeldingMetrikker(
 
 interface BigQueryClient {
     fun loggStartOppfolgingsperiode(startBegrunnelse: OppfolgingStartBegrunnelse, oppfolgingPeriodeId: UUID, startedAvType: StartetAvType, kvalifiseringsgruppe: Optional<Kvalifiseringsgruppe>, manuellSjekkLovligOpphold: Boolean? = null, forrigePeriodeAvsluttet: ZonedDateTime?)
-    fun loggAvsluttOppfolgingsperiode(oppfolgingPeriodeId: UUID, avregistrering: Avregistrering, aktivIArena: Boolean? = null, erKandidatForUtmelding: Boolean?, kandidatForUtmeldingHendelseType: KandidatForUtmeldingHendelseType?)
+    fun loggAvsluttOppfolgingsperiode(oppfolgingPeriodeId: UUID, avregistrering: Avregistrering, aktivIArena: Boolean? = null, kandidatForUtmeldingHendelseType: KandidatForUtmeldingHendelseType?)
     fun loggKandidaterForUtmeldingMetrikker(metrikker: KandidaterForUtmeldingMetrikker)
     fun loggUnder18()
     fun loggForlengelseHendelse(hendelse: ForlengelseOpprettetEllerEndretHendelse)
@@ -65,7 +65,7 @@ class BigQueryClientImplementation(private val bigQuery: BigQuery): BigQueryClie
         }
     }
 
-    override fun loggAvsluttOppfolgingsperiode(oppfolgingPeriodeId: UUID, avregistrering: Avregistrering, aktivIArena: Boolean?, erKandidatForUtmelding: Boolean?, kandidatForUtmeldingHendelseType: KandidatForUtmeldingHendelseType) {
+    override fun loggAvsluttOppfolgingsperiode(oppfolgingPeriodeId: UUID, avregistrering: Avregistrering, aktivIArena: Boolean?, kandidatForUtmeldingHendelseType: KandidatForUtmeldingHendelseType?) {
         val erAutomatiskAvsluttet = !avregistrering.getAvregistreringsType().erManuellAvregistrering()
         insertIntoOppfolgingEvents(oppfolgingsperiodeEventsTable) {
             mapOf(
@@ -75,7 +75,7 @@ class BigQueryClientImplementation(private val bigQuery: BigQuery): BigQueryClie
                 "event" to BigQueryEventType.OPPFOLGINGSPERIODE_SLUTT.name,
                 "avregistreringsType" to avregistrering.getAvregistreringsType().name,
                 "erAktivIArena" to aktivIArena,
-                "erKandidatForUtmelding" to erKandidatForUtmelding,
+                "erKandidatForUtmelding" to (kandidatForUtmeldingHendelseType != null),
                 "kandidatForUtmeldingHendelseType" to kandidatForUtmeldingHendelseType
             )
         }

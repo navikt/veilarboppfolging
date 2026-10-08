@@ -190,7 +190,7 @@ class KandidatForUtmeldingRepository(
             .firstOrNull()
     }
 
-    fun hentSisteHendelseForAktivKandidat(oppfolgingsperiodeId: UUID): KandidatForUtmeldingHendelse? {
+    fun hentSisteHendelseForAktivEllerForlengetKandidat(oppfolgingsperiodeId: UUID): KandidatForUtmeldingHendelse? {
         return db.query(
             """
             SELECT kfuh.*
@@ -237,6 +237,7 @@ class KandidatForUtmeldingRepository(
             ?: false
     }
 
+    @TestOnly
     fun hentSisteHendelseForKandidat(oppfolgingsperiodeId: UUID): KandidatForUtmeldingHendelse? {
         return db.query(
             """
