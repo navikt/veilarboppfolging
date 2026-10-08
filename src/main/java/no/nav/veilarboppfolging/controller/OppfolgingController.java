@@ -2,16 +2,12 @@ package no.nav.veilarboppfolging.controller;
 
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.veilarboppfolging.BadRequestException;
 import no.nav.veilarboppfolging.NotFoundException;
 import no.nav.veilarboppfolging.controller.request.StartKvpDTO;
 import no.nav.veilarboppfolging.controller.request.StoppKvpDTO;
-import no.nav.veilarboppfolging.controller.request.VeilederBegrunnelseDTO;
 import no.nav.veilarboppfolging.controller.response.*;
-import no.nav.veilarboppfolging.repository.enums.KodeverkBruker;
 import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.service.KvpService;
-import no.nav.veilarboppfolging.service.ManuellStatusService;
 import no.nav.veilarboppfolging.service.OppfolgingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -25,14 +21,12 @@ public class OppfolgingController {
     private final OppfolgingService oppfolgingService;
     private final KvpService kvpService;
     private final AuthService authService;
-    private final ManuellStatusService manuellStatusService;
 
     @Autowired
-    public OppfolgingController(OppfolgingService oppfolgingService, KvpService kvpService, AuthService authService, ManuellStatusService manuellStatusService) {
+    public OppfolgingController(OppfolgingService oppfolgingService, KvpService kvpService, AuthService authService) {
         this.oppfolgingService = oppfolgingService;
         this.kvpService = kvpService;
         this.authService = authService;
-        this.manuellStatusService = manuellStatusService;
     }
 
     @GetMapping("/me")
