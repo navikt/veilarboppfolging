@@ -76,7 +76,7 @@ class BigQueryClientImplementation(private val bigQuery: BigQuery): BigQueryClie
                 "avregistreringsType" to avregistrering.getAvregistreringsType().name,
                 "erAktivIArena" to aktivIArena,
                 "erKandidatForUtmelding" to (kandidatForUtmeldingHendelseType != null),
-                "kandidatForUtmeldingHendelseType" to kandidatForUtmeldingHendelseType
+                "kandidatForUtmeldingHendelseType" to kandidatForUtmeldingHendelseType?.toString()
             )
         }
     }
