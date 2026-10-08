@@ -9,6 +9,7 @@ import java.util.Optional
 import java.util.UUID
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseOpprettetEllerEndretHendelse
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.KandidatForUtmeldingHendelseType
 import no.nav.veilarboppfolging.oppfolgingsbruker.StartetAvType
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelse
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.Avregistrering
@@ -29,7 +30,7 @@ data class KandidaterForUtmeldingMetrikker(
 
 interface BigQueryClient {
     fun loggStartOppfolgingsperiode(startBegrunnelse: OppfolgingStartBegrunnelse, oppfolgingPeriodeId: UUID, startedAvType: StartetAvType, kvalifiseringsgruppe: Optional<Kvalifiseringsgruppe>, manuellSjekkLovligOpphold: Boolean? = null, forrigePeriodeAvsluttet: ZonedDateTime?)
-    fun loggAvsluttOppfolgingsperiode(oppfolgingPeriodeId: UUID, avregistrering: Avregistrering, aktivIArena: Boolean? = null, erKandidatForUtmelding: Boolean?)
+    fun loggAvsluttOppfolgingsperiode(oppfolgingPeriodeId: UUID, avregistrering: Avregistrering, aktivIArena: Boolean? = null, erKandidatForUtmelding: Boolean?, kandidatForUtmeldingHendelseType: KandidatForUtmeldingHendelseType?)
     fun loggKandidaterForUtmeldingMetrikker(metrikker: KandidaterForUtmeldingMetrikker)
     fun loggUnder18()
     fun loggForlengelseHendelse(hendelse: ForlengelseOpprettetEllerEndretHendelse)
