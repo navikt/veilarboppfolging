@@ -10,7 +10,6 @@ import no.nav.veilarboppfolging.client.digdir_krr.DigdirClient;
 import no.nav.veilarboppfolging.client.tiltakshistorikk.TiltakshistorikkClient;
 import no.nav.veilarboppfolging.domain.Oppfolging;
 import no.nav.veilarboppfolging.oppfolgingsbruker.BrukerRegistrant;
-import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService;
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering;
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant;
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvregistreringsType;
@@ -89,7 +88,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
 
         oppfolgingService = new OppfolgingService(
                 mock(KvpService.class),
-                mock(ArenaOppfolgingService.class), authService,
+                authService,
                 oppfolgingsStatusRepository, oppfolgingsPeriodeRepository,
                 manuellStatusService,
                 new KvpRepository(db, namedParameterJdbcTemplate, transactor), maalRepository,
