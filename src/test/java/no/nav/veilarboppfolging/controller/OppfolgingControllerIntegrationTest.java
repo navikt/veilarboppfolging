@@ -62,9 +62,6 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
     VeilarbarenaClient veilarbarenaClient;
 
     @Autowired
-    OppfolgingController oppfolgingController;
-
-    @Autowired
     OppfolgingV2Controller oppfolgingV2Controller;
 
     @Autowired
@@ -87,44 +84,6 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
 
     @Autowired
     AapClient aapClient;
-
-    @Test
-    void hentOppfolgingsPeriode_brukerHarEnAktivOppfolgingsPeriode() throws EmptyResultDataAccessException {
-        mockAuthOk();
-
-        var perioder = startOppfolging();
-
-        Assertions.assertEquals(1, perioder.size());
-
-        var policyInput = new NavAnsattTilgangTilEksternBrukerPolicyInput(veilederUUID, TilgangType.LESE, FNR.get());
-        ApiResult<Decision> permit = ApiResult.Companion.success(Decision.Permit.INSTANCE);
-        doReturn(permit).when(poaoTilgangClient).evaluatePolicy(policyInput);
-
-        var forstePeriode = perioder.get(0);
-        var uuid = forstePeriode.getUuid();
-        var periode = oppfolgingController.hentOppfolgingsPeriode(uuid.toString());
-
-        Assertions.assertEquals(uuid, periode.getUuid());
-        Assertions.assertNotNull(forstePeriode.getStartDato());
-        Assertions.assertEquals(forstePeriode.getStartDato(), periode.getStartDato());
-    }
-
-    @Test
-    void hentOppfolgingsPeriode_veilederManglerTilgang() {
-        mockAuthOk();
-        var perioder = startOppfolging();
-
-        Assertions.assertEquals(1, perioder.size());
-
-        var forstePeriode = perioder.get(0);
-        var uuid = forstePeriode.getUuid().toString();
-
-        var policyInput = new NavAnsattTilgangTilEksternBrukerPolicyInput(veilederUUID, TilgangType.LESE, FNR.get());
-        ApiResult<Decision> deny = ApiResult.Companion.success(new Decision.Deny("Nei", "Fordi"));
-        doReturn(deny).when(poaoTilgangClient).evaluatePolicy(policyInput);
-
-        assertThrows(ForbiddenException.class, () -> oppfolgingController.hentOppfolgingsPeriode(uuid));
-    }
 
     @Test
     void avsluttOppfolgingHvisIserv() {
@@ -165,8 +124,8 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
         var dto = new AvsluttOppfolgingV2Request(new NavIdent("Z151515"), "Begrunnelse", FNR);
         var avslutningStatus = oppfolgingV2Controller.avsluttOppfolging(dto);
         assertEquals(avslutningStatus.getStatusCode(), HttpStatusCode.valueOf(204));
-        OppfolgingPeriodeMinimalDTO periode = oppfolgingController.hentOppfolgingsPeriode(startPeriode.get(0).getUuid().toString());
-        assertNull(periode.getSluttDato());
+        List<OppfolgingPeriodeDTO> periode = oppfolgingV3Controller.hentOppfolgingsperioder(new OppfolgingRequest(FNR));
+        assertNull(periode.get(0).getSluttDato());
     }
 
     @Test
