@@ -190,7 +190,7 @@ class KandidatForUtmeldingRepository(
             .firstOrNull()
     }
 
-    fun hentSisteHendelseForAktivEllerForlengetKandidat(oppfolgingsperiodeId: UUID): KandidatForUtmeldingHendelse? {
+    fun hentAktivEllerForlengetKandidat(oppfolgingsperiodeId: UUID): KandidatForUtmelding? {
         return db.query(
             """
             SELECT kfuh.*
@@ -199,7 +199,15 @@ class KandidatForUtmeldingRepository(
             WHERE kfu.oppfolgingsperiode_uuid = :oppfolgingsperiodeId
             """.trimIndent(),
             mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeId.toString()),
-        ) { rs, _ -> resultSetToUtmeldingsHendelse(rs) }
+        ) { rs, _ ->
+            val hendelse = resultSetToUtmeldingsHendelse(rs)
+            when (hendelse) {
+                is ForlengelseOpprettetEllerEndretHendelse -> ForlengetKandidat(hendelse, hendelse.forlengetTil)
+                is ArbeidssøkerPeriodeAvsluttet -> AktivKandidatForUtmelding(hendelse, hendelse.avsluttesAutomatiskDato)
+                is ForlengelseUtløptHendelse -> AktivKandidatForUtmelding(hendelse, hendelse.avsluttesAutomatiskDato)
+                is InaktivertIArena -> null
+            }
+        }
             .firstOrNull()
     }
 
@@ -424,7 +432,7 @@ fun ResultSet.toForlengelseOpprettetEllerEndretHendelse(): ForlengelseOpprettetE
         utfortAv = getString("utfort_av"),
         kilde = getString("kilde"),
         hendelseTidspunkt = getTimestamp("hendelse_tidspunkt").toLocalDateTime().toInstant(ZoneOffset.UTC),
-        forrigeHendelseType = hendelseData.forrigeHendelseType,
+        type = hendelseData.forrigeHendelseType,
         forlengetTil = hendelseData.forlengetTil,
     )
 }

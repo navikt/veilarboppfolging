@@ -33,7 +33,7 @@ interface BigQueryClient {
     fun loggAvsluttOppfolgingsperiode(oppfolgingPeriodeId: UUID, avregistrering: Avregistrering, aktivIArena: Boolean? = null, kandidatForUtmeldingHendelseType: KandidatForUtmeldingHendelseType?)
     fun loggKandidaterForUtmeldingMetrikker(metrikker: KandidaterForUtmeldingMetrikker)
     fun loggUnder18()
-    fun loggForlengelseHendelse(hendelse: ForlengelseOpprettetEllerEndretHendelse, forrigeHendelse: ForlengelseOpprettetEllerEndretHendelse)
+    fun loggForlengelseHendelse(hendelse: ForlengelseOpprettetEllerEndretHendelse, forrigeHendelseType: KandidatForUtmeldingHendelseType)
 }
 
 class BigQueryClientImplementation(private val bigQuery: BigQuery): BigQueryClient {
@@ -53,7 +53,7 @@ class BigQueryClientImplementation(private val bigQuery: BigQuery): BigQueryClie
 
     val log = LoggerFactory.getLogger(this.javaClass)
 
-    override fun loggForlengelseHendelse(hendelse: ForlengelseOpprettetEllerEndretHendelse) {
+    override fun loggForlengelseHendelse(hendelse: ForlengelseOpprettetEllerEndretHendelse, forrigeHendelseType: KandidatForUtmeldingHendelseType) {
         insertIntoOppfolgingEvents(forlengelseMetrikkerTable) {
             mapOf(
                 "hendelse" to hendelse.type.toString(),
@@ -61,7 +61,7 @@ class BigQueryClientImplementation(private val bigQuery: BigQuery): BigQueryClie
                 "oppfolgingsperiode_id" to hendelse.oppfolgingsperiodeUuid.toString(),
                 "hendelse_opprettet" to ZonedDateTime.ofInstant(hendelse.hendelseTidspunkt, ZoneId.of("Europe/Oslo")).toOffsetDateTime().toString(),
                 "timestamp" to ZonedDateTime.now().toOffsetDateTime().toString(),
-                "forrige_hendelse" to hendelse.forrigeHendelseType.toString()
+                "forrige_hendelse" to forrigeHendelseType.toString()
             )
         }
     }

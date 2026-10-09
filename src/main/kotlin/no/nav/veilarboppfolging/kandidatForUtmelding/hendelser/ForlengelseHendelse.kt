@@ -13,6 +13,9 @@ import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.Operasjon
 import org.postgresql.util.PGobject
 import java.time.ZonedDateTime
 import no.nav.common.json.JsonUtils
+import no.nav.veilarboppfolging.kandidatForUtmelding.AktivKandidatForUtmelding
+import no.nav.veilarboppfolging.kandidatForUtmelding.ForlengetKandidat
+import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmelding
 import java.time.LocalDate
 import no.nav.veilarboppfolging.kandidatForUtmelding.beregnAvsluttesAutomatiskDato
 
@@ -53,7 +56,7 @@ class ForlengelseOpprettetEllerEndretHendelse(
     utfortAv: String?,
     kilde: String,
     val forlengetTil: LocalDate,
-    val forrigeHendelseType:  KandidatForUtmeldingHendelseType
+    override val type: KandidatForUtmeldingHendelseType
 ): KandidatForUtmeldingHendelse(
     oppfolgingsperiodeUuid,
     utfortAvType,
@@ -61,11 +64,28 @@ class ForlengelseOpprettetEllerEndretHendelse(
     kilde,
     hendelseTidspunkt,
 ) {
-    override val type: KandidatForUtmeldingHendelseType = when (forrigeHendelseType) {
-        ForlengelseHendelseType.FORLENGELSE_OPPRETTET -> ForlengelseHendelseType.FORLENGELSE_ENDRET
-        ForlengelseHendelseType.FORLENGELSE_ENDRET -> ForlengelseHendelseType.FORLENGELSE_ENDRET
-        else -> ForlengelseHendelseType.FORLENGELSE_OPPRETTET
-    }
+
+    constructor(
+        kandidat: KandidatForUtmelding,
+        utfortAvType: KandidatForUtmeldingHendelseUtfortAvType,
+        utfortAv: String?,
+        kilde: String,
+        hendelseTidspunkt: Instant,
+        forlengetTil: LocalDate) :
+    this(
+        oppfolgingsperiodeUuid = kandidat.oppfolgingsperiodeId,
+        hendelseTidspunkt = hendelseTidspunkt,
+        utfortAvType = utfortAvType,
+        utfortAv = utfortAv,
+        kilde = kilde,
+        forlengetTil = forlengetTil,
+        type = when (kandidat) {
+            is AktivKandidatForUtmelding -> ForlengelseHendelseType.FORLENGELSE_OPPRETTET
+            is ForlengetKandidat -> ForlengelseHendelseType.FORLENGELSE_ENDRET
+        }
+    )
+
+
     data class Detaljer(
         val forlengetTil: LocalDate,
         val forrigeHendelseType: KandidatForUtmeldingHendelseType?,
