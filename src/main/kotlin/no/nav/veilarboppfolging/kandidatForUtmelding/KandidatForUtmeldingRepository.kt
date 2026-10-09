@@ -44,7 +44,7 @@ class KandidatForUtmeldingRepository(
                 "oppfolgingsperiodeId" to kandidat.sisteHendelse.oppfolgingsperiodeUuid,
                 "hendelseId" to hendelseId,
                 "forlengetTil" to (kandidat as? ForlengetKandidat)?.forlengetTil?.let { Timestamp.valueOf(it.atTime(4, 0)) },
-                "avsluttesAutomatiskDato" to (kandidat as? AktivKandidatForUtmelding)?.avsluttesAutomatiskDato,
+                "avsluttesAutomatiskDato" to (kandidat as? AktivKandidatForUtmelding)?.avsluttesAutomatiskDato?.toInstant()?.let { Timestamp.from(it) }
             )
         )
     }
@@ -434,7 +434,7 @@ fun ResultSet.toForlengelseOpprettetEllerEndretHendelse(): ForlengelseOpprettetE
         utfortAv = getString("utfort_av"),
         kilde = getString("kilde"),
         hendelseTidspunkt = getTimestamp("hendelse_tidspunkt").toLocalDateTime().toInstant(ZoneOffset.UTC),
-        type = ForlengelseHendelseType.valueOf(getString("hendelse")),
+        forlengelseHendelseType = ForlengelseHendelseType.valueOf(getString("hendelse")),
         forlengetTil = hendelseData.forlengetTil,
     )
 }

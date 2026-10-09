@@ -91,7 +91,7 @@ class FjernKandidatForUtmeldingServiceTest : IntegrationTest() {
                 kilde = "kilde",
                 hendelseTidspunkt = ZonedDateTime.now().toInstant(),
                 oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
-                type = ForlengelseHendelseType.FORLENGELSE_OPPRETTET,
+                forlengelseHendelseType = ForlengelseHendelseType.FORLENGELSE_OPPRETTET,
                 forlengetTil = LocalDate.now().plusDays(30),
             ).let { KandidatForUtmelding.fromHendelse(it) }
         )
@@ -171,7 +171,7 @@ class FjernKandidatForUtmeldingServiceTest : IntegrationTest() {
                 kilde = "kilde",
                 hendelseTidspunkt = ZonedDateTime.now().toInstant(),
                 oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
-                type = ForlengelseHendelseType.FORLENGELSE_OPPRETTET,
+                forlengelseHendelseType = ForlengelseHendelseType.FORLENGELSE_OPPRETTET,
                 forlengetTil = LocalDate.now().plusDays(30),
             ).let { KandidatForUtmelding.fromHendelse(it) }
         )
@@ -199,7 +199,7 @@ class FjernKandidatForUtmeldingServiceTest : IntegrationTest() {
                 kilde = "kilde",
                 hendelseTidspunkt = ZonedDateTime.now().toInstant(),
                 oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
-                type = ForlengelseHendelseType.FORLENGELSE_OPPRETTET,
+                forlengelseHendelseType = ForlengelseHendelseType.FORLENGELSE_OPPRETTET,
                 forlengetTil = LocalDate.now().minusDays(3),
             ).let { KandidatForUtmelding.fromHendelse(it) }
         )
