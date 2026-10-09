@@ -74,7 +74,7 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
         assertThat(filterhendelse.hendelse?.beskrivelseEnum).isEqualTo(BeskrivelseEnum.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT.name)
         assertThat(filterhendelse.hendelse?.tidspunktFrist)
             .isCloseTo(
-                kandidat.avsluttesAutomatiskDato.atZone(ZoneOffset.UTC)?.withZoneSameInstant(ZoneId.of("Europe/Oslo")),
+                kandidat.avsluttesAutomatiskDato,
                 within(1, ChronoUnit.SECONDS)
             )
         assertThat(kandidatForUtmeldingRepository.erKandidatSomIkkeKunneAvsluttes(oppfolgingsperiodeUuid)).isFalse
@@ -233,7 +233,7 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
         assertThat(filterhendelse.kategori).isEqualTo(Kategori.KANDIDAT_FOR_UTMELDING)
         assertThat(filterhendelse.hendelse?.tidspunktFrist)
             .isCloseTo(
-                kandidat.avsluttesAutomatiskDato.atZone(ZoneOffset.UTC)?.withZoneSameInstant(ZoneId.of("Europe/Oslo")),
+                kandidat.avsluttesAutomatiskDato,
                 within(1, ChronoUnit.SECONDS)
             )
     }

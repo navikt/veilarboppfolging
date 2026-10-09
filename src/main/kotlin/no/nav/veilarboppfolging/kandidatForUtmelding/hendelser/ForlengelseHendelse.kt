@@ -88,12 +88,11 @@ class ForlengelseOpprettetEllerEndretHendelse(
 
     data class Detaljer(
         val forlengetTil: LocalDate,
-        val forrigeHendelseType: KandidatForUtmeldingHendelseType?,
     )
 
     override val hendelseDataJson: PGobject = PGobject().apply {
         type = "jsonb"
-        value = JsonUtils.getMapper().writeValueAsString(Detaljer(forlengetTil, forrigeHendelseType))
+        value = JsonUtils.getMapper().writeValueAsString(Detaljer(forlengetTil))
     }
 
     override fun tilFilterhendelseRecord(fnr: Fnr): FilterhendelseRecord {

@@ -266,7 +266,7 @@ class KandidatForUtmeldingRepositoryTest {
             utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
             utfortAv = "A123123",
             kilde = "kilde",
-            forlengelseHendelseType = ForlengelseHendelseType.FORLENGELSE_OPPRETTET,
+            type = ForlengelseHendelseType.FORLENGELSE_OPPRETTET,
             hendelseTidspunkt = ZonedDateTime.now().toInstant(),
             forlengetTil = forlengetTil,
         )
@@ -291,7 +291,7 @@ class KandidatForUtmeldingRepositoryTest {
                     utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
                     utfortAv = "A123123",
                     kilde = "kilde",
-                    forlengelseHendelseType = ForlengelseHendelseType.FORLENGELSE_OPPRETTET,
+                    type = ForlengelseHendelseType.FORLENGELSE_OPPRETTET,
                     hendelseTidspunkt = ZonedDateTime.now().toInstant(),
                     forlengetTil = LocalDate.now().plusDays(14),
                 )
@@ -328,7 +328,7 @@ class KandidatForUtmeldingRepositoryTest {
                 utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
                 utfortAv = "A123123",
                 kilde = "kilde",
-                forlengelseHendelseType = ForlengelseHendelseType.FORLENGELSE_OPPRETTET,
+                type = ForlengelseHendelseType.FORLENGELSE_OPPRETTET,
                 hendelseTidspunkt = ZonedDateTime.now().toInstant(),
                 forlengetTil = LocalDate.now().plusDays(10),
             ).let { KandidatForUtmelding.fromHendelse(it) }
@@ -351,7 +351,7 @@ class KandidatForUtmeldingRepositoryTest {
             utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
             utfortAv = "A123123",
             kilde = "kilde",
-            forlengelseHendelseType = ForlengelseHendelseType.FORLENGELSE_OPPRETTET,
+            type = ForlengelseHendelseType.FORLENGELSE_OPPRETTET,
             hendelseTidspunkt = ZonedDateTime.now().toInstant(),
             forlengetTil = LocalDate.now().plusDays(10),
         ).let { KandidatForUtmelding.fromHendelse(it) }

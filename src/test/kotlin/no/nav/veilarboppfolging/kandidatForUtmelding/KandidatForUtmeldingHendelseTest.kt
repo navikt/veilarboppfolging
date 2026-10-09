@@ -47,7 +47,7 @@ class KandidatForUtmeldingHendelseTest {
             utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
             utfortAv = "A123123",
             kilde = "test",
-            forlengelseHendelseType = forlengelseHendelseType,
+            type = forlengelseHendelseType,
             hendelseTidspunkt = hendelseTidspunkt,
             forlengetTil = forlengetTil,
         )

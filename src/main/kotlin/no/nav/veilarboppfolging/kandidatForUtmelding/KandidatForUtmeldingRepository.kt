@@ -23,6 +23,8 @@ import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.KandidatForUtmeld
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.KandidatForUtmeldingHendelseType
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.KandidatForUtmeldingHendelseUtfortAvType
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvslutningsBegrunnelse
+import no.nav.veilarboppfolging.utils.DbUtils
+import java.time.ZoneId
 
 @Repository
 class KandidatForUtmeldingRepository(
@@ -42,7 +44,7 @@ class KandidatForUtmeldingRepository(
                 "oppfolgingsperiodeId" to kandidat.sisteHendelse.oppfolgingsperiodeUuid,
                 "hendelseId" to hendelseId,
                 "forlengetTil" to (kandidat as? ForlengetKandidat)?.forlengetTil?.let { Timestamp.valueOf(it.atTime(4, 0)) },
-                "avsluttesAutomatiskDato" to (kandidat as? AktivKandidatForUtmelding)?.avsluttesAutomatiskDato?.let { Timestamp.valueOf(it) },
+                "avsluttesAutomatiskDato" to (kandidat as? AktivKandidatForUtmelding)?.avsluttesAutomatiskDato,
             )
         )
     }
@@ -125,7 +127,7 @@ class KandidatForUtmeldingRepository(
             val sisteHendelse = resultSetToUtmeldingsHendelse(rs)
             AktivKandidatForUtmelding(
                 sisteHendelse,
-                rs.getTimestamp("avsluttes_automatisk_dato").toLocalDateTime()
+                DbUtils.hentZonedDateTime(rs, "avsluttes_automatisk_dato") ?: throw IllegalStateException("avsluttes_automatisk_dato should not be null for aktiv kandidat")
             )
         }
             .firstOrNull()
@@ -285,7 +287,7 @@ class KandidatForUtmeldingRepository(
                 "offset" to offset,
                 "batchSize" to batchSize
             ),
-        ) { rs, _ -> AktivKandidatForUtmelding(sisteHendelse = resultSetToUtmeldingsHendelse(rs), avsluttesAutomatiskDato = rs.getTimestamp("avsluttes_automatisk_dato").toLocalDateTime())  }
+        ) { rs, _ -> AktivKandidatForUtmelding(sisteHendelse = resultSetToUtmeldingsHendelse(rs), avsluttesAutomatiskDato = DbUtils.hentZonedDateTime(rs, "avsluttes_automatisk_dato") ?: throw IllegalStateException("avsluttes_automatisk_dato should not be null for aktiv kandidat")) }
     }
 
     // OBS: Denne henter ikke avsluttes automatisk-dato eller forlenget til som er lagret i kandidater_for_utmelding, men beregner det utifra hendelsen.
@@ -338,7 +340,7 @@ class KandidatForUtmeldingRepository(
         ) { rs, _ ->
             AktivKandidatForUtmelding(
                 resultSetToUtmeldingsHendelse(rs),
-                rs.getTimestamp("avsluttes_automatisk_dato").toLocalDateTime()
+                DbUtils.hentZonedDateTime(rs, "avsluttes_automatisk_dato") ?: throw IllegalStateException("avsluttes_automatisk_dato should not be null for aktiv kandidat")
             )
         }
     }
@@ -432,7 +434,7 @@ fun ResultSet.toForlengelseOpprettetEllerEndretHendelse(): ForlengelseOpprettetE
         utfortAv = getString("utfort_av"),
         kilde = getString("kilde"),
         hendelseTidspunkt = getTimestamp("hendelse_tidspunkt").toLocalDateTime().toInstant(ZoneOffset.UTC),
-        type = hendelseData.forrigeHendelseType,
+        type = ForlengelseHendelseType.valueOf(getString("hendelse")),
         forlengetTil = hendelseData.forlengetTil,
     )
 }

@@ -41,8 +41,8 @@ sealed class KandidatForUtmelding(
          * eller [KARENSTID_DAGER] dager etter at en eventuell forlengelse utløp.
          * Mens en forlengelse er aktiv (FORLENGELSE_OPPRETTET/FORLENGELSE_ENDRET) er datoen pauset (null).
          */
-        private fun beregnAvsluttesAutomatiskDato(hendelse: KandidatForUtmeldingHendelse): LocalDateTime? {
-            val hendelseTid = LocalDateTime.ofInstant(hendelse.hendelseTidspunkt, ZoneOffset.UTC)
+        private fun beregnAvsluttesAutomatiskDato(hendelse: KandidatForUtmeldingHendelse): ZonedDateTime? {
+            val hendelseTid = ZonedDateTime.ofInstant(hendelse.hendelseTidspunkt, ZoneOffset.UTC)
             return when (hendelse) {
                 is ArbeidssøkerPeriodeAvsluttet -> hendelseTid.plusDays(KARENSTID_DAGER)
                 is ForlengelseOpprettetEllerEndretHendelse ->  null
@@ -66,5 +66,5 @@ class ForlengetKandidat(
 
 class AktivKandidatForUtmelding(
     sisteHendelse: KandidatForUtmeldingHendelse,
-    val avsluttesAutomatiskDato: LocalDateTime
+    val avsluttesAutomatiskDato: ZonedDateTime
 ) : KandidatForUtmelding(sisteHendelse)
