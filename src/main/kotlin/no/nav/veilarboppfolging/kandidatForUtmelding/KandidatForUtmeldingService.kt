@@ -10,11 +10,11 @@ import no.nav.common.types.identer.Fnr
 import no.nav.veilarboppfolging.eventsLogger.BigQueryClient
 import no.nav.veilarboppfolging.kandidatForUtmelding.dto.KandidatForUtmeldingTagDto
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ArbeidssøkerPeriodeAvsluttet
-import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseHendelseType
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseOpprettetEllerEndretHendelse
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseUtløptHendelse
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.InaktivertIArena
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.KandidatForUtmeldingHendelse
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.KandidatForUtmeldingHendelseType
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ArenaIservKanIkkeReaktiveres
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvslutningsBegrunnelse
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.KandidatUtmeldtEtter28Dager
@@ -238,21 +238,14 @@ class KandidatForUtmeldingService(
         }
     }
 
-    fun forlengKandidat(hendelse: ForlengelseOpprettetEllerEndretHendelse, fnr: Fnr) {
+    fun forlengKandidat(hendelse: ForlengelseOpprettetEllerEndretHendelse, fnr: Fnr, forrigeHendelseType: KandidatForUtmeldingHendelseType) {
         logger.info("Lagrer forlengelse for oppfølgingsperiode ${hendelse.oppfolgingsperiodeUuid}")
         handterUtmeldingsHendelse(fnr, hendelse)
         logger.info("Sender forlengelse til BigQuery for oppfølgingsperiode ${hendelse.oppfolgingsperiodeUuid}")
-        bigQueryClient.loggForlengelseHendelse(hendelse)
+        bigQueryClient.loggForlengelseHendelse(hendelse, forrigeHendelseType)
     }
 
-    fun hentForlengelseType(oppfolgingsperiodeId: UUID): ForlengelseHendelseType {
-        val hendelseType =
-            kandidatForUtmeldingRepository.hentSisteHendelseForAktivEllerForlengetKandidat(oppfolgingsperiodeId)?.type
-                ?: throw IllegalStateException("Fant ingen kandidat for utmelding-hendelser for oppfølgingsperiode $oppfolgingsperiodeId")
-        return if (hendelseType == ForlengelseHendelseType.FORLENGELSE_OPPRETTET || hendelseType == ForlengelseHendelseType.FORLENGELSE_ENDRET) {
-            ForlengelseHendelseType.FORLENGELSE_ENDRET
-        } else {
-            ForlengelseHendelseType.FORLENGELSE_OPPRETTET
-        }
+    fun hentAktivEllerForelengetKandidat(oppfolgingsperiodeId: UUID): KandidatForUtmelding? {
+        return kandidatForUtmeldingRepository.hentAktivEllerForlengetKandidat(oppfolgingsperiodeId)
     }
 }

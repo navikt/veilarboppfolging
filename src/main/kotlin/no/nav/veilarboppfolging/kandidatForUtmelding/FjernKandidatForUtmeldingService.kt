@@ -62,6 +62,6 @@ class FjernKandidatForUtmeldingService(
     }
 
     fun hentSisteHendelseForAktivEllerForlengetKandidat(oppfolgingsperiodeId: UUID): KandidatForUtmeldingHendelse? {
-        return kandidatForUtmeldingRepository.hentSisteHendelseForAktivEllerForlengetKandidat(oppfolgingsperiodeId)
+        return kandidatForUtmeldingRepository.hentAktivEllerForlengetKandidat(oppfolgingsperiodeId)?.sisteHendelse
     }
 }

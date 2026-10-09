@@ -84,14 +84,14 @@ class KandidatForUtmeldingHendelseTest {
             AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST,
             hendelseTidspunkt = hendelseTidspunkt,
         ).let { KandidatForUtmelding.fromHendelse(it) as AktivKandidatForUtmelding }
-        val forventetDato = LocalDateTime.ofInstant(hendelseTidspunkt, ZoneOffset.UTC)
+        val forventetDato = ZonedDateTime.ofInstant(hendelseTidspunkt, ZoneOffset.UTC)
             .plusDays(KARENSTID_DAGER)
 
         val automatiskAvslutningDato = hendelse.avsluttesAutomatiskDato
 
         assertThat(automatiskAvslutningDato).isEqualTo(forventetDato)
         assertThat(hendelse.sisteHendelse.tilFilterhendelseRecord(Fnr.of("12345678901"))?.hendelse?.tidspunktFrist)
-            .isEqualTo(forventetDato.atZone(ZoneOffset.UTC).withZoneSameInstant(ZoneId.of("Europe/Oslo")))
+            .isEqualTo(forventetDato)
     }
 
     @Test
@@ -109,13 +109,13 @@ class KandidatForUtmeldingHendelseTest {
             hendelseTidspunkt = hendelseTidspunkt,
         ).let { KandidatForUtmelding.fromHendelse(it) as AktivKandidatForUtmelding }
 
-        val forventetDato = LocalDateTime.ofInstant(hendelseTidspunkt, ZoneOffset.UTC)
+        val forventetDato = ZonedDateTime.ofInstant(hendelseTidspunkt, ZoneOffset.UTC)
             .plusDays(KARENSTID_DAGER)
 
         val automatiskAvslutningDato = kandidatForUtmelding.avsluttesAutomatiskDato
 
         assertThat(automatiskAvslutningDato).isEqualTo(forventetDato)
         assertThat(kandidatForUtmelding.sisteHendelse.tilFilterhendelseRecord(Fnr.of("12345678901"))?.hendelse?.tidspunktFrist)
-            .isEqualTo(forventetDato.atZone(ZoneOffset.UTC).withZoneSameInstant(ZoneId.of("Europe/Oslo")))
+            .isEqualTo(forventetDato)
     }
 }
