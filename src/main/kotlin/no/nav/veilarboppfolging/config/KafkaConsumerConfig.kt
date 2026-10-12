@@ -15,6 +15,8 @@ import no.nav.common.kafka.util.KafkaPropertiesBuilder
 import no.nav.common.utils.EnvironmentUtils
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2
+import no.nav.veilarboppfolging.kafka.AapHendelseRecord
+import no.nav.veilarboppfolging.kafka.AapHendelserConsumerService
 import no.nav.veilarboppfolging.kafka.ArbeidsoppfolgingskontortilordningConsumerService
 import no.nav.veilarboppfolging.kafka.ArbeidssøkerperiodeConsumerService
 import no.nav.veilarboppfolging.kafka.OppfolgingskontorMelding
@@ -42,6 +44,7 @@ open class KafkaConsumerConfig(
     private val kafkaConsumerService: KafkaConsumerService,
     private val arbeidssøkerperiodeConsumerService: ArbeidssøkerperiodeConsumerService,
     private val arbeidsoppfolgingskontortilordningConsumerService: ArbeidsoppfolgingskontortilordningConsumerService,
+    private val aapHendelserConsumerService: AapHendelserConsumerService,
     private val startOppfolgingConsumerService: StartOppfolgingConsumerService,
     lockProvider: LockProvider,
     @Value("\${app.kafka.enabled}") val kafkaEnabled: Boolean
@@ -98,6 +101,20 @@ open class KafkaConsumerConfig(
                         ),
                         Consumer { kafkaMelding: ConsumerRecord<Long, OppfolgingskontorMelding?> ->
                             arbeidsoppfolgingskontortilordningConsumerService.consumeKontortilordning(kafkaMelding)
+                        }
+                    ),
+                KafkaConsumerClientBuilder.TopicConfig<String, AapHendelseRecord>()
+                    .withLogging()
+                    .withMetrics(meterRegistry)
+                    .withStoreOnFailure(consumerRepository)
+                    .withConsumerConfig(
+                        kafkaProperties.aapHendelserTopic,
+                        Deserializers.stringDeserializer(),
+                        Deserializers.jsonDeserializer(
+                            AapHendelseRecord::class.java
+                        ),
+                        Consumer { kafkaMelding: ConsumerRecord<String, AapHendelseRecord> ->
+                            aapHendelserConsumerService.consumeAapHendelse(kafkaMelding)
                         }
                     ),
                 KafkaConsumerClientBuilder.TopicConfig<String, StartOppfolgingMelding>()
