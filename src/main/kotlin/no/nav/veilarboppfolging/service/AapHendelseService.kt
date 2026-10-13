@@ -29,6 +29,7 @@ class AapHendelseService(
 
         val kanAvsluttes by lazy { avsluttOppfolgingService.hentAvslutningstatusForManuellAvslutning(Fnr.of(key)).kanAvslutte }
 
+        log.info("AAP saker: ${aapSaker.saker}. Mottar ikke AAP: $mottarIkkeAap. HarAap: $harAap")
         when {
             mottarIkkeAap && !erKandidatForUtmelding && kanAvsluttes -> {
                 // skal legges til som kandidat og fjernes fra "kandidater som ikke kan avsluttes
