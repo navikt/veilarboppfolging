@@ -33,6 +33,14 @@ class AapClient(
         .build()
 
     fun harAap(personident: String): Boolean {
+        val response = hentSaker(personident)
+        val harAktivAap = response.mottarEllerHarSoktAAP()
+        logger.info("Sjekket AAP-status, harAap=$harAktivAap, antall saker=${response.saker.size}")
+        return harAktivAap
+    }
+
+    /** Henter saker slik at begge AAP-sjekkene kan bruke samme respons. */
+    fun hentSaker(personident: String): DabSakerResponse {
         val requestBody = AapPerioderRequest(personidentifikator = personident)
 
         val request = Request.Builder()
@@ -52,10 +60,7 @@ class AapClient(
             val body = response.body?.string()
                 ?: throw RuntimeException("Body mangler i respons fra aap-api")
 
-            val response = objectMapper.readValue<DabSakerResponse>(body)
-            val harAktivAap = response.mottarEllerHarSoktAAP()
-            logger.info("Sjekket AAP-status, harAap=$harAktivAap, antall saker=${response.saker.size}")
-            return harAktivAap
+            return objectMapper.readValue<DabSakerResponse>(body)
         }
     }
 }
@@ -65,6 +70,9 @@ data class DabSakerResponse(
 ) {
     fun mottarEllerHarSoktAAP(): Boolean {
         return saker.any { it.mottarEllerHarSoktAAP() }
+    }
+    fun harIkkeAap(): Boolean {
+        return saker.any { it.harIkkeAap() }
     }
 }
 
@@ -82,6 +90,7 @@ sealed interface DabSak {
     val kilde: Kilde
 
     fun mottarEllerHarSoktAAP(): Boolean
+    fun harIkkeAap(): Boolean
 
     @JsonTypeName("ARENA")
     data class Arena(
@@ -101,6 +110,10 @@ sealed interface DabSak {
             val harAktivAap = periode.fraOgMedDato != null && periode.tilOgMedDato != null && periode.tilOgMedDato.isAfter(idag) && statusKode == ArenaStatus.IVERK
             val harSoktAAP = statusKode == ArenaStatus.MOTAT || statusKode == ArenaStatus.OPPRE || statusKode == ArenaStatus.REGIS || statusKode == ArenaStatus.INNST
             return harAktivAap || harSoktAAP
+        }
+
+        override fun harIkkeAap(): Boolean {
+            return periode.tilOgMedDato == null
         }
     }
 
@@ -122,6 +135,12 @@ sealed interface DabSak {
             val idag = LocalDate.now()
             val harAktivAap = perioder.any { !it.tilOgMedDato.isBefore(idag) }
             return harAktivAap || statuskode == KelvinStatus.SOKNAD_UNDER_BEHANDLING
+        }
+
+        override fun harIkkeAap(): Boolean {
+            val idag = LocalDate.now()
+            val harAktivAap = perioder.any { !it.tilOgMedDato.isBefore(idag) }
+            return !harAktivAap
         }
     }
 

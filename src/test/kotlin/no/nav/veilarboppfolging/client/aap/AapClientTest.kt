@@ -15,6 +15,62 @@ import org.junit.jupiter.api.assertThrows
 class AapClientTest {
 
     @Test
+    fun `hentSaker - begge AAP-sjekkene kan vaere true med ett REST-kall`(wmRuntimeInfo: WireMockRuntimeInfo) {
+        val apiUrl = "http://localhost:" + wmRuntimeInfo.httpPort
+        @Language("JSON")
+        val response = """
+            {
+              "saker": [
+                {
+                  "sakId": "123",
+                  "statuskode": "SOKNAD_UNDER_BEHANDLING",
+                  "perioder": [],
+                  "ytelsesstatus": "FOR_VEDTAK",
+                  "kilde": "KELVIN"
+                }
+              ]
+            }
+        """.trimIndent()
+        givenThat(
+            WireMock.post("/dab/sakerByFnr")
+                .willReturn(
+                    WireMock.aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(response)
+                )
+        )
+        val client = AapClient(apiUrl, { "token" }, OkHttpClient.Builder().build())
+
+        val saker = client.hentSaker("12345678910")
+
+        assertEquals(true, saker.mottarEllerHarSoktAAP())
+        assertEquals(true, saker.harIkkeAap())
+        WireMock.verify(1, WireMock.postRequestedFor(WireMock.urlEqualTo("/dab/sakerByFnr")))
+    }
+
+    @Test
+    fun `hentSaker - ingen saker gir false for begge sjekkene`(wmRuntimeInfo: WireMockRuntimeInfo) {
+        val apiUrl = "http://localhost:" + wmRuntimeInfo.httpPort
+        givenThat(
+            WireMock.post("/dab/sakerByFnr")
+                .willReturn(
+                    WireMock.aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody("""{"saker": []}""")
+                )
+        )
+        val client = AapClient(apiUrl, { "token" }, OkHttpClient.Builder().build())
+
+        val saker = client.hentSaker("12345678910")
+
+        assertEquals(false, saker.mottarEllerHarSoktAAP())
+        assertEquals(false, saker.harIkkeAap())
+        WireMock.verify(1, WireMock.postRequestedFor(WireMock.urlEqualTo("/dab/sakerByFnr")))
+    }
+
+    @Test
     fun `harAap - har aktiv Arena-periode nå - returnerer true`(wmRuntimeInfo: WireMockRuntimeInfo) {
         val apiUrl = "http://localhost:" + wmRuntimeInfo.httpPort
         val fraOgMed = LocalDate.now().minusWeeks(1)
