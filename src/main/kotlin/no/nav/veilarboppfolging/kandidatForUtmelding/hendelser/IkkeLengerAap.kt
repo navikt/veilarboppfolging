@@ -16,16 +16,13 @@ import java.util.UUID
 
 class IkkeLengerAap(
     oppfolgingsperiodeUuid: UUID,
-    utfortAvType: KandidatForUtmeldingHendelseUtfortAvType,
-    utfortAv: String?,
-    kilde: String,
     val avslutningsarsak: String?,
     hendelseTidspunkt: Instant,
 ) : KandidatForUtmeldingHendelse(
     oppfolgingsperiodeUuid,
-    utfortAvType,
-    utfortAv,
-    kilde,
+    KandidatForUtmeldingHendelseUtfortAvType.SYSTEM,
+    "Kelvin",
+    "Kelvin",
     hendelseTidspunkt,
 ) {
     val avsluttesAutomatiskDato: ZonedDateTime = beregnAvsluttesAutomatiskDato(hendelseTidspunkt)

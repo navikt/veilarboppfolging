@@ -8,9 +8,11 @@ import no.nav.veilarboppfolging.kafka.AapHendelseRecord
 import no.nav.veilarboppfolging.kandidatForUtmelding.FjernKandidatForUtmeldingService
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingRepository
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.IkkeLengerAap
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import java.time.Instant
 
 @Service
 class AapHendelseService(
@@ -47,7 +49,14 @@ class AapHendelseService(
                 return
             }
             !erKandidatForUtmelding && kanAvsluttes -> {
-                // skal legges til som kandidat
+                kandidatForUtmeldingService.handterUtmeldingsHendelse(
+                    Fnr.of(key),
+                    IkkeLengerAap(
+                        oppfolgingsperiodeUuid = oppfolgingsperiode,
+                        hendelseTidspunkt = Instant.now(),
+                        avslutningsarsak = "Ikke lenger AAP",
+                    )
+                )
                 kandidatForUtmeldingRepository.fjernKandidatSomIkkeKunneAvsluttes(oppfolgingsperiode)
             }
             harIkkeSoktEllerMottarAap && !kanAvsluttes -> {
