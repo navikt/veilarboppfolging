@@ -30,6 +30,7 @@ import java.sql.Timestamp
 import java.time.*
 import java.time.temporal.ChronoUnit
 import java.util.*
+import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.paw.arbeidssokerregisteret.api.v1.Metadata as MetaData
 
 
@@ -76,6 +77,7 @@ class ArbeidssøkerperiodeConsumerServiceTest(
         assertThat(hendelse.startetTidspunkt).isCloseTo(ZonedDateTime.now(), within(1, ChronoUnit.SECONDS))
         assertThat(hendelse.foretrukketArbeidsoppfolgingskontor).isNull()
         assertThat(hendelse.oppfolgingsPeriodeId).isEqualTo(oppfølgingsperiode.uuid)
+        assertThat(aktivArbeidssokerperiodeRepository.erArbeidssoker(aktørId)).isTrue()
     }
 
     @Test
@@ -171,6 +173,28 @@ class ArbeidssøkerperiodeConsumerServiceTest(
 
         val oppfølgingsdataEtterSykmeldtRegistrering = oppfølgingService.hentOppfolgingsperioder(aktørId).first()
         assertThat(oppfølgingsdataFørSykmeldtRegistrering).isEqualTo(oppfølgingsdataEtterSykmeldtRegistrering)
+    }
+
+    @Test
+    fun `Melding om avsluttet arbeidssøkerperiode skal fjerne aktiv arbeidssøkerperiode`() {
+        mockSytemBrukerAuthOk(aktørId, Fnr(fnr))
+        mockTiltakshistorikk(Fnr(fnr), harAktiveDeltakelser = false)
+        mockUngdomsprogram(Fnr(fnr), erDeltaker = false)
+        mockArbeidssoekerregisteret(Fnr(fnr), erArbeidssoeker = false)
+        mockAap(Fnr(fnr), harAap = false)
+
+        val nyPeriode = arbeidssøkerperiode(fnr)
+        val startMelding = ConsumerRecord("topic", 0, 0, "dummyKey", nyPeriode)
+
+        arbeidssøkerperiodeConsumerService.consumeArbeidssøkerperiode(startMelding)
+        assertThat(aktivArbeidssokerperiodeRepository.erArbeidssoker(aktørId)).isTrue()
+        setLocalArenaOppfolging(aktørId, Formidlingsgruppe.ARBS)
+
+        val avsluttetPeriode = arbeidssøkerperiode(fnr, periodeAvsluttet = true).apply { id = nyPeriode.id }
+        val avsluttMelding = ConsumerRecord("topic", 0, 0, "dummyKey", avsluttetPeriode)
+        arbeidssøkerperiodeConsumerService.consumeArbeidssøkerperiode(avsluttMelding)
+
+        assertThat(aktivArbeidssokerperiodeRepository.erArbeidssoker(aktørId)).isFalse
     }
 
     private fun oppfølgingsperiode(startet: ZonedDateTime = ZonedDateTime.now()) =
