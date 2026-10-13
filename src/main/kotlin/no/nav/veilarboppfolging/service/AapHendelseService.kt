@@ -22,17 +22,16 @@ class AapHendelseService(
         log.info("Mottatt AAP hendelse: ${value.hendelse}")
         val aapSaker = aapClient.hentSaker(value.ident)
         val harIkkeSoktEllerMottarAap = !aapSaker.mottarEllerHarSoktAAP()
-        val harAap = aapSaker.mottarEllerHarSoktAAP()
         val erKandidatForUtmelding = kandidatForUtmeldingService.erAktivUtmeldingskandidat(AktorId.of(key))
 
         val kanAvsluttes by lazy { avsluttOppfolgingService.hentAvslutningstatusForManuellAvslutning(Fnr.of(key)).kanAvslutte }
 
-        log.info("AAP saker: ${aapSaker.saker}. Mottar ikke AAP: $harIkkeSoktEllerMottarAap. HarAap: $harAap")
+        log.info("AAP saker: ${aapSaker.saker}. Mottar ikke AAP: $harIkkeSoktEllerMottarAap.")
         when {
             harIkkeSoktEllerMottarAap && !erKandidatForUtmelding && kanAvsluttes -> {
                 // skal legges til som kandidat og fjernes fra "kandidater som ikke kan avsluttes
             }
-             harAap && erKandidatForUtmelding -> {
+             !harIkkeSoktEllerMottarAap && erKandidatForUtmelding -> {
                 // skal fjernes som kandidat
             }
             harIkkeSoktEllerMottarAap && erKandidatForUtmelding -> {
@@ -41,10 +40,10 @@ class AapHendelseService(
             harIkkeSoktEllerMottarAap && !erKandidatForUtmelding && !kanAvsluttes -> {
                 // ignorer
             }
-            !erKandidatForUtmelding && harAap -> {
+            !erKandidatForUtmelding && !harIkkeSoktEllerMottarAap -> {
                 // ignorer
             }
-            !kanAvsluttes && harAap -> {
+            !kanAvsluttes && !harIkkeSoktEllerMottarAap -> {
                 // fjern fra "kandidater som ikke kan avsluttes"
             }
         }
