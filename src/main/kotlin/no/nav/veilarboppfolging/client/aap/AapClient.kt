@@ -71,9 +71,6 @@ data class DabSakerResponse(
     fun mottarEllerHarSoktAAP(): Boolean {
         return saker.any { it.mottarEllerHarSoktAAP() }
     }
-    fun harIkkeAap(): Boolean {
-        return saker.any { it.harIkkeAap() }
-    }
 }
 
 @JsonTypeInfo(
@@ -90,7 +87,6 @@ sealed interface DabSak {
     val kilde: Kilde
 
     fun mottarEllerHarSoktAAP(): Boolean
-    fun harIkkeAap(): Boolean
 
     @JsonTypeName("ARENA")
     data class Arena(
@@ -110,10 +106,6 @@ sealed interface DabSak {
             val harAktivAap = periode.fraOgMedDato != null && periode.tilOgMedDato != null && periode.tilOgMedDato.isAfter(idag) && statusKode == ArenaStatus.IVERK
             val harSoktAAP = statusKode == ArenaStatus.MOTAT || statusKode == ArenaStatus.OPPRE || statusKode == ArenaStatus.REGIS || statusKode == ArenaStatus.INNST
             return harAktivAap || harSoktAAP
-        }
-
-        override fun harIkkeAap(): Boolean {
-            return periode.tilOgMedDato == null
         }
     }
 
@@ -137,11 +129,6 @@ sealed interface DabSak {
             return harAktivAap || statuskode == KelvinStatus.SOKNAD_UNDER_BEHANDLING
         }
 
-        override fun harIkkeAap(): Boolean {
-            val idag = LocalDate.now()
-            val harAktivAap = perioder.any { !it.tilOgMedDato.isBefore(idag) }
-            return !harAktivAap
-        }
     }
 
     enum class Kilde {

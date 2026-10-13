@@ -19,28 +19,26 @@ class AapHendelseService(
     val log = LoggerFactory.getLogger(this::class.java)
 
     fun håndterAapHendelse(key: String, value: AapHendelseRecord) {
-        // ingen aktiv periode -> avslag / evt kelvin status avsluttet/ferdigbehandlet?
-        //
         log.info("Mottatt AAP hendelse: ${value.hendelse}")
         val aapSaker = aapClient.hentSaker(value.ident)
-        val mottarIkkeAap = aapSaker.harIkkeAap()
+        val harIkkeSoktEllerMottarAap = !aapSaker.mottarEllerHarSoktAAP()
         val harAap = aapSaker.mottarEllerHarSoktAAP()
         val erKandidatForUtmelding = kandidatForUtmeldingService.erAktivUtmeldingskandidat(AktorId.of(key))
 
         val kanAvsluttes by lazy { avsluttOppfolgingService.hentAvslutningstatusForManuellAvslutning(Fnr.of(key)).kanAvslutte }
 
-        log.info("AAP saker: ${aapSaker.saker}. Mottar ikke AAP: $mottarIkkeAap. HarAap: $harAap")
+        log.info("AAP saker: ${aapSaker.saker}. Mottar ikke AAP: $harIkkeSoktEllerMottarAap. HarAap: $harAap")
         when {
-            mottarIkkeAap && !erKandidatForUtmelding && kanAvsluttes -> {
+            harIkkeSoktEllerMottarAap && !erKandidatForUtmelding && kanAvsluttes -> {
                 // skal legges til som kandidat og fjernes fra "kandidater som ikke kan avsluttes
             }
              harAap && erKandidatForUtmelding -> {
                 // skal fjernes som kandidat
             }
-            mottarIkkeAap && erKandidatForUtmelding -> {
+            harIkkeSoktEllerMottarAap && erKandidatForUtmelding -> {
                 // ignorer
             }
-            mottarIkkeAap && !erKandidatForUtmelding && !kanAvsluttes -> {
+            harIkkeSoktEllerMottarAap && !erKandidatForUtmelding && !kanAvsluttes -> {
                 // ignorer
             }
             !erKandidatForUtmelding && harAap -> {
