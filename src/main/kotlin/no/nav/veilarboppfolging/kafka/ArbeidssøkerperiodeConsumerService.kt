@@ -7,6 +7,8 @@ import no.nav.common.types.identer.NavIdent
 import no.nav.paw.arbeidssokerregisteret.api.v1.AvsluttetAarsakType
 import no.nav.paw.arbeidssokerregisteret.api.v1.BrukerType
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
+import no.nav.veilarboppfolging.arbeidssokerperiode.AktivArbeidssokerperiode
+import no.nav.veilarboppfolging.arbeidssokerperiode.AktivArbeidssokerperiodeRepository
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ArbeidssokerperiodeAvsluttetHendelseType
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ArbeidssøkerPeriodeAvsluttet
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.KandidatForUtmeldingHendelseUtfortAvType
@@ -26,15 +28,16 @@ import org.springframework.transaction.annotation.Transactional
 val DA_VI_STARTET_KONSUMERING = LocalDateTime.of(2024, 8, 6, 0, 0)
     .atZone(ZoneId.systemDefault())
 
-        @Service
+@Service
 open class ArbeidssøkerperiodeConsumerService(
-            @Lazy
-            private val oppfolgingService: OppfolgingService,
-            private val startOppfolgingService: StartOppfolgingService,
-            private val authService: AuthService,
-            private val kandidatForUtmeldingService: KandidatForUtmeldingService,
-        ) {
-            private val logger = LoggerFactory.getLogger(this::class.java)
+    @Lazy
+    private val oppfolgingService: OppfolgingService,
+    private val startOppfolgingService: StartOppfolgingService,
+    private val authService: AuthService,
+    private val kandidatForUtmeldingService: KandidatForUtmeldingService,
+    private val aktivArbeidssokerperiodeRepository: AktivArbeidssokerperiodeRepository,
+) {
+    private val logger = LoggerFactory.getLogger(this::class.java)
 
     @Transactional
     open fun consumeArbeidssøkerperiode(kafkaMelding: ConsumerRecord<String, Periode>) {
@@ -52,6 +55,14 @@ open class ArbeidssøkerperiodeConsumerService(
 
         val nyPeriode = arbeidssøkerperiode.avsluttet == null
         if (nyPeriode) {
+            aktivArbeidssokerperiodeRepository.lagreAktivArbeidssokerperiode(
+                AktivArbeidssokerperiode(
+                    arbeidssokerperiodeId = arbeidssøkerperiode.id.toString(),
+                    aktorId = aktørId,
+                    fnr = fnr,
+                    startetTidspunkt = arbeidssøkerperiode.startet.tidspunkt,
+                )
+            )
             val nyestePeriode = oppfolgingsperioder.maxByOrNull { it.startDato }
             val nyestePeriodeStartDato = nyestePeriode?.startDato
             if (nyestePeriodeStartDato?.isAfter(arbeidssøkerperiodeStartet) == true) {
@@ -68,6 +79,7 @@ open class ArbeidssøkerperiodeConsumerService(
             startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.arbeidssokerRegistrering(fnr, aktørId, registrant))
         } else {
             logger.info("Melding om avsluttet arbeidssøkerperiode, flagger som utmeldingskandidat hvis under oppfølging")
+            aktivArbeidssokerperiodeRepository.slettAktivArbeidssokerperiode(arbeidssøkerperiode.id.toString())
             val gjeldendePeriode = oppfolgingsperioder.firstOrNull { it.sluttDato == null }
             if (gjeldendePeriode != null) {
                 val kilde = arbeidssøkerperiode.avsluttet?.kilde ?: "arbeidssøkerregisteret"
