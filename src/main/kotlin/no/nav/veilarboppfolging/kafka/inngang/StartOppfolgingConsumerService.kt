@@ -43,7 +43,6 @@ class StartOppfolgingConsumerService(
             when (arenaRespons.arenaResultat.kode) {
                 ArenaRegistreringResultat.KAN_REAKTIVERES_FORENKLET -> {
                     logger.warn("Kan ikke starte oppfølging i Arena fordi bruker kan enkelt reaktiveres: ${arenaRespons.arenaResultat.kode}")
-                    return
                 }
                 ArenaRegistreringResultat.FNR_FINNES_IKKE,
                 ArenaRegistreringResultat.UKJENT_FEIL -> {

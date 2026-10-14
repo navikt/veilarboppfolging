@@ -13,6 +13,9 @@ import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.Operasjon
 import org.postgresql.util.PGobject
 import java.time.ZonedDateTime
 import no.nav.common.json.JsonUtils
+import no.nav.veilarboppfolging.kandidatForUtmelding.AktivKandidatForUtmelding
+import no.nav.veilarboppfolging.kandidatForUtmelding.ForlengetKandidat
+import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmelding
 import java.time.LocalDate
 import no.nav.veilarboppfolging.kandidatForUtmelding.beregnAvsluttesAutomatiskDato
 
@@ -53,7 +56,7 @@ class ForlengelseOpprettetEllerEndretHendelse(
     utfortAv: String?,
     kilde: String,
     val forlengetTil: LocalDate,
-    forlengelseHendelseType: ForlengelseHendelseType
+    val forlengelseHendelseType: ForlengelseHendelseType
 ): KandidatForUtmeldingHendelse(
     oppfolgingsperiodeUuid,
     utfortAvType,
@@ -61,16 +64,38 @@ class ForlengelseOpprettetEllerEndretHendelse(
     kilde,
     hendelseTidspunkt,
 ) {
+
     override val type: KandidatForUtmeldingHendelseType = forlengelseHendelseType
+    constructor(
+        kandidat: KandidatForUtmelding,
+        utfortAvType: KandidatForUtmeldingHendelseUtfortAvType,
+        utfortAv: String?,
+        kilde: String,
+        hendelseTidspunkt: Instant,
+        forlengetTil: LocalDate) :
+    this(
+        oppfolgingsperiodeUuid = kandidat.oppfolgingsperiodeId,
+        hendelseTidspunkt = hendelseTidspunkt,
+        utfortAvType = utfortAvType,
+        utfortAv = utfortAv,
+        kilde = kilde,
+        forlengetTil = forlengetTil,
+        forlengelseHendelseType = when (kandidat) {
+            is AktivKandidatForUtmelding -> ForlengelseHendelseType.FORLENGELSE_OPPRETTET
+            is ForlengetKandidat -> ForlengelseHendelseType.FORLENGELSE_ENDRET
+        }
+    )
+
+
     data class Detaljer(
         val forlengetTil: LocalDate,
     )
-    override val hendelseDataJson: PGobject = forlengetTil.let {
-        PGobject().apply {
-            type = "jsonb"
-            value = JsonUtils.getMapper().writeValueAsString(Detaljer(it))
-        }
+
+    override val hendelseDataJson: PGobject = PGobject().apply {
+        type = "jsonb"
+        value = JsonUtils.getMapper().writeValueAsString(Detaljer(forlengetTil))
     }
+
     override fun tilFilterhendelseRecord(fnr: Fnr): FilterhendelseRecord {
         return FilterhendelseRecord(
             personID = NorskIdent(fnr.get()),
