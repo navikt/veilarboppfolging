@@ -22,22 +22,24 @@ open class MidlertidigArbeidssokerperiodeConsumer(
         val arbeidssøkerperiode: Periode = kafkaMelding.value()
         val arbeidssokerperiodeId = arbeidssøkerperiode.id.toString()
 
-        val fnr = Fnr.of(arbeidssøkerperiode.identitetsnummer.toString())
-        val aktørId = try {
-            authService.getAktorIdOrThrow(fnr)
-        } catch (e: Exception) {
-            logger.error("Kunne ikke hente aktørId for arbeidssøkerperiode med id $arbeidssokerperiodeId", e)
-            if (erProd()) {
-                throw e
-            } else {
-                logger.warn("Ignorerer arbeidssøkerperiode med id $arbeidssokerperiodeId i dev")
-                return
-            }
-        }
-
         val nyPeriode = arbeidssøkerperiode.avsluttet == null
+
         if (nyPeriode) {
             logger.info("Lagrer aktiv arbeidssøkerperiode med id $arbeidssokerperiodeId")
+
+            val fnr = Fnr.of(arbeidssøkerperiode.identitetsnummer.toString())
+            val aktørId = try {
+                authService.getAktorIdOrThrow(fnr)
+            } catch (e: Exception) {
+                logger.error("Kunne ikke hente aktørId for arbeidssøkerperiode med id $arbeidssokerperiodeId", e)
+                if (erProd()) {
+                    throw e
+                } else {
+                    logger.warn("Ignorerer arbeidssøkerperiode med id $arbeidssokerperiodeId i dev")
+                    return
+                }
+            }
+            
             aktivArbeidssokerperiodeRepository.lagreAktivArbeidssokerperiode(
                 AktivArbeidssokerperiode(
                     arbeidssokerperiodeId = arbeidssokerperiodeId,
