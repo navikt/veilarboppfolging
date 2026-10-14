@@ -12,6 +12,7 @@ import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.time.Instant
+import kotlin.jvm.optionals.getOrNull
 
 @Service
 class AapHendelseService(
@@ -29,11 +30,15 @@ class AapHendelseService(
         log.info("Mottatt AAP hendelse: ${value.hendelse}")
         val fnr = Fnr.of(key)
         val aktorId = aktorOppslagClient.hentAktorId(fnr)
+        val oppfolgingsperiode = oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId)
+            .getOrNull()?.uuid
+        if (oppfolgingsperiode == null) {
+            log.info("Ignorerer AAP-hendelse: bruker har ingen gjeldende oppfolgingsperiode")
+            return
+        }
+
         val aapSaker = aapClient.hentSaker(value.ident)
         val erKandidatForUtmelding = kandidatForUtmeldingService.erAktivUtmeldingskandidat(aktorId)
-        val oppfolgingsperiode = oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId)
-            .orElseThrow { IllegalStateException("Mangler gjeldende oppfolgingsperiode ved behandling av AAP-hendelse") }
-            .uuid
         val avslutningsstatus by lazy { avsluttOppfolgingService.hentAvslutningstatusForManuellAvslutning(fnr) }
         val kanAvsluttes = avslutningsstatus.kanAvslutte
         val harIkkeSoktEllerMottarAap = !avslutningsstatus.harAap
