@@ -1,7 +1,6 @@
 package no.nav.veilarboppfolging.service
 
 import no.nav.common.client.aktoroppslag.AktorOppslagClient
-import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.veilarboppfolging.client.aap.AapClient
 import no.nav.veilarboppfolging.kafka.AapHendelseRecord
@@ -28,12 +27,14 @@ class AapHendelseService(
 
     fun håndterAapHendelse(key: String, value: AapHendelseRecord) {
         log.info("Mottatt AAP hendelse: ${value.hendelse}")
+        val fnr = Fnr.of(key)
+        val aktorId = aktorOppslagClient.hentAktorId(fnr)
         val aapSaker = aapClient.hentSaker(value.ident)
-        val erKandidatForUtmelding = kandidatForUtmeldingService.erAktivUtmeldingskandidat(AktorId.of(key))
-        val oppfolgingsperiode = oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(AktorId.of(key))
+        val erKandidatForUtmelding = kandidatForUtmeldingService.erAktivUtmeldingskandidat(aktorId)
+        val oppfolgingsperiode = oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId)
             .orElseThrow { IllegalStateException("Mangler gjeldende oppfolgingsperiode ved behandling av AAP-hendelse") }
             .uuid
-        val avslutningsstatus by lazy { avsluttOppfolgingService.hentAvslutningstatusForManuellAvslutning(Fnr.of(key)) }
+        val avslutningsstatus by lazy { avsluttOppfolgingService.hentAvslutningstatusForManuellAvslutning(fnr) }
         val kanAvsluttes = avslutningsstatus.kanAvslutte
         val harIkkeSoktEllerMottarAap = !avslutningsstatus.harAap
 
@@ -50,7 +51,7 @@ class AapHendelseService(
             }
             !erKandidatForUtmelding && kanAvsluttes -> {
                 kandidatForUtmeldingService.handterUtmeldingsHendelse(
-                    Fnr.of(key),
+                    fnr,
                     IkkeLengerAap(
                         oppfolgingsperiodeUuid = oppfolgingsperiode,
                         hendelseTidspunkt = Instant.now(),
