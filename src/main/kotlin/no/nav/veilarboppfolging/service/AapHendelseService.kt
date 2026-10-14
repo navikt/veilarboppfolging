@@ -39,10 +39,10 @@ class AapHendelseService(
         }
 
         val harSoktEllerMottarAap = aapClient.harAap(fnr.get())
+        kandidatForUtmeldingRepository.fjernKandidatSomIkkeKunneAvsluttes(oppfolgingsperiode)
 
         if(harSoktEllerMottarAap) {
             fjernKandidatForUtmeldingService.fjernKandidatForUtmelding(oppfolgingsperiode)
-            kandidatForUtmeldingRepository.fjernKandidatSomIkkeKunneAvsluttes(oppfolgingsperiode)
         } else {
             kandidatForUtmeldingService.handterUtmeldingsHendelse(
                 fnr,
@@ -52,7 +52,6 @@ class AapHendelseService(
                     avslutningsarsak = "Avsluttet AAP-sak",
                 )
             )
-            kandidatForUtmeldingRepository.fjernKandidatSomIkkeKunneAvsluttes(oppfolgingsperiode)
         }
     }
 
