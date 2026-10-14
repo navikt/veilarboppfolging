@@ -12,7 +12,7 @@ import no.nav.veilarboppfolging.kandidatForUtmelding.dto.KandidatForUtmeldingTag
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ArbeidssøkerPeriodeAvsluttet
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseOpprettetEllerEndretHendelse
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseUtløptHendelse
-import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.IkkeLengerAap
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.AvsluttetAapSak
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.InaktivertIArena
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.KandidatForUtmeldingHendelse
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.KandidatForUtmeldingHendelseType
@@ -53,7 +53,7 @@ class KandidatForUtmeldingService(
         transactor.executeWithoutResult { _ ->
             val avslutningsstatus by lazy { avsluttOppfolgingService.hentAvslutningstatusForManuellAvslutning(fnr) }
             val erHendelseSomAktivererKandidat = when (hendelse) {
-                is ArbeidssøkerPeriodeAvsluttet, is InaktivertIArena, is ForlengelseUtløptHendelse, is IkkeLengerAap -> true
+                is ArbeidssøkerPeriodeAvsluttet, is InaktivertIArena, is ForlengelseUtløptHendelse, is AvsluttetAapSak -> true
                 is ForlengelseOpprettetEllerEndretHendelse -> false
             }
             if (erHendelseSomAktivererKandidat && !avslutningsstatus.kanAvslutte) {

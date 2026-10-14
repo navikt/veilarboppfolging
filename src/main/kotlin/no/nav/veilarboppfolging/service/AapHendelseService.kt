@@ -7,7 +7,7 @@ import no.nav.veilarboppfolging.kafka.AapHendelseRecord
 import no.nav.veilarboppfolging.kandidatForUtmelding.FjernKandidatForUtmeldingService
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingRepository
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService
-import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.IkkeLengerAap
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.AvsluttetAapSak
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -20,7 +20,6 @@ class AapHendelseService(
     val aapClient: AapClient,
     val kandidatForUtmeldingService: KandidatForUtmeldingService,
     val aktorOppslagClient: AktorOppslagClient,
-    val avsluttOppfolgingService: AvsluttOppfolgingService,
     val fjernKandidatForUtmeldingService: FjernKandidatForUtmeldingService,
     val kandidatForUtmeldingRepository: KandidatForUtmeldingRepository,
     private val oppfolgingsPeriodeRepository: OppfolgingsPeriodeRepository
@@ -39,40 +38,21 @@ class AapHendelseService(
             return
         }
 
-        val aapSaker = aapClient.hentSaker(value.ident)
-        val erKandidatForUtmelding = kandidatForUtmeldingService.erAktivUtmeldingskandidat(aktorId)
-        val avslutningsstatus by lazy { avsluttOppfolgingService.hentAvslutningstatusForManuellAvslutning(fnr) }
-        val kanAvsluttes = avslutningsstatus.kanAvslutte
-        val harIkkeSoktEllerMottarAap = !avslutningsstatus.harAap
+        val harSoktEllerMottarAap = aapClient.harAap(fnr.get())
 
-        log.info("AAP saker: ${aapSaker.saker}. Mottar ikke AAP: $harIkkeSoktEllerMottarAap.")
-        when {
-             !harIkkeSoktEllerMottarAap && erKandidatForUtmelding -> {
-                fjernKandidatForUtmeldingService.fjernKandidatForUtmelding(oppfolgingsperiode)
-            }
-            harIkkeSoktEllerMottarAap && erKandidatForUtmelding -> {
-                return
-            }
-            !erKandidatForUtmelding && !harIkkeSoktEllerMottarAap -> {
-                return
-            }
-            !erKandidatForUtmelding && kanAvsluttes -> {
-                kandidatForUtmeldingService.handterUtmeldingsHendelse(
-                    fnr,
-                    IkkeLengerAap(
-                        oppfolgingsperiodeUuid = oppfolgingsperiode,
-                        hendelseTidspunkt = Instant.now(),
-                        avslutningsarsak = "Ikke lenger AAP",
-                    )
+        if(harSoktEllerMottarAap) {
+            fjernKandidatForUtmeldingService.fjernKandidatForUtmelding(oppfolgingsperiode)
+            kandidatForUtmeldingRepository.fjernKandidatSomIkkeKunneAvsluttes(oppfolgingsperiode)
+        } else {
+            kandidatForUtmeldingService.handterUtmeldingsHendelse(
+                fnr,
+                AvsluttetAapSak(
+                    oppfolgingsperiodeUuid = oppfolgingsperiode,
+                    hendelseTidspunkt = Instant.now(),
+                    avslutningsarsak = "Avsluttet AAP-sak",
                 )
-                kandidatForUtmeldingRepository.fjernKandidatSomIkkeKunneAvsluttes(oppfolgingsperiode)
-            }
-            harIkkeSoktEllerMottarAap && !kanAvsluttes -> {
-                return
-            }
-            !kanAvsluttes && !harIkkeSoktEllerMottarAap -> {
-                kandidatForUtmeldingRepository.fjernKandidatSomIkkeKunneAvsluttes(oppfolgingsperiode)
-            }
+            )
+            kandidatForUtmeldingRepository.fjernKandidatSomIkkeKunneAvsluttes(oppfolgingsperiode)
         }
     }
 

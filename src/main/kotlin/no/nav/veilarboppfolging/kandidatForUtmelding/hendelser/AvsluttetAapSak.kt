@@ -14,7 +14,7 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.UUID
 
-class IkkeLengerAap(
+class AvsluttetAapSak(
     oppfolgingsperiodeUuid: UUID,
     val avslutningsarsak: String?,
     hendelseTidspunkt: Instant,
@@ -26,7 +26,7 @@ class IkkeLengerAap(
     hendelseTidspunkt,
 ) {
     val avsluttesAutomatiskDato: ZonedDateTime = beregnAvsluttesAutomatiskDato(hendelseTidspunkt)
-    override val type: KandidatForUtmeldingHendelseType = IkkeLengerAapHendelseType.IKKE_LENGER_AAP
+    override val type: KandidatForUtmeldingHendelseType = IkkeLengerAapHendelseType.AVSLUTTET_AAP_SAK
     override val hendelseDataJson: PGobject? = null
 
     override fun tilFilterhendelseRecord(fnr: Fnr): FilterhendelseRecord {
@@ -36,7 +36,7 @@ class IkkeLengerAap(
             operasjon = Operasjon.START,
             hendelse = FilterhendelseRecord.HendelseInnhold(
                 beskrivelse = "Ikke lenger AAP",
-                beskrivelseEnum = BeskrivelseEnum.IKKE_LENGER_AAP.name,
+                beskrivelseEnum = BeskrivelseEnum.AVSLUTTET_AAP_SAK.name,
                 tidspunkt = hendelseTidspunkt.atZone(ZoneId.of("Europe/Oslo")),
                 lenke = URI("${baseUrlVeilarbpersonflate()}/aktivitetsplan").toURL(),
                 detaljer = null,
