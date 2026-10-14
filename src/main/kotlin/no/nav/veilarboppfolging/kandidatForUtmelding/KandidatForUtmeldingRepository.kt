@@ -14,9 +14,11 @@ import kotlin.collections.firstOrNull
 import no.nav.common.types.identer.AktorId
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ArbeidssokerperiodeAvsluttetHendelseType
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ArbeidssøkerPeriodeAvsluttet
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.AvsluttetAapSak
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseHendelseType
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseOpprettetEllerEndretHendelse
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseUtløptHendelse
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.IkkeLengerAapHendelseType
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.InaktivertIArena
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.InaktivertIArenaHendelseType
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.KandidatForUtmeldingHendelse
@@ -83,6 +85,7 @@ class KandidatForUtmeldingRepository(
                     is ArbeidssokerperiodeAvsluttetHendelseType -> type.name
                     is ForlengelseHendelseType -> type.name
                     is InaktivertIArenaHendelseType -> type.name
+                    is IkkeLengerAapHendelseType -> type.name
                 },
                 "hendelseData" to hendelse.hendelseDataJson,
                 "utfortAv" to hendelse.utfortAv,
@@ -208,6 +211,7 @@ class KandidatForUtmeldingRepository(
                 is ArbeidssøkerPeriodeAvsluttet -> AktivKandidatForUtmelding(hendelse, hendelse.avsluttesAutomatiskDato)
                 is ForlengelseUtløptHendelse -> AktivKandidatForUtmelding(hendelse, hendelse.avsluttesAutomatiskDato)
                 is InaktivertIArena -> null
+                is AvsluttetAapSak -> AktivKandidatForUtmelding(hendelse, hendelse.avsluttesAutomatiskDato)
             }
         }
             .firstOrNull()
@@ -392,6 +396,7 @@ class KandidatForUtmeldingRepository(
                 }
             }
             is InaktivertIArenaHendelseType -> resultSet.toInaktivertIArena()
+            is IkkeLengerAapHendelseType -> resultSet.toAvsluttetAapSakHendelse()
         }
 
     }
@@ -439,7 +444,6 @@ fun ResultSet.toForlengelseOpprettetEllerEndretHendelse(): ForlengelseOpprettetE
     )
 }
 
-
 fun ResultSet.toForlengelseUtløptHendelse() = ForlengelseUtløptHendelse(
     oppfolgingsperiodeUuid = UUID.fromString(getString("oppfolgingsperiode_uuid")),
     hendelseTidspunkt = getTimestamp("hendelse_tidspunkt").toLocalDateTime().toInstant(ZoneOffset.UTC),
@@ -453,5 +457,16 @@ fun ResultSet.toInaktivertIArena() = InaktivertIArena(
             it,
             InaktivertIArena.Detaljer::class.java
         ).iservFraDato
+    },
+)
+
+fun ResultSet.toAvsluttetAapSakHendelse() = AvsluttetAapSak(
+    oppfolgingsperiodeUuid = UUID.fromString(getString("oppfolgingsperiode_uuid")),
+    hendelseTidspunkt = getTimestamp("hendelse_tidspunkt").toLocalDateTime().toInstant(ZoneOffset.UTC),
+    avslutningsarsak = getStringOrNull("hendelse_data")?.let {
+        JsonUtils.fromJson(
+            it,
+            ArbeidssøkerPeriodeAvsluttet.Detaljer::class.java
+        ).avslutningsarsak
     },
 )
