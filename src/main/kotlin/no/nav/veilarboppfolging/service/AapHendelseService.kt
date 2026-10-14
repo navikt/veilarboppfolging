@@ -11,6 +11,7 @@ import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.IkkeLengerAap
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
 import kotlin.jvm.optionals.getOrNull
 
@@ -26,6 +27,7 @@ class AapHendelseService(
 ) {
     val log = LoggerFactory.getLogger(this::class.java)
 
+    @Transactional
     fun håndterAapHendelse(key: String, value: AapHendelseRecord) {
         log.info("Mottatt AAP hendelse: ${value.hendelse}")
         val fnr = Fnr.of(key)
