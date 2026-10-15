@@ -11,12 +11,17 @@ import no.nav.veilarboppfolging.client.veilarbarena.RegistrerIArenaSuccess
 import no.nav.veilarboppfolging.client.veilarbarena.RegistrerIkkeArbeidssokerDto
 import no.nav.veilarboppfolging.controller.response.*
 import no.nav.veilarboppfolging.controller.v2.response.UnderOppfolgingV2Response
+import no.nav.veilarboppfolging.controller.v3.request.AvsluttEgenOppfolgingRequest
 import no.nav.veilarboppfolging.controller.v3.request.KvpRequest
 import no.nav.veilarboppfolging.controller.v3.request.OppfolgingRequest
 import no.nav.veilarboppfolging.controller.v3.request.VeilederBegrunnelseRequest
 import no.nav.veilarboppfolging.controller.v3.request.VeilederRequest
+import no.nav.veilarboppfolging.oppfolgingsbruker.BrukerRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.AktiverBrukerManueltService
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.KunneAvsluttes
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.KunneIkkeAvsluttes
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ManuellAvregistrering
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity
 import no.nav.veilarboppfolging.repository.enums.KodeverkBruker
 import no.nav.veilarboppfolging.service.*
@@ -24,6 +29,7 @@ import no.nav.veilarboppfolging.utils.DtoMappers
 import no.nav.veilarboppfolging.utils.auth.AllowListApplicationName
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
+import org.springframework.http.ProblemDetail
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
@@ -70,6 +76,29 @@ class OppfolgingV3Controller(
     fun hentAvslutningStatus(@RequestBody oppfolgingRequest: OppfolgingRequest): AvslutningsStatusDto {
         authService.skalVereInternBruker()
         return DtoMappers.tilDto(avsluttOppfolgingService.hentAvslutningstatusForManuellAvslutning(oppfolgingRequest.fnr))
+    }
+
+    @PostMapping("/oppfolging/avslutt-egen-oppfolging")
+    fun avsluttEgenOppfolging(@RequestBody(required = false) request: AvsluttEgenOppfolgingRequest?): ResponseEntity<*> {
+        authService.skalVereEksternBruker()
+        val begrunnelse = request?.begrunnelse.orEmpty()
+        if (begrunnelse.length > 500) {
+            throw BadRequestException("Begrunnelse kan ikke være lengre enn 500 tegn")
+        }
+        val fnr = Fnr.of(authService.innloggetBrukerIdent)
+        val avregistrering = ManuellAvregistrering(
+            authService.getAktorIdOrThrow(fnr),
+            BrukerRegistrant(fnr),
+            begrunnelse,
+        )
+        return when (val resultat = avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(avregistrering)) {
+            is KunneAvsluttes -> ResponseEntity.noContent().build<Void>()
+            is KunneIkkeAvsluttes -> ResponseEntity.status(HttpStatus.CONFLICT).body(
+                ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, "Oppfølging kan ikke avsluttes").apply {
+                    setProperty("begrunnelse", resultat.begrunnelse)
+                }
+            )
+        }
     }
 
     @PostMapping("/oppfolging/hent-gjeldende-periode")

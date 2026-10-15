@@ -73,7 +73,7 @@ class AvsluttOppfolgingService(
             )
         }
         else if (authService.erEksternBruker()) {
-            throw IllegalStateException("Vi støtter ikke at eksternbrukere kan avslutte oppfølging")
+            authService.sjekkSkriveTilgangMedFnr(fnr)
         } else {
             secureLog.info("Forsøker å avslutte oppfølging for fnr: {} som systembruker", fnr.get())
         }

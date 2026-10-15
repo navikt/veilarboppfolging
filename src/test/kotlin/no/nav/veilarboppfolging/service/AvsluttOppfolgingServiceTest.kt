@@ -9,6 +9,7 @@ import no.nav.veilarboppfolging.client.tiltakshistorikk.TiltakshistorikkClient
 import no.nav.veilarboppfolging.client.ungdomsprogram.UngdomsprogramClient
 import no.nav.veilarboppfolging.eventsLogger.BigQueryClient
 import no.nav.veilarboppfolging.kandidatForUtmelding.FjernKandidatForUtmeldingService
+import no.nav.veilarboppfolging.oppfolgingsbruker.BrukerRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingTilstandOppslagResult
@@ -236,6 +237,21 @@ class AvsluttOppfolgingServiceTest {
 
         assertInstanceOf<KunneAvsluttes>(result)
 
+    }
+
+    @Test
+    fun `innbygger kan avslutte egen oppfolging gjennom eksisterende flyt`() {
+        brukerErUnderOppfolgingLokalt()
+        mockBrukerIdenter()
+        `when`(authService.erEksternBruker()).thenReturn(true)
+        `when`(arenaOppfolgingService.hentArenaOppfolgingTilstand(TEST_FNR))
+            .thenReturn(ArenaOppfolgingTilstandOppslagResult.NotFound())
+        val avregistrering = ManuellAvregistrering(TEST_AKTOR_ID, BrukerRegistrant(TEST_FNR), "")
+
+        val resultat = avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(avregistrering)
+
+        assertInstanceOf<KunneAvsluttes>(resultat)
+        verify(authService).sjekkSkriveTilgangMedFnr(TEST_FNR)
     }
 
     private fun mockBrukerIdenter() {
