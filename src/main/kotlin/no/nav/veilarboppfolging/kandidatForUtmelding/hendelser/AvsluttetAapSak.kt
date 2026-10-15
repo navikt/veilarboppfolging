@@ -35,7 +35,7 @@ class AvsluttetAapSak(
             kategori = Kategori.KANDIDAT_FOR_UTMELDING,
             operasjon = Operasjon.START,
             hendelse = FilterhendelseRecord.HendelseInnhold(
-                beskrivelse = "Ikke lenger AAP",
+                beskrivelse = "AAP-sak avsluttet",
                 beskrivelseEnum = BeskrivelseEnum.AVSLUTTET_AAP_SAK.name,
                 tidspunkt = hendelseTidspunkt.atZone(ZoneId.of("Europe/Oslo")),
                 lenke = URI("${baseUrlVeilarbpersonflate()}/aktivitetsplan").toURL(),
