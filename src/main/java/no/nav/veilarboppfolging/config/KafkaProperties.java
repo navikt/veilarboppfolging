@@ -24,5 +24,6 @@ public record KafkaProperties(
     String oppfolgingshendelseV1,
     String arbeidsoppfolgingskontortilordningTopic,
     String startOppfolgingTopic,
-    String portefoljeHendelsesfilterTopic
+    String portefoljeHendelsesfilterTopic,
+    String aapHendelserTopic
 ) {}

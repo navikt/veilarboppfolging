@@ -9,6 +9,7 @@ import java.util.Optional
 import java.util.UUID
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseOpprettetEllerEndretHendelse
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.KandidatForUtmeldingHendelseType
 import no.nav.veilarboppfolging.oppfolgingsbruker.StartetAvType
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelse
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.Avregistrering
@@ -29,10 +30,10 @@ data class KandidaterForUtmeldingMetrikker(
 
 interface BigQueryClient {
     fun loggStartOppfolgingsperiode(startBegrunnelse: OppfolgingStartBegrunnelse, oppfolgingPeriodeId: UUID, startedAvType: StartetAvType, kvalifiseringsgruppe: Optional<Kvalifiseringsgruppe>, manuellSjekkLovligOpphold: Boolean? = null, forrigePeriodeAvsluttet: ZonedDateTime?)
-    fun loggAvsluttOppfolgingsperiode(oppfolgingPeriodeId: UUID, avregistrering: Avregistrering, aktivIArena: Boolean? = null, erKandidatForUtmelding: Boolean?)
+    fun loggAvsluttOppfolgingsperiode(oppfolgingPeriodeId: UUID, avregistrering: Avregistrering, aktivIArena: Boolean? = null, kandidatForUtmeldingHendelseType: KandidatForUtmeldingHendelseType?)
     fun loggKandidaterForUtmeldingMetrikker(metrikker: KandidaterForUtmeldingMetrikker)
     fun loggUnder18()
-    fun loggForlengelseHendelse(hendelse: ForlengelseOpprettetEllerEndretHendelse)
+    fun loggForlengelseHendelse(hendelse: ForlengelseOpprettetEllerEndretHendelse, forrigeHendelseType: KandidatForUtmeldingHendelseType)
 }
 
 class BigQueryClientImplementation(private val bigQuery: BigQuery): BigQueryClient {
@@ -52,19 +53,20 @@ class BigQueryClientImplementation(private val bigQuery: BigQuery): BigQueryClie
 
     val log = LoggerFactory.getLogger(this.javaClass)
 
-    override fun loggForlengelseHendelse(hendelse: ForlengelseOpprettetEllerEndretHendelse) {
+    override fun loggForlengelseHendelse(hendelse: ForlengelseOpprettetEllerEndretHendelse, forrigeHendelseType: KandidatForUtmeldingHendelseType) {
         insertIntoOppfolgingEvents(forlengelseMetrikkerTable) {
             mapOf(
                 "hendelse" to hendelse.type.toString(),
                 "forlenget_til" to hendelse.forlengetTil.toString(),
                 "oppfolgingsperiode_id" to hendelse.oppfolgingsperiodeUuid.toString(),
                 "hendelse_opprettet" to ZonedDateTime.ofInstant(hendelse.hendelseTidspunkt, ZoneId.of("Europe/Oslo")).toOffsetDateTime().toString(),
-                "timestamp" to ZonedDateTime.now().toOffsetDateTime().toString()
+                "timestamp" to ZonedDateTime.now().toOffsetDateTime().toString(),
+                "forrige_hendelse" to forrigeHendelseType.toString()
             )
         }
     }
 
-    override fun loggAvsluttOppfolgingsperiode(oppfolgingPeriodeId: UUID, avregistrering: Avregistrering, aktivIArena: Boolean?, erKandidatForUtmelding: Boolean?) {
+    override fun loggAvsluttOppfolgingsperiode(oppfolgingPeriodeId: UUID, avregistrering: Avregistrering, aktivIArena: Boolean?, kandidatForUtmeldingHendelseType: KandidatForUtmeldingHendelseType?) {
         val erAutomatiskAvsluttet = !avregistrering.getAvregistreringsType().erManuellAvregistrering()
         insertIntoOppfolgingEvents(oppfolgingsperiodeEventsTable) {
             mapOf(
@@ -74,7 +76,8 @@ class BigQueryClientImplementation(private val bigQuery: BigQuery): BigQueryClie
                 "event" to BigQueryEventType.OPPFOLGINGSPERIODE_SLUTT.name,
                 "avregistreringsType" to avregistrering.getAvregistreringsType().name,
                 "erAktivIArena" to aktivIArena,
-                "erKandidatForUtmelding" to erKandidatForUtmelding
+                "erKandidatForUtmelding" to (kandidatForUtmeldingHendelseType != null),
+                "kandidatForUtmeldingHendelseType" to kandidatForUtmeldingHendelseType?.toString()
             )
         }
     }
