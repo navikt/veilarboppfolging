@@ -29,7 +29,8 @@ public class DbTestUtils {
             "filterkategori_id_mapping",
             "kandidater_som_ikke_kunne_avsluttes",
             "kandidater_for_utmelding_hendelser",
-            "kandidater_for_utmelding"
+            "kandidater_for_utmelding",
+            "aktive_arbeidssokerperioder"
             );
 
     public static void cleanupTestDb() {

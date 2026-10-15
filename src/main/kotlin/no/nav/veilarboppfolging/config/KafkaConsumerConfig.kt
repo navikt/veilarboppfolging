@@ -2,6 +2,8 @@ package no.nav.veilarboppfolging.config
 
 import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig
 import io.micrometer.core.instrument.MeterRegistry
+import java.util.Map
+import java.util.function.Consumer
 import net.javacrumbs.shedlock.core.LockProvider
 import no.nav.common.kafka.consumer.KafkaConsumerClient
 import no.nav.common.kafka.consumer.feilhandtering.KafkaConsumerRecordProcessor
@@ -20,6 +22,8 @@ import no.nav.veilarboppfolging.kafka.AapHendelserConsumerService
 import no.nav.veilarboppfolging.kafka.ArbeidsoppfolgingskontortilordningConsumerService
 import no.nav.veilarboppfolging.kafka.ArbeidssøkerperiodeConsumerService
 import no.nav.veilarboppfolging.kafka.OppfolgingskontorMelding
+import no.nav.veilarboppfolging.kafka.inngang.StartOppfolgingConsumerService
+import no.nav.veilarboppfolging.kafka.inngang.StartOppfolgingMelding
 import no.nav.veilarboppfolging.service.KafkaConsumerService
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.common.serialization.ByteArrayDeserializer
@@ -29,10 +33,6 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
 import org.springframework.jdbc.core.JdbcTemplate
-import java.util.Map
-import java.util.function.Consumer
-import no.nav.veilarboppfolging.kafka.inngang.StartOppfolgingConsumerService
-import no.nav.veilarboppfolging.kafka.inngang.StartOppfolgingMelding
 
 @Profile("!test")
 @Configuration
@@ -133,19 +133,8 @@ open class KafkaConsumerConfig(
                     )
             )
 
-            val aivenConsumerProperties = KafkaPropertiesBuilder.consumerBuilder()
-                .withBaseProperties()
-                .withConsumerGroupId(CONSUMER_GROUP_ID)
-                .withAivenBrokerUrl()
-                .withAivenAuth()
-                .withDeserializers(
-                    ByteArrayDeserializer::class.java,
-                    ByteArrayDeserializer::class.java
-                )
-                .build()
-
             aivenConsumerClient = KafkaConsumerClientBuilder.builder()
-                .withProperties(aivenConsumerProperties)
+                .withProperties(aivenConsumerProperties(CONSUMER_GROUP_ID))
                 .withTopicConfigs(topicConfigs)
                 .build()
 
@@ -161,6 +150,17 @@ open class KafkaConsumerConfig(
             consumerRecordProcessor?.start()
         }
     }
+
+    private fun aivenConsumerProperties(consumerGroupId: String) = KafkaPropertiesBuilder.consumerBuilder()
+        .withBaseProperties()
+        .withConsumerGroupId(consumerGroupId)
+        .withAivenBrokerUrl()
+        .withAivenAuth()
+        .withDeserializers(
+            ByteArrayDeserializer::class.java,
+            ByteArrayDeserializer::class.java
+        )
+        .build()
 
     private fun getPeriodeAvroDeserializer(): Deserializer<Periode> {
         System.setProperty(

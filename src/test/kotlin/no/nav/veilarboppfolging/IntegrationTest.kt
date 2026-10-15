@@ -34,6 +34,7 @@ import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.pto_schema.enums.arena.Hovedmaal
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
 import no.nav.tms.varsel.builder.BuilderEnvironment
+import no.nav.veilarboppfolging.arbeidssokerperiode.AktivArbeidssokerperiodeRepository
 import no.nav.veilarboppfolging.client.aap.AapClient
 import no.nav.veilarboppfolging.client.aoKontor.AoKontorClient
 import no.nav.veilarboppfolging.client.arbeidssoekerregisteret.ArbeidssoekerregisteretClient
@@ -275,6 +276,9 @@ open class IntegrationTest {
 
     @Autowired
     lateinit var filterkategoriRepository: FilterkategoriRepository
+
+    @Autowired
+    lateinit var aktivArbeidssokerperiodeRepository: AktivArbeidssokerperiodeRepository
 
     @BeforeEach
     fun beforeEach() {
