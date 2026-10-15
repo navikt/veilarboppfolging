@@ -30,7 +30,6 @@ class FjernKandidatForUtmeldingServiceTest : IntegrationTest() {
         setLocalArenaOppfolging(AKTOR_ID, Formidlingsgruppe.ARBS)
         mockTiltakshistorikk(FNR, harAktiveDeltakelser = false)
         mockUngdomsprogram(FNR, erDeltaker = false)
-        mockArbeidssoekerregisteret(FNR, erArbeidssoeker = false)
         mockAap(FNR, harAap = false)
         startOppfolgingSomArbeidsoker(AKTOR_ID, FNR)
         val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(FNR).get().uuid
@@ -63,7 +62,6 @@ class FjernKandidatForUtmeldingServiceTest : IntegrationTest() {
         setLocalArenaOppfolging(AKTOR_ID, Formidlingsgruppe.ARBS)
         mockTiltakshistorikk(FNR, harAktiveDeltakelser = false)
         mockUngdomsprogram(FNR, erDeltaker = false)
-        mockArbeidssoekerregisteret(FNR, erArbeidssoeker = false)
         mockAap(FNR, harAap = false)
         val oppfolgingsperiodeId = UUID.randomUUID()
         assertThat(kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeId)).isNull()
@@ -80,7 +78,6 @@ class FjernKandidatForUtmeldingServiceTest : IntegrationTest() {
         setLocalArenaOppfolging(AKTOR_ID, Formidlingsgruppe.ARBS)
         mockTiltakshistorikk(FNR, harAktiveDeltakelser = false)
         mockUngdomsprogram(FNR, erDeltaker = false)
-        mockArbeidssoekerregisteret(FNR, erArbeidssoeker = false)
         mockAap(FNR, harAap = false)
         startOppfolgingSomArbeidsoker(AKTOR_ID, FNR)
         val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(FNR).get().uuid
@@ -115,7 +112,6 @@ class FjernKandidatForUtmeldingServiceTest : IntegrationTest() {
         setLocalArenaOppfolging(AKTOR_ID, Formidlingsgruppe.ARBS)
         mockTiltakshistorikk(FNR, harAktiveDeltakelser = false)
         mockUngdomsprogram(FNR, erDeltaker = false)
-        mockArbeidssoekerregisteret(FNR, erArbeidssoeker = false)
         mockAap(FNR, harAap = false)
         startOppfolgingSomArbeidsoker(AKTOR_ID, FNR)
         val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(FNR).get().uuid
@@ -132,7 +128,6 @@ class FjernKandidatForUtmeldingServiceTest : IntegrationTest() {
         setLocalArenaOppfolging(AKTOR_ID, Formidlingsgruppe.ARBS)
         mockTiltakshistorikk(FNR, harAktiveDeltakelser = false)
         mockUngdomsprogram(FNR, erDeltaker = false)
-        mockArbeidssoekerregisteret(FNR, erArbeidssoeker = false)
         mockAap(FNR, harAap = false)
         startOppfolgingSomArbeidsoker(AKTOR_ID, FNR)
         val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(FNR).get().uuid
@@ -160,7 +155,6 @@ class FjernKandidatForUtmeldingServiceTest : IntegrationTest() {
         setLocalArenaOppfolging(AKTOR_ID, Formidlingsgruppe.ARBS)
         mockTiltakshistorikk(FNR, harAktiveDeltakelser = false)
         mockUngdomsprogram(FNR, erDeltaker = false)
-        mockArbeidssoekerregisteret(FNR, erArbeidssoeker = false)
         mockAap(FNR, harAap = false)
         startOppfolgingSomArbeidsoker(AKTOR_ID, FNR)
         val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(FNR).get().uuid
@@ -188,7 +182,6 @@ class FjernKandidatForUtmeldingServiceTest : IntegrationTest() {
         setLocalArenaOppfolging(AKTOR_ID, Formidlingsgruppe.ARBS)
         mockTiltakshistorikk(FNR, harAktiveDeltakelser = false)
         mockUngdomsprogram(FNR, erDeltaker = false)
-        mockArbeidssoekerregisteret(FNR, erArbeidssoeker = false)
         mockAap(FNR, harAap = false)
         startOppfolgingSomArbeidsoker(AKTOR_ID, FNR)
         val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(FNR).get().uuid
@@ -208,7 +201,4 @@ class FjernKandidatForUtmeldingServiceTest : IntegrationTest() {
 
         assertThat(erForlenget).isFalse()
     }
-
-
 }
-

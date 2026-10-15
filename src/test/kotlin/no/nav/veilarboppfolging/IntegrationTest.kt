@@ -34,10 +34,10 @@ import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.pto_schema.enums.arena.Hovedmaal
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
 import no.nav.tms.varsel.builder.BuilderEnvironment
+import no.nav.veilarboppfolging.arbeidssokerperiode.AktivArbeidssokerperiode
 import no.nav.veilarboppfolging.arbeidssokerperiode.AktivArbeidssokerperiodeRepository
 import no.nav.veilarboppfolging.client.aap.AapClient
 import no.nav.veilarboppfolging.client.aoKontor.AoKontorClient
-import no.nav.veilarboppfolging.client.arbeidssoekerregisteret.ArbeidssoekerregisteretClient
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirClient
 import no.nav.veilarboppfolging.client.digdir_krr.KRRData
 import no.nav.veilarboppfolging.client.isoppfolgingstilfelle.IsOppfolgingstilfelleClient
@@ -251,9 +251,6 @@ open class IntegrationTest {
     lateinit var ungdomsprogramClient: UngdomsprogramClient
 
     @MockitoBean
-    lateinit var arbeidssoekerregisteretClient: ArbeidssoekerregisteretClient
-
-    @MockitoBean
     lateinit var aapClient: AapClient
 
     @MockitoBean
@@ -454,8 +451,19 @@ open class IntegrationTest {
         `when`(ungdomsprogramClient.erDeltakerIUngdomsprogrammet(fnr)).thenReturn(erDeltaker)
     }
 
-    fun mockArbeidssoekerregisteret(fnr: Fnr, erArbeidssoeker: Boolean = false) {
-        `when`(arbeidssoekerregisteretClient.erArbeidssoeker(fnr.get())).thenReturn(erArbeidssoeker)
+    fun lagreAktivArbeidssoker(
+        aktorId: AktorId,
+        fnr: Fnr,
+        arbeidssokerperiodeId: String = UUID.randomUUID().toString(),
+    ) {
+        aktivArbeidssokerperiodeRepository.lagreAktivArbeidssokerperiode(
+            AktivArbeidssokerperiode(
+                arbeidssokerperiodeId = arbeidssokerperiodeId,
+                aktorId = aktorId,
+                fnr = fnr,
+                startetTidspunkt = ZonedDateTime.now().toInstant(),
+            )
+        )
     }
 
     fun mockAap(fnr: Fnr, harAap: Boolean = false) {
