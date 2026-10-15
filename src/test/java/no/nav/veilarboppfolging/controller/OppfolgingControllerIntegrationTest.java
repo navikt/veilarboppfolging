@@ -143,7 +143,7 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
         var dto = new AvsluttOppfolgingV2Request(new NavIdent("Z151515"), "Begrunnelse", FNR);
         var avslutningStatus = oppfolgingV2Controller.avsluttOppfolging(dto);
         assertEquals(avslutningStatus.getStatusCode(), HttpStatusCode.valueOf(204));
-        OppfolgingPeriodeMinimalDTO periode = oppfolgingController.hentOppfolgingsPeriode(startPeriode.get(0).getUuid().toString());
+        OppfolgingPeriodeMinimalDTO periode = oppfolgingV2Controller.hentOppfolgingsPeriode(startPeriode.get(0).getUuid().toString());
         assertNull(periode.getSluttDato());
     }
 
@@ -162,7 +162,7 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
         var avslutningStatus = oppfolgingV2Controller.avsluttOppfolging(dto);
 
         assertEquals(avslutningStatus.getStatusCode(), HttpStatusCode.valueOf(204));
-        OppfolgingPeriodeMinimalDTO periode = oppfolgingController.hentOppfolgingsPeriode(startPeriode.get(0).getUuid().toString());
+        OppfolgingPeriodeMinimalDTO periode = oppfolgingV2Controller.hentOppfolgingsPeriode(startPeriode.get(0).getUuid().toString());
         assertNull(periode.getSluttDato());
     }
 
@@ -182,7 +182,7 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
         var avslutningStatus = oppfolgingV2Controller.avsluttOppfolging(dto);
 
         assertEquals(avslutningStatus.getStatusCode(), HttpStatusCode.valueOf(204));
-        OppfolgingPeriodeMinimalDTO periode = oppfolgingController.hentOppfolgingsPeriode(startPeriode.get(0).getUuid().toString());
+        OppfolgingPeriodeMinimalDTO periode = oppfolgingV2Controller.hentOppfolgingsPeriode(startPeriode.get(0).getUuid().toString());
         assertNull(periode.getSluttDato());
     }
 
