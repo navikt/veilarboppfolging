@@ -31,13 +31,6 @@ class ArenaOppfolgingV2Controller(
         return getOppfolgingsstatus(arenaOppfolgingRequest.fnr)
     }
 
-    @PostMapping("/system/hent-oppfolgingsstatus")
-    fun getOppfolgingsstatusForSystembruker(@RequestBody arenaOppfolgingRequest: ArenaOppfolgingRequest): OppfolgingEnhetMedVeilederResponse {
-        val allowlist = listOf(AllowListApplicationName.TILTAKSPENGER_SAKSBEHANDLING_API)
-        authService.authorizeRequest(arenaOppfolgingRequest.fnr, allowlist)
-        return getOppfolgingsstatus(arenaOppfolgingRequest.fnr)
-    }
-
     private fun getOppfolgingsstatus(fnr: Fnr): OppfolgingEnhetMedVeilederResponse {
         return when (val result = arenaOppfolgingService.hentArenaOppfolginsstatusMedHovedmaal(fnr)) {
             is GetOppfolginsstatusFailure -> throw result.error
