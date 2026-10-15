@@ -18,8 +18,8 @@ import no.nav.poao_tilgang.client.TilgangType;
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe;
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe;
 import no.nav.veilarboppfolging.ForbiddenException;
+import no.nav.veilarboppfolging.arbeidssokerperiode.AktivArbeidssokerperiodeRepository;
 import no.nav.veilarboppfolging.client.aap.AapClient;
-import no.nav.veilarboppfolging.client.arbeidssoekerregisteret.ArbeidssoekerregisteretClient;
 import no.nav.veilarboppfolging.client.digdir_krr.KRRData;
 import no.nav.veilarboppfolging.client.tiltakshistorikk.TiltakshistorikkClient;
 import no.nav.veilarboppfolging.client.ungdomsprogram.UngdomsprogramClient;
@@ -82,7 +82,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     private ManuellStatusService manuellStatusService = mock(ManuellStatusService.class);
     private TiltakshistorikkClient tiltakshistorikkClient = mock(TiltakshistorikkClient.class);
     private UngdomsprogramClient ungdomsprogramClient = mock(UngdomsprogramClient.class);
-    private ArbeidssoekerregisteretClient arbeidssoekerregisteretClient = mock(ArbeidssoekerregisteretClient.class);
+    private AktivArbeidssokerperiodeRepository aktivArbeidssokerperiodeRepository = mock(AktivArbeidssokerperiodeRepository.class);
     private AapClient aapClient = mock(AapClient.class);
     @Mock
     private AktorOppslagClient aktorOppslagClient;
@@ -119,12 +119,12 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
                 tiltakshistorikkClient,
                 ungdomsprogramClient,
                 aapClient,
-                arbeidssoekerregisteretClient,
                 bigQueryClient,
                 transactor,
                 arbeidsoppfolgingskontorRepository,
                 fjernKandidatForUtmeldingService,
-                aktorOppslagClient
+                aktorOppslagClient,
+                aktivArbeidssokerperiodeRepository
         );
         oppfolgingService = new OppfolgingService(
                 kvpService,
@@ -485,7 +485,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     public void kanIkkeAvslutteOmManErAktivIArenaHvisAvslutningEr_ArenaIservKanIkkeReaktiveres() {
         startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.Companion.arbeidssokerRegistrering(fnr, aktorId, new VeilederRegistrant(NAV_IDENT)));
         assertUnderOppfolgingLagret(aktorId);
-        when(arbeidssoekerregisteretClient.erArbeidssoeker(fnr.get())).thenReturn(true);
+        when(aktivArbeidssokerperiodeRepository.erArbeidssoker(aktorId)).thenReturn(true);
 
         KunneAvsluttesResultat avslutningStatusData = avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(new ArenaIservKanIkkeReaktiveres(aktorId));
 
@@ -522,7 +522,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
     @Test
     public void kanIkkeAvslutteHvisManErArbeidssoeker() {
-        when(arbeidssoekerregisteretClient.erArbeidssoeker(fnr.get())).thenReturn(true);
+        when(aktivArbeidssokerperiodeRepository.erArbeidssoker(aktorId)).thenReturn(true);
         startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.Companion.arbeidssokerRegistrering(fnr, aktorId, new VeilederRegistrant(NAV_IDENT)));
         assertUnderOppfolgingLagret(aktorId);
 

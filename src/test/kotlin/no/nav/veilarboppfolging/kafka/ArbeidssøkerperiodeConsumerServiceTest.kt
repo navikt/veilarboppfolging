@@ -180,7 +180,6 @@ class ArbeidssøkerperiodeConsumerServiceTest(
         mockSytemBrukerAuthOk(aktørId, Fnr(fnr))
         mockTiltakshistorikk(Fnr(fnr), harAktiveDeltakelser = false)
         mockUngdomsprogram(Fnr(fnr), erDeltaker = false)
-        mockArbeidssoekerregisteret(Fnr(fnr), erArbeidssoeker = false)
         mockAap(Fnr(fnr), harAap = false)
 
         val nyPeriode = arbeidssøkerperiode(fnr)

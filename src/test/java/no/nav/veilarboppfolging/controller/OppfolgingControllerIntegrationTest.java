@@ -15,7 +15,6 @@ import no.nav.poao_tilgang.client.PoaoTilgangClient;
 import no.nav.poao_tilgang.client.api.ApiResult;
 import no.nav.veilarboppfolging.IntegrationTest;
 import no.nav.veilarboppfolging.client.aap.AapClient;
-import no.nav.veilarboppfolging.client.arbeidssoekerregisteret.ArbeidssoekerregisteretClient;
 import no.nav.veilarboppfolging.client.tiltakshistorikk.TiltakshistorikkClient;
 import no.nav.veilarboppfolging.client.ungdomsprogram.UngdomsprogramClient;
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolginsBrukerOppslagResult;
@@ -71,9 +70,6 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
 
     @Autowired
     UngdomsprogramClient ungdomsprogramClient;
-
-    @Autowired
-    ArbeidssoekerregisteretClient arbeidssoekerregisteretClient;
 
     @Autowired
     AapClient aapClient;
@@ -149,7 +145,7 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
         when(veilarbarenaClient.hentOppfolgingsbruker(FNR)).thenReturn(new ArenaOppfolginsBrukerOppslagResult.Success(lagArenaBruker("ISERV")));
         when(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(List.of(FNR))).thenReturn(false);
         when(ungdomsprogramClient.erDeltakerIUngdomsprogrammet(FNR)).thenReturn(false);
-        when(arbeidssoekerregisteretClient.erArbeidssoeker(FNR.get())).thenReturn(true);
+        lagreAktivArbeidssoker(AKTOR_ID, FNR, UUID.randomUUID().toString());
 
         var dto = new AvsluttOppfolgingV2Request(new NavIdent("Z151515"), "Begrunnelse", FNR);
         var avslutningStatus = oppfolgingV2Controller.avsluttOppfolging(dto);
@@ -168,7 +164,6 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
         when(veilarbarenaClient.hentOppfolgingsbruker(FNR)).thenReturn(new ArenaOppfolginsBrukerOppslagResult.Success(lagArenaBruker("ISERV")));
         when(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(List.of(FNR))).thenReturn(false);
         when(ungdomsprogramClient.erDeltakerIUngdomsprogrammet(FNR)).thenReturn(false);
-        when(arbeidssoekerregisteretClient.erArbeidssoeker(FNR.get())).thenReturn(false);
         when(aapClient.harAap(FNR.get())).thenReturn(true);
 
         var dto = new AvsluttOppfolgingV2Request(new NavIdent("Z151515"), "Begrunnelse", FNR);
@@ -228,5 +223,4 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
         when(aktorOppslagClient.hentFnr(AKTOR_ID)).thenReturn(FNR);
         when(aktorOppslagClient.hentIdenter(FNR)).thenReturn(new BrukerIdenter(FNR, AKTOR_ID, List.of(), List.of()));
     }
-
 }

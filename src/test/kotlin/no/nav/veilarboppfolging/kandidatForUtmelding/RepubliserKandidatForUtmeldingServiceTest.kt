@@ -31,7 +31,6 @@ class RepubliserKandidatForUtmeldingServiceTest : IntegrationTest() {
         setLocalArenaOppfolging(AKTOR_ID, Formidlingsgruppe.ARBS)
         mockTiltakshistorikk(FNR, harAktiveDeltakelser = false)
         mockUngdomsprogram(FNR, erDeltaker = false)
-        mockArbeidssoekerregisteret(FNR, erArbeidssoeker = false)
         mockAap(FNR, harAap = false)
         startOppfolgingSomArbeidsoker(AKTOR_ID, FNR)
         val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(FNR).get().uuid
@@ -56,7 +55,6 @@ class RepubliserKandidatForUtmeldingServiceTest : IntegrationTest() {
         setLocalArenaOppfolging(AKTOR_ID, Formidlingsgruppe.ARBS)
         mockTiltakshistorikk(FNR, harAktiveDeltakelser = false)
         mockUngdomsprogram(FNR, erDeltaker = false)
-        mockArbeidssoekerregisteret(FNR, erArbeidssoeker = false)
         mockAap(FNR, harAap = false)
         startOppfolgingSomArbeidsoker(AKTOR_ID, FNR)
         val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(FNR).get().uuid
@@ -83,7 +81,6 @@ class RepubliserKandidatForUtmeldingServiceTest : IntegrationTest() {
         setLocalArenaOppfolging(AKTOR_ID, Formidlingsgruppe.ARBS)
         mockTiltakshistorikk(FNR, harAktiveDeltakelser = false)
         mockUngdomsprogram(FNR, erDeltaker = false)
-        mockArbeidssoekerregisteret(FNR, erArbeidssoeker = false)
         mockAap(FNR, harAap = false)
         startOppfolgingSomArbeidsoker(AKTOR_ID, FNR)
         val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(FNR).get().uuid
