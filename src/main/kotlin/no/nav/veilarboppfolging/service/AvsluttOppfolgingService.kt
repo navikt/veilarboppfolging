@@ -5,6 +5,7 @@ import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.common.types.identer.NavIdent
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
+import no.nav.veilarboppfolging.ForbiddenException
 import no.nav.veilarboppfolging.client.aap.AapClient
 import no.nav.veilarboppfolging.client.arbeidssoekerregisteret.ArbeidssoekerregisteretClient
 import no.nav.veilarboppfolging.client.tiltakshistorikk.TiltakshistorikkClient
@@ -102,6 +103,15 @@ class AvsluttOppfolgingService(
     fun hentAvslutningstatusForManuellAvslutning(fnr: Fnr): AvslutningStatusData {
         authService.sjekkLesetilgangMedFnr(fnr)
         return getAvslutningStatusForManuellAvslutning(fnr)
+    }
+
+    fun kanAvslutteOppfolgingEkstern(): Boolean {
+        authService.skalVereEksternBruker()
+        val fnr = Fnr.of(authService.innloggetBrukerIdent)
+        if (!authService.harEksternBrukerTilgang(fnr, AuthService.SikkerthetsNivå.Nivå4)) {
+            throw ForbiddenException("Bruker må ha sikkerhetsnivå 4")
+        }
+        return getAvslutningStatusForManuellAvslutning(fnr).kanAvslutte
     }
 
     private fun getAvslutningStatusForManuellAvslutning(fnr: Fnr): AvslutningStatusData {
