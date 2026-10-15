@@ -74,10 +74,6 @@ spec:
       value: http://ung-deltakelse-opplyser.k9saksbehandling
     - name: UNGDOMSPROGRAM_SCOPE
       value: api://dev-gcp.k9saksbehandling.ung-deltakelse-opplyser/.default
-    - name: ARBEIDSSOEKERREGISTERET_URL
-      value: http://paw-arbeidssoekerregisteret-api-oppslag-v2.paw
-    - name: ARBEIDSSOEKERREGISTERET_SCOPE
-      value: api://dev-gcp.paw.paw-arbeidssoekerregisteret-api-oppslag-v2/.default
     - name: AAP_URL
       value: http://api-intern.aap
     - name: AAP_SCOPE
@@ -141,8 +137,6 @@ spec:
           namespace: team-mulighetsrommet
         - application: ung-deltakelse-opplyser
           namespace: k9saksbehandling
-        - application: paw-arbeidssoekerregisteret-api-oppslag-v2
-          namespace: paw
         - application: api-intern
           namespace: aap
         - application: isoppfolgingstilfelle
