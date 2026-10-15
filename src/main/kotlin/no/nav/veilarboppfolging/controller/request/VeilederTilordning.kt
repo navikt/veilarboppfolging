@@ -1,6 +1,5 @@
 package no.nav.veilarboppfolging.controller.request
 
-import no.nav.veilarboppfolging.controller.response.Veileder
 
 data class VeilederTilordning(
     val brukerFnr: String,
