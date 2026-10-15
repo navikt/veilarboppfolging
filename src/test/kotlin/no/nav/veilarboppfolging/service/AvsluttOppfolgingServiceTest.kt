@@ -4,7 +4,6 @@ import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.client.aktoroppslag.BrukerIdenter
 import no.nav.common.types.identer.NavIdent
 import no.nav.veilarboppfolging.client.aap.AapClient
-import no.nav.veilarboppfolging.client.arbeidssoekerregisteret.ArbeidssoekerregisteretClient
 import no.nav.veilarboppfolging.client.tiltakshistorikk.TiltakshistorikkClient
 import no.nav.veilarboppfolging.client.ungdomsprogram.UngdomsprogramClient
 import no.nav.veilarboppfolging.eventsLogger.BigQueryClient
@@ -35,6 +34,7 @@ import org.mockito.kotlin.verify
 import org.springframework.transaction.support.TransactionTemplate
 import java.time.ZonedDateTime
 import java.util.*
+import no.nav.veilarboppfolging.arbeidssokerperiode.AktivArbeidssokerperiodeRepository
 
 class AvsluttOppfolgingServiceTest {
     private val authService: AuthService = Mockito.mock(AuthService::class.java)
@@ -47,7 +47,7 @@ class AvsluttOppfolgingServiceTest {
     private val tiltakshistorikkClient: TiltakshistorikkClient = Mockito.mock(TiltakshistorikkClient::class.java)
     private val ungdomsprogramClient: UngdomsprogramClient = Mockito.mock(UngdomsprogramClient::class.java)
     private val aapClient: AapClient = Mockito.mock(AapClient::class.java)
-    private val arbeidssokerRegisterClient: ArbeidssoekerregisteretClient = Mockito.mock(ArbeidssoekerregisteretClient::class.java)
+    private val aktivArbeidssokerperiodeRepository: AktivArbeidssokerperiodeRepository = Mockito.mock(AktivArbeidssokerperiodeRepository::class.java)
     private val bigQueryClient: BigQueryClient = Mockito.mock(BigQueryClient::class.java)
     private val transactionTemplate: TransactionTemplate = Mockito.mock(TransactionTemplate::class.java)
     private val arbeidsoppfolgingskontorRepository: ArbeidsoppfolgingskontorRepository = Mockito.mock(ArbeidsoppfolgingskontorRepository::class.java)
@@ -61,12 +61,12 @@ class AvsluttOppfolgingServiceTest {
         arenaOppfolgingService, kafkaProducerService, kvpService, tiltakshistorikkClient,
         ungdomsprogramClient,
         aapClient = aapClient,
-        arbeidssoekerregisteretClient = arbeidssokerRegisterClient,
         bigQueryClient = bigQueryClient,
         transactor = transactionTemplate,
         arbeidsoppfolgingskontorRepository = arbeidsoppfolgingskontorRepository,
         fjernKandidatForUtmeldingService = fjernKandidatForUtmeldingService,
-        aktorOppslagClient = aktorOppslagClient
+        aktorOppslagClient = aktorOppslagClient,
+        aktivArbeidssokerperiodeRepository = aktivArbeidssokerperiodeRepository,
     )
 
     private fun arenaIservAvregistrering(): ArenaIservKanIkkeReaktiveres {
@@ -126,7 +126,7 @@ class AvsluttOppfolgingServiceTest {
         `when`(kvpService.erUnderKvp(TEST_AKTOR_ID)).thenReturn(true)
         `when`(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(listOf(TEST_FNR))).thenReturn(false)
         `when`(ungdomsprogramClient.erDeltakerIUngdomsprogrammet(TEST_FNR)).thenReturn(false)
-        `when`(arbeidssokerRegisterClient.erArbeidssoeker(TEST_FNR.get())).thenReturn(false)
+        `when`(aktivArbeidssokerperiodeRepository.erArbeidssoker(TEST_AKTOR_ID)).thenReturn(false)
         `when`(aapClient.harAap(TEST_FNR.get())).thenReturn(false)
         `when`(fjernKandidatForUtmeldingService.erOppfolgingForlenget(any())).thenReturn(false)
 
@@ -147,7 +147,7 @@ class AvsluttOppfolgingServiceTest {
         `when`(kvpService.erUnderKvp(TEST_AKTOR_ID)).thenReturn(false)
         `when`(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(listOf(TEST_FNR))).thenReturn(true)
         `when`(ungdomsprogramClient.erDeltakerIUngdomsprogrammet(TEST_FNR)).thenReturn(false)
-        `when`(arbeidssokerRegisterClient.erArbeidssoeker(TEST_FNR.get())).thenReturn(false)
+        `when`(aktivArbeidssokerperiodeRepository.erArbeidssoker(TEST_AKTOR_ID)).thenReturn(false)
         `when`(aapClient.harAap(TEST_FNR.get())).thenReturn(false)
         `when`(fjernKandidatForUtmeldingService.erOppfolgingForlenget(any())).thenReturn(false)
 
@@ -166,7 +166,7 @@ class AvsluttOppfolgingServiceTest {
         `when`(kvpService.erUnderKvp(TEST_AKTOR_ID)).thenReturn(false)
         `when`(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(listOf(TEST_FNR))).thenReturn(false)
         `when`(ungdomsprogramClient.erDeltakerIUngdomsprogrammet(TEST_FNR)).thenReturn(true)
-        `when`(arbeidssokerRegisterClient.erArbeidssoeker(TEST_FNR.get())).thenReturn(false)
+        `when`(aktivArbeidssokerperiodeRepository.erArbeidssoker(TEST_AKTOR_ID)).thenReturn(false)
         `when`(aapClient.harAap(TEST_FNR.get())).thenReturn(false)
         `when`(fjernKandidatForUtmeldingService.erOppfolgingForlenget(any())).thenReturn(false)
         val brukverV2 = arenaIservAvregistrering()
@@ -183,7 +183,7 @@ class AvsluttOppfolgingServiceTest {
         `when`(kvpService.erUnderKvp(TEST_AKTOR_ID)).thenReturn(false)
         `when`(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(listOf(TEST_FNR))).thenReturn(false)
         `when`(ungdomsprogramClient.erDeltakerIUngdomsprogrammet(TEST_FNR)).thenReturn(false)
-        `when`(arbeidssokerRegisterClient.erArbeidssoeker(TEST_FNR.get())).thenReturn(true)
+        `when`(aktivArbeidssokerperiodeRepository.erArbeidssoker(TEST_AKTOR_ID)).thenReturn(true)
         `when`(fjernKandidatForUtmeldingService.erOppfolgingForlenget(any())).thenReturn(false)
 
         val brukverV2 = arenaIservAvregistrering()
@@ -201,7 +201,7 @@ class AvsluttOppfolgingServiceTest {
         `when`(kvpService.erUnderKvp(TEST_AKTOR_ID)).thenReturn(false)
         `when`(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(listOf(TEST_FNR))).thenReturn(false)
         `when`(ungdomsprogramClient.erDeltakerIUngdomsprogrammet(TEST_FNR)).thenReturn(false)
-        `when`(arbeidssokerRegisterClient.erArbeidssoeker(TEST_FNR.get())).thenReturn(false)
+        `when`(aktivArbeidssokerperiodeRepository.erArbeidssoker(TEST_AKTOR_ID)).thenReturn(false)
         `when`(aapClient.harAap(TEST_FNR.get())).thenReturn(false)
         `when`(fjernKandidatForUtmeldingService.erOppfolgingForlenget(any())).thenReturn(true)
 
@@ -220,7 +220,7 @@ class AvsluttOppfolgingServiceTest {
         `when`(kvpService.erUnderKvp(TEST_AKTOR_ID)).thenReturn(false)
         `when`(tiltakshistorikkClient.harAktiveTiltaksdeltakelser(listOf(TEST_FNR))).thenReturn(false)
         `when`(ungdomsprogramClient.erDeltakerIUngdomsprogrammet(TEST_FNR)).thenReturn(false)
-        `when`(arbeidssokerRegisterClient.erArbeidssoeker(TEST_FNR.get())).thenReturn(false)
+        `when`(aktivArbeidssokerperiodeRepository.erArbeidssoker(TEST_AKTOR_ID)).thenReturn(false)
         `when`(aapClient.harAap(TEST_FNR.get())).thenReturn(false)
         `when`(fjernKandidatForUtmeldingService.erOppfolgingForlenget(any())).thenReturn(true)
         `when`(arenaOppfolgingService.hentArenaOppfolgingTilstand(TEST_FNR)).thenReturn(

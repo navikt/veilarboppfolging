@@ -6,7 +6,6 @@ import no.nav.common.types.identer.Fnr
 import no.nav.common.types.identer.NavIdent
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.veilarboppfolging.client.aap.AapClient
-import no.nav.veilarboppfolging.client.arbeidssoekerregisteret.ArbeidssoekerregisteretClient
 import no.nav.veilarboppfolging.client.tiltakshistorikk.TiltakshistorikkClient
 import no.nav.veilarboppfolging.client.ungdomsprogram.UngdomsprogramClient
 import no.nav.veilarboppfolging.domain.AvslutningStatusData
@@ -33,6 +32,7 @@ import org.springframework.transaction.support.TransactionTemplate
 import java.time.ZonedDateTime
 import java.util.*
 import kotlin.jvm.optionals.getOrNull
+import no.nav.veilarboppfolging.arbeidssokerperiode.AktivArbeidssokerperiodeRepository
 
 @Service
 class AvsluttOppfolgingService(
@@ -45,12 +45,12 @@ class AvsluttOppfolgingService(
     val tiltakshistorikkClient: TiltakshistorikkClient,
     val ungdomsprogramClient: UngdomsprogramClient,
     val aapClient: AapClient,
-    val arbeidssoekerregisteretClient: ArbeidssoekerregisteretClient,
     val bigQueryClient: BigQueryClient,
     val transactor: TransactionTemplate,
     val arbeidsoppfolgingskontorRepository: ArbeidsoppfolgingskontorRepository,
     val fjernKandidatForUtmeldingService: FjernKandidatForUtmeldingService,
     val aktorOppslagClient: AktorOppslagClient,
+    val aktivArbeidssokerperiodeRepository: AktivArbeidssokerperiodeRepository,
 ) {
 
     val log = LoggerFactory.getLogger(this::class.java)
@@ -154,7 +154,7 @@ class AvsluttOppfolgingService(
             val perioder: List<OppfolgingsperiodeEntity> = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId)
             val sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder)
 
-            val erKandidatForUtmelding = fjernKandidatForUtmeldingService.erAktivEllerForlengetKandidatForUtmelding(sistePeriode.uuid)
+            val aktivEllerForlengetKandidat = fjernKandidatForUtmeldingService.hentSisteHendelseForAktivEllerForlengetKandidat(sistePeriode.uuid)
 
             arbeidsoppfolgingskontorRepository.slettNavKontor(sistePeriode.uuid)
             fjernKandidatForUtmeldingService.fjernKandidatForUtmelding(sistePeriode.uuid)
@@ -169,7 +169,11 @@ class AvsluttOppfolgingService(
             kafkaProducerService.publiserSkjulAoMinSideMicrofrontend(aktorId, fnr)
 
             // oppfolgingsperiodeEndretService.oppdaterSisteOppfolgingsperiodeV2MedAvsluttetStatus(sistePeriode); // TODO I en overgangsperiode lytter vi heller på tombstone fra ao-oppfolgingskontor
-            bigQueryClient.loggAvsluttOppfolgingsperiode(sistePeriode.uuid, avregistrering, aktivIArena, erKandidatForUtmelding)
+            bigQueryClient.loggAvsluttOppfolgingsperiode(
+                sistePeriode.uuid,
+                avregistrering,
+                aktivIArena,
+                aktivEllerForlengetKandidat?.type)
         }
     }
 
@@ -194,7 +198,7 @@ class AvsluttOppfolgingService(
 
         val harAktiveTiltaksdeltakelser = harAktiveTiltaksdeltakelser(fnr)
         val erDeltakerIUngdomsprogrammet = erDeltakerIUngdomsprogrammet(fnr)
-        val erArbeidssoeker = erArbeidssoeker(fnr)
+        val erArbeidssoeker = erArbeidssoeker(avregistrering.aktorId)
         val harAap = harAap(fnr)
         val underKvp = kvpService.erUnderKvp(avregistrering.aktorId)
         val erOppfolgingForlenget = if (oppfolging?.underOppfolging == true) {
@@ -304,6 +308,6 @@ class AvsluttOppfolgingService(
         return tiltakshistorikkClient.harAktiveTiltaksdeltakelser(identer)
     }
     fun erDeltakerIUngdomsprogrammet(fnr: Fnr) = ungdomsprogramClient.erDeltakerIUngdomsprogrammet(fnr)
-    fun erArbeidssoeker(fnr: Fnr) = arbeidssoekerregisteretClient.erArbeidssoeker(fnr.get())
+    fun erArbeidssoeker(aktorId: AktorId) = aktivArbeidssokerperiodeRepository.erArbeidssoker(aktorId)
     fun harAap(fnr: Fnr) = aapClient.harAap(fnr.get())
 }

@@ -64,18 +64,18 @@ class KandidatForUtmeldingController(
         }
         forlengelseDTO.valider()
 
-        val forlengelseType = kandidatForUtmeldingService.hentForlengelseType(oppfolgingsperiodeId)
+        val kandidat = kandidatForUtmeldingService.hentAktivEllerForelengetKandidat(oppfolgingsperiodeId)
+            ?: throw ResponseStatusException(HttpStatus.CONFLICT, "Kan ikke forlenge person som ikke er kandidat")
 
         val forlengelseHendelse = ForlengelseOpprettetEllerEndretHendelse(
-            oppfolgingsperiodeUuid = oppfolgingsperiodeId,
+            kandidat = kandidat,
             utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
             utfortAv = authService.innloggetVeilederIdent,
             kilde = "veilarboppfolging",
-            forlengelseHendelseType = forlengelseType,
             hendelseTidspunkt = ZonedDateTime.now().toInstant(),
             forlengetTil = forlengelseDTO.forlengetTil,
         )
 
-        kandidatForUtmeldingService.forlengKandidat(forlengelseHendelse, forlengelseDTO.fnr)
+        kandidatForUtmeldingService.forlengKandidat(forlengelseHendelse, forlengelseDTO.fnr, kandidat.sisteHendelse.type)
     }
 }

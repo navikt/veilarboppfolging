@@ -23,8 +23,6 @@ public record EnvironmentProperties(
     String oppgaveScope,
     String ungdomsprogramUrl,
     String ungdomsprogramScope,
-    String arbeidssoekerregisteretUrl,
-    String arbeidssoekerregisteretScope,
     String aapUrl,
     String aoKontorUrl,
     String aapScope,
