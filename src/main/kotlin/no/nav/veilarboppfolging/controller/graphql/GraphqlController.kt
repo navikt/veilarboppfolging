@@ -107,9 +107,6 @@ class GraphqlController(
     }
 
     @QueryMapping
-    fun kanAvslutteOppfolgingEkstern(): Boolean = avsluttOppfolgingService.kanAvslutteOppfolgingEkstern()
-
-    @QueryMapping
     fun utmeldingskandidatTag(@Argument fnr: String? = null, environment: DataFetchingEnvironment): DataFetcherResult<KandidatForUtmeldingTagDto> {
         val dataFetchResult = DataFetcherResult.newResult<KandidatForUtmeldingTagDto>()
         val tilgang = sjekkTilgang(fnr, EksterneHarIkkeTilgang)

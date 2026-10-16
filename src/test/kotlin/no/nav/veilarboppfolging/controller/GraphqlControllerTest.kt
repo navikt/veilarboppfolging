@@ -810,35 +810,6 @@ class GraphqlControllerTest: IntegrationTest() {
     }
 
     @Test
-    fun `innbygger skal kunne sjekke egen avslutningsstatus`() {
-        val (fnr, aktorId) = defaultBruker()
-        setBrukerUnderOppfolging(aktorId, fnr)
-        setLocalArenaOppfolging(aktorId)
-        mockEksternBrukerAuthOk(fnr)
-        mockEksternbrukerErInnlogget(fnr, AuthService.SikkerthetsNivå.Nivå4)
-
-        val result = tester.document("{ kanAvslutteOppfolgingEkstern }").execute()
-
-        result.errors().verify()
-        result.path("kanAvslutteOppfolgingEkstern").entity<Boolean>().isEqualTo(true)
-    }
-
-    @Test
-    fun `egen avslutningsstatus returnerer false når en regel sperrer`() {
-        val (fnr, aktorId) = defaultBruker()
-        setBrukerUnderOppfolging(aktorId, fnr)
-        setLocalArenaOppfolging(aktorId)
-        mockAap(fnr, harAap = true)
-        mockEksternBrukerAuthOk(fnr)
-        mockEksternbrukerErInnlogget(fnr, AuthService.SikkerthetsNivå.Nivå4)
-
-        val result = tester.document("{ kanAvslutteOppfolgingEkstern }").execute()
-
-        result.errors().verify()
-        result.path("kanAvslutteOppfolgingEkstern").entity<Boolean>().isEqualTo(false)
-    }
-
-    @Test
     fun `egen avslutningsstatus gir GraphQL-feil ved oppslagsfeil`() {
         val (fnr, aktorId) = defaultBruker()
         setBrukerUnderOppfolging(aktorId, fnr)
@@ -847,12 +818,12 @@ class GraphqlControllerTest: IntegrationTest() {
         mockEksternbrukerErInnlogget(fnr, AuthService.SikkerthetsNivå.Nivå4)
         `when`(aapClient.harAap(fnr.get())).thenThrow(IllegalStateException("AAP status utilgjengelig"))
 
-        val result = tester.document("{ kanAvslutteOppfolgingEkstern }").execute()
+        val result = tester.document("{ oppfolging { kanAvslutteOppfolging } }").execute()
 
         result.errors().expect {
-            it.path == "kanAvslutteOppfolgingEkstern"
+            it.path == "oppfolging.kanAvslutteOppfolging"
         }.verify()
-        result.path("kanAvslutteOppfolgingEkstern").valueIsNull()
+        result.path("oppfolging.kanAvslutteOppfolging").valueIsNull()
     }
 
     @Test

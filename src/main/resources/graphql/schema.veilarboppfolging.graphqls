@@ -7,7 +7,6 @@ type Query {
     gjeldendeOppfolgingsperiode: Oppfolgingsperiode
     utmeldingskandidatTag(fnr: String!): UtmeldingskandidatTag @deprecated(reason: "Erstattet av utmeldingskandidat som er mer beskrivende")
     utmeldingskandidat(fnr: String!): Utmeldingskandidat
-    kanAvslutteOppfolgingEkstern: Boolean
 }
 
 type VeilederTilgang {
