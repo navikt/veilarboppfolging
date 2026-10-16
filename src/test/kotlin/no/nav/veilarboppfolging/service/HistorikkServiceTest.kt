@@ -4,6 +4,7 @@ import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.veilarboppfolging.controller.response.HistorikkHendelse
 import no.nav.veilarboppfolging.controller.response.HistorikkHendelseType
+import no.nav.veilarboppfolging.oppfolgingsbruker.AvsluttetAvType
 import no.nav.veilarboppfolging.oppfolgingsbruker.StartetAvType
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelse
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvregistreringsType
@@ -102,6 +103,42 @@ class HistorikkServiceTest {
         )
     }
 
+
+    @Test
+    fun `egen avslutning vises som innbygger i historikken`() {
+        val periode = mockOppfolgingsPeriode(
+            startBegrunnelse = null,
+            startetAv = null,
+            startetAvType = null,
+            avsluttetBegrunnelse = "Trenger ikke lenger oppfolging",
+            avsluttetAv = "Bruker",
+        ).copy(avsluttetAvType = AvsluttetAvType.BRUKER)
+        gitt_oppfolgingsperioder(listOf(periode))
+
+        val hendelse = historikkService.hentInstillingsHistorikk(FNR)
+            .single { it.type == HistorikkHendelseType.AVSLUTTET_OPPFOLGINGSPERIODE }
+
+        Assertions.assertThat(hendelse.opprettetAv).isEqualTo(KodeverkBruker.EKSTERN)
+        Assertions.assertThat(hendelse.opprettetAvBrukerId).isEqualTo("Bruker")
+        Assertions.assertThat(hendelse.begrunnelse).isEqualTo(periode.begrunnelse)
+    }
+
+    @Test
+    fun `historikk for eldre periode med System-verdi beholdes uendret`() {
+        val periode = mockOppfolgingsPeriode(
+            startBegrunnelse = null,
+            startetAv = null,
+            startetAvType = null,
+            avsluttetAv = "System",
+        )
+        gitt_oppfolgingsperioder(listOf(periode))
+
+        val hendelse = historikkService.hentInstillingsHistorikk(FNR)
+            .single { it.type == HistorikkHendelseType.AVSLUTTET_OPPFOLGINGSPERIODE }
+
+        Assertions.assertThat(hendelse.opprettetAv).isEqualTo(KodeverkBruker.NAV)
+        Assertions.assertThat(hendelse.opprettetAvBrukerId).isEqualTo("System")
+    }
 
     @Test
     fun `oppfolgingsperiodeHistorikk - Veileder (registrert i inngar) - skal vise veileder ident på start og stopp av oppfølgingsperioder i historikken`() {

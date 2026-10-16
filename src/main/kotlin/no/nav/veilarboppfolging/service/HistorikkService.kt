@@ -4,6 +4,7 @@ import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.veilarboppfolging.controller.response.HistorikkHendelse
 import no.nav.veilarboppfolging.controller.response.HistorikkHendelseType
+import no.nav.veilarboppfolging.oppfolgingsbruker.AvsluttetAvType
 import no.nav.veilarboppfolging.oppfolgingsbruker.StartetAvType
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelse
 import no.nav.veilarboppfolging.repository.*
@@ -152,7 +153,13 @@ class HistorikkService(
                 type = HistorikkHendelseType.AVSLUTTET_OPPFOLGINGSPERIODE,
                 dato = periode.sluttDato,
                 begrunnelse = periode.begrunnelse,
-                opprettetAv = if (periode.avsluttetAv != null) KodeverkBruker.NAV else KodeverkBruker.SYSTEM,
+                opprettetAv = when (periode.avsluttetAvType) {
+                    AvsluttetAvType.BRUKER -> KodeverkBruker.EKSTERN
+                    AvsluttetAvType.VEILEDER -> KodeverkBruker.NAV
+                    AvsluttetAvType.SYSTEM -> KodeverkBruker.SYSTEM
+                    AvsluttetAvType.ADMIN -> KodeverkBruker.ADMIN
+                    null -> if (periode.avsluttetAv != null) KodeverkBruker.NAV else KodeverkBruker.SYSTEM
+                },
                 opprettetAvBrukerId = periode.avsluttetAv,
                 dialogId = null,
                 enhet = null,

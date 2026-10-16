@@ -50,8 +50,8 @@ class RepubliserOppfolgingshendelseService(
         } else {
             log.info("Bruker er ikke under oppfølging – republiserer OppfolgingAvsluttet på oppfolgingshendelse-topic for periode ${sistePeriode.uuid}")
             val avsluttetAv = sistePeriode.avsluttetAv ?: SYSTEM_USER_NAME
-            val avsluttetAvType: AvsluttetAvType =
-                if (avsluttetAv == SYSTEM_USER_NAME) AvsluttetAvType.SYSTEM else AvsluttetAvType.VEILEDER
+            val avsluttetAvType = sistePeriode.avsluttetAvType
+                ?: if (avsluttetAv == SYSTEM_USER_NAME) AvsluttetAvType.SYSTEM else AvsluttetAvType.VEILEDER
             val avregistreringsType = sistePeriode.avregistreringsType
                 ?: throw IllegalStateException("Kan ikke republisere OppfolgingAvsluttet: mangler 'avregistreringsType' på periode ${sistePeriode.uuid}")
 
