@@ -212,7 +212,7 @@ class GraphqlControllerTest: IntegrationTest() {
     }
 
     @Test
-    fun `eksternbruker skal kunne hente kanAvslutte uten fnr`() {
+    fun `eksternbruker skal kunne hente kanAvslutteOppfolging uten fnr`() {
         val (fnr, aktorId) = defaultBruker()
         mockEksternBrukerAuthOk(fnr)
         mockEksternbrukerErInnlogget(fnr, AuthService.SikkerthetsNivå.Nivå4)
@@ -222,14 +222,14 @@ class GraphqlControllerTest: IntegrationTest() {
         mockUngdomsprogram(fnr)
         mockAap(fnr)
 
-        val result = tester.document("{ oppfolging { kanAvslutte } }").execute()
+        val result = tester.document("{ oppfolging { kanAvslutteOppfolging } }").execute()
 
         result.errors().verify()
-        result.path("oppfolging.kanAvslutte").entity<Boolean>().isEqualTo(true)
+        result.path("oppfolging.kanAvslutteOppfolging").entity<Boolean>().isEqualTo(true)
     }
 
     @Test
-    fun `kanAvslutte skal vaere false ved aktive tiltaksdeltakelser`() {
+    fun `kanAvslutteOppfolging skal vaere false ved aktive tiltaksdeltakelser`() {
         val (fnr, aktorId) = defaultBruker()
         mockEksternBrukerAuthOk(fnr)
         mockEksternbrukerErInnlogget(fnr, AuthService.SikkerthetsNivå.Nivå4)
@@ -239,14 +239,14 @@ class GraphqlControllerTest: IntegrationTest() {
         mockUngdomsprogram(fnr)
         mockAap(fnr)
 
-        val result = tester.document("{ oppfolging { kanAvslutte } }").execute()
+        val result = tester.document("{ oppfolging { kanAvslutteOppfolging } }").execute()
 
         result.errors().verify()
-        result.path("oppfolging.kanAvslutte").entity<Boolean>().isEqualTo(false)
+        result.path("oppfolging.kanAvslutteOppfolging").entity<Boolean>().isEqualTo(false)
     }
 
     @Test
-    fun `eksternbruker skal bare hente egen kanAvslutte selv om annet fnr oppgis`() {
+    fun `eksternbruker skal bare hente egen kanAvslutteOppfolging selv om annet fnr oppgis`() {
         val (fnr, aktorId) = defaultBruker()
         mockEksternBrukerAuthOk(fnr)
         mockEksternbrukerErInnlogget(fnr, AuthService.SikkerthetsNivå.Nivå4)
@@ -257,23 +257,23 @@ class GraphqlControllerTest: IntegrationTest() {
         mockAap(fnr)
 
         val result = tester.document(
-            """{ oppfolging(fnr: "${randomFnr().get()}") { kanAvslutte } }"""
+            """{ oppfolging(fnr: "${randomFnr().get()}") { kanAvslutteOppfolging } }"""
         ).execute()
 
         result.errors().verify()
-        result.path("oppfolging.kanAvslutte").entity<Boolean>().isEqualTo(true)
+        result.path("oppfolging.kanAvslutteOppfolging").entity<Boolean>().isEqualTo(true)
     }
 
     @Test
-    fun `eksternbruker med nivaa 3 skal ikke kunne hente kanAvslutte`() {
+    fun `eksternbruker med nivaa 3 skal ikke kunne hente kanAvslutteOppfolging`() {
         val (fnr, _) = defaultBruker()
         mockEksternBrukerAuthOk(fnr)
         mockEksternbrukerErInnlogget(fnr, AuthService.SikkerthetsNivå.Nivå3)
 
-        val result = tester.document("{ oppfolging { kanAvslutte } }").execute()
+        val result = tester.document("{ oppfolging { kanAvslutteOppfolging } }").execute()
 
-        result.errors().expect { it.path == "oppfolging.kanAvslutte" }.verify()
-        result.path("oppfolging.kanAvslutte").valueIsNull()
+        result.errors().expect { it.path == "oppfolging.kanAvslutteOppfolging" }.verify()
+        result.path("oppfolging.kanAvslutteOppfolging").valueIsNull()
         verifyNoInteractions(tiltakshistorikkClient, ungdomsprogramClient, aapClient)
     }
 
