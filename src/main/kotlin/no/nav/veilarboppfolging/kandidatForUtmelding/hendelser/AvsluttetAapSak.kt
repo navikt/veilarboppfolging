@@ -16,7 +16,6 @@ import java.util.UUID
 
 class AvsluttetAapSak(
     oppfolgingsperiodeUuid: UUID,
-    val avslutningsarsak: String?,
     hendelseTidspunkt: Instant,
 ) : KandidatForUtmeldingHendelse(
     oppfolgingsperiodeUuid,

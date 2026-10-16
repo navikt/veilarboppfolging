@@ -464,10 +464,4 @@ fun ResultSet.toInaktivertIArena() = InaktivertIArena(
 fun ResultSet.toAvsluttetAapSakHendelse() = AvsluttetAapSak(
     oppfolgingsperiodeUuid = UUID.fromString(getString("oppfolgingsperiode_uuid")),
     hendelseTidspunkt = getTimestamp("hendelse_tidspunkt").toLocalDateTime().toInstant(ZoneOffset.UTC),
-    avslutningsarsak = getStringOrNull("hendelse_data")?.let {
-        JsonUtils.fromJson(
-            it,
-            ArbeidssøkerPeriodeAvsluttet.Detaljer::class.java
-        ).avslutningsarsak
-    },
 )

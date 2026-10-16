@@ -49,7 +49,6 @@ class AapHendelseService(
                 AvsluttetAapSak(
                     oppfolgingsperiodeUuid = oppfolgingsperiode,
                     hendelseTidspunkt = Instant.now(),
-                    avslutningsarsak = "Avsluttet AAP-sak",
                 )
             )
         }

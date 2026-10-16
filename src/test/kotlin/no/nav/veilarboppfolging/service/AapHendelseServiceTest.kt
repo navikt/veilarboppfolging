@@ -215,6 +215,5 @@ class AapHendelseServiceTest {
         val hendelseCaptor = argumentCaptor<AvsluttetAapSak>()
         verify(kandidatForUtmeldingService).handterUtmeldingsHendelse(eq(TEST_FNR), hendelseCaptor.capture())
         assertEquals(oppfolgingsperiodeUuid, hendelseCaptor.firstValue.oppfolgingsperiodeUuid)
-        assertEquals("Avsluttet AAP-sak", hendelseCaptor.firstValue.avslutningsarsak)
     }
 }
