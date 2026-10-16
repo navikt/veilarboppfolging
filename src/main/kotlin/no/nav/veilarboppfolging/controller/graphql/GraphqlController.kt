@@ -60,6 +60,7 @@ import no.nav.veilarboppfolging.repository.VeilederTilordningerRepository
 import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity
 import no.nav.veilarboppfolging.service.AuthService
+import no.nav.veilarboppfolging.service.AvsluttOppfolgingService
 import no.nav.veilarboppfolging.service.ManuellStatusService
 import no.nav.veilarboppfolging.service.OppfolgingService
 import org.slf4j.LoggerFactory
@@ -97,6 +98,7 @@ class GraphqlController(
     private val arbeidsoppfolgingskontorRepository: ArbeidsoppfolgingskontorRepository,
     private val kandidatForUtmeldingService: KandidatForUtmeldingService,
     private val isOppfolgingstilfelleClient: IsOppfolgingstilfelleClient,
+    private val avsluttOppfolgingService: AvsluttOppfolgingService,
 ) {
     private val logger = LoggerFactory.getLogger(GraphqlController::class.java)
 
@@ -386,6 +388,11 @@ class GraphqlController(
                 kilde = kilde
             )
         }
+    }
+
+    @SchemaMapping(typeName = "OppfolgingDto", field = "kanAvslutteOppfolging")
+    fun kanAvslutteOppfolging(@LocalContextValue fnr: Fnr): Boolean {
+        return avsluttOppfolgingService.hentAvslutningstatusForManuellAvslutning(fnr).kanAvslutte
     }
 
     @SchemaMapping(typeName = "OppfolgingDto", field = "kanStarteOppfolging")
