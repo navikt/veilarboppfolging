@@ -33,6 +33,14 @@ class AapClient(
         .build()
 
     fun harAap(personident: String): Boolean {
+        val response = hentSaker(personident)
+        val harAktivAap = response.mottarEllerHarSoktAAP()
+        logger.info("Sjekket AAP-status, harAap=$harAktivAap, antall saker=${response.saker.size}")
+        return harAktivAap
+    }
+
+    /** Henter saker slik at begge AAP-sjekkene kan bruke samme respons. */
+    fun hentSaker(personident: String): DabSakerResponse {
         val requestBody = AapPerioderRequest(personidentifikator = personident)
 
         val request = Request.Builder()
@@ -52,10 +60,7 @@ class AapClient(
             val body = response.body?.string()
                 ?: throw RuntimeException("Body mangler i respons fra aap-api")
 
-            val response = objectMapper.readValue<DabSakerResponse>(body)
-            val harAktivAap = response.mottarEllerHarSoktAAP()
-            logger.info("Sjekket AAP-status, harAap=$harAktivAap, antall saker=${response.saker.size}")
-            return harAktivAap
+            return objectMapper.readValue<DabSakerResponse>(body)
         }
     }
 }
@@ -123,6 +128,7 @@ sealed interface DabSak {
             val harAktivAap = perioder.any { !it.tilOgMedDato.isBefore(idag) }
             return harAktivAap || statuskode == KelvinStatus.SOKNAD_UNDER_BEHANDLING
         }
+
     }
 
     enum class Kilde {

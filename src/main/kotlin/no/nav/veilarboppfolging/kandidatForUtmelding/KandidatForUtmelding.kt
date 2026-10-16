@@ -9,6 +9,7 @@ import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.util.UUID
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ArbeidssøkerPeriodeAvsluttet
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.AvsluttetAapSak
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseOpprettetEllerEndretHendelse
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseUtløptHendelse
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.InaktivertIArena
@@ -48,6 +49,7 @@ sealed class KandidatForUtmelding(
                 is ForlengelseOpprettetEllerEndretHendelse ->  null
                 is ForlengelseUtløptHendelse -> hendelseTid.plusDays(KARENSTID_DAGER)
                 is InaktivertIArena -> null
+                is AvsluttetAapSak -> hendelseTid.plusDays(KARENSTID_DAGER)
             }
         }
 
