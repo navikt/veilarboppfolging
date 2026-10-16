@@ -212,6 +212,72 @@ class GraphqlControllerTest: IntegrationTest() {
     }
 
     @Test
+    fun `eksternbruker skal kunne hente kanAvslutte uten fnr`() {
+        val (fnr, aktorId) = defaultBruker()
+        mockEksternBrukerAuthOk(fnr)
+        mockEksternbrukerErInnlogget(fnr, AuthService.SikkerthetsNivå.Nivå4)
+        setBrukerUnderOppfolging(aktorId, fnr)
+        setLocalArenaOppfolging(aktorId)
+        mockTiltakshistorikk(fnr)
+        mockUngdomsprogram(fnr)
+        mockAap(fnr)
+
+        val result = tester.document("{ oppfolging { kanAvslutte } }").execute()
+
+        result.errors().verify()
+        result.path("oppfolging.kanAvslutte").entity<Boolean>().isEqualTo(true)
+    }
+
+    @Test
+    fun `kanAvslutte skal vaere false ved aktive tiltaksdeltakelser`() {
+        val (fnr, aktorId) = defaultBruker()
+        mockEksternBrukerAuthOk(fnr)
+        mockEksternbrukerErInnlogget(fnr, AuthService.SikkerthetsNivå.Nivå4)
+        setBrukerUnderOppfolging(aktorId, fnr)
+        setLocalArenaOppfolging(aktorId)
+        mockTiltakshistorikk(fnr, harAktiveDeltakelser = true)
+        mockUngdomsprogram(fnr)
+        mockAap(fnr)
+
+        val result = tester.document("{ oppfolging { kanAvslutte } }").execute()
+
+        result.errors().verify()
+        result.path("oppfolging.kanAvslutte").entity<Boolean>().isEqualTo(false)
+    }
+
+    @Test
+    fun `eksternbruker skal bare hente egen kanAvslutte selv om annet fnr oppgis`() {
+        val (fnr, aktorId) = defaultBruker()
+        mockEksternBrukerAuthOk(fnr)
+        mockEksternbrukerErInnlogget(fnr, AuthService.SikkerthetsNivå.Nivå4)
+        setBrukerUnderOppfolging(aktorId, fnr)
+        setLocalArenaOppfolging(aktorId)
+        mockTiltakshistorikk(fnr)
+        mockUngdomsprogram(fnr)
+        mockAap(fnr)
+
+        val result = tester.document(
+            """{ oppfolging(fnr: "${randomFnr().get()}") { kanAvslutte } }"""
+        ).execute()
+
+        result.errors().verify()
+        result.path("oppfolging.kanAvslutte").entity<Boolean>().isEqualTo(true)
+    }
+
+    @Test
+    fun `eksternbruker med nivaa 3 skal ikke kunne hente kanAvslutte`() {
+        val (fnr, _) = defaultBruker()
+        mockEksternBrukerAuthOk(fnr)
+        mockEksternbrukerErInnlogget(fnr, AuthService.SikkerthetsNivå.Nivå3)
+
+        val result = tester.document("{ oppfolging { kanAvslutte } }").execute()
+
+        result.errors().expect { it.path == "oppfolging.kanAvslutte" }.verify()
+        result.path("oppfolging.kanAvslutte").valueIsNull()
+        verifyNoInteractions(tiltakshistorikkClient, ungdomsprogramClient, aapClient)
+    }
+
+    @Test
     fun `skal returnere kanStarteOppfolging - JA når veileder har tilgang`() {
         val veilederUuid = UUID.randomUUID()
         val fnr = randomFnr()
