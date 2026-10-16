@@ -3,7 +3,6 @@ package no.nav.veilarboppfolging.service
 import no.nav.common.types.identer.AktorId
 import no.nav.veilarboppfolging.config.ApplicationConfig.SYSTEM_USER_NAME
 import no.nav.veilarboppfolging.oppfolgingsbruker.AvsluttetAvType
-import no.nav.veilarboppfolging.oppfolgingsbruker.StartetAvType
 import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.hendelser.OppfolgingStartetHendelseDto
 import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.hendelser.OppfolgingsAvsluttetHendelseDto
 import no.nav.veilarboppfolging.repository.ArbeidsoppfolgingskontorRepository
@@ -52,7 +51,7 @@ class RepubliserOppfolgingshendelseService(
             log.info("Bruker er ikke under oppfølging – republiserer OppfolgingAvsluttet på oppfolgingshendelse-topic for periode ${sistePeriode.uuid}")
             val avsluttetAv = sistePeriode.avsluttetAv ?: SYSTEM_USER_NAME
             val avsluttetAvType: AvsluttetAvType =
-                if (avsluttetAv == SYSTEM_USER_NAME) StartetAvType.SYSTEM else StartetAvType.VEILEDER
+                if (avsluttetAv == SYSTEM_USER_NAME) AvsluttetAvType.SYSTEM else AvsluttetAvType.VEILEDER
             val avregistreringsType = sistePeriode.avregistreringsType
                 ?: throw IllegalStateException("Kan ikke republisere OppfolgingAvsluttet: mangler 'avregistreringsType' på periode ${sistePeriode.uuid}")
 

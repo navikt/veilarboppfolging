@@ -157,9 +157,10 @@ class AvsluttOppfolgingService(
         transactor.executeWithoutResult { _ ->
             oppfolgingsPeriodeRepository.avsluttSistePeriodeOgAvsluttOppfolging(
                 aktorId,
-                avregistrering.avsluttetAv.getIdent(),
+                avregistrering.avsluttetAvIdent,
                 avregistrering.begrunnelse,
-                avregistrering.getAvregistreringsType()
+                avregistrering.getAvregistreringsType(),
+                avregistrering.avsluttetAvType,
             )
             val perioder: List<OppfolgingsperiodeEntity> = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId)
             val sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder)
@@ -290,10 +291,11 @@ class AvsluttOppfolgingService(
         val sluttDato = if (erSisteGjeldendePeriode) ZonedDateTime.now() else sisteGjeldendePeriode.startDato
         val avsluttetOppfolgingsperiode = oppfolgingsPeriodeRepository.avsluttOppfolgingsperiode(
             oppfolgingsperiodeUUID,
-            avregistrering.avsluttetAv.getIdent(),
+            avregistrering.avsluttetAvIdent,
             avregistrering.begrunnelse,
             sluttDato,
             avregistrering.getAvregistreringsType(),
+            avregistrering.avsluttetAvType,
         )
 
         log.info(

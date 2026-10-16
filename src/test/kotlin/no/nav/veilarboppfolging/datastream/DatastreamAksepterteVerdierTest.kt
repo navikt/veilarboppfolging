@@ -3,6 +3,7 @@ package no.nav.veilarboppfolging.datastream
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.pto_schema.enums.arena.Hovedmaal
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
+import no.nav.veilarboppfolging.oppfolgingsbruker.AvsluttetAvType
 import no.nav.veilarboppfolging.oppfolgingsbruker.StartetAvType
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelse
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvregistreringsType
@@ -81,6 +82,15 @@ class DatastreamAksepterteVerdierTest {
             tabellNavn = "oppfolgingsperiode",
             kolonneNavn = "startet_av_type",
             faktiskeVerdier = StartetAvType.entries.map { it.name }.toSet(),
+        )
+    }
+
+    @Test
+    fun `avsluttet_av_type-snapshot matcher AvsluttetAvType-enum`() {
+        verifiserSnapshot(
+            tabellNavn = "oppfolgingsperiode",
+            kolonneNavn = "avsluttet_av_type",
+            faktiskeVerdier = AvsluttetAvType.entries.map { it.name }.toSet(),
         )
     }
 

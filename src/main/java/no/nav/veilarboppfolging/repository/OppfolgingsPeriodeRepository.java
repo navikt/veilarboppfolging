@@ -1,6 +1,7 @@
 package no.nav.veilarboppfolging.repository;
 
 import no.nav.common.types.identer.AktorId;
+import no.nav.veilarboppfolging.oppfolgingsbruker.AvsluttetAvType;
 import no.nav.veilarboppfolging.oppfolgingsbruker.StartetAvType;
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ManuellRegistreringVeileder;
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelse;
@@ -35,7 +36,7 @@ public class OppfolgingsPeriodeRepository {
     private final TransactionTemplate transactor;
 
     private final static String hentOppfolingsperioderSQL =
-            "SELECT uuid, aktor_id, avslutt_veileder, startdato, sluttdato, avslutt_begrunnelse, start_begrunnelse, startet_av, startet_av_type, avregistrering_type " +
+            "SELECT uuid, aktor_id, avslutt_veileder, startdato, sluttdato, avslutt_begrunnelse, start_begrunnelse, startet_av, startet_av_type, avregistrering_type, avsluttet_av_type " +
                     "FROM OPPFOLGINGSPERIODE ";
 
     @Autowired
@@ -59,13 +60,23 @@ public class OppfolgingsPeriodeRepository {
     }
 
     public void avsluttSistePeriodeOgAvsluttOppfolging(AktorId aktorId, String veileder, String begrunnelse, AvregistreringsType avregistreringsType) {
+        avsluttSistePeriodeOgAvsluttOppfolging(aktorId, veileder, begrunnelse, avregistreringsType, null);
+    }
+
+    /** Lagrer avsluttertype sammen med avslutningen; eldre kall kan fortsatt mangle type. */
+    public void avsluttSistePeriodeOgAvsluttOppfolging(AktorId aktorId, String veileder, String begrunnelse, AvregistreringsType avregistreringsType, @Nullable AvsluttetAvType avsluttetAvType) {
         transactor.executeWithoutResult((ignored) -> {
-            endPeriode(aktorId, veileder, begrunnelse, avregistreringsType);
+            endPeriode(aktorId, veileder, begrunnelse, avregistreringsType, avsluttetAvType);
             avsluttOppfolging(aktorId);
         });
     }
 
     public OppfolgingsperiodeEntity avsluttOppfolgingsperiode(UUID uuid, String veileder, String begrunnelse, ZonedDateTime sluttDato, AvregistreringsType avregistreringsType) {
+        return avsluttOppfolgingsperiode(uuid, veileder, begrunnelse, sluttDato, avregistreringsType, null);
+    }
+
+    /** Avslutter en valgt periode med avsluttertype uten aa endre andre perioder. */
+    public OppfolgingsperiodeEntity avsluttOppfolgingsperiode(UUID uuid, String veileder, String begrunnelse, ZonedDateTime sluttDato, AvregistreringsType avregistreringsType, @Nullable AvsluttetAvType avsluttetAvType) {
         return transactor.execute((ignored) -> {
             Timestamp sluttTimestamp = Timestamp.from(sluttDato.toInstant());
             return db.queryForObject(""" 
@@ -74,7 +85,8 @@ public class OppfolgingsPeriodeRepository {
                             avslutt_begrunnelse = ?,
                             sluttDato = ?,
                             oppdatert = CURRENT_TIMESTAMP,
-                            avregistrering_type = ?
+                            avregistrering_type = ?,
+                            avsluttet_av_type = ?
                             WHERE uuid = ?
                             AND sluttDato IS NULL
                             RETURNING *
@@ -84,6 +96,7 @@ public class OppfolgingsPeriodeRepository {
                     begrunnelse,
                     sluttTimestamp,
                     avregistreringsType.name(),
+                    EnumUtils.getName(avsluttetAvType),
                     uuid.toString());
         });
     }
@@ -173,19 +186,21 @@ public class OppfolgingsPeriodeRepository {
                 aktorId.get());
     }
 
-    private void endPeriode(AktorId aktorId, String veileder, String begrunnelse, AvregistreringsType avregistreringsType) {
+    private void endPeriode(AktorId aktorId, String veileder, String begrunnelse, AvregistreringsType avregistreringsType, @Nullable AvsluttetAvType avsluttetAvType) {
         db.update("" +
                         "UPDATE OPPFOLGINGSPERIODE " +
                         "SET avslutt_veileder = ?, " +
                         "avslutt_begrunnelse = ?, " +
                         "sluttDato = CURRENT_TIMESTAMP, " +
                         "oppdatert = CURRENT_TIMESTAMP, " +
-                        "avregistrering_type = ? " +
+                        "avregistrering_type = ?, " +
+                        "avsluttet_av_type = ? " +
                         "WHERE aktor_id = ? " +
                         "AND sluttDato IS NULL",
                 veileder,
                 begrunnelse,
                 avregistreringsType.name(),
+                EnumUtils.getName(avsluttetAvType),
                 aktorId.get());
     }
 
@@ -210,6 +225,8 @@ public class OppfolgingsPeriodeRepository {
     private static OppfolgingsperiodeEntity mapTilOppfolgingsperiode(ResultSet result, int row) throws SQLException {
         var startetAvTypeString = result.getString("startet_av_type");
         var startetAvType = startetAvTypeString != null ? EnumUtils.valueOf(StartetAvType.class, startetAvTypeString) : null;
+        var avsluttetAvTypeString = result.getString("avsluttet_av_type");
+        var avsluttetAvType = avsluttetAvTypeString != null ? AvsluttetAvType.valueOf(avsluttetAvTypeString) : null;
         return new OppfolgingsperiodeEntity(
                 UUID.fromString(result.getString("uuid")),
                 result.getString("aktor_id"),
@@ -221,7 +238,8 @@ public class OppfolgingsPeriodeRepository {
                 EnumUtils.valueOf(OppfolgingStartBegrunnelse.class, result.getString("start_begrunnelse")),
                 result.getString("startet_av"),
                 startetAvType,
-                EnumUtils.valueOf(AvregistreringsType.class, result.getString("avregistrering_type"))
+                EnumUtils.valueOf(AvregistreringsType.class, result.getString("avregistrering_type")),
+                avsluttetAvType
         );
     }
 }

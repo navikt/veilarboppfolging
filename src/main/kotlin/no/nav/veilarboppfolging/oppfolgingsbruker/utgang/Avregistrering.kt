@@ -2,6 +2,9 @@ package no.nav.veilarboppfolging.oppfolgingsbruker.utgang
 
 import java.util.UUID
 import no.nav.common.types.identer.AktorId
+import no.nav.veilarboppfolging.oppfolgingsbruker.AdminRegistrant
+import no.nav.veilarboppfolging.oppfolgingsbruker.AvsluttetAvType
+import no.nav.veilarboppfolging.oppfolgingsbruker.BrukerRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.Registrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.SystemRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant
@@ -25,6 +28,18 @@ sealed class Avregistrering(
     open val avsluttetAv: Registrant,
     open val begrunnelse: String,
 ) {
+
+    val avsluttetAvType: AvsluttetAvType
+        get() = when (avsluttetAv) {
+            is BrukerRegistrant -> AvsluttetAvType.BRUKER
+            is VeilederRegistrant -> AvsluttetAvType.VEILEDER
+            is SystemRegistrant -> AvsluttetAvType.SYSTEM
+            is AdminRegistrant -> AvsluttetAvType.ADMIN
+        }
+
+    val avsluttetAvIdent: String
+        get() = if (avsluttetAv is BrukerRegistrant) "Bruker" else avsluttetAv.getIdent()
+
     abstract fun getAvregistreringsType(): AvregistreringsType
 }
 

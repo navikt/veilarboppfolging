@@ -6,4 +6,3 @@ enum class StartetAvType {
     VEILEDER,
     ADMIN
 }
-typealias AvsluttetAvType = StartetAvType
