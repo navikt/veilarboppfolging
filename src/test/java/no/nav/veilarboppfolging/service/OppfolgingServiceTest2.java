@@ -9,6 +9,7 @@ import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe;
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirClient;
 import no.nav.veilarboppfolging.client.tiltakshistorikk.TiltakshistorikkClient;
 import no.nav.veilarboppfolging.domain.Oppfolging;
+import no.nav.veilarboppfolging.oppfolgingsbruker.AvsluttetAvType;
 import no.nav.veilarboppfolging.oppfolgingsbruker.BrukerRegistrant;
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering;
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant;
@@ -274,7 +275,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
         assertThat(oppfolging.getGjeldendeManuellStatus().getManuell(), is(true));
         assertThat(oppfolging.getGjeldendeMal().getMal(), equalTo(maal));
 
-        oppfolgingsPeriodeRepository.avsluttSistePeriodeOgAvsluttOppfolging(AKTOR_ID, veilederId, "Funnet arbeid", AvregistreringsType.ManuellAvregistrering);
+        oppfolgingsPeriodeRepository.avsluttSistePeriodeOgAvsluttOppfolging(AKTOR_ID, veilederId, "Funnet arbeid", AvregistreringsType.ManuellAvregistrering, AvsluttetAvType.VEILEDER);
         Oppfolging avsluttetOppfolging = hentOppfolging(AKTOR_ID).get();
         assertThat(avsluttetOppfolging.getUnderOppfolging(), is(false));
         assertThat(avsluttetOppfolging.getVeilederId(), nullValue());
@@ -302,7 +303,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
         assertThat(oppfolgingsperioder.get(0).getStartDato(), not(nullValue()));
         assertThat(oppfolgingsperioder.get(0).getSluttDato(), nullValue());
 
-        oppfolgingsPeriodeRepository.avsluttSistePeriodeOgAvsluttOppfolging(AKTOR_ID, "veileder", "begrunnelse", AvregistreringsType.ManuellAvregistrering);
+        oppfolgingsPeriodeRepository.avsluttSistePeriodeOgAvsluttOppfolging(AKTOR_ID, "veileder", "begrunnelse", AvregistreringsType.ManuellAvregistrering, AvsluttetAvType.VEILEDER);
         oppfolgingsperioder = oppfolgingService.hentOppfolging(AKTOR_ID).get().getOppfolgingsperioder();
         assertThat(oppfolgingsperioder, hasSize(1));
         assertThat(oppfolgingsperioder.get(0).getSluttDato(), not(nullValue()));

@@ -26,6 +26,7 @@ import no.nav.veilarboppfolging.config.ApplicationConfig.SYSTEM_USER_NAME
 import no.nav.veilarboppfolging.ident.randomAktorId
 import no.nav.veilarboppfolging.ident.randomFnr
 import no.nav.veilarboppfolging.kafka.TestUtils.oppfølgingsBrukerEndret
+import no.nav.veilarboppfolging.oppfolgingsbruker.AvsluttetAvType
 import no.nav.veilarboppfolging.oppfolgingsbruker.SystemRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingTilstandOppslagResult
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.GetOppfolginsstatusFailure
@@ -94,7 +95,7 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
         val oppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId)
         assertTrue(oppfolging.get().underOppfolging)
         oppfolgingsPeriodeRepository.avsluttSistePeriodeOgAvsluttOppfolging(aktorId, "A111111", "begrunnelse",
-            AvregistreringsType.ManuellAvregistrering)
+            AvregistreringsType.ManuellAvregistrering, AvsluttetAvType.VEILEDER)
         val avsluttetOppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId)
         assertFalse(avsluttetOppfolging.get().underOppfolging)
 

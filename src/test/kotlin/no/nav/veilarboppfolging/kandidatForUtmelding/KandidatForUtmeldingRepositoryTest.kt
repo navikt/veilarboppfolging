@@ -14,6 +14,7 @@ import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseHendel
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseOpprettetEllerEndretHendelse
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseUtløptHendelse
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.KandidatForUtmeldingHendelseUtfortAvType
+import no.nav.veilarboppfolging.oppfolgingsbruker.AvsluttetAvType
 import no.nav.veilarboppfolging.oppfolgingsbruker.BrukerRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering.Companion.arbeidssokerRegistrering
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvregistreringsType
@@ -234,6 +235,7 @@ class KandidatForUtmeldingRepositoryTest {
             "Z123456",
             "begrunnelse",
             AvregistreringsType.AdminAvregistrering,
+            AvsluttetAvType.VEILEDER,
         )
         kandidatForUtmeldingRepository.fjernKandidat(oppfolgingsperiodeUuid)
         assertThat(kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeUuid)).isNull()

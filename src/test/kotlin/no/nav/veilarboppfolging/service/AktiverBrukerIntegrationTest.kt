@@ -43,7 +43,7 @@ class AktiverBrukerIntegrationTest : IntegrationTest() {
         mockSytemBrukerAuthOk(AKTOR_ID, FNR)
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID)
         oppfolgingsPeriodeRepository.avsluttSistePeriodeOgAvsluttOppfolging(AKTOR_ID, "veilederid", "begrunnelse",
-            AvregistreringsType.ArenaIservKanIkkeReaktiveres)
+            AvregistreringsType.ArenaIservKanIkkeReaktiveres, AvsluttetAvType.SYSTEM)
         startOppfolgingSomArbeidsoker(AKTOR_ID, FNR)
         val oppfolging = oppfolgingService.hentOppfolging(AKTOR_ID)
         Assertions.assertThat(oppfolging.get().underOppfolging).isTrue()

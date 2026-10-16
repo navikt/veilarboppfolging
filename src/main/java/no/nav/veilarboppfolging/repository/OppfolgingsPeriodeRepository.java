@@ -14,6 +14,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -59,24 +60,14 @@ public class OppfolgingsPeriodeRepository {
         });
     }
 
-    public void avsluttSistePeriodeOgAvsluttOppfolging(AktorId aktorId, String veileder, String begrunnelse, AvregistreringsType avregistreringsType) {
-        avsluttSistePeriodeOgAvsluttOppfolging(aktorId, veileder, begrunnelse, avregistreringsType, null);
-    }
-
-    /** Lagrer avsluttertype sammen med avslutningen; eldre kall kan fortsatt mangle type. */
-    public void avsluttSistePeriodeOgAvsluttOppfolging(AktorId aktorId, String veileder, String begrunnelse, AvregistreringsType avregistreringsType, @Nullable AvsluttetAvType avsluttetAvType) {
+    public void avsluttSistePeriodeOgAvsluttOppfolging(AktorId aktorId, String veileder, String begrunnelse, AvregistreringsType avregistreringsType, @Nonnull AvsluttetAvType avsluttetAvType) {
         transactor.executeWithoutResult((ignored) -> {
             endPeriode(aktorId, veileder, begrunnelse, avregistreringsType, avsluttetAvType);
             avsluttOppfolging(aktorId);
         });
     }
 
-    public OppfolgingsperiodeEntity avsluttOppfolgingsperiode(UUID uuid, String veileder, String begrunnelse, ZonedDateTime sluttDato, AvregistreringsType avregistreringsType) {
-        return avsluttOppfolgingsperiode(uuid, veileder, begrunnelse, sluttDato, avregistreringsType, null);
-    }
-
-    /** Avslutter en valgt periode med avsluttertype uten aa endre andre perioder. */
-    public OppfolgingsperiodeEntity avsluttOppfolgingsperiode(UUID uuid, String veileder, String begrunnelse, ZonedDateTime sluttDato, AvregistreringsType avregistreringsType, @Nullable AvsluttetAvType avsluttetAvType) {
+    public OppfolgingsperiodeEntity avsluttOppfolgingsperiode(UUID uuid, String veileder, String begrunnelse, ZonedDateTime sluttDato, AvregistreringsType avregistreringsType, @Nonnull AvsluttetAvType avsluttetAvType) {
         return transactor.execute((ignored) -> {
             Timestamp sluttTimestamp = Timestamp.from(sluttDato.toInstant());
             return db.queryForObject(""" 
@@ -96,7 +87,7 @@ public class OppfolgingsPeriodeRepository {
                     begrunnelse,
                     sluttTimestamp,
                     avregistreringsType.name(),
-                    EnumUtils.getName(avsluttetAvType),
+                    avsluttetAvType.name(),
                     uuid.toString());
         });
     }
@@ -186,7 +177,7 @@ public class OppfolgingsPeriodeRepository {
                 aktorId.get());
     }
 
-    private void endPeriode(AktorId aktorId, String veileder, String begrunnelse, AvregistreringsType avregistreringsType, @Nullable AvsluttetAvType avsluttetAvType) {
+    private void endPeriode(AktorId aktorId, String veileder, String begrunnelse, AvregistreringsType avregistreringsType, @Nonnull AvsluttetAvType avsluttetAvType) {
         db.update("" +
                         "UPDATE OPPFOLGINGSPERIODE " +
                         "SET avslutt_veileder = ?, " +
@@ -200,7 +191,7 @@ public class OppfolgingsPeriodeRepository {
                 veileder,
                 begrunnelse,
                 avregistreringsType.name(),
-                EnumUtils.getName(avsluttetAvType),
+                avsluttetAvType.name(),
                 aktorId.get());
     }
 

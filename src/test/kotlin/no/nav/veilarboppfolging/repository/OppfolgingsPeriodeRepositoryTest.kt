@@ -52,7 +52,7 @@ class OppfolgingsPeriodeRepositoryTest {
         oppfolgingsStatusRepository.opprettOppfolging(aktorId)
 
         oppfolgingsPeriodeRepository.start(oppfolgingsbruker)
-        oppfolgingsPeriodeRepository.avsluttSistePeriodeOgAvsluttOppfolging(aktorId, "veileder", "derfor", AvregistreringsType.AdminAvregistrering)
+        oppfolgingsPeriodeRepository.avsluttSistePeriodeOgAvsluttOppfolging(aktorId, "veileder", "derfor", AvregistreringsType.AdminAvregistrering, AvsluttetAvType.VEILEDER)
         oppfolgingsPeriodeRepository.start(oppfolgingsbruker)
         val maybeOppfolgingsperiodeEntity = oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId)
         Assertions.assertFalse(maybeOppfolgingsperiodeEntity.isEmpty())
@@ -74,7 +74,7 @@ class OppfolgingsPeriodeRepositoryTest {
 
         oppfolgingsPeriodeRepository.start(oppfolgingsbruker)
         oppfolgingsPeriodeRepository.avsluttSistePeriodeOgAvsluttOppfolging(aktorId, "veileder", "derfor",
-            AvregistreringsType.UtmeldtEtter28Dager)
+            AvregistreringsType.UtmeldtEtter28Dager, AvsluttetAvType.SYSTEM)
 
         val maybeOppfolgingsperiodeEntity2 = oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId)
         Assertions.assertTrue(maybeOppfolgingsperiodeEntity2.isEmpty())
@@ -137,7 +137,7 @@ class OppfolgingsPeriodeRepositoryTest {
         oppfolgingsStatusRepository.opprettOppfolging(aktorId)
         oppfolgingsPeriodeRepository.start(oppfolgingsbruker)
         oppfolgingsPeriodeRepository.avsluttSistePeriodeOgAvsluttOppfolging(aktorId, veilederIdent.get(), avsluttetBegrunnelse,
-            AvregistreringsType.ManuellAvregistrering)
+            AvregistreringsType.ManuellAvregistrering, AvsluttetAvType.VEILEDER)
 
         val perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId)
 
@@ -150,7 +150,7 @@ class OppfolgingsPeriodeRepositoryTest {
         assertEquals(avsluttetBegrunnelse, periode.begrunnelse) // Avsluttet begrunnelse (fritekst)
         assertEquals(veilederIdent.get(), periode.avsluttetAv) // Avsluttet veileder
         assertEquals(AvregistreringsType.ManuellAvregistrering, periode.avregistreringsType)
-        assertEquals(null, periode.avsluttetAvType)
+        assertEquals(AvsluttetAvType.VEILEDER, periode.avsluttetAvType)
     }
 
     @ParameterizedTest
