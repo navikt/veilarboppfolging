@@ -393,6 +393,11 @@ class GraphqlController(
         }
     }
 
+    @SchemaMapping(typeName = "OppfolgingDto", field = "kanAvslutteOppfolging")
+    fun kanAvslutteOppfolging(@LocalContextValue fnr: Fnr): Boolean {
+        return avsluttOppfolgingService.hentAvslutningstatusForManuellAvslutning(fnr).kanAvslutte
+    }
+
     @SchemaMapping(typeName = "OppfolgingDto", field = "kanStarteOppfolging")
     fun kanStarteOppfolging(@LocalContextValue erUnderOppfolging: Boolean, @LocalContextValue fnr: Fnr): KanStarteOppfolgingDto? {
         return kanStarteOppfolgingIntern(erUnderOppfolging, fnr)

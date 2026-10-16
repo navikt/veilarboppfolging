@@ -80,7 +80,6 @@ class KandidatForUtmeldingFlytTest(
         setLocalArenaOppfolging(aktorId, Formidlingsgruppe.ARBS)
         mockTiltakshistorikk(fnr, harAktiveDeltakelser = false)
         mockUngdomsprogram(fnr, erDeltaker = false)
-        mockArbeidssoekerregisteret(fnr, erArbeidssoeker = false)
         mockAap(fnr, harAap = false)
 
         assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId)).isNull()
@@ -90,10 +89,15 @@ class KandidatForUtmeldingFlytTest(
         assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId)).isNotNull()
     }
 
-    private fun publiserStartArbeidssokerPeriode(fnr: Fnr, arbeidsoekerPeriodeStartet: LocalDateTime) {
+    private fun publiserStartArbeidssokerPeriode(
+        fnr: Fnr,
+        arbeidsoekerPeriodeStartet: LocalDateTime,
+        arbeidssokerperiodeId: UUID = UUID.randomUUID(),
+    ) {
         val nyPeriode = arbeidssokerperiode(
             fnr.get(),
-            periodeStartet = arbeidsoekerPeriodeStartet.atZone(ZoneId.systemDefault()).toInstant()
+            periodeStartet = arbeidsoekerPeriodeStartet.atZone(ZoneId.systemDefault()).toInstant(),
+            arbeidssokerperiodeId = arbeidssokerperiodeId,
         )
         val nyArbeidssokerPeriodeStartet = ConsumerRecord(
             "topic", 0, 0, "dummyKey",
@@ -104,14 +108,17 @@ class KandidatForUtmeldingFlytTest(
 
     private fun publiserAvsluttArbeidssokerPeriode(
         fnr: Fnr,
-        avsluttetAarsakType: AvsluttetAarsakType = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST) {
+        avsluttetAarsakType: AvsluttetAarsakType = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST,
+        arbeidssokerperiodeId: UUID = UUID.randomUUID(),
+    ) {
         val sluttMelding = ConsumerRecord(
             "topic", 0, 0, "dummyKey",
             arbeidssokerperiode(
                 fnr.get(),
                 periodeAvsluttet = true,
                 periodeStartet = LocalDateTime.now().minusDays(1).atZone(ZoneId.systemDefault()).toInstant(),
-                avsluttetAarsakType = avsluttetAarsakType
+                avsluttetAarsakType = avsluttetAarsakType,
+                arbeidssokerperiodeId = arbeidssokerperiodeId,
             )
         )
         arbeidssoekerperiodeConsumerService.consumeArbeidssøkerperiode(sluttMelding)
@@ -148,6 +155,7 @@ class KandidatForUtmeldingFlytTest(
     fun `skal bli lagret som kandidat for utmelding hvis arbs-bruker først ble ISERV, så ble arbeidssokerperioden avsluttet`() {
         val fnr = randomFnr()
         val aktorId = randomAktorId()
+        val arbeidssokerperiodeId = UUID.randomUUID()
         mockIdents(fnr, aktorId)
         mockSytemBrukerAuthOk(aktorId, fnr)
         val arbeidsoekerPeriodeStartet = LocalDateTime.of(2024, 10, 1, 23, 59)
@@ -159,13 +167,12 @@ class KandidatForUtmeldingFlytTest(
         )
         mockTiltakshistorikk(fnr, harAktiveDeltakelser = false)
         mockUngdomsprogram(fnr, erDeltaker = false)
-        mockArbeidssoekerregisteret(fnr, erArbeidssoeker = false)
         mockAap(fnr, harAap = false)
 
-        publiserStartArbeidssokerPeriode(fnr, arbeidsoekerPeriodeStartet)
+        publiserStartArbeidssokerPeriode(fnr, arbeidsoekerPeriodeStartet, arbeidssokerperiodeId = arbeidssokerperiodeId)
         publiserBrukerBleARBS(fnr)
         publiserBrukerBleISERV(fnr, ISERV_FRA_DATO)
-        publiserAvsluttArbeidssokerPeriode(fnr)
+        publiserAvsluttArbeidssokerPeriode(fnr, arbeidssokerperiodeId = arbeidssokerperiodeId)
 
         assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId)).describedAs("Skal være lagret som kandidat for utmelding").isNotNull()
     }
@@ -184,7 +191,6 @@ class KandidatForUtmeldingFlytTest(
         )
         mockTiltakshistorikk(fnr, harAktiveDeltakelser = false)
         mockUngdomsprogram(fnr, erDeltaker = false)
-        mockArbeidssoekerregisteret(fnr, erArbeidssoeker = false)
         mockAap(fnr, harAap = false)
 
         startOppfolging(aktorId, OppfolgingsRegistrering.manuellRegistreringBruker(fnr, aktorId))
@@ -313,7 +319,6 @@ class KandidatForUtmeldingFlytTest(
         setLocalArenaOppfolging(aktorId, Formidlingsgruppe.ARBS)
         mockTiltakshistorikk(fnr, harAktiveDeltakelser = false)
         mockUngdomsprogram(fnr, erDeltaker = false)
-        mockArbeidssoekerregisteret(fnr, erArbeidssoeker = false)
         mockAap(fnr, harAap = false)
 
         assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId)).isNull()
@@ -335,7 +340,6 @@ class KandidatForUtmeldingFlytTest(
         setLocalArenaOppfolging(aktorId, Formidlingsgruppe.ARBS)
         mockTiltakshistorikk(fnr, harAktiveDeltakelser = false)
         mockUngdomsprogram(fnr, erDeltaker = false)
-        mockArbeidssoekerregisteret(fnr, erArbeidssoeker = false)
         mockAap(fnr, harAap = false)
 
         assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId)).isNull()
@@ -361,7 +365,6 @@ class KandidatForUtmeldingFlytTest(
         setAoKontor(fnr, aktorId, enhetId.get())
         mockTiltakshistorikk(fnr, harAktiveDeltakelser = false)
         mockUngdomsprogram(fnr, erDeltaker = false)
-        mockArbeidssoekerregisteret(fnr, erArbeidssoeker = false)
         mockAap(fnr, harAap = false)
         val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(fnr).get().uuid
         kandidatForUtmeldingRepository.lagreKandidat(
@@ -417,7 +420,6 @@ class KandidatForUtmeldingFlytTest(
         setAoKontor(fnr, aktorId, enhetId.get())
         mockTiltakshistorikk(fnr, harAktiveDeltakelser = false)
         mockUngdomsprogram(fnr, erDeltaker = false)
-        mockArbeidssoekerregisteret(fnr, erArbeidssoeker = false)
         mockAap(fnr, harAap = false)
         val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(fnr).get().uuid
         kandidatForUtmeldingRepository.lagreKandidat(
@@ -460,7 +462,6 @@ class KandidatForUtmeldingFlytTest(
         setAoKontor(fnr, aktorId, enhetId.get())
         mockTiltakshistorikk(fnr, harAktiveDeltakelser = false)
         mockUngdomsprogram(fnr, erDeltaker = false)
-        mockArbeidssoekerregisteret(fnr, erArbeidssoeker = false)
         mockAap(fnr, harAap = false)
         val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(fnr).get().uuid
         kandidatForUtmeldingRepository.lagreKandidat(
@@ -497,7 +498,6 @@ class KandidatForUtmeldingFlytTest(
         setAoKontor(fnr, aktorId, enhetId.get())
         mockTiltakshistorikk(fnr, harAktiveDeltakelser = false)
         mockUngdomsprogram(fnr, erDeltaker = false)
-        mockArbeidssoekerregisteret(fnr, erArbeidssoeker = false)
         mockAap(fnr, harAap = false)
         val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(fnr).get().uuid
         kandidatForUtmeldingRepository.lagreKandidat(
@@ -523,7 +523,8 @@ class KandidatForUtmeldingFlytTest(
         fodselsnummer: String,
         periodeAvsluttet: Boolean = false,
         periodeStartet: Instant = Instant.now().minusSeconds(1),
-        avsluttetAarsakType: AvsluttetAarsakType = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST
+        avsluttetAarsakType: AvsluttetAarsakType = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST,
+        arbeidssokerperiodeId: UUID = UUID.randomUUID(),
     ): Periode {
         val slutt = if (periodeAvsluttet) {
             MetaData().apply {
@@ -538,7 +539,7 @@ class KandidatForUtmeldingFlytTest(
         }
 
         return Periode().apply {
-            id = UUID.randomUUID()
+            id = arbeidssokerperiodeId
             identitetsnummer = fodselsnummer
             startet = MetaData().apply {
                 tidspunkt = periodeStartet

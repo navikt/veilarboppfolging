@@ -1,11 +1,11 @@
 val kotlinVersion = "2.4.20"
-val flywayVersion = "13.7.0"
+val flywayVersion = "13.8.0"
 val commonVersion = "4.2026.10.01_11.30-68a5418edc3c"
 val ptoSchemaVersion = "2.2026.06.16_10.51-c03b8278b27d"
 val poaoTilgangVersion = "4.2026.10.02_08.32-32a40f5f5ced"
 val wiremockVersion = "3.13.2"
 val schedlockVersion = "7.10.1"
-val googleCloudLibrariesBomVersion = "26.88.1"
+val googleCloudLibrariesBomVersion = "26.89.0"
 val springDoc = "3.1.1"
 val tmsMicrofrontendBuilder = "3.0.0"
 val tmsVarselBuilder = "2.2.0"
@@ -136,7 +136,7 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test")
 
     testImplementation("no.nav.poao.dab:bigquery-schema:$dabBigQuerySchemaVersion:test-fixtures")
-    testImplementation("org.mockito.kotlin:mockito-kotlin:6.3.0")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:6.4.0")
 }
 
 tasks.withType<Test> {
