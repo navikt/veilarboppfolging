@@ -93,6 +93,7 @@ enum KanStarteOppfolgingEkstern {
 
 type OppfolgingDto {
     erUnderOppfolging: Boolean
+    kanAvslutteOppfolging: Boolean
     kanStarteOppfolging: KanStarteOppfolging
     kanStarteOppfolgingEkstern: KanStarteOppfolgingEkstern
 }
