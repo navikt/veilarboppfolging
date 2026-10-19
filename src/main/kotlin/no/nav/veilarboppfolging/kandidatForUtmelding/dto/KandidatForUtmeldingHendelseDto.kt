@@ -18,7 +18,8 @@ enum class KandidatForUtmeldingHendelseTypeDto {
     ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET,
     FORLENGELSE_OPPRETTET,
     FORLENGELSE_ENDRET,
-    FORLENGELSE_UTLOPT
+    FORLENGELSE_UTLOPT,
+    AVSLUTTET_AAP_SAK
 }
 
 fun KandidatForUtmeldingHendelse.toKandidatForUtmeldingHendelseDto() = KandidatForUtmeldingHendelseDto(

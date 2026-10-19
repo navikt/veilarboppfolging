@@ -24,6 +24,7 @@ import no.nav.poao_tilgang.api.dto.response.TilgangsattributterResponse
 import no.nav.poao_tilgang.client.Decision
 import no.nav.poao_tilgang.client.NavAnsattTilgangTilEksternBrukerKjernereglerPolicyInput
 import no.nav.poao_tilgang.client.NavAnsattTilgangTilEksternBrukerPolicyInput
+import no.nav.poao_tilgang.client.NavAnsattTilgangTilEnkelttilgangEksternBrukerPolicyInput
 import no.nav.poao_tilgang.client.NavAnsattTilgangTilNavEnhetMedSperrePolicyInput
 import no.nav.poao_tilgang.client.NavAnsattTilgangTilNavEnhetPolicyInput
 import no.nav.poao_tilgang.client.PoaoTilgangClient
@@ -502,6 +503,15 @@ open class IntegrationTest {
         val policyInput = NavAnsattTilgangTilEksternBrukerKjernereglerPolicyInput(
             navAnsattAzureId = veilederUuid,
             tilgangType = tilgangType,
+            norskIdent = fnr.get()
+        )
+        val apiResult = ApiResult.success(decision)
+        doReturn(apiResult).`when`(poaoTilgangClient).evaluatePolicy(policyInput)
+    }
+
+    fun mockPoaoTilgangHarTilgangTilEnkelttilgangTilBruker(veilederUuid: UUID, fnr: Fnr, decision: Decision) {
+        val policyInput = NavAnsattTilgangTilEnkelttilgangEksternBrukerPolicyInput(
+            navAnsattAzureId = veilederUuid,
             norskIdent = fnr.get()
         )
         val apiResult = ApiResult.success(decision)

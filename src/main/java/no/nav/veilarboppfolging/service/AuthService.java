@@ -187,6 +187,16 @@ public class AuthService {
 
     }
 
+    public boolean kanBeOmEnkelttilgangForBruker(Fnr fnr) {
+        if (erEksternBruker() || erSystemBruker()) {
+            return false;
+        }
+        Decision decision = poaoTilgangClient.evaluatePolicy(new NavAnsattTilgangTilEnkelttilgangEksternBrukerPolicyInput(
+                hentInnloggetVeilederUUID(), fnr.toString()
+        )).getOrThrow();
+        return decision.isPermit();
+    }
+
     public boolean harVeilederSkriveTilgangTilFnr(String veilederId, Fnr fnr) {
         Decision decision = poaoTilgangClient.evaluatePolicy(new NavAnsattNavIdentSkrivetilgangTilEksternBrukerPolicyInput(
                 veilederId, fnr.toString()

@@ -472,6 +472,7 @@ class GraphqlControllerTest: IntegrationTest() {
         mockIdenter(fnr, aktorId)
         mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Permit)
         mockPoaoTilgangHarTilgangTilBrukerUtenGeografiskTilgangskontroll(veilederUuid, fnr, Decision.Permit)
+        mockPoaoTilgangHarTilgangTilEnkelttilgangTilBruker(veilederUuid, fnr, Decision.Deny("NEI", "ikke med i pilot"))
         mockPoaoTilgangHarTilgangTilEnhet(veilederUuid, enhetId, Decision.Deny("NEI", "FORDI"))
         mockTiltakshistorikk(fnr, harAktiveDeltakelser = false)
         mockPdlFolkeregisterStatus(fnr, FregStatusOgStatsborgerskap(
@@ -490,7 +491,8 @@ class GraphqlControllerTest: IntegrationTest() {
                 "harVeilederTilgangFlytteBrukerTilEgetKontor": true,
                 "tilgang": "HAR_TILGANG",
                 "harAktiveTiltaksdeltakelserVedFlyttingTilEgetKontor": false,
-                "harVeilederTilgangStarteOppfolging": false
+                "harVeilederTilgangStarteOppfolging": false,
+                "kanBeOmEnkelttilgang": false
             }
         """.trimIndent())
         result.path("brukerStatus").matchesJson("""
@@ -510,6 +512,7 @@ class GraphqlControllerTest: IntegrationTest() {
         setBrukerUnderOppfolging(aktorId, fnr)
         mockInternBrukerAuthOk(veilederUuid, aktorId, fnr)
         mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Deny("NEI", "FORDI"))
+        mockPoaoTilgangHarTilgangTilEnkelttilgangTilBruker(veilederUuid, fnr, Decision.Deny("NEI", "ikke med i pilot"))
         mockPoaoTilgangHarTilgangTilBrukerUtenGeografiskTilgangskontroll(veilederUuid, fnr, Decision.Permit)
         mockTiltakshistorikk(fnr, true)
         mockPdlFolkeregisterStatus(fnr, FregStatusOgStatsborgerskap(
@@ -528,7 +531,41 @@ class GraphqlControllerTest: IntegrationTest() {
                 "harVeilederLeseTilgangTilBrukersEnhet": false,
                 "harVeilederTilgangFlytteBrukerTilEgetKontor": true,
                 "harAktiveTiltaksdeltakelserVedFlyttingTilEgetKontor": true,
-                "harVeilederTilgangStarteOppfolging": false
+                "harVeilederTilgangStarteOppfolging": false,
+                "kanBeOmEnkelttilgang": false
+            }
+        """.trimIndent())
+    }
+
+    @Test
+    fun `skal kunne be om enkelttilgang hvis veileder ikke har tilgang til brukers kontor, men er med i pilotprosjekt`() {
+        val veilederUuid = UUID.randomUUID()
+        val fnr = randomFnr()
+        val aktorId = randomAktorId()
+        setBrukerUnderOppfolging(aktorId, fnr)
+        mockInternBrukerAuthOk(veilederUuid, aktorId, fnr)
+        mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Deny("NEI", "FORDI"))
+        mockPoaoTilgangHarTilgangTilEnkelttilgangTilBruker(veilederUuid, fnr, Decision.Permit)
+        mockPoaoTilgangHarTilgangTilBrukerUtenGeografiskTilgangskontroll(veilederUuid, fnr, Decision.Permit)
+        mockTiltakshistorikk(fnr, true)
+        mockPdlFolkeregisterStatus(fnr, FregStatusOgStatsborgerskap(
+            fregStatus = ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven,
+            statsborgerskap = norskStatsborgerskap,
+            under18 = false,
+        ))
+        /* Query is hidden in test/resources/graphl-test :) */
+        val result = tester.documentName("veilederTilganger").variable("fnr", fnr.get()).execute()
+        result.errors()
+            .filter { it.path == "brukerStatus" }
+            .verify()
+        result.path("veilederTilgang").matchesJson("""
+            { 
+                "harVeilederLeseTilgangTilBruker": false,
+                "harVeilederLeseTilgangTilBrukersEnhet": false,
+                "harVeilederTilgangFlytteBrukerTilEgetKontor": true,
+                "harAktiveTiltaksdeltakelserVedFlyttingTilEgetKontor": true,
+                "harVeilederTilgangStarteOppfolging": false,
+                "kanBeOmEnkelttilgang": true
             }
         """.trimIndent())
     }
@@ -540,6 +577,7 @@ class GraphqlControllerTest: IntegrationTest() {
         val aktorId = randomAktorId()
         mockInternBrukerAuthOk(veilederUuid, aktorId, fnr)
         mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Deny("NEI", "FORDI"))
+        mockPoaoTilgangHarTilgangTilEnkelttilgangTilBruker(veilederUuid, fnr, Decision.Deny("NEI", "ikke med i pilot"))
         mockPoaoTilgangHarTilgangTilBrukerUtenGeografiskTilgangskontroll(veilederUuid, fnr, Decision.Permit)
         mockTiltakshistorikk(fnr, false)
         mockPdlFolkeregisterStatus(fnr, FregStatusOgStatsborgerskap(
@@ -557,7 +595,8 @@ class GraphqlControllerTest: IntegrationTest() {
                 "harVeilederLeseTilgangTilBrukersEnhet": false,
                 "harVeilederTilgangFlytteBrukerTilEgetKontor": false,
                 "harAktiveTiltaksdeltakelserVedFlyttingTilEgetKontor": false,
-                "harVeilederTilgangStarteOppfolging": true
+                "harVeilederTilgangStarteOppfolging": true,
+                "kanBeOmEnkelttilgang": false
             }
         """.trimIndent())
     }
