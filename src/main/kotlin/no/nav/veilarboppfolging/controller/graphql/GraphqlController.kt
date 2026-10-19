@@ -242,6 +242,7 @@ class GraphqlController(
                     harVeilederTilgangFlytteBrukerTilEgetKontor = null,
                     harAktiveTiltaksdeltakelserVedFlyttingTilEgetKontor = null,
                     harVeilederTilgangStarteOppfolging = null,
+                    kanBeOmEnkelttilgang = null,
                 )
             }.let { result.localContext(context).data(it).build() }
     }
@@ -271,6 +272,11 @@ class GraphqlController(
         val underOppfolging = erUnderOppfolging(aktorId)
         val kanStarteOppfolging = kanStarteOppfolgingIntern(underOppfolging, fnr)
         return kanStarteOppfolging.veilederHarTilgangTilAStarteOppfolging()
+    }
+
+    @SchemaMapping(typeName = "VeilederTilgang", field = "kanBeOmEnkelttilgang")
+    fun kanBeOmEnkelttilgang(tilgang: VeilederTilgangDto, @LocalContextValue fnr: Fnr): Boolean {
+        return authService.kanBeOmEnkelttilgangForBruker(fnr)
     }
 
     @SchemaMapping(typeName = "VeilederTilgang", field = "harAktiveTiltaksdeltakelserVedFlyttingTilEgetKontor")

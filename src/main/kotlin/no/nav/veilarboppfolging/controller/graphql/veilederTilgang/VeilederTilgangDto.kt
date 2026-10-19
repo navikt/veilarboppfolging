@@ -12,4 +12,5 @@ data class VeilederTilgangDto(
     val tilgang: TilgangResultat?,
     val harAktiveTiltaksdeltakelserVedFlyttingTilEgetKontor: Boolean?,
     val harVeilederTilgangStarteOppfolging: Boolean?,
+    val kanBeOmEnkelttilgang: Boolean?,
 )
