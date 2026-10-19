@@ -18,6 +18,7 @@ type VeilederTilgang {
     tilgang: TilgangResultat
     harAktiveTiltaksdeltakelserVedFlyttingTilEgetKontor: Boolean
     harVeilederTilgangStarteOppfolging: Boolean!
+    kanBeOmEnkelttilgang: Boolean!
 }
 
 type Utmeldingskandidat {
