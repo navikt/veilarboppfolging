@@ -33,6 +33,7 @@ enum UtmeldingskandidatTag {
     ARBEIDSSOKERPERIODE_AVSLUTTET_SVARTE_NEI_I_BEKREFTELSE,
     ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET,
     FORLENGELSE_UTLOPT,
+    AVSLUTTET_AAP_SAK
 }
 
 # Svaret på Evaluerering av Policy-en som heter NavAnsattTilgangTilEksternBruker i POAO-Tilgang
@@ -94,6 +95,7 @@ enum KanStarteOppfolgingEkstern {
 
 type OppfolgingDto {
     erUnderOppfolging: Boolean
+    kanAvslutteOppfolging: Boolean
     kanStarteOppfolging: KanStarteOppfolging
     kanStarteOppfolgingEkstern: KanStarteOppfolgingEkstern
 }
@@ -195,6 +197,7 @@ enum KandidatForUtmeldingHendelseType {
     FORLENGELSE_OPPRETTET
     FORLENGELSE_ENDRET
     FORLENGELSE_UTLOPT
+    AVSLUTTET_AAP_SAK
 }
 
 enum KandidatForUtmeldingHendelseUtfortAvType {
