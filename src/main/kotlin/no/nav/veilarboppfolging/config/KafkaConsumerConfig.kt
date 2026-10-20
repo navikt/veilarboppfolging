@@ -21,6 +21,7 @@ import no.nav.veilarboppfolging.kafka.AapHendelseRecord
 import no.nav.veilarboppfolging.kafka.AapHendelserConsumerService
 import no.nav.veilarboppfolging.kafka.ArbeidsoppfolgingskontortilordningConsumerService
 import no.nav.veilarboppfolging.kafka.ArbeidssøkerperiodeConsumerService
+import no.nav.veilarboppfolging.kafka.MidlertidigArbeidssokerperiodeConsumer
 import no.nav.veilarboppfolging.kafka.OppfolgingskontorMelding
 import no.nav.veilarboppfolging.kafka.inngang.StartOppfolgingConsumerService
 import no.nav.veilarboppfolging.kafka.inngang.StartOppfolgingMelding
@@ -46,14 +47,17 @@ open class KafkaConsumerConfig(
     private val arbeidsoppfolgingskontortilordningConsumerService: ArbeidsoppfolgingskontortilordningConsumerService,
     private val aapHendelserConsumerService: AapHendelserConsumerService,
     private val startOppfolgingConsumerService: StartOppfolgingConsumerService,
+    private val midlertidigArbeidssokerperiodeConsumer: MidlertidigArbeidssokerperiodeConsumer,
     lockProvider: LockProvider,
     @Value("\${app.kafka.enabled}") val kafkaEnabled: Boolean
 ) {
 
     val CONSUMER_GROUP_ID: String = "veilarboppfolging-consumer"
+    val MIDLERTIDIG_ARBEIDSSOKERPERIODE_CONSUMER_GROUP_ID: String = "veilarboppfolging-temp-arbeidssokerperioder-consumer"
 
     private var aivenConsumerClient: KafkaConsumerClient? = null
     private var consumerRecordProcessor: KafkaConsumerRecordProcessor? = null
+    private var midlertidigArbeidssokerperiodeConsumerClient: KafkaConsumerClient? = null
 
     init {
         val consumerRepository: KafkaConsumerRepository = PostgresJdbcTemplateConsumerRepository(jdbcTemplate)
@@ -133,6 +137,23 @@ open class KafkaConsumerConfig(
                     )
             )
 
+            midlertidigArbeidssokerperiodeConsumerClient = KafkaConsumerClientBuilder.builder()
+                .withProperties(aivenConsumerProperties(MIDLERTIDIG_ARBEIDSSOKERPERIODE_CONSUMER_GROUP_ID))
+                .withTopicConfig(
+                    KafkaConsumerClientBuilder.TopicConfig<String, Periode>()
+                        .withLogging()
+                        .withMetrics(meterRegistry)
+                        .withConsumerConfig(
+                            kafkaProperties.arbeidssokerperioderTopicAiven,
+                            Deserializers.stringDeserializer(),
+                            getPeriodeAvroDeserializer(),
+                            Consumer<ConsumerRecord<String, Periode>> { kafkaMelding ->
+                                midlertidigArbeidssokerperiodeConsumer.consumeArbeidssokerperiode(kafkaMelding)
+                            }
+                        )
+                )
+                .build()
+
             aivenConsumerClient = KafkaConsumerClientBuilder.builder()
                 .withProperties(aivenConsumerProperties(CONSUMER_GROUP_ID))
                 .withTopicConfigs(topicConfigs)
@@ -147,6 +168,7 @@ open class KafkaConsumerConfig(
                 .build()
 
             aivenConsumerClient?.start()
+            midlertidigArbeidssokerperiodeConsumerClient?.start()
             consumerRecordProcessor?.start()
         }
     }
