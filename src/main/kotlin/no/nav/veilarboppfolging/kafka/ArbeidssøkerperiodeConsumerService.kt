@@ -1,6 +1,5 @@
 package no.nav.veilarboppfolging.kafka
 
-import java.time.LocalDateTime
 import java.time.ZoneId
 import no.nav.common.types.identer.Fnr
 import no.nav.common.types.identer.NavIdent
@@ -25,9 +24,6 @@ import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
-val DA_VI_STARTET_KONSUMERING = LocalDateTime.of(2024, 8, 6, 0, 0)
-    .atZone(ZoneId.systemDefault())
-
 @Service
 open class ArbeidssøkerperiodeConsumerService(
     @Lazy
@@ -42,11 +38,9 @@ open class ArbeidssøkerperiodeConsumerService(
     @Transactional
     open fun consumeArbeidssøkerperiode(kafkaMelding: ConsumerRecord<String, Periode>) {
         val arbeidssøkerperiode: Periode = kafkaMelding.value()
+        val arbeidssokerperiodeId = arbeidssøkerperiode.id.toString()
 
         val arbeidssøkerperiodeStartet = arbeidssøkerperiode.startet.tidspunkt.atZone(ZoneId.systemDefault())
-        if (arbeidssøkerperiodeStartet.isBefore(DA_VI_STARTET_KONSUMERING)) {
-            return
-        }
 
         val fnr = Fnr.of(arbeidssøkerperiode.identitetsnummer.toString())
         val aktørId = authService.getAktorIdOrThrow(fnr)
@@ -66,19 +60,19 @@ open class ArbeidssøkerperiodeConsumerService(
             val nyestePeriode = oppfolgingsperioder.maxByOrNull { it.startDato }
             val nyestePeriodeStartDato = nyestePeriode?.startDato
             if (nyestePeriodeStartDato?.isAfter(arbeidssøkerperiodeStartet) == true) {
-                logger.info("Har allerede registrert oppfølgingsperiode etter startdato for arbeidssøkerperiode")
+                logger.info("Har allerede registrert oppfølgingsperiode etter startdato for arbeidssøkerperiode $arbeidssokerperiodeId")
                 return
             }
             val startetAvType = arbeidssøkerperiode.startet.utfoertAv.type
             // TODO: Når vi fjerner /aktiverbruker endepunkt bør vi også fjerne innsatsgruppe-feltet på Oppfolgingsbruker
-            logger.info("Fått melding om ny arbeidssøkerperiode, starter oppfølging hvis ikke allerede startet")
+            logger.info("Fått melding om ny arbeidssøkerperiode $arbeidssokerperiodeId, starter oppfølging hvis ikke allerede startet")
 
             val navIdent = NavIdent.of(arbeidssøkerperiode.startet.utfoertAv.id.toString())
             val registrant =  startetAvType.toStartetAvType().toRegistrant(navIdent, fnr)
 
             startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.arbeidssokerRegistrering(fnr, aktørId, registrant))
         } else {
-            logger.info("Melding om avsluttet arbeidssøkerperiode, flagger som utmeldingskandidat hvis under oppfølging")
+            logger.info("Melding om avsluttet arbeidssøkerperiode $arbeidssokerperiodeId, flagger som utmeldingskandidat hvis under oppfølging")
             aktivArbeidssokerperiodeRepository.slettAktivArbeidssokerperiode(arbeidssøkerperiode.id.toString())
             val gjeldendePeriode = oppfolgingsperioder.firstOrNull { it.sluttDato == null }
             if (gjeldendePeriode != null) {

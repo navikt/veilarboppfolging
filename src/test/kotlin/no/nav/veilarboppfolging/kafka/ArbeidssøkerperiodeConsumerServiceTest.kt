@@ -93,19 +93,6 @@ class ArbeidssøkerperiodeConsumerServiceTest(
     }
 
     @Test
-    fun `Skal ikke starte oppfølgingsperiode på arbeidsøkerregistreringer før 5 aug 2024 kl 10`() {
-        val oppfølgingsperiodeStartet = LocalDateTime.of(2024, 8, 5, 7, 59)
-            .toInstant(ZoneOffset.UTC)
-        val nyPeriode = arbeidssøkerperiode(fnr, periodeStartet = oppfølgingsperiodeStartet)
-        val melding = ConsumerRecord("topic", 0, 0, "dummyKey", nyPeriode)
-
-        arbeidssøkerperiodeConsumerService.consumeArbeidssøkerperiode(melding)
-
-        val oppfølgingsperioder = oppfølgingService.hentOppfolgingsperioder(Fnr.of(fnr))
-        assertThat(oppfølgingsperioder).isEmpty()
-    }
-
-    @Test
     fun `Skal ikke starte ny oppfølgingsperiode hvis vi har lagret periode med startdato etter arbeidssøkerregistrering`() {
         val startAlleredeRegistrertOppfølgingsperiode = ZonedDateTime.now().minusMinutes(30)
         // Denne blir alltid laget via startOppfolgingHvisIkkeAlleredeStartet men ikke i testene siden det opprettes manuelt
