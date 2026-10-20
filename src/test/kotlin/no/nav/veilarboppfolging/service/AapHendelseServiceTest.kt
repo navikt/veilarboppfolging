@@ -10,7 +10,7 @@ import no.nav.veilarboppfolging.kandidatForUtmelding.FilterkategoriRepository
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingRepository
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.AvsluttetAapSak
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvslutningsBegrunnelse
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.KanIkkeAvslutteBegrunnelse
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity
 import no.nav.veilarboppfolging.test.TestData.TEST_AKTOR_ID
@@ -145,7 +145,7 @@ class AapHendelseServiceTest {
         verify(kandidatForUtmeldingRepository).lagreKandidatSomIkkeKunneAvsluttesOgHendelse(
             any<AvsluttetAapSak>(),
             eq(oppfolgingsperiodeUuid),
-            eq(AvslutningsBegrunnelse.BRUKER_VAR_UNDER_KVP),
+            eq(listOf(KanIkkeAvslutteBegrunnelse.BRUKER_VAR_UNDER_KVP)),
         )
         verify(fjernKandidatForUtmeldingService, never()).fjernKandidatForUtmelding(oppfolgingsperiodeUuid)
     }
@@ -187,7 +187,7 @@ class AapHendelseServiceTest {
                     erDeltakerIUngdomsprogrammet = false,
                     erArbeidssoeker = false,
                     harAap = false,
-                    begrunnelse = if (kanAvslutte) null else AvslutningsBegrunnelse.BRUKER_VAR_UNDER_KVP,
+                    begrunnelse = if (kanAvslutte) emptyList() else listOf(KanIkkeAvslutteBegrunnelse.BRUKER_VAR_UNDER_KVP),
                 )
             )
         whenever(filterkategoriRepository.hentEllerOpprettFilterhendelseId(oppfolgingsperiodeUuid))

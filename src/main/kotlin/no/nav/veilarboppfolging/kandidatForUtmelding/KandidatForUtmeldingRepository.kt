@@ -24,9 +24,8 @@ import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.InaktivertIArenaH
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.KandidatForUtmeldingHendelse
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.KandidatForUtmeldingHendelseType
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.KandidatForUtmeldingHendelseUtfortAvType
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvslutningsBegrunnelse
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.KanIkkeAvslutteBegrunnelse
 import no.nav.veilarboppfolging.utils.DbUtils
-import java.time.ZoneId
 
 @Repository
 class KandidatForUtmeldingRepository(
@@ -54,7 +53,7 @@ class KandidatForUtmeldingRepository(
     fun lagreKandidatSomIkkeKunneAvsluttesOgHendelse(
         hendelse: KandidatForUtmeldingHendelse,
         oppfolgingsperiodeId: UUID,
-        begrunnelse: AvslutningsBegrunnelse?,
+        begrunnelse: List<KanIkkeAvslutteBegrunnelse>,
     ) {
         val hendelseId = insertUtmeldingsHendelse(hendelse)
         db.update(
@@ -67,7 +66,7 @@ class KandidatForUtmeldingRepository(
             mapOf(
                 "oppfolgingsperiodeId" to oppfolgingsperiodeId.toString(),
                 "sisteUtmeldingshendelseId" to hendelseId,
-                "begrunnelse" to begrunnelse?.name,
+                "begrunnelse" to begrunnelse.joinToString(",") { it.name },
             ),
         )
     }
@@ -136,7 +135,7 @@ class KandidatForUtmeldingRepository(
             .firstOrNull()
     }
 
-    fun lagreKandidatSomIkkeKunneAvsluttes(oppfolgingsperiodeId: UUID, begrunnelse: AvslutningsBegrunnelse?) {
+    fun lagreKandidatSomIkkeKunneAvsluttes(oppfolgingsperiodeId: UUID, begrunnelse: List<KanIkkeAvslutteBegrunnelse>) {
         db.update(
             """
             INSERT INTO kandidater_som_ikke_kunne_avsluttes(oppfolgingsperiode_uuid, siste_utmeldingshendelse_id, begrunnelse)
@@ -149,7 +148,7 @@ class KandidatForUtmeldingRepository(
             """.trimIndent(),
             mapOf(
                 "oppfolgingsperiodeId" to oppfolgingsperiodeId.toString(),
-                "begrunnelse" to begrunnelse?.name,
+                "begrunnelse" to begrunnelse.joinToString(",") { it.name },
             ),
         )
     }

@@ -1,7 +1,7 @@
 package no.nav.veilarboppfolging.domain
 
 import java.time.LocalDate
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvslutningsBegrunnelse
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.KanIkkeAvslutteBegrunnelse
 
 data class AvslutningStatusData(
     val kanAvslutte: Boolean,
@@ -13,5 +13,5 @@ data class AvslutningStatusData(
     val erDeltakerIUngdomsprogrammet: Boolean,
     val erArbeidssoeker: Boolean,
     val harAap: Boolean,
-    val begrunnelse: AvslutningsBegrunnelse?
+    val begrunnelse: List<KanIkkeAvslutteBegrunnelse>
 )
