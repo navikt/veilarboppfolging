@@ -22,8 +22,8 @@ sealed class KunneAvsluttesResultat(val kanAvsluttesInput: KanAvsluttesInput) {
             val avregistreringsType = avregistrering.getAvregistreringsType()
             val erIservIArena = input.erIservIArena
             val kunneIkkeAvslutteBegrunnelse = kanAvsluttesIntern(input, avregistreringsType)
-            return when (kunneIkkeAvslutteBegrunnelse) {
-                null -> KunneAvsluttes(avregistrering, erIservIArena, input)
+            return when {
+                kunneIkkeAvslutteBegrunnelse.isEmpty() -> KunneAvsluttes(avregistrering, erIservIArena, input)
                 else -> KunneIkkeAvsluttes(avregistrering, erIservIArena, kunneIkkeAvslutteBegrunnelse, input)
             }
         }
