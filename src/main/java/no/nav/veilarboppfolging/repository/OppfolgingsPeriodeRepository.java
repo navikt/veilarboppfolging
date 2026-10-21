@@ -86,7 +86,7 @@ public class OppfolgingsPeriodeRepository {
                     begrunnelse,
                     sluttTimestamp,
                     avregistreringsType.name(),
-                    registrant.getType(),
+                    registrant.getType().name(),
                     uuid.toString());
         });
     }
@@ -190,7 +190,7 @@ public class OppfolgingsPeriodeRepository {
                 registrant.getIdent(),
                 begrunnelse,
                 avregistreringsType.name(),
-                registrant.getType(),
+                registrant.getType().name(),
                 aktorId.get());
     }
 
