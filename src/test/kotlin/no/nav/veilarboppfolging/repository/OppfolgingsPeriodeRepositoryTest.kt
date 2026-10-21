@@ -15,6 +15,8 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunn
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering.Companion.arbeidssokerRegistrering
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvregistreringsType
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ManuellAvregistrering
+import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.hendelser.OppfolgingsAvsluttetHendelseDto
+import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity
 import no.nav.veilarboppfolging.test.DbTestUtils
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
@@ -22,9 +24,13 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
+import org.mockito.Mockito.`when`
+import org.mockito.kotlin.mock
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.transaction.support.TransactionTemplate
+import java.time.LocalDate
+import java.time.ZonedDateTime
 import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -173,9 +179,18 @@ class OppfolgingsPeriodeRepositoryTest {
             avregistrering.begrunnelse,
             avregistrering.getAvregistreringsType()
         )
+        val avsluttetHendelse = OppfolgingsAvsluttetHendelseDto.of(
+            avregistrering,
+            mock<OppfolgingsperiodeEntity>().also {
+                `when`(it.uuid).thenReturn(UUID.randomUUID())
+                `when`(it.startDato).thenReturn(ZonedDateTime.now())
+                `when`(it.sluttDato).thenReturn(ZonedDateTime.now())
+            },
+            Fnr.of("lol")
+        )
 
         val periode = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId).single()
-        assertEquals(forventetIdent, periode.avsluttetAv)
+        assertEquals(forventetIdent, avsluttetHendelse.avsluttetAv)
         assertEquals(type, periode.avsluttetAvType)
         assertEquals(avregistrering.begrunnelse, periode.begrunnelse)
         assertEquals(AvregistreringsType.ManuellAvregistrering, periode.avregistreringsType)
