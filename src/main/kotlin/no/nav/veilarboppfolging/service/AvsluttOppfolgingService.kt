@@ -100,8 +100,13 @@ class AvsluttOppfolgingService(
     }
 
     fun hentAvslutningstatusForManuellAvslutning(fnr: Fnr): AvslutningStatusData {
-        authService.sjekkLesetilgangMedFnr(fnr)
-        return getAvslutningStatusForManuellAvslutning(fnr)
+        if (authService.erEksternBruker()) {
+            authService.harEksternBrukerTilgang(fnr, AuthService.SikkerthetsNivå.Nivå3)
+            return getAvslutningStatusForManuellAvslutning(fnr)
+        } else {
+            authService.sjekkLesetilgangMedFnr(fnr)
+            return getAvslutningStatusForManuellAvslutning(fnr)
+        }
     }
 
     private fun getAvslutningStatusForManuellAvslutning(fnr: Fnr): AvslutningStatusData {
