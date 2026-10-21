@@ -132,7 +132,7 @@ class AvsluttOppfolgingService(
             erDeltakerIUngdomsprogrammet = kanAvsluttes.kanAvsluttesInput.erDeltakerIUngdomsprogrammet,
             erArbeidssoeker = kanAvsluttes.kanAvsluttesInput.erArbeidssoeker,
             harAap = kanAvsluttes.kanAvsluttesInput.harAap,
-            begrunnelse = if (kanAvsluttes is KunneIkkeAvsluttes) kanAvsluttes.begrunnelse else null
+            begrunnelse = if (kanAvsluttes is KunneIkkeAvsluttes) kanAvsluttes.begrunnelse else emptyList()
         )
     }
 
