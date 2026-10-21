@@ -1,7 +1,9 @@
 package no.nav.veilarboppfolging.kafka.inngang
 
+import kotlin.jvm.optionals.getOrElse
 import no.nav.common.client.norg2.Norg2Client
 import no.nav.common.types.identer.Fnr
+import no.nav.common.utils.EnvironmentUtils.isDevelopment
 import no.nav.veilarboppfolging.client.pdl.PdlFolkeregisterStatusClient
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaRegistreringResultat
 import no.nav.veilarboppfolging.client.veilarbarena.RegistrerIArenaError
@@ -44,10 +46,12 @@ class StartOppfolgingConsumerService(
                 ArenaRegistreringResultat.KAN_REAKTIVERES_FORENKLET -> {
                     logger.warn("Kan ikke starte oppfølging i Arena fordi bruker kan enkelt reaktiveres: ${arenaRespons.arenaResultat.kode}")
                 }
-                ArenaRegistreringResultat.FNR_FINNES_IKKE,
+                ArenaRegistreringResultat.FNR_FINNES_IKKE -> {
+                    logger.warn("Fnr finnes ikke ved registrering av bruker i Arena: ${arenaRespons.arenaResultat.resultat}, men starter oppfølging likevel")
+                }
                 ArenaRegistreringResultat.UKJENT_FEIL -> {
-                    logger.error("Feil ved registrering av bruker i Arena: ${arenaRespons.arenaResultat.resultat}")
-                    throw RuntimeException("Feil ved registrering av bruker i Arena: ${arenaRespons.arenaResultat.resultat}")
+                    logger.error("Ukjent feil ved registrering av bruker i Arena: ${arenaRespons.arenaResultat.resultat}")
+                    throw RuntimeException("Ukjent feil ved registrering av bruker i Arena: ${arenaRespons.arenaResultat.resultat}")
                 }
                 else -> {
                     logger.info("Bruker registrert i Arena med resultat: ${arenaRespons.arenaResultat.kode}")

@@ -17,7 +17,7 @@ import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.InaktivertIArena
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.KandidatForUtmeldingHendelse
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.KandidatForUtmeldingHendelseType
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ArenaIservKanIkkeReaktiveres
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvslutningsBegrunnelse
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.KanIkkeAvslutteBegrunnelse
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.KandidatUtmeldtEtter28Dager
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.KunneIkkeAvsluttes
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
@@ -156,7 +156,7 @@ class KandidatForUtmeldingService(
                     val resultat =
                         avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(KandidatUtmeldtEtter28Dager(aktorId))
                     if (resultat is KunneIkkeAvsluttes) {
-                        if (resultat.begrunnelse == AvslutningsBegrunnelse.OPPFOLGINGEN_ER_FORLENGET) {
+                        if (resultat.begrunnelse.contains(KanIkkeAvslutteBegrunnelse.OPPFOLGINGEN_ER_FORLENGET)) {
                             logger.warn("Kandidat med oppfølgingsperiode ${kandidat.oppfolgingsperiodeId} er forlenget og kan ikke avsluttes automatisk, og skal heller ikke fjernes fra kandidat-tabellen (race condition)")
                         } else {
                             lagreKandidatSomIkkeKunneAvsluttes(kandidat.oppfolgingsperiodeId, resultat.begrunnelse)
@@ -227,7 +227,7 @@ class KandidatForUtmeldingService(
         return aktorOppslagClient.hentFnr(AktorId(aktorId)) to AktorId(aktorId)
     }
 
-    private fun lagreKandidatSomIkkeKunneAvsluttes(oppfolgingsperiodeId: UUID, begrunnelse: AvslutningsBegrunnelse?) {
+    private fun lagreKandidatSomIkkeKunneAvsluttes(oppfolgingsperiodeId: UUID, begrunnelse: List<KanIkkeAvslutteBegrunnelse>) {
         val oppfolgingsperiode = oppfolgingsPeriodeRepository.hentOppfolgingsperiode(oppfolgingsperiodeId.toString())
             .getOrElse { throw IllegalStateException("Oppfølgingsperiode med id $oppfolgingsperiodeId finnes ikke") }
         if (oppfolgingsperiode.sluttDato == null) {

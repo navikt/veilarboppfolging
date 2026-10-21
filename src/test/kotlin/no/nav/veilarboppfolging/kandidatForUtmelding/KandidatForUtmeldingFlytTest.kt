@@ -39,7 +39,7 @@ import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseOppret
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.InaktivertIArena
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.KandidatForUtmeldingHendelseUtfortAvType
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvslutningsBegrunnelse
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.KanIkkeAvslutteBegrunnelse
 import no.nav.veilarboppfolging.service.KafkaConsumerService
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.assertj.core.api.Assertions.assertThat
@@ -242,7 +242,7 @@ class KandidatForUtmeldingFlytTest(
                 hendelseTidspunkt = Instant.now(),
             ),
             oppfolgingsperiodeId = oppfolgingsperiodeUuid,
-            begrunnelse = AvslutningsBegrunnelse.BRUKER_MOTTAR_ELLER_HAR_SOKT_OM_AAP,
+            begrunnelse = listOf(KanIkkeAvslutteBegrunnelse.BRUKER_MOTTAR_ELLER_HAR_SOKT_OM_AAP),
         )
 
         avsluttOppfolgingManueltSomVeileder(aktorId)
