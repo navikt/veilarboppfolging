@@ -11,6 +11,7 @@ import kotlin.test.assertTrue
 import no.nav.common.client.norg2.Enhet
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
+import no.nav.common.types.identer.NavIdent
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.pto_schema.enums.arena.Hovedmaal
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
@@ -26,8 +27,8 @@ import no.nav.veilarboppfolging.config.ApplicationConfig.SYSTEM_USER_NAME
 import no.nav.veilarboppfolging.ident.randomAktorId
 import no.nav.veilarboppfolging.ident.randomFnr
 import no.nav.veilarboppfolging.kafka.TestUtils.oppfølgingsBrukerEndret
-import no.nav.veilarboppfolging.oppfolgingsbruker.AvsluttetAvType
 import no.nav.veilarboppfolging.oppfolgingsbruker.SystemRegistrant
+import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingTilstandOppslagResult
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.GetOppfolginsstatusFailure
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.GetOppfolginsstatusSuccess
@@ -94,8 +95,9 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
         )
         val oppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId)
         assertTrue(oppfolging.get().underOppfolging)
-        oppfolgingsPeriodeRepository.avsluttSistePeriodeOgAvsluttOppfolging(aktorId, "A111111", "begrunnelse",
-            AvregistreringsType.ManuellAvregistrering, AvsluttetAvType.VEILEDER)
+        oppfolgingsPeriodeRepository.avsluttSistePeriodeOgAvsluttOppfolging(aktorId, VeilederRegistrant(
+            NavIdent("A111111")), "begrunnelse",
+            AvregistreringsType.ManuellAvregistrering)
         val avsluttetOppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId)
         assertFalse(avsluttetOppfolging.get().underOppfolging)
 

@@ -1,7 +1,6 @@
 package no.nav.veilarboppfolging.repository;
 
 import no.nav.common.types.identer.AktorId;
-import no.nav.veilarboppfolging.oppfolgingsbruker.AvsluttetAvType;
 import no.nav.veilarboppfolging.oppfolgingsbruker.Registrant;
 import no.nav.veilarboppfolging.oppfolgingsbruker.RegistrantType;
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ManuellRegistreringVeileder;
@@ -217,7 +216,7 @@ public class OppfolgingsPeriodeRepository {
         var startetAvTypeString = result.getString("startet_av_type");
         var startetAvType = startetAvTypeString != null ? EnumUtils.valueOf(RegistrantType.class, startetAvTypeString) : null;
         var avsluttetAvTypeString = result.getString("avsluttet_av_type");
-        var avsluttetAvType = avsluttetAvTypeString != null ? AvsluttetAvType.valueOf(avsluttetAvTypeString) : null;
+        var avsluttetAvType = avsluttetAvTypeString != null ? RegistrantType.valueOf(avsluttetAvTypeString) : null;
         return new OppfolgingsperiodeEntity(
                 UUID.fromString(result.getString("uuid")),
                 result.getString("aktor_id"),

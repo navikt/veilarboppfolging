@@ -10,8 +10,8 @@ import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.veilarboppfolging.IntegrationTest
 import no.nav.veilarboppfolging.client.pdl.ForenkletFolkeregisterStatus
 import no.nav.veilarboppfolging.client.pdl.FregStatusOgStatsborgerskap
-import no.nav.veilarboppfolging.oppfolgingsbruker.AvsluttetAvType
 import no.nav.veilarboppfolging.oppfolgingsbruker.RegistrantType
+import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelse
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvregistreringsType
 import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.hendelser.OppfolgingStartetHendelseDto
@@ -42,8 +42,8 @@ class AktiverBrukerIntegrationTest : IntegrationTest() {
     fun skalHaandtereAtOppfolgingstatusAlleredeFinnes() {
         mockSytemBrukerAuthOk(AKTOR_ID, FNR)
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID)
-        oppfolgingsPeriodeRepository.avsluttSistePeriodeOgAvsluttOppfolging(AKTOR_ID, "veilederid", "begrunnelse",
-            AvregistreringsType.ArenaIservKanIkkeReaktiveres, AvsluttetAvType.SYSTEM)
+        oppfolgingsPeriodeRepository.avsluttSistePeriodeOgAvsluttOppfolging(AKTOR_ID, VeilederRegistrant(NavIdent("veilederid")), "begrunnelse",
+            AvregistreringsType.ArenaIservKanIkkeReaktiveres)
         startOppfolgingSomArbeidsoker(AKTOR_ID, FNR)
         val oppfolging = oppfolgingService.hentOppfolging(AKTOR_ID)
         Assertions.assertThat(oppfolging.get().underOppfolging).isTrue()
@@ -131,7 +131,7 @@ class AktiverBrukerIntegrationTest : IntegrationTest() {
         assertInstanceOf<OppfolgingsAvsluttetHendelseDto>(avsluttetHendelse)
         assertThat(avsluttetHendelse.fnr).isEqualTo(FNR.toString())
         assertThat(avsluttetHendelse.avsluttetAv).isEqualTo(veilederIdent.get())
-        assertThat(avsluttetHendelse.avsluttetAvType).isEqualTo(AvsluttetAvType.VEILEDER)
+        assertThat(avsluttetHendelse.avsluttetAvType).isEqualTo(RegistrantType.VEILEDER)
         assertThat(avsluttetHendelse.startetTidspunkt).isEqualTo(startHendelse.startetTidspunkt)
         assertThat(avsluttetHendelse.avsluttetTidspunkt).isCloseTo(ZonedDateTime.now(), within(1, ChronoUnit.SECONDS))
         assertThat(avsluttetHendelse.oppfolgingsPeriodeId).isEqualTo(startHendelse.oppfolgingsPeriodeId)

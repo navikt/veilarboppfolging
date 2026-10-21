@@ -1,6 +1,5 @@
 package no.nav.veilarboppfolging.repository.entity
 
-import no.nav.veilarboppfolging.oppfolgingsbruker.AvsluttetAvType
 import no.nav.veilarboppfolging.oppfolgingsbruker.RegistrantType
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelse
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvregistreringsType
@@ -24,7 +23,7 @@ data class OppfolgingsperiodeEntity @JvmOverloads constructor(
     val startetAv: String? = null,
     val startetAvType: RegistrantType? = null,
     val avregistreringsType: AvregistreringsType? = null,
-    val avsluttetAvType: AvsluttetAvType? = null,
+    val avsluttetAvType: RegistrantType? = null,
 ) {
     fun oppdaterMedKvpPerioder(nyeKvpPerioder: List<KvpPeriodeEntity>) = this.copy(kvpPerioder = nyeKvpPerioder)
 }

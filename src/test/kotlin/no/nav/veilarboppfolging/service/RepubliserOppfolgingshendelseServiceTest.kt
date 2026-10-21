@@ -4,8 +4,8 @@ import no.nav.common.types.identer.NavIdent
 import no.nav.veilarboppfolging.config.ApplicationConfig.ADMIN_USER_NAME
 import no.nav.veilarboppfolging.config.ApplicationConfig.SYSTEM_USER_NAME
 import no.nav.veilarboppfolging.oppfolgingsbruker.AdminRegistrant
-import no.nav.veilarboppfolging.oppfolgingsbruker.AvsluttetAvType
 import no.nav.veilarboppfolging.oppfolgingsbruker.BrukerRegistrant
+import no.nav.veilarboppfolging.oppfolgingsbruker.RegistrantType
 import no.nav.veilarboppfolging.oppfolgingsbruker.SystemRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvregistreringsType
@@ -51,13 +51,13 @@ class RepubliserOppfolgingshendelseServiceTest {
     }
 
     @ParameterizedTest
-    @EnumSource(AvsluttetAvType::class)
-    fun `republisering bevarer avslutterinformasjonen fra direkte publisering`(type: AvsluttetAvType) {
+    @EnumSource(RegistrantType::class)
+    fun `republisering bevarer avslutterinformasjonen fra direkte publisering`(type: RegistrantType) {
         val (registrant, forventetIdent) = when (type) {
-            AvsluttetAvType.BRUKER -> BrukerRegistrant(TEST_FNR) to "Bruker"
-            AvsluttetAvType.VEILEDER -> VeilederRegistrant(NavIdent("Z999999")) to "Z999999"
-            AvsluttetAvType.SYSTEM -> SystemRegistrant() to SYSTEM_USER_NAME
-            AvsluttetAvType.ADMIN -> AdminRegistrant() to ADMIN_USER_NAME
+            RegistrantType.BRUKER -> BrukerRegistrant(TEST_FNR) to "Bruker"
+            RegistrantType.VEILEDER -> VeilederRegistrant(NavIdent("Z999999")) to "Z999999"
+            RegistrantType.SYSTEM -> SystemRegistrant() to SYSTEM_USER_NAME
+            RegistrantType.ADMIN -> AdminRegistrant() to ADMIN_USER_NAME
         }
         val avregistrering = ManuellAvregistrering(TEST_AKTOR_ID, registrant, "")
         val avsluttetPeriode = periode.copy(avsluttetAv = forventetIdent, avsluttetAvType = type)
@@ -79,7 +79,7 @@ class RepubliserOppfolgingshendelseServiceTest {
     @CsvSource(",SYSTEM", "System,SYSTEM", "Z999999,VEILEDER", "z999999,VEILEDER")
     fun `republisering tolker avsluttertype for historiske perioder`(
         avsluttetAv: String?,
-        forventetType: AvsluttetAvType,
+        forventetType: RegistrantType,
     ) {
         whenever(repository.hentOppfolgingsperioder(TEST_AKTOR_ID))
             .thenReturn(listOf(periode.copy(avsluttetAv = avsluttetAv)))

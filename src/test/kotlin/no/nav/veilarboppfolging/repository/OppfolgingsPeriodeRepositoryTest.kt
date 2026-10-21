@@ -7,7 +7,6 @@ import no.nav.veilarboppfolging.LocalDatabaseSingleton
 import no.nav.veilarboppfolging.config.ApplicationConfig.ADMIN_USER_NAME
 import no.nav.veilarboppfolging.config.ApplicationConfig.SYSTEM_USER_NAME
 import no.nav.veilarboppfolging.oppfolgingsbruker.AdminRegistrant
-import no.nav.veilarboppfolging.oppfolgingsbruker.AvsluttetAvType
 import no.nav.veilarboppfolging.oppfolgingsbruker.RegistrantType
 import no.nav.veilarboppfolging.oppfolgingsbruker.BrukerRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.SystemRegistrant
@@ -52,7 +51,7 @@ class OppfolgingsPeriodeRepositoryTest {
         oppfolgingsStatusRepository.opprettOppfolging(aktorId)
 
         oppfolgingsPeriodeRepository.start(oppfolgingsbruker)
-        oppfolgingsPeriodeRepository.avsluttSistePeriodeOgAvsluttOppfolging(aktorId, "veileder", "derfor", AvregistreringsType.AdminAvregistrering, AvsluttetAvType.VEILEDER)
+        oppfolgingsPeriodeRepository.avsluttSistePeriodeOgAvsluttOppfolging(aktorId, VeilederRegistrant(NavIdent("veileder")), "derfor", AvregistreringsType.AdminAvregistrering)
         oppfolgingsPeriodeRepository.start(oppfolgingsbruker)
         val maybeOppfolgingsperiodeEntity = oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId)
         Assertions.assertFalse(maybeOppfolgingsperiodeEntity.isEmpty())
@@ -73,8 +72,8 @@ class OppfolgingsPeriodeRepositoryTest {
         oppfolgingsStatusRepository.opprettOppfolging(aktorId)
 
         oppfolgingsPeriodeRepository.start(oppfolgingsbruker)
-        oppfolgingsPeriodeRepository.avsluttSistePeriodeOgAvsluttOppfolging(aktorId, "veileder", "derfor",
-            AvregistreringsType.UtmeldtEtter28Dager, AvsluttetAvType.SYSTEM)
+        oppfolgingsPeriodeRepository.avsluttSistePeriodeOgAvsluttOppfolging(aktorId, VeilederRegistrant(NavIdent("veileder")), "derfor",
+            AvregistreringsType.UtmeldtEtter28Dager)
 
         val maybeOppfolgingsperiodeEntity2 = oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId)
         Assertions.assertTrue(maybeOppfolgingsperiodeEntity2.isEmpty())
@@ -136,8 +135,8 @@ class OppfolgingsPeriodeRepositoryTest {
         val avsluttetBegrunnelse = "derfor"
         oppfolgingsStatusRepository.opprettOppfolging(aktorId)
         oppfolgingsPeriodeRepository.start(oppfolgingsbruker)
-        oppfolgingsPeriodeRepository.avsluttSistePeriodeOgAvsluttOppfolging(aktorId, veilederIdent.get(), avsluttetBegrunnelse,
-            AvregistreringsType.ManuellAvregistrering, AvsluttetAvType.VEILEDER)
+        oppfolgingsPeriodeRepository.avsluttSistePeriodeOgAvsluttOppfolging(aktorId, VeilederRegistrant(veilederIdent), avsluttetBegrunnelse,
+            AvregistreringsType.ManuellAvregistrering)
 
         val perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId)
 
@@ -150,19 +149,19 @@ class OppfolgingsPeriodeRepositoryTest {
         assertEquals(avsluttetBegrunnelse, periode.begrunnelse) // Avsluttet begrunnelse (fritekst)
         assertEquals(veilederIdent.get(), periode.avsluttetAv) // Avsluttet veileder
         assertEquals(AvregistreringsType.ManuellAvregistrering, periode.avregistreringsType)
-        assertEquals(AvsluttetAvType.VEILEDER, periode.avsluttetAvType)
+        assertEquals(RegistrantType.VEILEDER, periode.avsluttetAvType)
     }
 
     @ParameterizedTest
-    @EnumSource(AvsluttetAvType::class)
-    fun `lagrer avslutterverdi og type`(type: AvsluttetAvType) {
+    @EnumSource(RegistrantType::class)
+    fun `lagrer avslutterverdi og type`(type: RegistrantType) {
         val aktorId = AktorId.of("4321")
         val fnr = Fnr.of("1111119999")
         val (registrant, forventetIdent) = when (type) {
-            AvsluttetAvType.BRUKER -> BrukerRegistrant(fnr) to "Bruker"
-            AvsluttetAvType.VEILEDER -> VeilederRegistrant(NavIdent("Z999999")) to "Z999999"
-            AvsluttetAvType.SYSTEM -> SystemRegistrant() to SYSTEM_USER_NAME
-            AvsluttetAvType.ADMIN -> AdminRegistrant() to ADMIN_USER_NAME
+            RegistrantType.BRUKER -> BrukerRegistrant(fnr) to "Bruker"
+            RegistrantType.VEILEDER -> VeilederRegistrant(NavIdent("Z999999")) to "Z999999"
+            RegistrantType.SYSTEM -> SystemRegistrant() to SYSTEM_USER_NAME
+            RegistrantType.ADMIN -> AdminRegistrant() to ADMIN_USER_NAME
         }
         val avregistrering = ManuellAvregistrering(aktorId, registrant, "Ferdig med oppfolging")
         oppfolgingsStatusRepository.opprettOppfolging(aktorId)
@@ -192,15 +191,14 @@ class OppfolgingsPeriodeRepositoryTest {
 
         val avsluttetPeriode = oppfolgingsPeriodeRepository.avsluttOppfolgingsperiode(
             periode.uuid,
-            "Z999999",
+            VeilederRegistrant(NavIdent("Z999999")),
             "Avsluttet av veileder",
             periode.startDato.plusDays(1),
             AvregistreringsType.AdminAvregistrering,
-            AvsluttetAvType.VEILEDER,
         )
 
         assertEquals("Z999999", avsluttetPeriode.avsluttetAv)
-        assertEquals(AvsluttetAvType.VEILEDER, avsluttetPeriode.avsluttetAvType)
+        assertEquals(RegistrantType.VEILEDER, avsluttetPeriode.avsluttetAvType)
         assertEquals(avsluttetPeriode, oppfolgingsPeriodeRepository.hentOppfolgingsperiode(periode.uuid.toString()).get())
     }
 

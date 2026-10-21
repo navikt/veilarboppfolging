@@ -4,7 +4,6 @@ import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.veilarboppfolging.controller.response.HistorikkHendelse
 import no.nav.veilarboppfolging.controller.response.HistorikkHendelseType
-import no.nav.veilarboppfolging.oppfolgingsbruker.AvsluttetAvType
 import no.nav.veilarboppfolging.oppfolgingsbruker.RegistrantType
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelse
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvregistreringsType
@@ -111,7 +110,7 @@ class HistorikkServiceTest {
             startetAvType = null,
             avsluttetBegrunnelse = "Trenger ikke lenger oppfolging",
             avsluttetAv = "Bruker",
-        ).copy(avsluttetAvType = AvsluttetAvType.BRUKER)
+        ).copy(avsluttetAvType = RegistrantType.BRUKER)
         gitt_oppfolgingsperioder(listOf(periode))
 
         val hendelse = historikkService.hentInstillingsHistorikk(FNR)
