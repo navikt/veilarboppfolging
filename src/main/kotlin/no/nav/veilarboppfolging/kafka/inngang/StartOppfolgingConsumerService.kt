@@ -46,12 +46,14 @@ class StartOppfolgingConsumerService(
                 ArenaRegistreringResultat.KAN_REAKTIVERES_FORENKLET -> {
                     logger.warn("Kan ikke starte oppfølging i Arena fordi bruker kan enkelt reaktiveres: ${arenaRespons.arenaResultat.kode}")
                 }
-                ArenaRegistreringResultat.FNR_FINNES_IKKE -> {
-                    logger.warn("Fnr finnes ikke ved registrering av bruker i Arena: ${arenaRespons.arenaResultat.resultat}, men starter oppfølging likevel")
-                }
+                ArenaRegistreringResultat.FNR_FINNES_IKKE,
                 ArenaRegistreringResultat.UKJENT_FEIL -> {
-                    logger.error("Ukjent feil ved registrering av bruker i Arena: ${arenaRespons.arenaResultat.resultat}")
-                    throw RuntimeException("Ukjent feil ved registrering av bruker i Arena: ${arenaRespons.arenaResultat.resultat}")
+                    logger.error("Feil ved registrering av bruker i Arena: ${arenaRespons.arenaResultat.resultat}")
+                    if (isDevelopment().getOrElse { false }) {
+                        logger.warn("Ignorerer feil ved registrering av bruker i Arena i dev")
+                    } else {
+                        throw RuntimeException("Feil ved registrering av bruker i Arena: ${arenaRespons.arenaResultat.resultat}")
+                    }
                 }
                 else -> {
                     logger.info("Bruker registrert i Arena med resultat: ${arenaRespons.arenaResultat.kode}")
