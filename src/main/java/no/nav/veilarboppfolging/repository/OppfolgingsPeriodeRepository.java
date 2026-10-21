@@ -2,6 +2,7 @@ package no.nav.veilarboppfolging.repository;
 
 import no.nav.common.types.identer.AktorId;
 import no.nav.veilarboppfolging.oppfolgingsbruker.AvsluttetAvType;
+import no.nav.veilarboppfolging.oppfolgingsbruker.Registrant;
 import no.nav.veilarboppfolging.oppfolgingsbruker.StartetAvType;
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ManuellRegistreringVeileder;
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelse;
@@ -14,7 +15,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -60,14 +60,14 @@ public class OppfolgingsPeriodeRepository {
         });
     }
 
-    public void avsluttSistePeriodeOgAvsluttOppfolging(AktorId aktorId, String veileder, String begrunnelse, AvregistreringsType avregistreringsType, @Nonnull AvsluttetAvType avsluttetAvType) {
+    public void avsluttSistePeriodeOgAvsluttOppfolging(AktorId aktorId, Registrant registrant, String begrunnelse, AvregistreringsType avregistreringsType) {
         transactor.executeWithoutResult((ignored) -> {
-            endPeriode(aktorId, veileder, begrunnelse, avregistreringsType, avsluttetAvType);
+            endPeriode(aktorId, registrant, begrunnelse, avregistreringsType);
             avsluttOppfolging(aktorId);
         });
     }
 
-    public OppfolgingsperiodeEntity avsluttOppfolgingsperiode(UUID uuid, String veileder, String begrunnelse, ZonedDateTime sluttDato, AvregistreringsType avregistreringsType, @Nonnull AvsluttetAvType avsluttetAvType) {
+    public OppfolgingsperiodeEntity avsluttOppfolgingsperiode(UUID uuid, Registrant registrant, String begrunnelse, ZonedDateTime sluttDato, AvregistreringsType avregistreringsType) {
         return transactor.execute((ignored) -> {
             Timestamp sluttTimestamp = Timestamp.from(sluttDato.toInstant());
             return db.queryForObject(""" 
@@ -83,11 +83,11 @@ public class OppfolgingsPeriodeRepository {
                             RETURNING *
                             """,
                     OppfolgingsPeriodeRepository::mapTilOppfolgingsperiode,
-                    veileder,
+                    registrant.getIdent(),
                     begrunnelse,
                     sluttTimestamp,
                     avregistreringsType.name(),
-                    avsluttetAvType.name(),
+                    registrant.getType(),
                     uuid.toString());
         });
     }
@@ -177,7 +177,7 @@ public class OppfolgingsPeriodeRepository {
                 aktorId.get());
     }
 
-    private void endPeriode(AktorId aktorId, String veileder, String begrunnelse, AvregistreringsType avregistreringsType, @Nonnull AvsluttetAvType avsluttetAvType) {
+    private void endPeriode(AktorId aktorId, Registrant registrant, String begrunnelse, AvregistreringsType avregistreringsType) {
         db.update("" +
                         "UPDATE OPPFOLGINGSPERIODE " +
                         "SET avslutt_veileder = ?, " +
@@ -188,10 +188,10 @@ public class OppfolgingsPeriodeRepository {
                         "avsluttet_av_type = ? " +
                         "WHERE aktor_id = ? " +
                         "AND sluttDato IS NULL",
-                veileder,
+                registrant.getIdent(),
                 begrunnelse,
                 avregistreringsType.name(),
-                avsluttetAvType.name(),
+                registrant.getType(),
                 aktorId.get());
     }
 

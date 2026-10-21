@@ -230,7 +230,7 @@ class AvsluttOppfolgingServiceTest {
 
         val brukverV2 = ManuellAvregistrering(
             TEST_AKTOR_ID,
-            veileder = VeilederRegistrant(NavIdent("Z123456")),
+            registrant = VeilederRegistrant(NavIdent("Z123456")),
             begrunnelse = "Ferdig med oppfølging"
         )
         val result = avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(brukverV2)
