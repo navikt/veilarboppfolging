@@ -1,6 +1,6 @@
 package no.nav.veilarboppfolging.oppfolgingsperioderHendelser.hendelser
 
-import no.nav.veilarboppfolging.oppfolgingsbruker.StartetAvType
+import no.nav.veilarboppfolging.oppfolgingsbruker.RegistrantType
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelse
 import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.OppfolgingsHendelseDto
 import java.time.ZonedDateTime
@@ -10,7 +10,7 @@ class OppfolgingStartetHendelseDto(
     val oppfolgingsPeriodeId: UUID,
     val startetTidspunkt: ZonedDateTime,
     val startetAv: String,
-    val startetAvType: StartetAvType,
+    val startetAvType: RegistrantType,
     val startetBegrunnelse: OppfolgingStartBegrunnelse,
     val foretrukketArbeidsoppfolgingskontor: String?,
     val fnr: String,

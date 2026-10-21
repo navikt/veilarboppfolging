@@ -1,7 +1,7 @@
 package no.nav.veilarboppfolging.repository.entity
 
 import no.nav.veilarboppfolging.oppfolgingsbruker.AvsluttetAvType
-import no.nav.veilarboppfolging.oppfolgingsbruker.StartetAvType
+import no.nav.veilarboppfolging.oppfolgingsbruker.RegistrantType
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelse
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvregistreringsType
 import java.time.ZonedDateTime
@@ -22,7 +22,7 @@ data class OppfolgingsperiodeEntity @JvmOverloads constructor(
     val kvpPerioder: List<KvpPeriodeEntity>,
     val startetBegrunnelse: OppfolgingStartBegrunnelse? = null,
     val startetAv: String? = null,
-    val startetAvType: StartetAvType? = null,
+    val startetAvType: RegistrantType? = null,
     val avregistreringsType: AvregistreringsType? = null,
     val avsluttetAvType: AvsluttetAvType? = null,
 ) {

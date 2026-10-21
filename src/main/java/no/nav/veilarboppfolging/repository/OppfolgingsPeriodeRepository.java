@@ -3,7 +3,7 @@ package no.nav.veilarboppfolging.repository;
 import no.nav.common.types.identer.AktorId;
 import no.nav.veilarboppfolging.oppfolgingsbruker.AvsluttetAvType;
 import no.nav.veilarboppfolging.oppfolgingsbruker.Registrant;
-import no.nav.veilarboppfolging.oppfolgingsbruker.StartetAvType;
+import no.nav.veilarboppfolging.oppfolgingsbruker.RegistrantType;
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ManuellRegistreringVeileder;
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelse;
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering;
@@ -155,7 +155,7 @@ public class OppfolgingsPeriodeRepository {
         );
     }
 
-    private void insert(AktorId aktorId, OppfolgingStartBegrunnelse getOppfolgingStartBegrunnelse, @Nullable String startetAvIdent, StartetAvType startetAvType, @Nullable String kontorSattAvVeileder) {
+    private void insert(AktorId aktorId, OppfolgingStartBegrunnelse getOppfolgingStartBegrunnelse, @Nullable String startetAvIdent, RegistrantType startetAvType, @Nullable String kontorSattAvVeileder) {
         db.update("" +
                         "INSERT INTO OPPFOLGINGSPERIODE(uuid, aktor_id, startDato, oppdatert, start_begrunnelse, startet_av, startet_av_type, kontor_satt_av_veileder) " +
                         "VALUES (?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?, ?, ?, ?)",
@@ -215,7 +215,7 @@ public class OppfolgingsPeriodeRepository {
 
     private static OppfolgingsperiodeEntity mapTilOppfolgingsperiode(ResultSet result, int row) throws SQLException {
         var startetAvTypeString = result.getString("startet_av_type");
-        var startetAvType = startetAvTypeString != null ? EnumUtils.valueOf(StartetAvType.class, startetAvTypeString) : null;
+        var startetAvType = startetAvTypeString != null ? EnumUtils.valueOf(RegistrantType.class, startetAvTypeString) : null;
         var avsluttetAvTypeString = result.getString("avsluttet_av_type");
         var avsluttetAvType = avsluttetAvTypeString != null ? AvsluttetAvType.valueOf(avsluttetAvTypeString) : null;
         return new OppfolgingsperiodeEntity(

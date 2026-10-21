@@ -37,9 +37,6 @@ sealed class Avregistrering(
             is AdminRegistrant -> AvsluttetAvType.ADMIN
         }
 
-    val avsluttetAvIdent: String
-        get() = if (avsluttetAv is BrukerRegistrant) "Bruker" else avsluttetAv.getIdent()
-
     abstract fun getAvregistreringsType(): AvregistreringsType
 }
 

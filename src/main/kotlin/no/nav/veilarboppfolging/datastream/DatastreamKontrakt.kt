@@ -54,7 +54,6 @@ object DatastreamKontrakt {
                 Kolonne("avregistrering_type", aksepterteVerdier = setOf("UtmeldtEtter28Dager", "KandidatUtmeldtEtter28Dager", "ManuellAvregistrering", "ArenaIservKanIkkeReaktiveres", "AdminAvregistrering")),
                 Kolonne("startet_av_type", aksepterteVerdier = setOf("SYSTEM", "BRUKER", "VEILEDER", "ADMIN")),
                 Kolonne("kontor_satt_av_veileder"),
-                Kolonne("avsluttet_av_type"),
             ),
             ikkeReplikerteKolonner = setOf("avslutt_begrunnelse", "ao_kontor_intern_person_id"),
         ),

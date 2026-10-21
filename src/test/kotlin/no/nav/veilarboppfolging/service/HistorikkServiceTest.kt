@@ -5,7 +5,7 @@ import no.nav.common.types.identer.Fnr
 import no.nav.veilarboppfolging.controller.response.HistorikkHendelse
 import no.nav.veilarboppfolging.controller.response.HistorikkHendelseType
 import no.nav.veilarboppfolging.oppfolgingsbruker.AvsluttetAvType
-import no.nav.veilarboppfolging.oppfolgingsbruker.StartetAvType
+import no.nav.veilarboppfolging.oppfolgingsbruker.RegistrantType
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelse
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvregistreringsType
 import no.nav.veilarboppfolging.repository.KvpRepository
@@ -26,7 +26,6 @@ import org.mockito.InjectMocks
 import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.junit.MockitoJUnitRunner
-import org.springframework.aot.hint.TypeReference.listOf
 import org.springframework.transaction.support.TransactionTemplate
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
@@ -149,7 +148,7 @@ class HistorikkServiceTest {
         val oppfolgingsPeriode = mockOppfolgingsPeriode(
             startBegrunnelse = OppfolgingStartBegrunnelse.MANUELL_REGISTRERING_VEILEDER,
             startetAv = startetAvVeilder,
-            startetAvType = StartetAvType.VEILEDER,
+            startetAvType = RegistrantType.VEILEDER,
             avsluttetBegrunnelse = avsluttetBegrunnelse,
             avsluttetAv = avsluttetAvVeileder,
         )
@@ -189,7 +188,7 @@ class HistorikkServiceTest {
         val oppfolgingsPeriode = mockOppfolgingsPeriode(
             startBegrunnelse = OppfolgingStartBegrunnelse.ARBEIDSSOKER_REGISTRERING,
             startetAv = startetAvVeilder,
-            startetAvType = StartetAvType.VEILEDER,
+            startetAvType = RegistrantType.VEILEDER,
             avsluttetBegrunnelse = avsluttetBegrunnelse,
             avsluttetAv = avsluttetAvVeileder,
         )
@@ -228,7 +227,7 @@ class HistorikkServiceTest {
         val oppfolgingsPeriode = mockOppfolgingsPeriode(
             startBegrunnelse = OppfolgingStartBegrunnelse.ARENA_SYNC_ARBS,
             startetAv = null,
-            startetAvType = StartetAvType.SYSTEM,
+            startetAvType = RegistrantType.SYSTEM,
             avsluttetBegrunnelse = avsluttetBegrunnelse,
             avsluttetAv = null,
         )
@@ -267,7 +266,7 @@ class HistorikkServiceTest {
         val oppfolgingsPeriode = mockOppfolgingsPeriode(
             startBegrunnelse = OppfolgingStartBegrunnelse.ARBEIDSSOKER_REGISTRERING,
             startetAv = null,
-            startetAvType = StartetAvType.BRUKER,
+            startetAvType = RegistrantType.BRUKER,
             avsluttetBegrunnelse = avsluttetBegrunnelse,
             avsluttetAv = null, // Avsluttet av
         )
@@ -496,7 +495,7 @@ class HistorikkServiceTest {
     private fun mockOppfolgingsPeriode(
         startBegrunnelse: OppfolgingStartBegrunnelse?,
         startetAv: String?,
-        startetAvType: StartetAvType?,
+        startetAvType: RegistrantType?,
         avsluttetBegrunnelse: String? = null,
         avsluttetAv: String? = null,
         avregistreringsType: AvregistreringsType? = null,
@@ -527,7 +526,7 @@ class HistorikkServiceTest {
             emptyList(),
             null,
             "defaultVeileder",
-            StartetAvType.VEILEDER,
+            RegistrantType.VEILEDER,
             null,
         )
     }

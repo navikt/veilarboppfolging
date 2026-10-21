@@ -8,7 +8,7 @@ import no.nav.veilarboppfolging.config.ApplicationConfig.ADMIN_USER_NAME
 import no.nav.veilarboppfolging.config.ApplicationConfig.SYSTEM_USER_NAME
 import no.nav.veilarboppfolging.oppfolgingsbruker.AdminRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.AvsluttetAvType
-import no.nav.veilarboppfolging.oppfolgingsbruker.StartetAvType
+import no.nav.veilarboppfolging.oppfolgingsbruker.RegistrantType
 import no.nav.veilarboppfolging.oppfolgingsbruker.BrukerRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.SystemRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant
@@ -92,7 +92,7 @@ class OppfolgingsPeriodeRepositoryTest {
 
         assertEquals(perioder.size, 1)
         val periode = perioder[0]
-        assertEquals(StartetAvType.BRUKER, periode.startetAvType)
+        assertEquals(RegistrantType.BRUKER, periode.startetAvType)
         assertEquals(fnr.get(), periode.startetAv)
     }
 
@@ -143,7 +143,7 @@ class OppfolgingsPeriodeRepositoryTest {
 
         assertEquals(perioder.size, 1)
         val periode = perioder[0]
-        assertEquals(StartetAvType.VEILEDER, periode.startetAvType)
+        assertEquals(RegistrantType.VEILEDER, periode.startetAvType)
         assertEquals(veilederIdent.get(), periode.startetAv)
         assertEquals(aktorId.get(), periode.aktorId)
         assertEquals(OppfolgingStartBegrunnelse.ARBEIDSSOKER_REGISTRERING, periode.startetBegrunnelse)
@@ -170,10 +170,9 @@ class OppfolgingsPeriodeRepositoryTest {
 
         oppfolgingsPeriodeRepository.avsluttSistePeriodeOgAvsluttOppfolging(
             aktorId,
-            avregistrering.avsluttetAvIdent,
+            avregistrering.registrant,
             avregistrering.begrunnelse,
-            avregistrering.getAvregistreringsType(),
-            avregistrering.avsluttetAvType,
+            avregistrering.getAvregistreringsType()
         )
 
         val periode = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId).single()

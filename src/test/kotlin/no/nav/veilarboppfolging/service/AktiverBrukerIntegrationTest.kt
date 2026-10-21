@@ -11,7 +11,7 @@ import no.nav.veilarboppfolging.IntegrationTest
 import no.nav.veilarboppfolging.client.pdl.ForenkletFolkeregisterStatus
 import no.nav.veilarboppfolging.client.pdl.FregStatusOgStatsborgerskap
 import no.nav.veilarboppfolging.oppfolgingsbruker.AvsluttetAvType
-import no.nav.veilarboppfolging.oppfolgingsbruker.StartetAvType
+import no.nav.veilarboppfolging.oppfolgingsbruker.RegistrantType
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelse
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvregistreringsType
 import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.hendelser.OppfolgingStartetHendelseDto
@@ -86,7 +86,7 @@ class AktiverBrukerIntegrationTest : IntegrationTest() {
         val hendelse = lagreteMeldingerIUtboks.first() as OppfolgingStartetHendelseDto
         assertThat(hendelse.fnr).isEqualTo(FNR.toString())
         assertThat(hendelse.startetBegrunnelse).isEqualTo(OppfolgingStartBegrunnelse.MANUELL_REGISTRERING_VEILEDER)
-        assertThat(hendelse.startetAvType).isEqualTo(StartetAvType.VEILEDER)
+        assertThat(hendelse.startetAvType).isEqualTo(RegistrantType.VEILEDER)
         assertThat(hendelse.startetAv).isEqualTo(veilederIdent.get())
         assertThat(hendelse.startetTidspunkt).isCloseTo(ZonedDateTime.now(), within(1, ChronoUnit.SECONDS))
         assertThat(hendelse.foretrukketArbeidsoppfolgingskontor).isEqualTo(kontorSattAvVeileder)
