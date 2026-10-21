@@ -4,7 +4,7 @@ import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.veilarboppfolging.controller.response.HistorikkHendelse
 import no.nav.veilarboppfolging.controller.response.HistorikkHendelseType
-import no.nav.veilarboppfolging.oppfolgingsbruker.StartetAvType
+import no.nav.veilarboppfolging.oppfolgingsbruker.RegistrantType
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelse
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvregistreringsType
 import no.nav.veilarboppfolging.repository.KvpRepository
@@ -25,7 +25,6 @@ import org.mockito.InjectMocks
 import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.junit.MockitoJUnitRunner
-import org.springframework.aot.hint.TypeReference.listOf
 import org.springframework.transaction.support.TransactionTemplate
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
@@ -104,6 +103,42 @@ class HistorikkServiceTest {
 
 
     @Test
+    fun `egen avslutning vises som innbygger i historikken`() {
+        val periode = mockOppfolgingsPeriode(
+            startBegrunnelse = null,
+            startetAv = null,
+            startetAvType = null,
+            avsluttetBegrunnelse = "Trenger ikke lenger oppfolging",
+            avsluttetAv = "Bruker",
+        ).copy(avsluttetAvType = RegistrantType.BRUKER)
+        gitt_oppfolgingsperioder(listOf(periode))
+
+        val hendelse = historikkService.hentInstillingsHistorikk(FNR)
+            .single { it.type == HistorikkHendelseType.AVSLUTTET_OPPFOLGINGSPERIODE }
+
+        Assertions.assertThat(hendelse.opprettetAv).isEqualTo(KodeverkBruker.EKSTERN)
+        Assertions.assertThat(hendelse.opprettetAvBrukerId).isEqualTo("Bruker")
+        Assertions.assertThat(hendelse.begrunnelse).isEqualTo(periode.begrunnelse)
+    }
+
+    @Test
+    fun `historikk for eldre periode med System-verdi beholdes uendret`() {
+        val periode = mockOppfolgingsPeriode(
+            startBegrunnelse = null,
+            startetAv = null,
+            startetAvType = null,
+            avsluttetAv = "System",
+        )
+        gitt_oppfolgingsperioder(listOf(periode))
+
+        val hendelse = historikkService.hentInstillingsHistorikk(FNR)
+            .single { it.type == HistorikkHendelseType.AVSLUTTET_OPPFOLGINGSPERIODE }
+
+        Assertions.assertThat(hendelse.opprettetAv).isEqualTo(KodeverkBruker.NAV)
+        Assertions.assertThat(hendelse.opprettetAvBrukerId).isEqualTo("System")
+    }
+
+    @Test
     fun `oppfolgingsperiodeHistorikk - Veileder (registrert i inngar) - skal vise veileder ident på start og stopp av oppfølgingsperioder i historikken`() {
         Mockito.`when`(authService.harTilgangTilEnhet(ENHET)).thenReturn(true)
         val startetAvVeilder = "Z999999"
@@ -112,7 +147,7 @@ class HistorikkServiceTest {
         val oppfolgingsPeriode = mockOppfolgingsPeriode(
             startBegrunnelse = OppfolgingStartBegrunnelse.MANUELL_REGISTRERING_VEILEDER,
             startetAv = startetAvVeilder,
-            startetAvType = StartetAvType.VEILEDER,
+            startetAvType = RegistrantType.VEILEDER,
             avsluttetBegrunnelse = avsluttetBegrunnelse,
             avsluttetAv = avsluttetAvVeileder,
         )
@@ -152,7 +187,7 @@ class HistorikkServiceTest {
         val oppfolgingsPeriode = mockOppfolgingsPeriode(
             startBegrunnelse = OppfolgingStartBegrunnelse.ARBEIDSSOKER_REGISTRERING,
             startetAv = startetAvVeilder,
-            startetAvType = StartetAvType.VEILEDER,
+            startetAvType = RegistrantType.VEILEDER,
             avsluttetBegrunnelse = avsluttetBegrunnelse,
             avsluttetAv = avsluttetAvVeileder,
         )
@@ -191,7 +226,7 @@ class HistorikkServiceTest {
         val oppfolgingsPeriode = mockOppfolgingsPeriode(
             startBegrunnelse = OppfolgingStartBegrunnelse.ARENA_SYNC_ARBS,
             startetAv = null,
-            startetAvType = StartetAvType.SYSTEM,
+            startetAvType = RegistrantType.SYSTEM,
             avsluttetBegrunnelse = avsluttetBegrunnelse,
             avsluttetAv = null,
         )
@@ -230,7 +265,7 @@ class HistorikkServiceTest {
         val oppfolgingsPeriode = mockOppfolgingsPeriode(
             startBegrunnelse = OppfolgingStartBegrunnelse.ARBEIDSSOKER_REGISTRERING,
             startetAv = null,
-            startetAvType = StartetAvType.BRUKER,
+            startetAvType = RegistrantType.BRUKER,
             avsluttetBegrunnelse = avsluttetBegrunnelse,
             avsluttetAv = null, // Avsluttet av
         )
@@ -459,7 +494,7 @@ class HistorikkServiceTest {
     private fun mockOppfolgingsPeriode(
         startBegrunnelse: OppfolgingStartBegrunnelse?,
         startetAv: String?,
-        startetAvType: StartetAvType?,
+        startetAvType: RegistrantType?,
         avsluttetBegrunnelse: String? = null,
         avsluttetAv: String? = null,
         avregistreringsType: AvregistreringsType? = null,
@@ -490,7 +525,7 @@ class HistorikkServiceTest {
             emptyList(),
             null,
             "defaultVeileder",
-            StartetAvType.VEILEDER,
+            RegistrantType.VEILEDER,
             null,
         )
     }

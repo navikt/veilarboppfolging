@@ -849,6 +849,23 @@ class GraphqlControllerTest: IntegrationTest() {
     }
 
     @Test
+    fun `egen avslutningsstatus gir GraphQL-feil ved oppslagsfeil`() {
+        val (fnr, aktorId) = defaultBruker()
+        setBrukerUnderOppfolging(aktorId, fnr)
+        setLocalArenaOppfolging(aktorId)
+        mockEksternBrukerAuthOk(fnr)
+        mockEksternbrukerErInnlogget(fnr, AuthService.SikkerthetsNivå.Nivå4)
+        `when`(aapClient.harAap(fnr.get())).thenThrow(IllegalStateException("AAP status utilgjengelig"))
+
+        val result = tester.document("{ oppfolging { kanAvslutteOppfolging } }").execute()
+
+        result.errors().expect {
+            it.path == "oppfolging.kanAvslutteOppfolging"
+        }.verify()
+        result.path("oppfolging.kanAvslutteOppfolging").valueIsNull()
+    }
+
+    @Test
     fun `skal returnere kanStarteOppfolgingEkstern - JA_MED_MANUELL_GODKJENNING_PGA_UNDER_18 hvis bruker er under 18`() {
         val (fnr, _) = defaultBruker()
         mockEksternBrukerAuthOk(fnr)

@@ -8,7 +8,7 @@ import no.nav.common.types.identer.Fnr
 import no.nav.veilarboppfolging.IntegrationTest
 import no.nav.veilarboppfolging.client.pdl.ForenkletFolkeregisterStatus
 import no.nav.veilarboppfolging.client.pdl.FregStatusOgStatsborgerskap
-import no.nav.veilarboppfolging.oppfolgingsbruker.StartetAvType
+import no.nav.veilarboppfolging.oppfolgingsbruker.RegistrantType
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelse
 import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.OppfolgingsHendelseDto
 import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.hendelser.OppfolgingStartetHendelseDto
@@ -73,7 +73,7 @@ class StartOppfolgingConsumerServiceTest(
         val hendelse = lagredeMeldingerIUtboks.first() as OppfolgingStartetHendelseDto
         assertThat(hendelse.fnr).isEqualTo(fnr.get())
         assertThat(hendelse.startetBegrunnelse).isEqualTo(OppfolgingStartBegrunnelse.SYKMELDT_UTEN_ARBEIDSGIVER_4_UKER)
-        assertThat(hendelse.startetAvType).isEqualTo(StartetAvType.SYSTEM)
+        assertThat(hendelse.startetAvType).isEqualTo(RegistrantType.SYSTEM)
         assertThat(hendelse.startetAv).isEqualTo("ISYFO")
         assertThat(hendelse.startetTidspunkt).isCloseTo(ZonedDateTime.now(), within(1, ChronoUnit.SECONDS))
         assertThat(hendelse.foretrukketArbeidsoppfolgingskontor).isNull()
@@ -113,7 +113,7 @@ class StartOppfolgingConsumerServiceTest(
         val hendelse = lagredeMeldingerIUtboks.first() as OppfolgingStartetHendelseDto
         assertThat(hendelse.fnr).isEqualTo(fnr.get())
         assertThat(hendelse.startetBegrunnelse).isEqualTo(OppfolgingStartBegrunnelse.SYKMELDT_UTEN_ARBEIDSGIVER_4_UKER)
-        assertThat(hendelse.startetAvType).isEqualTo(StartetAvType.VEILEDER)
+        assertThat(hendelse.startetAvType).isEqualTo(RegistrantType.VEILEDER)
         assertThat(hendelse.startetAv).isEqualTo("N123456")
         assertThat(hendelse.startetTidspunkt).isCloseTo(ZonedDateTime.now(), within(1, ChronoUnit.SECONDS))
         assertThat(hendelse.foretrukketArbeidsoppfolgingskontor).isEqualTo("1234")

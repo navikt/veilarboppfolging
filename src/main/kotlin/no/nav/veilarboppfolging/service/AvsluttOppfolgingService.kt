@@ -72,7 +72,7 @@ class AvsluttOppfolgingService(
             )
         }
         else if (authService.erEksternBruker()) {
-            throw IllegalStateException("Vi støtter ikke at eksternbrukere kan avslutte oppfølging")
+            authService.sjekkSkriveTilgangMedFnr(fnr)
         } else {
             secureLog.info("Forsøker å avslutte oppfølging for fnr: {} som systembruker", fnr.get())
         }
@@ -147,7 +147,7 @@ class AvsluttOppfolgingService(
         transactor.executeWithoutResult { _ ->
             oppfolgingsPeriodeRepository.avsluttSistePeriodeOgAvsluttOppfolging(
                 aktorId,
-                avregistrering.avsluttetAv.getIdent(),
+                avregistrering.avsluttetAv,
                 avregistrering.begrunnelse,
                 avregistrering.getAvregistreringsType()
             )
@@ -280,10 +280,10 @@ class AvsluttOppfolgingService(
         val sluttDato = if (erSisteGjeldendePeriode) ZonedDateTime.now() else sisteGjeldendePeriode.startDato
         val avsluttetOppfolgingsperiode = oppfolgingsPeriodeRepository.avsluttOppfolgingsperiode(
             oppfolgingsperiodeUUID,
-            avregistrering.avsluttetAv.getIdent(),
+            avregistrering.veileder,
             avregistrering.begrunnelse,
             sluttDato,
-            avregistrering.getAvregistreringsType(),
+            avregistrering.getAvregistreringsType()
         )
 
         log.info(

@@ -14,8 +14,7 @@ import no.nav.veilarboppfolging.client.pdl.FregStatusOgStatsborgerskap
 import no.nav.veilarboppfolging.client.pdl.PdlFolkeregisterStatusClient
 import no.nav.veilarboppfolging.kafka.TestUtils
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService
-import no.nav.veilarboppfolging.oppfolgingsbruker.StartetAvType
-import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
+import no.nav.veilarboppfolging.oppfolgingsbruker.RegistrantType
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.EndringPaaOppfolgingsBruker
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.LocalArenaOppfolging
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
@@ -180,7 +179,7 @@ class OppfolgingsbrukerEndretIArenaServiceTest {
                         emptyList(),
                         null,
                         "defaultVeileder",
-                        StartetAvType.VEILEDER,
+                        RegistrantType.VEILEDER,
                         null
                     )
                 )

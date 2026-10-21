@@ -14,13 +14,21 @@ import no.nav.veilarboppfolging.controller.OppfolgingV3Controller;
 import no.nav.veilarboppfolging.controller.response.VeilederTilgang;
 import no.nav.veilarboppfolging.controller.v3.request.OppfolgingRequest;
 import no.nav.veilarboppfolging.domain.AvslutningStatusData;
+import no.nav.veilarboppfolging.oppfolgingsbruker.BrukerRegistrant;
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService;
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.AktiverBrukerManueltService;
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.Avregistrering;
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.KanAvsluttesInput;
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.KunneAvsluttesResultat;
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ManuellAvregistrering;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
 import no.nav.veilarboppfolging.service.*;
 import no.nav.veilarboppfolging.utils.auth.AuthorizationInterceptor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.MediaType;
@@ -37,12 +45,16 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static no.nav.veilarboppfolging.test.TestData.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = OppfolgingV3Controller.class)
@@ -117,6 +129,56 @@ class OppfolgingV3ControllerTest {
                 }))
                 .andExpect(status().is(200))
                 .andExpect(content().json(expectedJson, true));
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {0, 500})
+    void avsluttEgenOppfolging_skal_bruke_tokenidentitet_og_valgfri_begrunnelse(int lengde) throws Exception {
+        when(authService.getInnloggetBrukerIdent()).thenReturn(TEST_FNR.get());
+        when(authService.getAktorIdOrThrow(TEST_FNR)).thenReturn(TEST_AKTOR_ID);
+        var avregistrering = new ManuellAvregistrering(TEST_AKTOR_ID, new BrukerRegistrant(TEST_FNR), "");
+        var input = new KanAvsluttesInput(true, false, false, false, false, false, false, false);
+        when(avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(any()))
+                .thenReturn(KunneAvsluttesResultat.Companion.kanAvsluttes(avregistrering, input));
+        var begrunnelse = "a".repeat(lengde);
+        var request = post("/api/v3/oppfolging/avslutt-egen-oppfolging");
+        if (lengde > 0) {
+            request.contentType(MediaType.APPLICATION_JSON)
+                    .content("{\"begrunnelse\":\"" + begrunnelse + "\"}");
+        }
+
+        mockMvc.perform(request).andExpect(status().isNoContent());
+
+        var captor = ArgumentCaptor.forClass(Avregistrering.class);
+        verify(avsluttOppfolgingService).avsluttOppfolgingHvisKanAvsluttes(captor.capture());
+        verify(authService).skalVereEksternBruker();
+        assertInstanceOf(ManuellAvregistrering.class, captor.getValue());
+        assertInstanceOf(BrukerRegistrant.class, captor.getValue().getAvsluttetAv());
+        assertEquals(TEST_AKTOR_ID, captor.getValue().getAktorId());
+        assertEquals(TEST_FNR.get(), captor.getValue().getAvsluttetAv().getIdent());
+        assertEquals(begrunnelse, captor.getValue().getBegrunnelse());
+    }
+
+    @Test
+    void avsluttEgenOppfolging_skal_returnere_regelbegrunnelse_ved_avslag() throws Exception {
+        when(authService.getInnloggetBrukerIdent()).thenReturn(TEST_FNR.get());
+        when(authService.getAktorIdOrThrow(TEST_FNR)).thenReturn(TEST_AKTOR_ID);
+        var avregistrering = new ManuellAvregistrering(TEST_AKTOR_ID, new BrukerRegistrant(TEST_FNR), "");
+        var input = new KanAvsluttesInput(true, false, false, false, false, true, false, false);
+        when(avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(any()))
+                .thenReturn(KunneAvsluttesResultat.Companion.kanAvsluttes(avregistrering, input));
+
+        mockMvc.perform(post("/api/v3/oppfolging/avslutt-egen-oppfolging"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.begrunnelse").value("BRUKER_MOTTAR_ELLER_HAR_SOKT_OM_AAP"));
+    }
+
+    @Test
+    void avsluttEgenOppfolging_skal_avvise_begrunnelse_over_500_tegn() throws Exception {
+        mockMvc.perform(post("/api/v3/oppfolging/avslutt-egen-oppfolging")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"begrunnelse\":\"" + "a".repeat(501) + "\"}"))
+                .andExpect(status().isBadRequest());
     }
 
     @Test

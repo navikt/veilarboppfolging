@@ -259,9 +259,9 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
     public void avsluttOppfolgingResetterVeileder_Manuellstatus_Mal_Og_Vilkar() {
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
         startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.Companion.manuellRegistreringVeileder(FNR, AKTOR_ID, new VeilederRegistrant(NAV_IDENT), null, false));
-        String veilederId = "veilederId";
+        VeilederRegistrant veileder = new VeilederRegistrant(new NavIdent("veilederId"));
         String maal = "Mål";
-        settVeileder(veilederId, AKTOR_ID);
+        settVeileder(veileder.getIdent(), AKTOR_ID);
         manuellStatusRepository.create(
                 new ManuellStatusEntity(
                         null, AKTOR_ID.get(), true, ZonedDateTime.now(),
@@ -270,11 +270,11 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
         maalRepository.opprett(new MaalEntity(null, AKTOR_ID.get(), maal, "bruker", ZonedDateTime.now()));
         Oppfolging oppfolging = hentOppfolging(AKTOR_ID).get();
         assertThat(oppfolging.getUnderOppfolging(), is(true));
-        assertThat(oppfolging.getVeilederId(), equalTo(veilederId));
+        assertThat(oppfolging.getVeilederId(), equalTo(veileder.getIdent()));
         assertThat(oppfolging.getGjeldendeManuellStatus().getManuell(), is(true));
         assertThat(oppfolging.getGjeldendeMal().getMal(), equalTo(maal));
 
-        oppfolgingsPeriodeRepository.avsluttSistePeriodeOgAvsluttOppfolging(AKTOR_ID, veilederId, "Funnet arbeid", AvregistreringsType.ManuellAvregistrering);
+        oppfolgingsPeriodeRepository.avsluttSistePeriodeOgAvsluttOppfolging(AKTOR_ID, veileder, "Funnet arbeid", AvregistreringsType.ManuellAvregistrering);
         Oppfolging avsluttetOppfolging = hentOppfolging(AKTOR_ID).get();
         assertThat(avsluttetOppfolging.getUnderOppfolging(), is(false));
         assertThat(avsluttetOppfolging.getVeilederId(), nullValue());
@@ -302,7 +302,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
         assertThat(oppfolgingsperioder.get(0).getStartDato(), not(nullValue()));
         assertThat(oppfolgingsperioder.get(0).getSluttDato(), nullValue());
 
-        oppfolgingsPeriodeRepository.avsluttSistePeriodeOgAvsluttOppfolging(AKTOR_ID, "veileder", "begrunnelse", AvregistreringsType.ManuellAvregistrering);
+        oppfolgingsPeriodeRepository.avsluttSistePeriodeOgAvsluttOppfolging(AKTOR_ID, new VeilederRegistrant(new NavIdent("veileder")), "begrunnelse", AvregistreringsType.ManuellAvregistrering);
         oppfolgingsperioder = oppfolgingService.hentOppfolging(AKTOR_ID).get().getOppfolgingsperioder();
         assertThat(oppfolgingsperioder, hasSize(1));
         assertThat(oppfolgingsperioder.get(0).getSluttDato(), not(nullValue()));

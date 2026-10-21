@@ -7,7 +7,7 @@ import no.nav.paw.arbeidssokerregisteret.api.v1.*
 import no.nav.veilarboppfolging.IntegrationTest
 import no.nav.veilarboppfolging.client.pdl.ForenkletFolkeregisterStatus
 import no.nav.veilarboppfolging.client.pdl.FregStatusOgStatsborgerskap
-import no.nav.veilarboppfolging.oppfolgingsbruker.StartetAvType
+import no.nav.veilarboppfolging.oppfolgingsbruker.RegistrantType
 import no.nav.veilarboppfolging.oppfolgingsbruker.BrukerRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelse
@@ -194,7 +194,7 @@ class ArbeidssøkerperiodeConsumerServiceTest(
             emptyList(),
             OppfolgingStartBegrunnelse.ARBEIDSSOKER_REGISTRERING,
             "Z123456",
-            StartetAvType.VEILEDER,
+            RegistrantType.VEILEDER,
             null,
         )
 
