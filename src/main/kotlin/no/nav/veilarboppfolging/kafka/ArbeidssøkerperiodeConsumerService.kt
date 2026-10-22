@@ -12,7 +12,7 @@ import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.Arbeidssokerperio
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ArbeidssøkerPeriodeAvsluttet
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.KandidatForUtmeldingHendelseUtfortAvType
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService
-import no.nav.veilarboppfolging.oppfolgingsbruker.StartetAvType
+import no.nav.veilarboppfolging.oppfolgingsbruker.RegistrantType
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering
 import no.nav.veilarboppfolging.oppfolgingsbruker.toRegistrant
 import no.nav.veilarboppfolging.service.AuthService
@@ -106,12 +106,12 @@ open class ArbeidssøkerperiodeConsumerService(
     }
 }
 
-fun BrukerType.toStartetAvType(): StartetAvType {
+fun BrukerType.toStartetAvType(): RegistrantType {
     return when (this) {
-        BrukerType.UKJENT_VERDI -> StartetAvType.SYSTEM
-        BrukerType.UDEFINERT -> StartetAvType.SYSTEM
-        BrukerType.VEILEDER -> StartetAvType.VEILEDER
-        BrukerType.SYSTEM -> StartetAvType.SYSTEM
-        BrukerType.SLUTTBRUKER -> StartetAvType.BRUKER
+        BrukerType.UKJENT_VERDI -> RegistrantType.SYSTEM
+        BrukerType.UDEFINERT -> RegistrantType.SYSTEM
+        BrukerType.VEILEDER -> RegistrantType.VEILEDER
+        BrukerType.SYSTEM -> RegistrantType.SYSTEM
+        BrukerType.SLUTTBRUKER -> RegistrantType.BRUKER
     }
 }

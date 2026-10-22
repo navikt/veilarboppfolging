@@ -2,7 +2,7 @@ package no.nav.veilarboppfolging.kafka.inngang
 
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
-import no.nav.veilarboppfolging.oppfolgingsbruker.StartetAvType
+import no.nav.veilarboppfolging.oppfolgingsbruker.RegistrantType
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelseFraSystem
 
 data class StartOppfolgingMelding(
@@ -40,7 +40,7 @@ data class StartOppfolgingMelding(
         JsonSubTypes.Type(value = VeilederRegistrant::class, name = "VEILEDER"),
     )
     sealed class Registrant {
-        abstract val type: StartetAvType
+        abstract val type: RegistrantType
         abstract val opprettetAv: String
 
         fun toOppfolgingsRegistrant(): no.nav.veilarboppfolging.oppfolgingsbruker.Registrant {
@@ -60,12 +60,12 @@ data class StartOppfolgingMelding(
     data class SystemRegistrant(
         override val opprettetAv: String,
     ) : Registrant() {
-        override val type: StartetAvType = StartetAvType.SYSTEM
+        override val type: RegistrantType = RegistrantType.SYSTEM
     }
 
     data class VeilederRegistrant(
         override val opprettetAv: String,
     ) : Registrant() {
-        override val type: StartetAvType = StartetAvType.VEILEDER
+        override val type: RegistrantType = RegistrantType.VEILEDER
     }
 }

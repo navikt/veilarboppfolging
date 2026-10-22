@@ -47,9 +47,9 @@ data class KandidatUtmeldtEtter28Dager(override val aktorId: AktorId) : Avregist
 
 data class ManuellAvregistrering(
     override val aktorId: AktorId,
-    val veileder: VeilederRegistrant,
+    val registrant: Registrant,
     override val begrunnelse: String,
-) : Avregistrering(aktorId, veileder, begrunnelse) {
+) : Avregistrering(aktorId, registrant, begrunnelse) {
     override fun getAvregistreringsType() = AvregistreringsType.ManuellAvregistrering
 
     companion object {

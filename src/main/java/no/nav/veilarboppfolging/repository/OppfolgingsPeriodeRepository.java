@@ -1,7 +1,8 @@
 package no.nav.veilarboppfolging.repository;
 
 import no.nav.common.types.identer.AktorId;
-import no.nav.veilarboppfolging.oppfolgingsbruker.StartetAvType;
+import no.nav.veilarboppfolging.oppfolgingsbruker.Registrant;
+import no.nav.veilarboppfolging.oppfolgingsbruker.RegistrantType;
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ManuellRegistreringVeileder;
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelse;
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering;
@@ -35,7 +36,7 @@ public class OppfolgingsPeriodeRepository {
     private final TransactionTemplate transactor;
 
     private final static String hentOppfolingsperioderSQL =
-            "SELECT uuid, aktor_id, avslutt_veileder, startdato, sluttdato, avslutt_begrunnelse, start_begrunnelse, startet_av, startet_av_type, avregistrering_type " +
+            "SELECT uuid, aktor_id, avslutt_veileder, startdato, sluttdato, avslutt_begrunnelse, start_begrunnelse, startet_av, startet_av_type, avregistrering_type, avsluttet_av_type " +
                     "FROM OPPFOLGINGSPERIODE ";
 
     @Autowired
@@ -58,14 +59,14 @@ public class OppfolgingsPeriodeRepository {
         });
     }
 
-    public void avsluttSistePeriodeOgAvsluttOppfolging(AktorId aktorId, String veileder, String begrunnelse, AvregistreringsType avregistreringsType) {
+    public void avsluttSistePeriodeOgAvsluttOppfolging(AktorId aktorId, Registrant registrant, String begrunnelse, AvregistreringsType avregistreringsType) {
         transactor.executeWithoutResult((ignored) -> {
-            endPeriode(aktorId, veileder, begrunnelse, avregistreringsType);
+            endPeriode(aktorId, registrant, begrunnelse, avregistreringsType);
             avsluttOppfolging(aktorId);
         });
     }
 
-    public OppfolgingsperiodeEntity avsluttOppfolgingsperiode(UUID uuid, String veileder, String begrunnelse, ZonedDateTime sluttDato, AvregistreringsType avregistreringsType) {
+    public OppfolgingsperiodeEntity avsluttOppfolgingsperiode(UUID uuid, Registrant registrant, String begrunnelse, ZonedDateTime sluttDato, AvregistreringsType avregistreringsType) {
         return transactor.execute((ignored) -> {
             Timestamp sluttTimestamp = Timestamp.from(sluttDato.toInstant());
             return db.queryForObject(""" 
@@ -74,16 +75,18 @@ public class OppfolgingsPeriodeRepository {
                             avslutt_begrunnelse = ?,
                             sluttDato = ?,
                             oppdatert = CURRENT_TIMESTAMP,
-                            avregistrering_type = ?
+                            avregistrering_type = ?,
+                            avsluttet_av_type = ?
                             WHERE uuid = ?
                             AND sluttDato IS NULL
                             RETURNING *
                             """,
                     OppfolgingsPeriodeRepository::mapTilOppfolgingsperiode,
-                    veileder,
+                    registrant.getIdent(),
                     begrunnelse,
                     sluttTimestamp,
                     avregistreringsType.name(),
+                    registrant.getType().name(),
                     uuid.toString());
         });
     }
@@ -151,7 +154,7 @@ public class OppfolgingsPeriodeRepository {
         );
     }
 
-    private void insert(AktorId aktorId, OppfolgingStartBegrunnelse getOppfolgingStartBegrunnelse, @Nullable String startetAvIdent, StartetAvType startetAvType, @Nullable String kontorSattAvVeileder) {
+    private void insert(AktorId aktorId, OppfolgingStartBegrunnelse getOppfolgingStartBegrunnelse, @Nullable String startetAvIdent, RegistrantType startetAvType, @Nullable String kontorSattAvVeileder) {
         db.update("" +
                         "INSERT INTO OPPFOLGINGSPERIODE(uuid, aktor_id, startDato, oppdatert, start_begrunnelse, startet_av, startet_av_type, kontor_satt_av_veileder) " +
                         "VALUES (?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?, ?, ?, ?)",
@@ -173,19 +176,21 @@ public class OppfolgingsPeriodeRepository {
                 aktorId.get());
     }
 
-    private void endPeriode(AktorId aktorId, String veileder, String begrunnelse, AvregistreringsType avregistreringsType) {
+    private void endPeriode(AktorId aktorId, Registrant registrant, String begrunnelse, AvregistreringsType avregistreringsType) {
         db.update("" +
                         "UPDATE OPPFOLGINGSPERIODE " +
                         "SET avslutt_veileder = ?, " +
                         "avslutt_begrunnelse = ?, " +
                         "sluttDato = CURRENT_TIMESTAMP, " +
                         "oppdatert = CURRENT_TIMESTAMP, " +
-                        "avregistrering_type = ? " +
+                        "avregistrering_type = ?, " +
+                        "avsluttet_av_type = ? " +
                         "WHERE aktor_id = ? " +
                         "AND sluttDato IS NULL",
-                veileder,
+                registrant.getIdent(),
                 begrunnelse,
                 avregistreringsType.name(),
+                registrant.getType().name(),
                 aktorId.get());
     }
 
@@ -209,7 +214,9 @@ public class OppfolgingsPeriodeRepository {
 
     private static OppfolgingsperiodeEntity mapTilOppfolgingsperiode(ResultSet result, int row) throws SQLException {
         var startetAvTypeString = result.getString("startet_av_type");
-        var startetAvType = startetAvTypeString != null ? EnumUtils.valueOf(StartetAvType.class, startetAvTypeString) : null;
+        var startetAvType = startetAvTypeString != null ? EnumUtils.valueOf(RegistrantType.class, startetAvTypeString) : null;
+        var avsluttetAvTypeString = result.getString("avsluttet_av_type");
+        var avsluttetAvType = avsluttetAvTypeString != null ? RegistrantType.valueOf(avsluttetAvTypeString) : null;
         return new OppfolgingsperiodeEntity(
                 UUID.fromString(result.getString("uuid")),
                 result.getString("aktor_id"),
@@ -221,7 +228,8 @@ public class OppfolgingsPeriodeRepository {
                 EnumUtils.valueOf(OppfolgingStartBegrunnelse.class, result.getString("start_begrunnelse")),
                 result.getString("startet_av"),
                 startetAvType,
-                EnumUtils.valueOf(AvregistreringsType.class, result.getString("avregistrering_type"))
+                EnumUtils.valueOf(AvregistreringsType.class, result.getString("avregistrering_type")),
+                avsluttetAvType
         );
     }
 }

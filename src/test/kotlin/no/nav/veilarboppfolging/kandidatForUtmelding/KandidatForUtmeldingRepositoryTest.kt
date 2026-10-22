@@ -6,6 +6,7 @@ import java.time.temporal.ChronoUnit
 import java.util.UUID
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
+import no.nav.common.types.identer.NavIdent
 import no.nav.paw.arbeidssokerregisteret.api.v1.AvsluttetAarsakType
 import no.nav.veilarboppfolging.LocalDatabaseSingleton
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ArbeidssokerperiodeAvsluttetHendelseType
@@ -15,6 +16,7 @@ import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseOppret
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseUtløptHendelse
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.KandidatForUtmeldingHendelseUtfortAvType
 import no.nav.veilarboppfolging.oppfolgingsbruker.BrukerRegistrant
+import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering.Companion.arbeidssokerRegistrering
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvregistreringsType
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
@@ -231,7 +233,7 @@ class KandidatForUtmeldingRepositoryTest {
 
         oppfolgingsPeriodeRepository.avsluttSistePeriodeOgAvsluttOppfolging(
             aktorId,
-            "Z123456",
+            VeilederRegistrant(NavIdent("Z123456")),
             "begrunnelse",
             AvregistreringsType.AdminAvregistrering,
         )

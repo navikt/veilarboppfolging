@@ -10,7 +10,7 @@ import java.util.UUID
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseOpprettetEllerEndretHendelse
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.KandidatForUtmeldingHendelseType
-import no.nav.veilarboppfolging.oppfolgingsbruker.StartetAvType
+import no.nav.veilarboppfolging.oppfolgingsbruker.RegistrantType
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelse
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.Avregistrering
 import org.slf4j.LoggerFactory
@@ -29,7 +29,7 @@ data class KandidaterForUtmeldingMetrikker(
 )
 
 interface BigQueryClient {
-    fun loggStartOppfolgingsperiode(startBegrunnelse: OppfolgingStartBegrunnelse, oppfolgingPeriodeId: UUID, startedAvType: StartetAvType, kvalifiseringsgruppe: Optional<Kvalifiseringsgruppe>, manuellSjekkLovligOpphold: Boolean? = null, forrigePeriodeAvsluttet: ZonedDateTime?)
+    fun loggStartOppfolgingsperiode(startBegrunnelse: OppfolgingStartBegrunnelse, oppfolgingPeriodeId: UUID, startedAvType: RegistrantType, kvalifiseringsgruppe: Optional<Kvalifiseringsgruppe>, manuellSjekkLovligOpphold: Boolean? = null, forrigePeriodeAvsluttet: ZonedDateTime?)
     fun loggAvsluttOppfolgingsperiode(oppfolgingPeriodeId: UUID, avregistrering: Avregistrering, aktivIArena: Boolean? = null, kandidatForUtmeldingHendelseType: KandidatForUtmeldingHendelseType?)
     fun loggKandidaterForUtmeldingMetrikker(metrikker: KandidaterForUtmeldingMetrikker)
     fun loggUnder18()
@@ -83,12 +83,12 @@ class BigQueryClientImplementation(private val bigQuery: BigQuery): BigQueryClie
     }
 
     override fun loggStartOppfolgingsperiode(
-            startBegrunnelse: OppfolgingStartBegrunnelse,
-            oppfolgingPeriodeId: UUID,
-            startedAvType: StartetAvType,
-            kvalifiseringsgruppe: Optional<Kvalifiseringsgruppe>,
-            manuellSjekkLovligOpphold: Boolean?,
-            forrigePeriodeAvsluttet: ZonedDateTime?
+        startBegrunnelse: OppfolgingStartBegrunnelse,
+        oppfolgingPeriodeId: UUID,
+        startedAvType: RegistrantType,
+        kvalifiseringsgruppe: Optional<Kvalifiseringsgruppe>,
+        manuellSjekkLovligOpphold: Boolean?,
+        forrigePeriodeAvsluttet: ZonedDateTime?
         ) {
         insertIntoOppfolgingEvents(oppfolgingsperiodeEventsTable) {
             mapOf(

@@ -4,7 +4,7 @@ import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.veilarboppfolging.controller.response.HistorikkHendelse
 import no.nav.veilarboppfolging.controller.response.HistorikkHendelseType
-import no.nav.veilarboppfolging.oppfolgingsbruker.StartetAvType
+import no.nav.veilarboppfolging.oppfolgingsbruker.RegistrantType
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelse
 import no.nav.veilarboppfolging.repository.*
 import no.nav.veilarboppfolging.repository.entity.*
@@ -117,12 +117,12 @@ class HistorikkService(
         return listOf(kvpStart)
     }
 
-    private fun getStartetBegrunnelseTekst(begrunnelse: OppfolgingStartBegrunnelse?, startetAvType: StartetAvType?): String {
+    private fun getStartetBegrunnelseTekst(begrunnelse: OppfolgingStartBegrunnelse?, startetAvType: RegistrantType?): String {
         return when (begrunnelse) {
             OppfolgingStartBegrunnelse.ARBEIDSSOKER_REGISTRERING -> {
                 when (startetAvType) {
-                    StartetAvType.VEILEDER -> "Bruker ble registrert som arbeidssøker av veileder"
-                    StartetAvType.BRUKER -> "Bruker registrerte seg som arbeidssøker"
+                    RegistrantType.VEILEDER -> "Bruker ble registrert som arbeidssøker av veileder"
+                    RegistrantType.BRUKER -> "Bruker registrerte seg som arbeidssøker"
                     else -> "Bruker ble registrert som arbeidssøker"
                 }
             }
@@ -141,7 +141,7 @@ class HistorikkService(
             dato = periode.startDato,
             begrunnelse = getStartetBegrunnelseTekst(periode.startetBegrunnelse, periode.startetAvType),
             opprettetAv = periode.startetAvType?.toKodeverkBruker(),
-            opprettetAvBrukerId = if (periode.startetAvType == StartetAvType.ADMIN) "Admin" else periode.startetAv,
+            opprettetAvBrukerId = if (periode.startetAvType == RegistrantType.ADMIN) "Admin" else periode.startetAv,
             dialogId = null,
             enhet = null,
             tildeltVeilederId = null,
@@ -152,7 +152,13 @@ class HistorikkService(
                 type = HistorikkHendelseType.AVSLUTTET_OPPFOLGINGSPERIODE,
                 dato = periode.sluttDato,
                 begrunnelse = periode.begrunnelse,
-                opprettetAv = if (periode.avsluttetAv != null) KodeverkBruker.NAV else KodeverkBruker.SYSTEM,
+                opprettetAv = when (periode.avsluttetAvType) {
+                    RegistrantType.BRUKER -> KodeverkBruker.EKSTERN
+                    RegistrantType.VEILEDER -> KodeverkBruker.NAV
+                    RegistrantType.SYSTEM -> KodeverkBruker.SYSTEM
+                    RegistrantType.ADMIN -> KodeverkBruker.ADMIN
+                    null -> if (periode.avsluttetAv != null) KodeverkBruker.NAV else KodeverkBruker.SYSTEM
+                },
                 opprettetAvBrukerId = periode.avsluttetAv,
                 dialogId = null,
                 enhet = null,
@@ -210,11 +216,11 @@ class HistorikkService(
     }
 }
 
-fun StartetAvType.toKodeverkBruker(): KodeverkBruker {
+fun RegistrantType.toKodeverkBruker(): KodeverkBruker {
     return when (this) {
-        StartetAvType.VEILEDER -> KodeverkBruker.NAV
-        StartetAvType.SYSTEM -> KodeverkBruker.SYSTEM
-        StartetAvType.BRUKER -> KodeverkBruker.EKSTERN
-        StartetAvType.ADMIN -> KodeverkBruker.ADMIN
+        RegistrantType.VEILEDER -> KodeverkBruker.NAV
+        RegistrantType.SYSTEM -> KodeverkBruker.SYSTEM
+        RegistrantType.BRUKER -> KodeverkBruker.EKSTERN
+        RegistrantType.ADMIN -> KodeverkBruker.ADMIN
     }
 }

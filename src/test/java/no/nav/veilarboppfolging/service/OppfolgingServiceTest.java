@@ -33,6 +33,7 @@ import no.nav.veilarboppfolging.eventsLogger.BigQueryClient;
 import no.nav.veilarboppfolging.kafka.dto.OppfolgingsperiodeDTO;
 import no.nav.veilarboppfolging.kandidatForUtmelding.FjernKandidatForUtmeldingService;
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService;
+import no.nav.veilarboppfolging.oppfolgingsbruker.AdminRegistrant;
 import no.nav.veilarboppfolging.oppfolgingsbruker.BrukerRegistrant;
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant;
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService;
@@ -230,7 +231,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         var perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId).stream().sorted(Comparator.comparing(OppfolgingsperiodeEntity::getStartDato)).toList();
         var uuidSomSkalAvsluttes = perioder.getFirst().getUuid();
         var sistePeriode = perioder.getLast();
-        oppfolgingsPeriodeRepository.avsluttOppfolgingsperiode(uuidSomSkalAvsluttes, VEILEDER, "en begrunnelse", sistePeriode.getStartDato(), AvregistreringsType.AdminAvregistrering);
+        oppfolgingsPeriodeRepository.avsluttOppfolgingsperiode(uuidSomSkalAvsluttes, new AdminRegistrant("ADMIN"), "en begrunnelse", sistePeriode.getStartDato(), AvregistreringsType.AdminAvregistrering);
 
         avsluttOppfolgingService.adminAvsluttSpesifikkOppfolgingsperiode(aktorId, VEILEDER, "en begrunnelse", uuidSomSkalAvsluttes.toString());
 
@@ -264,7 +265,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         startOppfolgingForBruker();
         reset(kafkaProducerService);
 
-        oppfolgingsPeriodeRepository.avsluttSistePeriodeOgAvsluttOppfolging(aktorId, "veilederid", "begrunnelse", AvregistreringsType.ArenaIservKanIkkeReaktiveres);
+        oppfolgingsPeriodeRepository.avsluttSistePeriodeOgAvsluttOppfolging(aktorId, new AdminRegistrant("ADMIN"), "begrunnelse", AvregistreringsType.ArenaIservKanIkkeReaktiveres);
         var oppfolgingsbruker = OppfolgingsRegistrering.Companion.arbeidssokerRegistrering(fnr, aktorId, new VeilederRegistrant(NAV_IDENT));
         oppfolgingsPeriodeRepository.start(oppfolgingsbruker);
         var perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId).stream().sorted(Comparator.comparing(OppfolgingsperiodeEntity::getStartDato)).toList();
