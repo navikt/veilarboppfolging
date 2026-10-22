@@ -139,15 +139,15 @@ open class KafkaConsumerConfig(
                     ),
             )
 
-            val personhendelseTopicConfig = KafkaConsumerClientBuilder.TopicConfig<Long, Personhendelse?>()
+            val personhendelseTopicConfig = KafkaConsumerClientBuilder.TopicConfig<String, Personhendelse?>()
                 .withLogging()
                 .withMetrics(meterRegistry)
                 .withStoreOnFailure(consumerRepository)
                 .withConsumerConfig(
                     kafkaProperties.pdlLeesahTopic,
-                    Deserializers.longDeserializer(),
+                    Deserializers.stringDeserializer(),
                     avroDeserializer<Personhendelse>(),
-                    Consumer<ConsumerRecord<Long, Personhendelse?>> { kafkaMelding: ConsumerRecord<Long, Personhendelse?> ->
+                    Consumer<ConsumerRecord<String, Personhendelse?>> { kafkaMelding: ConsumerRecord<String, Personhendelse?> ->
                         personhendelseConsumer.consumePersonhendelse(
                             kafkaMelding
                         )

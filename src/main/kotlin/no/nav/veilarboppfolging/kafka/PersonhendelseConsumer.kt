@@ -22,7 +22,7 @@ class PersonhendelseConsumer(
 ) {
     val logger = LoggerFactory.getLogger(PersonhendelseConsumer::class.java)
 
-    fun consumePersonhendelse(kafkaMelding: ConsumerRecord<Long, Personhendelse?>) {
+    fun consumePersonhendelse(kafkaMelding: ConsumerRecord<String, Personhendelse?>) {
         val personhendelse = kafkaMelding.value() ?: return
         if (personhendelse.gjelderDodsfall()) {
             // personidenter vil inneholde alle former for identer på brukeren, både nåværende og historiske
@@ -39,7 +39,7 @@ class PersonhendelseConsumer(
                     logger.info("Forsøker å avslutte oppfølgingsperiode $oppfolgingsperiodeId pga dødsfall")
                     avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(Dodsfall(aktorId))
                 } else {
-                    secureLog.info("Ingen oppfølgingsperiode å avslutte for ident $aktorId pga dødsfall, ${kafkaMelding.key()}")
+                    secureLog.info("Ingen oppfølgingsperiode å avslutte for ident $aktorId pga dødsfall")
                 }
             }
         }

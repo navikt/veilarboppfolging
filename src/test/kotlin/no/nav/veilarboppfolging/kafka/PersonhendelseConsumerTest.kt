@@ -37,14 +37,14 @@ class PersonhendelseConsumerTest(
             .setEndringstype(Endringstype.OPPRETTET)
             .setFalskIdentitet(FalskIdentitet(true))
             .build()
-        val melding = ConsumerRecord("topic", 0, 0, 1L, personhendelse)
+        val melding = ConsumerRecord("topic", 0, 0, "key", personhendelse)
 
         personhendelseConsumer.consumePersonhendelse(melding)
     }
 
     @Test
     fun `dødsfall-hendelse, bruker er ikke under oppfølging - blir ignorert`() {
-        val melding = ConsumerRecord("topic", 0, 0, 1L, personhendelseForDodsfall(listOf(fnr.get(), aktorId.get())))
+        val melding = ConsumerRecord("topic", 0, 0, "key", personhendelseForDodsfall(listOf(fnr.get(), aktorId.get())))
 
         personhendelseConsumer.consumePersonhendelse(melding)
     }
@@ -59,7 +59,7 @@ class PersonhendelseConsumerTest(
         mockAap(fnr, harAap = false)
         assertThat(oppfolgingService.erUnderOppfolging(aktorId)).isTrue
 
-        val melding = ConsumerRecord("topic", 0, 0, 1L, personhendelseForDodsfall(listOf(fnr.get(), aktorId.get())))
+        val melding = ConsumerRecord("topic", 0, 0, "key", personhendelseForDodsfall(listOf(fnr.get(), aktorId.get())))
 
         personhendelseConsumer.consumePersonhendelse(melding)
 
