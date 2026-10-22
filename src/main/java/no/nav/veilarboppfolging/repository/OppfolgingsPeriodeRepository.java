@@ -51,7 +51,7 @@ public class OppfolgingsPeriodeRepository {
     }
 
     public UUID start(OppfolgingsRegistrering oppfolgingsbruker) {
-        return transactor.execute((ignored) -> {
+        return transactor.execute(ignored -> {
             var kontorSattAvVeileder = oppfolgingsbruker instanceof ManuellRegistreringVeileder ? ((ManuellRegistreringVeileder) oppfolgingsbruker).getKontorSattAvVeileder() : null;
             var oppfolgingsPeriodeId = insert(
                     oppfolgingsbruker.getAktorId(),

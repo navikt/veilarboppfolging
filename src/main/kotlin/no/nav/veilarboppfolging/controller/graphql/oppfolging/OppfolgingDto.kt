@@ -27,15 +27,40 @@ data class KvpPeriodeDto(
 /**
  * Detaljert visning av én oppfølgingsperiode oppslått på periode-id.
  */
-data class OppfolgingsperiodeDetaljerDto(
-    val startTidspunkt: String,
-    val sluttTidspunkt: String?,
-    val aktorId: String,
-    val kontor: String?,
-    val oppdatert: String,
-    val startet: OppfolgingsperiodeStartetDto,
-    val avsluttet: OppfolgingsperiodeAvsluttetDto?
-)
+sealed class OppfolgingsperiodeDetaljerDto {
+    abstract val startTidspunkt: String
+    abstract val sluttTidspunkt: String?
+    abstract val aktorId: String
+    abstract val ident: String?
+    abstract val kontor: String?
+    abstract val oppdatertTidspunkt: String
+    abstract val startet: OppfolgingsperiodeStartetDto
+    abstract val avsluttet: OppfolgingsperiodeAvsluttetDto?
+}
+
+data class ApenOppfolgingsperiodeDetaljerDto(
+    override val startTidspunkt: String,
+    override val aktorId: String,
+    override val ident: String?,
+    override val kontor: String?,
+    override val oppdatertTidspunkt: String,
+    override val startet: OppfolgingsperiodeStartetDto,
+) : OppfolgingsperiodeDetaljerDto() {
+    override val sluttTidspunkt: String? = null
+    override val avsluttet: OppfolgingsperiodeAvsluttetDto? = null
+}
+
+data class LukketOppfolgingsperiodeDetaljerDto(
+    override val startTidspunkt: String,
+    override val sluttTidspunkt: String,
+    override val aktorId: String,
+    override val ident: String?,
+    override val oppdatertTidspunkt: String,
+    override val startet: OppfolgingsperiodeStartetDto,
+    override val avsluttet: OppfolgingsperiodeAvsluttetDto,
+) : OppfolgingsperiodeDetaljerDto() {
+    override val kontor: String? = null
+}
 
 data class OppfolgingsperiodeStartetDto(
     val startetAv: String?,

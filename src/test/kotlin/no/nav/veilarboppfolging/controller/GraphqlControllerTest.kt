@@ -722,6 +722,35 @@ class GraphqlControllerTest: IntegrationTest() {
     }
 
     @Test
+    fun `skal returnere apen oppfolgingsperiode uten sluttidspunkt og avsluttet-info`() {
+        val enhet = EnhetId("1212")
+        val (fnr, aktorId) = defaultBruker()
+        mockPoaoAdminSystemBrukerAuth(aktorId, fnr)
+        mockArenaHentOppfolgingsTilstand(fnr)
+        val periodeId = setBrukerUnderOppfolging(aktorId, fnr)
+        setAoKontor(fnr, aktorId, enhet.get())
+
+        val result = tester
+            .documentName("getOppfolgingsperiodeById")
+            .variable("id", periodeId.toString())
+            .execute()
+
+        result.errors().verify()
+        result.path("oppfolgingsperiode").matchesJson("""
+            {
+                "aktorId": "${aktorId.get()}",
+                "kontor": "${enhet.get()}",
+                "sluttTidspunkt": null,
+                "startet": {
+                    "startetAvType": "BRUKER",
+                    "registreringsType": "ARBEIDSSOKER_REGISTRERING"
+                },
+                "avsluttet": null
+            }
+        """.trimIndent())
+    }
+
+    @Test
     fun `skal returnere null ved oppslag pa ukjent oppfolgingsperiode-id`() {
         val (fnr, aktorId) = defaultBruker()
         mockPoaoAdminSystemBrukerAuth(aktorId, fnr)

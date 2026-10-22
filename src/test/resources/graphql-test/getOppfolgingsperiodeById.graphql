@@ -3,9 +3,8 @@ query getOppfolgingsperiodeById($id: ID!) {
         startTidspunkt
         sluttTidspunkt
         aktorId
-        ident
         kontor
-        oppdatert
+        oppdatertTidspunkt
         startet {
             startetAv
             startetAvType

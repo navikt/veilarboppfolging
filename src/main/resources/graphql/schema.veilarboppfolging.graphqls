@@ -184,7 +184,7 @@ type OppfolgingsperiodeDetaljer {
     aktorId: String!
     ident: String
     kontor: String
-    oppdatert: String!
+    oppdatertTidspunkt: String!
     startet: OppfolgingsperiodeStartet!
     avsluttet: OppfolgingsperiodeAvsluttet
 }

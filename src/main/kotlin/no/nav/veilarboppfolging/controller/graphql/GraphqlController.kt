@@ -34,6 +34,8 @@ import no.nav.veilarboppfolging.controller.graphql.oppfolging.EnhetDto
 import no.nav.veilarboppfolging.controller.graphql.oppfolging.KildeDto
 import no.nav.veilarboppfolging.controller.graphql.oppfolging.KvpPeriodeDto
 import no.nav.veilarboppfolging.controller.graphql.oppfolging.OppfolgingDto
+import no.nav.veilarboppfolging.controller.graphql.oppfolging.ApenOppfolgingsperiodeDetaljerDto
+import no.nav.veilarboppfolging.controller.graphql.oppfolging.LukketOppfolgingsperiodeDetaljerDto
 import no.nav.veilarboppfolging.controller.graphql.oppfolging.OppfolgingsEnhetQueryDto
 import no.nav.veilarboppfolging.controller.graphql.oppfolging.OppfolgingsperiodeAvsluttetDto
 import no.nav.veilarboppfolging.controller.graphql.oppfolging.OppfolgingsperiodeDetaljerDto
@@ -662,25 +664,33 @@ fun OppfolgingsperiodeEntity.toOppfolgingsperiodeDetaljerDto(aoKontorInfo: AoKon
         startetAvType = this.startetAvType,
         registreringsType = this.startetBegrunnelse
     )
-    val avsluttet = if (this.avsluttetAv != null || this.avsluttetAvType != null || this.avregistreringsType != null) {
-        OppfolgingsperiodeAvsluttetDto(
-            avsluttetAv = this.avsluttetAv,
-            avsluttetAvType = this.avsluttetAvType,
-            avregistreringsType = this.avregistreringsType
+    val oppdatertTidspunkt = requireNotNull(this.oppdatert) { "oppdatert mangler for oppfolgingsperiode ${this.uuid}" }.toISOString()
+    val ident = aoKontorInfo?.ident
+
+    return if (this.sluttDato == null) {
+        ApenOppfolgingsperiodeDetaljerDto(
+            startTidspunkt = this.startDato.toISOString(),
+            aktorId = this.aktorId,
+            ident = ident,
+            kontor = aoKontorInfo?.kontor,
+            oppdatertTidspunkt = oppdatertTidspunkt,
+            startet = startet,
         )
     } else {
-        null
+        LukketOppfolgingsperiodeDetaljerDto(
+            startTidspunkt = this.startDato.toISOString(),
+            sluttTidspunkt = this.sluttDato.toISOString(),
+            aktorId = this.aktorId,
+            ident = ident,
+            oppdatertTidspunkt = oppdatertTidspunkt,
+            startet = startet,
+            avsluttet = OppfolgingsperiodeAvsluttetDto(
+                avsluttetAv = this.avsluttetAv,
+                avsluttetAvType = this.avsluttetAvType,
+                avregistreringsType = this.avregistreringsType
+            )
+        )
     }
-
-    return OppfolgingsperiodeDetaljerDto(
-        startTidspunkt = this.startDato.toISOString(),
-        sluttTidspunkt = this.sluttDato?.toISOString(),
-        aktorId = this.aktorId,
-        kontor = aoKontorInfo?.kontor,
-        oppdatert = requireNotNull(this.oppdatert) { "oppdatert mangler for oppfolgingsperiode ${this.uuid}" }.toISOString(),
-        startet = startet,
-        avsluttet = avsluttet
-    )
 }
 
 private fun KvpPeriodeEntity.toKvpPeriodeDto() = KvpPeriodeDto(
