@@ -27,6 +27,7 @@ import no.nav.veilarboppfolging.kafka.PersonhendelseConsumer
 import no.nav.veilarboppfolging.kafka.inngang.StartOppfolgingConsumerService
 import no.nav.veilarboppfolging.kafka.inngang.StartOppfolgingMelding
 import no.nav.veilarboppfolging.service.KafkaConsumerService
+import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.common.serialization.ByteArrayDeserializer
 import org.apache.kafka.common.serialization.Deserializer
@@ -54,8 +55,10 @@ open class KafkaConsumerConfig(
 ) {
 
     val CONSUMER_GROUP_ID: String = "veilarboppfolging-consumer"
+    val PERSONHENDELSE_CONSUMER_GROUP_ID: String = "veilarboppfolging-personhendelse-consumer"
 
     private var aivenConsumerClient: KafkaConsumerClient? = null
+    private var personhendelseConsumerClient: KafkaConsumerClient? = null
     private var consumerRecordProcessor: KafkaConsumerRecordProcessor? = null
 
     init {
@@ -134,25 +137,31 @@ open class KafkaConsumerConfig(
                             startOppfolgingConsumerService.consumeStartOppfolging(kafkaMelding)
                         }
                     ),
-                KafkaConsumerClientBuilder.TopicConfig<Long, Personhendelse?>()
-                    .withLogging()
-                    .withMetrics(meterRegistry)
-                    .withStoreOnFailure(consumerRepository)
-                    .withConsumerConfig(
-                        kafkaProperties.pdlLeesahTopic,
-                        Deserializers.longDeserializer(),
-                        avroDeserializer<Personhendelse>(),
-                        Consumer<ConsumerRecord<Long, Personhendelse?>> { kafkaMelding: ConsumerRecord<Long, Personhendelse?> ->
-                            personhendelseConsumer.consumePersonhendelse(
-                                kafkaMelding
-                            )
-                        }
-                    ),
             )
+
+            val personhendelseTopicConfig = KafkaConsumerClientBuilder.TopicConfig<Long, Personhendelse?>()
+                .withLogging()
+                .withMetrics(meterRegistry)
+                .withStoreOnFailure(consumerRepository)
+                .withConsumerConfig(
+                    kafkaProperties.pdlLeesahTopic,
+                    Deserializers.longDeserializer(),
+                    avroDeserializer<Personhendelse>(),
+                    Consumer<ConsumerRecord<Long, Personhendelse?>> { kafkaMelding: ConsumerRecord<Long, Personhendelse?> ->
+                        personhendelseConsumer.consumePersonhendelse(
+                            kafkaMelding
+                        )
+                    }
+                )
 
             aivenConsumerClient = KafkaConsumerClientBuilder.builder()
                 .withProperties(aivenConsumerProperties(CONSUMER_GROUP_ID))
                 .withTopicConfigs(topicConfigs)
+                .build()
+
+            personhendelseConsumerClient = KafkaConsumerClientBuilder.builder()
+                .withProperties(aivenConsumerProperties(PERSONHENDELSE_CONSUMER_GROUP_ID, autoOffsetReset = "latest"))
+                .withTopicConfig(personhendelseTopicConfig)
                 .build()
 
             consumerRecordProcessor = KafkaConsumerRecordProcessorBuilder
@@ -160,19 +169,21 @@ open class KafkaConsumerConfig(
                 .withLockProvider(lockProvider)
                 .withMetrics(meterRegistry)
                 .withKafkaConsumerRepository(consumerRepository)
-                .withConsumerConfigs(ConsumerUtils.findConsumerConfigsWithStoreOnFailure(topicConfigs))
+                .withConsumerConfigs(ConsumerUtils.findConsumerConfigsWithStoreOnFailure(topicConfigs + personhendelseTopicConfig))
                 .build()
 
             aivenConsumerClient?.start()
+            personhendelseConsumerClient?.start()
             consumerRecordProcessor?.start()
         }
     }
 
-    private fun aivenConsumerProperties(consumerGroupId: String) = KafkaPropertiesBuilder.consumerBuilder()
+    private fun aivenConsumerProperties(consumerGroupId: String, autoOffsetReset: String = "earliest") = KafkaPropertiesBuilder.consumerBuilder()
         .withBaseProperties()
         .withConsumerGroupId(consumerGroupId)
         .withAivenBrokerUrl()
         .withAivenAuth()
+        .withProp(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, autoOffsetReset)
         .withDeserializers(
             ByteArrayDeserializer::class.java,
             ByteArrayDeserializer::class.java
