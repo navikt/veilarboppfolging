@@ -35,8 +35,12 @@ import no.nav.veilarboppfolging.controller.graphql.oppfolging.KildeDto
 import no.nav.veilarboppfolging.controller.graphql.oppfolging.KvpPeriodeDto
 import no.nav.veilarboppfolging.controller.graphql.oppfolging.OppfolgingDto
 import no.nav.veilarboppfolging.controller.graphql.oppfolging.OppfolgingsEnhetQueryDto
+import no.nav.veilarboppfolging.controller.graphql.oppfolging.OppfolgingsperiodeAvsluttetDto
+import no.nav.veilarboppfolging.controller.graphql.oppfolging.OppfolgingsperiodeDetaljerDto
 import no.nav.veilarboppfolging.controller.graphql.oppfolging.OppfolgingsperiodeDto
+import no.nav.veilarboppfolging.controller.graphql.oppfolging.OppfolgingsperiodeStartetDto
 import no.nav.veilarboppfolging.controller.graphql.veilederTilgang.VeilederTilgangDto
+import no.nav.veilarboppfolging.controller.admin.v1.POAO_ADMIN
 import no.nav.veilarboppfolging.ident.toCommonIdent
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService
 import no.nav.veilarboppfolging.kandidatForUtmelding.dto.ForlengelseDto
@@ -57,6 +61,7 @@ import no.nav.veilarboppfolging.repository.ArbeidsoppfolgingskontorRepository
 import no.nav.veilarboppfolging.repository.KvpRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
 import no.nav.veilarboppfolging.repository.VeilederTilordningerRepository
+import no.nav.veilarboppfolging.repository.AoKontorInfo
 import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity
 import no.nav.veilarboppfolging.service.AuthService
@@ -561,6 +566,22 @@ class GraphqlController(
             .let { result.data(it).build() }
     }
 
+    @QueryMapping
+    fun oppfolgingsperiode(@Argument id: String): OppfolgingsperiodeDetaljerDto? {
+        authService.skalVereSystemBruker()
+        authService.sjekkAtApplikasjonErIAllowList(listOf(POAO_ADMIN))
+        authService.sjekkAtTokenHarScope("admin")
+
+        val oppfolgingsperiodeId = runCatching { UUID.fromString(id) }
+            .getOrElse { throw ResponseStatusException(HttpStatus.BAD_REQUEST, "id må være en gyldig UUID") }
+
+        val oppfolgingsperiode = oppfolgingsService.hentOppfolgingsperiode(oppfolgingsperiodeId.toString()).getOrNull()
+            ?: return null
+        val aoKontorInfo = arbeidsoppfolgingskontorRepository.hentKontorOgIdent(oppfolgingsperiodeId)
+
+        return oppfolgingsperiode.toOppfolgingsperiodeDetaljerDto(aoKontorInfo)
+    }
+
     private fun EksternBrukerId.getAktorId(): AktorId {
         if (this is Fnr) return aktorOppslagClient.hentAktorId(this)
         else return AktorId(this.get())
@@ -632,6 +653,34 @@ fun OppfolgingsperiodeEntity.toOppfolgingsperiodeDto(): OppfolgingsperiodeDto {
         startetBegrunnelse?.name,
         kvpPerioder = this.kvpPerioder.map { it.toKvpPeriodeDto() },
         avsluttetAv = this.avsluttetAv
+    )
+}
+
+fun OppfolgingsperiodeEntity.toOppfolgingsperiodeDetaljerDto(aoKontorInfo: AoKontorInfo?): OppfolgingsperiodeDetaljerDto {
+    val startet = OppfolgingsperiodeStartetDto(
+        startetAv = this.startetAv,
+        startetAvType = this.startetAvType,
+        registreringsType = this.startetBegrunnelse
+    )
+    val avsluttet = if (this.avsluttetAv != null || this.avsluttetAvType != null || this.avregistreringsType != null) {
+        OppfolgingsperiodeAvsluttetDto(
+            avsluttetAv = this.avsluttetAv,
+            avsluttetAvType = this.avsluttetAvType,
+            avregistreringsType = this.avregistreringsType
+        )
+    } else {
+        null
+    }
+
+    return OppfolgingsperiodeDetaljerDto(
+        startTidspunkt = this.startDato.toISOString(),
+        sluttTidspunkt = this.sluttDato?.toISOString(),
+        aktorId = this.aktorId,
+        ident = aoKontorInfo?.ident,
+        kontor = aoKontorInfo?.kontor,
+        oppdatert = requireNotNull(this.oppdatert) { "oppdatert mangler for oppfolgingsperiode ${this.uuid}" }.toISOString(),
+        startet = startet,
+        avsluttet = avsluttet
     )
 }
 

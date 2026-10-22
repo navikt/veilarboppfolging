@@ -1,6 +1,8 @@
 package no.nav.veilarboppfolging.controller
 
+import com.nimbusds.jwt.JWTClaimsSet
 import java.time.LocalDate
+import java.util.Optional
 import java.util.UUID
 import kotlin.test.assertEquals
 import no.nav.common.types.identer.AktorId
@@ -63,6 +65,17 @@ class GraphqlControllerTest: IntegrationTest() {
             under18 = false,
         ))
         return fnr to aktorId
+    }
+
+    private fun mockPoaoAdminSystemBrukerAuth(aktorId: AktorId, fnr: Fnr) {
+        mockSytemBrukerAuthOk(aktorId, fnr)
+        val claims = JWTClaimsSet.Builder()
+            .issuer("microsoftonline.com")
+            .claim("azp_name", "cluster:poao:poao-admin")
+            .claim("roles", listOf("access_as_application"))
+            .claim("scp", "admin")
+            .build()
+        `when`(authContextHolder.idTokenClaims).thenReturn(Optional.of(claims))
     }
 
     @Test
@@ -673,6 +686,75 @@ class GraphqlControllerTest: IntegrationTest() {
                 }
             ]
         """.trimIndent())
+    }
+
+    @Test
+    fun `skal returnere oppfolgingsperiode oppslatt med id`() {
+        val veilederNavIdent = NavIdent("B143314")
+        val enhet = EnhetId("1212")
+        val (fnr, aktorId) = defaultBruker()
+        mockPoaoAdminSystemBrukerAuth(aktorId, fnr)
+        setBrukerUnderOppfolging(aktorId, fnr)
+        setAoKontor(fnr, aktorId, enhet.get())
+        avsluttOppfolgingManueltSomVeileder(aktorId, veilederNavIdent, "fordi")
+        val oppfolgingsperiode = hentOppfolgingsperioder(fnr).first()
+
+        val result = tester
+            .documentName("getOppfolgingsperiodeById")
+            .variable("id", oppfolgingsperiode.uuid.toString())
+            .execute()
+        result.errors().verify()
+        result.path("oppfolgingsperiode").matchesJson("""
+            {
+                "aktorId": "${aktorId.get()}",
+                "ident": "${fnr.get()}",
+                "kontor": "${enhet.get()}",
+                "startet": {
+                    "startetAvType": "SYSTEM",
+                    "registreringsType": "ARBEIDSSOKER_REGISTRERING"
+                },
+                "avsluttet": {
+                    "avsluttetAv": "${veilederNavIdent.get()}",
+                    "avsluttetAvType": "VEILEDER",
+                    "avregistreringsType": "ManuellAvregistrering"
+                }
+            }
+        """.trimIndent())
+    }
+
+    @Test
+    fun `skal returnere null ved oppslag pa ukjent oppfolgingsperiode-id`() {
+        val (fnr, aktorId) = defaultBruker()
+        mockPoaoAdminSystemBrukerAuth(aktorId, fnr)
+
+        val result = tester
+            .documentName("getOppfolgingsperiodeById")
+            .variable("id", UUID.randomUUID().toString())
+            .execute()
+
+        result.errors().verify()
+        result.path("oppfolgingsperiode").valueIsNull()
+    }
+
+    @Test
+    fun `skal returnere feil nar poao-admin mangler admin-scope`() {
+        val (fnr, aktorId) = defaultBruker()
+        mockSytemBrukerAuthOk(aktorId, fnr)
+        val claims = JWTClaimsSet.Builder()
+            .issuer("microsoftonline.com")
+            .claim("azp_name", "cluster:poao:poao-admin")
+            .claim("roles", listOf("access_as_application"))
+            .build()
+        `when`(authContextHolder.idTokenClaims).thenReturn(Optional.of(claims))
+
+        val result = tester
+            .documentName("getOppfolgingsperiodeById")
+            .variable("id", UUID.randomUUID().toString())
+            .execute()
+
+        result.errors()
+            .expect { it.path == "oppfolgingsperiode" && it.message == "Mangler påkrevd scope: admin" }
+            .verify()
     }
 
     @Test

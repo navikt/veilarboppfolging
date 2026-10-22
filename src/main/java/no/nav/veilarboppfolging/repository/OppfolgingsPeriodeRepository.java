@@ -36,7 +36,7 @@ public class OppfolgingsPeriodeRepository {
     private final TransactionTemplate transactor;
 
     private final static String hentOppfolingsperioderSQL =
-            "SELECT uuid, aktor_id, avslutt_veileder, startdato, sluttdato, avslutt_begrunnelse, start_begrunnelse, startet_av, startet_av_type, avregistrering_type, avsluttet_av_type " +
+            "SELECT uuid, aktor_id, avslutt_veileder, startdato, sluttdato, avslutt_begrunnelse, start_begrunnelse, startet_av, startet_av_type, avregistrering_type, avsluttet_av_type, oppdatert " +
                     "FROM OPPFOLGINGSPERIODE ";
 
     @Autowired
@@ -229,7 +229,8 @@ public class OppfolgingsPeriodeRepository {
                 result.getString("startet_av"),
                 startetAvType,
                 EnumUtils.valueOf(AvregistreringsType.class, result.getString("avregistrering_type")),
-                avsluttetAvType
+                avsluttetAvType,
+                hentZonedDateTime(result, "oppdatert")
         );
     }
 }

@@ -350,6 +350,23 @@ public class AuthService {
         throw new ForbiddenException("Applikasjon " + appname + " er ikke allowlist");
     }
 
+    public void sjekkAtTokenHarScope(String påkrevdScope) {
+        var scopes = authContextHolder.getIdTokenClaims()
+                .flatMap(claims -> {
+                    try {
+                        return Optional.ofNullable(claims.getStringClaim("scp"));
+                    } catch (ParseException e) {
+                        return Optional.empty();
+                    }
+                })
+                .map(scopeClaim -> List.of(scopeClaim.split("\\s+")))
+                .orElse(emptyList());
+
+        if (scopes.stream().noneMatch(påkrevdScope::equals)) {
+            throw new ForbiddenException("Mangler påkrevd scope: " + påkrevdScope);
+        }
+    }
+
     public static boolean isAzure(Optional<JWTClaimsSet> maybeClaims) {
         return maybeClaims.map(claims -> hasIssuer(claims, "microsoftonline.com")).orElse(false);
     }

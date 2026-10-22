@@ -237,6 +237,9 @@ spec:
           cluster: dev-fss
         - application: poao-admin
           namespace: poao
+          permissions:
+            scopes:
+              - "admin"
         - application: oppgave
           namespace: aap
         - application: isoppfolgingstilfelle

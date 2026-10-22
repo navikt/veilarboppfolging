@@ -3,6 +3,7 @@ type Query {
     oppfolging(fnr: String): OppfolgingDto
     brukerStatus(fnr: String!): BrukerStatusDto
     oppfolgingsPerioder(fnr: String!): [Oppfolgingsperiode]
+    oppfolgingsperiode(id: ID!): OppfolgingsperiodeDetaljer
     veilederTilgang(fnr: String!): VeilederTilgang
     gjeldendeOppfolgingsperiode: Oppfolgingsperiode
     utmeldingskandidatTag(fnr: String!): UtmeldingskandidatTag @deprecated(reason: "Erstattet av utmeldingskandidat som er mer beskrivende")
@@ -175,6 +176,44 @@ type Oppfolgingsperiode {
     startetBegrunnelse: OppfolgingStartetBegrunnelse
     avsluttetAv: String,
     kvpPerioder: [KvpPeriode]
+}
+
+type OppfolgingsperiodeDetaljer {
+    startTidspunkt: String!
+    sluttTidspunkt: String
+    aktorId: String!
+    ident: String
+    kontor: String
+    oppdatert: String!
+    startet: OppfolgingsperiodeStartet!
+    avsluttet: OppfolgingsperiodeAvsluttet
+}
+
+type OppfolgingsperiodeStartet {
+    startetAv: String
+    startetAvType: RegistrantType
+    registreringsType: OppfolgingStartetBegrunnelse
+}
+
+type OppfolgingsperiodeAvsluttet {
+    avsluttetAv: String
+    avsluttetAvType: RegistrantType
+    avregistreringsType: AvregistreringsType
+}
+
+enum RegistrantType {
+    SYSTEM
+    BRUKER
+    VEILEDER
+    ADMIN
+}
+
+enum AvregistreringsType {
+    UtmeldtEtter28Dager
+    KandidatUtmeldtEtter28Dager
+    ManuellAvregistrering
+    ArenaIservKanIkkeReaktiveres
+    AdminAvregistrering
 }
 
 type KvpPeriode {
