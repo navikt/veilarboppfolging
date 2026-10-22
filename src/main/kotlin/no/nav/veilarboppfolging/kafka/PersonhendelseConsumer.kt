@@ -4,6 +4,9 @@ import kotlin.jvm.optionals.getOrNull
 import no.nav.common.types.identer.AktorId
 import no.nav.person.pdl.leesah.Endringstype
 import no.nav.person.pdl.leesah.Personhendelse
+import no.nav.veilarboppfolging.ident.Ident
+import no.nav.veilarboppfolging.ident.ValidIdent
+import no.nav.veilarboppfolging.ident.AktorId as IdentAktorId
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.Dodsfall
 import no.nav.veilarboppfolging.service.AvsluttOppfolgingService
 import no.nav.veilarboppfolging.service.OppfolgingService
@@ -23,16 +26,20 @@ class PersonhendelseConsumer(
         val personhendelse = kafkaMelding.value() ?: return
         if (personhendelse.gjelderDodsfall()) {
             // personidenter vil inneholde alle former for identer på brukeren, både nåværende og historiske
-            val identer = personhendelse.personidenter
+            val aktorIder = personhendelse.personidenter
+                .map { Ident.validate(it) }
+                .filterIsInstance<ValidIdent>()
+                .map { it.ident }
+                .filterIsInstance<IdentAktorId>()
+                .map { AktorId.of(it.value) }
 
-            identer.forEach { ident ->
-                val aktorId = AktorId.of(ident)
+            aktorIder.forEach { aktorId ->
                 val oppfolgingsperiodeId = oppfolgingService.hentGjeldendeOppfolgingsperiode(aktorId).getOrNull()?.uuid
                 if (oppfolgingsperiodeId != null) {
                     logger.info("Forsøker å avslutte oppfølgingsperiode $oppfolgingsperiodeId pga dødsfall")
                     avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(Dodsfall(aktorId))
                 } else {
-                    secureLog.info("Ingen oppfølgingsperiode å avslutte for ident $ident pga dødsfall, ${kafkaMelding.key()}")
+                    secureLog.info("Ingen oppfølgingsperiode å avslutte for ident $aktorId pga dødsfall, ${kafkaMelding.key()}")
                 }
             }
         }

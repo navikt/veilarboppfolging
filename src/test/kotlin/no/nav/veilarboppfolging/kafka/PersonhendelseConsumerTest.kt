@@ -24,13 +24,13 @@ class PersonhendelseConsumerTest(
     private val personhendelseConsumer: PersonhendelseConsumer,
 ) : IntegrationTest() {
     private val fnr = Fnr.of("01010198765")
-    private val aktorId = AktorId.of("123456789012")
+    private val aktorId = AktorId.of("2915972563113")
 
     @Test
     fun `ikke dødsfall-hendelse - blir ignorert`() {
         val personhendelse = Personhendelse.newBuilder()
             .setHendelseId("dummyHendelseId")
-            .setPersonidenter(listOf("12345678901"))
+            .setPersonidenter(listOf("2915972563113"))
             .setMaster("PDL")
             .setOpprettet(Instant.now())
             .setOpplysningstype("FalskIdentitetV1")
