@@ -676,7 +676,6 @@ fun OppfolgingsperiodeEntity.toOppfolgingsperiodeDetaljerDto(aoKontorInfo: AoKon
         startTidspunkt = this.startDato.toISOString(),
         sluttTidspunkt = this.sluttDato?.toISOString(),
         aktorId = this.aktorId,
-        ident = aoKontorInfo?.ident,
         kontor = aoKontorInfo?.kontor,
         oppdatert = requireNotNull(this.oppdatert) { "oppdatert mangler for oppfolgingsperiode ${this.uuid}" }.toISOString(),
         startet = startet,

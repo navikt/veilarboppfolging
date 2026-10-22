@@ -694,23 +694,22 @@ class GraphqlControllerTest: IntegrationTest() {
         val enhet = EnhetId("1212")
         val (fnr, aktorId) = defaultBruker()
         mockPoaoAdminSystemBrukerAuth(aktorId, fnr)
-        setBrukerUnderOppfolging(aktorId, fnr)
+        mockArenaHentOppfolgingsTilstand(fnr)
+        val periodeId = setBrukerUnderOppfolging(aktorId, fnr)
         setAoKontor(fnr, aktorId, enhet.get())
         avsluttOppfolgingManueltSomVeileder(aktorId, veilederNavIdent, "fordi")
-        val oppfolgingsperiode = hentOppfolgingsperioder(fnr).first()
 
         val result = tester
             .documentName("getOppfolgingsperiodeById")
-            .variable("id", oppfolgingsperiode.uuid.toString())
+            .variable("id", periodeId.toString())
             .execute()
         result.errors().verify()
         result.path("oppfolgingsperiode").matchesJson("""
             {
                 "aktorId": "${aktorId.get()}",
-                "ident": "${fnr.get()}",
-                "kontor": "${enhet.get()}",
+                "kontor": null,
                 "startet": {
-                    "startetAvType": "SYSTEM",
+                    "startetAvType": "BRUKER",
                     "registreringsType": "ARBEIDSSOKER_REGISTRERING"
                 },
                 "avsluttet": {

@@ -11,6 +11,9 @@ import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
 import no.nav.veilarboppfolging.utils.EnumUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -32,6 +35,7 @@ import static no.nav.veilarboppfolging.utils.DbUtils.queryForNullableObject;
 public class OppfolgingsPeriodeRepository {
 
     private final JdbcTemplate db;
+    private final NamedParameterJdbcTemplate namedParameterDb;
 
     private final TransactionTemplate transactor;
 
@@ -42,13 +46,14 @@ public class OppfolgingsPeriodeRepository {
     @Autowired
     public OppfolgingsPeriodeRepository(JdbcTemplate db, TransactionTemplate transactor) {
         this.db = db;
+        this.namedParameterDb = new NamedParameterJdbcTemplate(db);
         this.transactor = transactor;
     }
 
-    public void start(OppfolgingsRegistrering oppfolgingsbruker) {
-        transactor.executeWithoutResult((ignored) -> {
+    public UUID start(OppfolgingsRegistrering oppfolgingsbruker) {
+        return transactor.execute((ignored) -> {
             var kontorSattAvVeileder = oppfolgingsbruker instanceof ManuellRegistreringVeileder ? ((ManuellRegistreringVeileder) oppfolgingsbruker).getKontorSattAvVeileder() : null;
-            insert(
+            var oppfolgingsPeriodeId = insert(
                     oppfolgingsbruker.getAktorId(),
                     oppfolgingsbruker.getOppfolgingStartBegrunnelse(),
                     oppfolgingsbruker.getRegistrertAv().getIdent(),
@@ -56,6 +61,7 @@ public class OppfolgingsPeriodeRepository {
                     kontorSattAvVeileder
             );
             setActive(oppfolgingsbruker.getAktorId());
+            return oppfolgingsPeriodeId;
         });
     }
 
@@ -154,17 +160,23 @@ public class OppfolgingsPeriodeRepository {
         );
     }
 
-    private void insert(AktorId aktorId, OppfolgingStartBegrunnelse getOppfolgingStartBegrunnelse, @Nullable String startetAvIdent, RegistrantType startetAvType, @Nullable String kontorSattAvVeileder) {
-        db.update("" +
-                        "INSERT INTO OPPFOLGINGSPERIODE(uuid, aktor_id, startDato, oppdatert, start_begrunnelse, startet_av, startet_av_type, kontor_satt_av_veileder) " +
-                        "VALUES (?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?, ?, ?, ?)",
-                UUID.randomUUID().toString(),
-                aktorId.get(),
-                getOppfolgingStartBegrunnelse.name(),
-                startetAvIdent,
-                startetAvType.name(),
-                kontorSattAvVeileder
+    private UUID insert(AktorId aktorId, OppfolgingStartBegrunnelse getOppfolgingStartBegrunnelse, @Nullable String startetAvIdent, RegistrantType startetAvType, @Nullable String kontorSattAvVeileder) {
+        var keyholder = new GeneratedKeyHolder();
+        var params = new MapSqlParameterSource()
+                .addValue("uuid", UUID.randomUUID().toString())
+                .addValue("aktor_id", aktorId.get())
+                .addValue("start_begrunnelse", getOppfolgingStartBegrunnelse.name())
+                .addValue("startet_av", startetAvIdent)
+                .addValue("startet_av_type", startetAvType.name())
+                .addValue("kontor_satt_av_veileder", kontorSattAvVeileder);
+        namedParameterDb.update("" +
+                    "INSERT INTO OPPFOLGINGSPERIODE(uuid, aktor_id, startDato, oppdatert, start_begrunnelse, startet_av, startet_av_type, kontor_satt_av_veileder) " +
+                    "VALUES (:uuid, :aktor_id, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, :start_begrunnelse, :startet_av, :startet_av_type, :kontor_satt_av_veileder)",
+                params,
+                keyholder,
+                new String[]{"uuid"}
         );
+        return UUID.fromString(keyholder.getKeyAs(String.class));
     }
 
     private void setActive(AktorId aktorId) {

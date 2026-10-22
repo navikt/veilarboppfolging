@@ -31,7 +31,6 @@ data class OppfolgingsperiodeDetaljerDto(
     val startTidspunkt: String,
     val sluttTidspunkt: String?,
     val aktorId: String,
-    val ident: String?,
     val kontor: String?,
     val oppdatert: String,
     val startet: OppfolgingsperiodeStartetDto,
