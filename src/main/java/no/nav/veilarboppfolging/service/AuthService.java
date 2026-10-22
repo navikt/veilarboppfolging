@@ -352,13 +352,7 @@ public class AuthService {
 
     public void sjekkAtTokenHarScope(String påkrevdScope) {
         var scopes = authContextHolder.getIdTokenClaims()
-                .flatMap(claims -> {
-                    try {
-                        return Optional.ofNullable(claims.getStringClaim("scp"));
-                    } catch (ParseException e) {
-                        return Optional.empty();
-                    }
-                })
+                .flatMap(claims -> getStringClaimOrEmpty(claims, "scp"))
                 .map(scopeClaim -> List.of(scopeClaim.split("\\s+")))
                 .orElse(emptyList());
 
