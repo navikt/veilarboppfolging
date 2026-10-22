@@ -1,0 +1,47 @@
+@namespace("no.nav.person.pdl.leesah")
+protocol PersonhendelseProto {
+  import idl "adressebeskyttelse/Adressebeskyttelse.avdl";
+  import idl "doedsfall/Doedsfall.avdl";
+  import idl "falskidentitet/FalskIdentitet.avdl";
+  import idl "foedsel/Foedsel.avdl";
+  import idl "foedselsdato/Foedselsdato.avdl";
+  import idl "utflytting/Utflytting.avdl";
+  import idl "innflytting/Innflytting.avdl";
+  import idl "folkeregisteridentifikator/Folkeregisteridentifikator.avdl";
+  import idl "sikkerhetstiltak/Sikkerhetstiltak.avdl";
+  import idl "statsborgerskap/Statsborgerskap.avdl";
+  import idl "kontaktadresse/Kontaktadresse.avdl";
+  import idl "bostedsadresse/Bostedsadresse.avdl";
+
+  enum Endringstype {
+    OPPRETTET,
+    KORRIGERT,
+    ANNULLERT,
+    OPPHOERT
+  }
+
+  record Personhendelse {
+    string hendelseId;
+    array<string> personidenter;
+
+    string master;
+    timestamp_ms opprettet;
+
+    string opplysningstype;
+    Endringstype endringstype;
+    union { null, string } tidligereHendelseId = null; // Peker til tidligere hendelse ved korrigering og annullering.
+
+    union { null, no.nav.person.pdl.leesah.adressebeskyttelse.Adressebeskyttelse } adressebeskyttelse = null;
+    union { null, no.nav.person.pdl.leesah.doedsfall.Doedsfall } doedsfall = null;
+    union { null, no.nav.person.pdl.leesah.falskidentitet.FalskIdentitet } falskIdentitet = null;
+    union { null, no.nav.person.pdl.leesah.foedsel.Foedsel } foedsel = null;
+    union { null, no.nav.person.pdl.leesah.foedselsdato.Foedselsdato } foedselsdato = null;
+    union { null, no.nav.person.pdl.leesah.utflytting.UtflyttingFraNorge } utflyttingFraNorge = null;
+    union { null, no.nav.person.pdl.leesah.innflytting.InnflyttingTilNorge } InnflyttingTilNorge = null;
+    union { null, no.nav.person.pdl.leesah.folkeregisteridentifikator.Folkeregisteridentifikator } Folkeregisteridentifikator = null;
+    union { null, no.nav.person.pdl.leesah.sikkerhetstiltak.Sikkerhetstiltak } sikkerhetstiltak = null;
+    union { null, no.nav.person.pdl.leesah.statsborgerskap.Statsborgerskap } statsborgerskap = null;
+    union { null, no.nav.person.pdl.leesah.kontaktadresse.Kontaktadresse } kontaktadresse = null;
+    union { null, no.nav.person.pdl.leesah.bostedsadresse.Bostedsadresse } bostedsadresse = null;
+  }
+}
