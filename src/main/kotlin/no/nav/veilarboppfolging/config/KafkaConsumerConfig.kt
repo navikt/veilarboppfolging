@@ -16,15 +16,18 @@ import no.nav.common.kafka.spring.PostgresJdbcTemplateConsumerRepository
 import no.nav.common.kafka.util.KafkaPropertiesBuilder
 import no.nav.common.utils.EnvironmentUtils
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
+import no.nav.person.pdl.leesah.Personhendelse
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2
 import no.nav.veilarboppfolging.kafka.AapHendelseRecord
 import no.nav.veilarboppfolging.kafka.AapHendelserConsumerService
 import no.nav.veilarboppfolging.kafka.ArbeidsoppfolgingskontortilordningConsumerService
 import no.nav.veilarboppfolging.kafka.ArbeidssøkerperiodeConsumerService
 import no.nav.veilarboppfolging.kafka.OppfolgingskontorMelding
+import no.nav.veilarboppfolging.kafka.PersonhendelseConsumer
 import no.nav.veilarboppfolging.kafka.inngang.StartOppfolgingConsumerService
 import no.nav.veilarboppfolging.kafka.inngang.StartOppfolgingMelding
 import no.nav.veilarboppfolging.service.KafkaConsumerService
+import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.common.serialization.ByteArrayDeserializer
 import org.apache.kafka.common.serialization.Deserializer
@@ -46,13 +49,16 @@ open class KafkaConsumerConfig(
     private val arbeidsoppfolgingskontortilordningConsumerService: ArbeidsoppfolgingskontortilordningConsumerService,
     private val aapHendelserConsumerService: AapHendelserConsumerService,
     private val startOppfolgingConsumerService: StartOppfolgingConsumerService,
+    private val personhendelseConsumer: PersonhendelseConsumer,
     lockProvider: LockProvider,
     @Value("\${app.kafka.enabled}") val kafkaEnabled: Boolean
 ) {
 
     val CONSUMER_GROUP_ID: String = "veilarboppfolging-consumer"
+    val PERSONHENDELSE_CONSUMER_GROUP_ID: String = "veilarboppfolging-personhendelse-consumer"
 
     private var aivenConsumerClient: KafkaConsumerClient? = null
+    private var personhendelseConsumerClient: KafkaConsumerClient? = null
     private var consumerRecordProcessor: KafkaConsumerRecordProcessor? = null
 
     init {
@@ -82,7 +88,7 @@ open class KafkaConsumerConfig(
                     .withConsumerConfig(
                         kafkaProperties.arbeidssokerperioderTopicAiven,
                         Deserializers.stringDeserializer(),
-                        getPeriodeAvroDeserializer(),
+                        avroDeserializer<Periode>(),
                         Consumer<ConsumerRecord<String, Periode>> { kafkaMelding: ConsumerRecord<String, Periode> ->
                             arbeidssøkerperiodeConsumerService.consumeArbeidssøkerperiode(
                                 kafkaMelding
@@ -130,12 +136,32 @@ open class KafkaConsumerConfig(
                         Consumer { kafkaMelding: ConsumerRecord<String, StartOppfolgingMelding> ->
                             startOppfolgingConsumerService.consumeStartOppfolging(kafkaMelding)
                         }
-                    )
+                    ),
             )
+
+            val personhendelseTopicConfig = KafkaConsumerClientBuilder.TopicConfig<String, Personhendelse?>()
+                .withLogging()
+                .withMetrics(meterRegistry)
+                .withStoreOnFailure(consumerRepository)
+                .withConsumerConfig(
+                    kafkaProperties.pdlLeesahTopic,
+                    Deserializers.stringDeserializer(),
+                    avroDeserializer<Personhendelse>(),
+                    Consumer<ConsumerRecord<String, Personhendelse?>> { kafkaMelding: ConsumerRecord<String, Personhendelse?> ->
+                        personhendelseConsumer.consumePersonhendelse(
+                            kafkaMelding
+                        )
+                    }
+                )
 
             aivenConsumerClient = KafkaConsumerClientBuilder.builder()
                 .withProperties(aivenConsumerProperties(CONSUMER_GROUP_ID))
                 .withTopicConfigs(topicConfigs)
+                .build()
+
+            personhendelseConsumerClient = KafkaConsumerClientBuilder.builder()
+                .withProperties(aivenConsumerProperties(PERSONHENDELSE_CONSUMER_GROUP_ID, autoOffsetReset = "latest"))
+                .withTopicConfig(personhendelseTopicConfig)
                 .build()
 
             consumerRecordProcessor = KafkaConsumerRecordProcessorBuilder
@@ -143,32 +169,31 @@ open class KafkaConsumerConfig(
                 .withLockProvider(lockProvider)
                 .withMetrics(meterRegistry)
                 .withKafkaConsumerRepository(consumerRepository)
-                .withConsumerConfigs(ConsumerUtils.findConsumerConfigsWithStoreOnFailure(topicConfigs))
+                .withConsumerConfigs(ConsumerUtils.findConsumerConfigsWithStoreOnFailure(topicConfigs + personhendelseTopicConfig))
                 .build()
 
             aivenConsumerClient?.start()
+            personhendelseConsumerClient?.start()
             consumerRecordProcessor?.start()
         }
     }
 
-    private fun aivenConsumerProperties(consumerGroupId: String) = KafkaPropertiesBuilder.consumerBuilder()
+    private fun aivenConsumerProperties(consumerGroupId: String, autoOffsetReset: String = "earliest") = KafkaPropertiesBuilder.consumerBuilder()
         .withBaseProperties()
         .withConsumerGroupId(consumerGroupId)
         .withAivenBrokerUrl()
         .withAivenAuth()
+        .withProp(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, autoOffsetReset)
         .withDeserializers(
             ByteArrayDeserializer::class.java,
             ByteArrayDeserializer::class.java
         )
         .build()
 
-    private fun getPeriodeAvroDeserializer(): Deserializer<Periode> {
-        System.setProperty(
-            "org.apache.avro.SERIALIZABLE_PACKAGES",
-            "no.nav.paw.arbeidssokerregisteret.api.v1"
-        )
+    private inline fun <reified T : Any> avroDeserializer(): Deserializer<T?> {
+        leggTilSerializableAvroPackage(T::class.java.packageName)
         val schemaUrl = EnvironmentUtils.getRequiredProperty("KAFKA_SCHEMA_REGISTRY")
-        val avroDeserializer = Deserializers.aivenAvroDeserializer<Periode>()
+        val avroDeserializer = Deserializers.aivenAvroDeserializer<T?>()
         avroDeserializer.configure(
             Map.of(
                 KafkaAvroDeserializerConfig.SCHEMA_REGISTRY_URL_CONFIG, schemaUrl,
@@ -177,5 +202,17 @@ open class KafkaConsumerConfig(
             false
         )
         return avroDeserializer
+    }
+
+    private fun leggTilSerializableAvroPackage(pakke: String) {
+        val eksisterende = System.getProperty(AVRO_SERIALIZABLE_PACKAGES)
+            ?.split(",")
+            ?.filter { it.isNotBlank() }
+            .orEmpty()
+        System.setProperty(AVRO_SERIALIZABLE_PACKAGES, (eksisterende + pakke).distinct().joinToString(","))
+    }
+
+    private companion object {
+        const val AVRO_SERIALIZABLE_PACKAGES = "org.apache.avro.SERIALIZABLE_PACKAGES"
     }
 }
