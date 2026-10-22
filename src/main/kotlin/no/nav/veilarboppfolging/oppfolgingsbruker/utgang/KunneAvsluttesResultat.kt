@@ -32,6 +32,9 @@ sealed class KunneAvsluttesResultat(val kanAvsluttesInput: KanAvsluttesInput) {
             /* Admin kan avslutte alt */
             if (avregistreringsType == AvregistreringsType.AdminAvregistrering) return emptyList()
 
+            // hvis bruker er død avslutter vi uansett
+            if (avregistreringsType == AvregistreringsType.Dodsfall) return emptyList()
+
             return listOfNotNull(
                 if (!input.erUnderOppfolging) KanIkkeAvslutteBegrunnelse.BRUKER_VAR_IKKE_UNDER_OPPFOLGING else null,
                 if (input.underKvp) KanIkkeAvslutteBegrunnelse.BRUKER_VAR_UNDER_KVP else null,

@@ -50,13 +50,30 @@ class PersonhendelseConsumerTest(
     }
 
     @Test
-    fun `dødsfall-hendelse, bruker er under oppfølging - oppfølging blir avsluttet`() {
+    fun `dødsfall-hendelse, bruker er under oppfølging og kan avsluttes - oppfølging blir avsluttet`() {
         mockSytemBrukerAuthOk(aktorId, fnr)
         startOppfolgingSomArbeidsoker(aktorId, fnr)
         setLocalArenaOppfolging(aktorId, Formidlingsgruppe.ARBS)
         mockTiltakshistorikk(fnr, harAktiveDeltakelser = false)
         mockUngdomsprogram(fnr, erDeltaker = false)
         mockAap(fnr, harAap = false)
+        assertThat(oppfolgingService.erUnderOppfolging(aktorId)).isTrue
+
+        val melding = ConsumerRecord("topic", 0, 0, "key", personhendelseForDodsfall(listOf(fnr.get(), aktorId.get())))
+
+        personhendelseConsumer.consumePersonhendelse(melding)
+
+        assertThat(oppfolgingService.erUnderOppfolging(aktorId)).isFalse
+    }
+
+    @Test
+    fun `dødsfall-hendelse, bruker er under oppfølging og kan ikke avsluttes - oppfølging blir avsluttet uansett`() {
+        mockSytemBrukerAuthOk(aktorId, fnr)
+        startOppfolgingSomArbeidsoker(aktorId, fnr)
+        setLocalArenaOppfolging(aktorId, Formidlingsgruppe.ARBS)
+        mockTiltakshistorikk(fnr, harAktiveDeltakelser = false)
+        mockUngdomsprogram(fnr, erDeltaker = false)
+        mockAap(fnr, harAap = true)
         assertThat(oppfolgingService.erUnderOppfolging(aktorId)).isTrue
 
         val melding = ConsumerRecord("topic", 0, 0, "key", personhendelseForDodsfall(listOf(fnr.get(), aktorId.get())))
