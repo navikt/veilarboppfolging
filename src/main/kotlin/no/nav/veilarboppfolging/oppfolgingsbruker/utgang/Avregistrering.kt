@@ -13,6 +13,7 @@ enum class AvregistreringsType {
     KandidatUtmeldtEtter28Dager,
     ManuellAvregistrering,
     ArenaIservKanIkkeReaktiveres,
+    Dodsfall,
     AdminAvregistrering;
 
     fun erManuellAvregistrering(): Boolean {
@@ -61,6 +62,15 @@ data class ArenaIservKanIkkeReaktiveres(override val aktorId: AktorId) :
 
     companion object {
         const val BEGRUNNELSE = "Oppfølging avsluttet automatisk pga. inaktiv bruker som ikke kan reaktiveres"
+    }
+}
+
+data class Dodsfall(override val aktorId: AktorId) :
+    Avregistrering(aktorId, SystemRegistrant(), BEGRUNNELSE) {
+    override fun getAvregistreringsType() = AvregistreringsType.Dodsfall
+
+    companion object {
+        const val BEGRUNNELSE = "Oppfølging avsluttet automatisk pga. dødsfall"
     }
 }
 
