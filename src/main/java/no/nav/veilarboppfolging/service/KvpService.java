@@ -9,16 +9,25 @@ import no.nav.common.types.identer.Id;
 import no.nav.veilarboppfolging.BadRequestException;
 import no.nav.veilarboppfolging.ForbiddenException;
 import no.nav.veilarboppfolging.kafka.KvpPeriode;
+import no.nav.veilarboppfolging.kandidatForUtmelding.FjernKandidatForUtmeldingService;
+import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService;
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.AvsluttetKvp;
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.KandidatForUtmeldingHendelseUtfortAvType;
 import no.nav.veilarboppfolging.repository.KvpRepository;
+import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
 import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity;
+import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
 import no.nav.veilarboppfolging.repository.enums.KodeverkBruker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
+
+import java.time.Instant;
 
 import static java.lang.String.format;
 import static no.nav.veilarboppfolging.config.ApplicationConfig.SYSTEM_USER_NAME;
@@ -35,18 +44,24 @@ public class KvpService {
     private final KvpRepository kvpRepository;
     private final ArbeidsoppfolgingsKontorService arbeidsoppfolgingsKontorService;
     private final OppfolgingsStatusRepository oppfolgingsStatusRepository;
+    private final OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
+    private final KandidatForUtmeldingService kandidatForUtmeldingService;
+    private final FjernKandidatForUtmeldingService fjernKandidatForUtmeldingService;
     private final AuthService authService;
     private final TransactionTemplate transactor;
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
-    public KvpService(KafkaProducerService kafkaProducerService, MetricsService metricsService, KvpRepository kvpRepository, ArbeidsoppfolgingsKontorService arbeidsoppfolgingsKontorService, OppfolgingsStatusRepository oppfolgingsStatusRepository, AuthService authService, TransactionTemplate transactor) {
+    public KvpService(KafkaProducerService kafkaProducerService, MetricsService metricsService, KvpRepository kvpRepository, ArbeidsoppfolgingsKontorService arbeidsoppfolgingsKontorService, OppfolgingsStatusRepository oppfolgingsStatusRepository, OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository, @Lazy KandidatForUtmeldingService kandidatForUtmeldingService, FjernKandidatForUtmeldingService fjernKandidatForUtmeldingService, AuthService authService, TransactionTemplate transactor) {
         this.kafkaProducerService = kafkaProducerService;
         this.metricsService = metricsService;
         this.kvpRepository = kvpRepository;
         this.arbeidsoppfolgingsKontorService = arbeidsoppfolgingsKontorService;
         this.oppfolgingsStatusRepository = oppfolgingsStatusRepository;
+        this.oppfolgingsPeriodeRepository = oppfolgingsPeriodeRepository;
+        this.kandidatForUtmeldingService = kandidatForUtmeldingService;
+        this.fjernKandidatForUtmeldingService = fjernKandidatForUtmeldingService;
         this.authService = authService;
         this.transactor = transactor;
     }
@@ -89,6 +104,8 @@ public class KvpService {
             kafkaProducerService.publiserKvpPeriode(kvpPeriode);
 
             secureLog.info("KVP startet for bruker med aktorId {} på enhet {} av veileder {}", aktorId, enhet, veilederId);
+
+            fjernKandidatForUtmeldingVedKvpStart(aktorId);
         });
 
         metricsService.kvpStartet();
@@ -145,9 +162,40 @@ public class KvpService {
             kafkaProducerService.publiserKvpPeriode(kvpPeriode);
 
             secureLog.info("KVP avsluttet for bruker med aktorId {} av {}", aktorId, avsluttetAv);
+
+            registrerKandidatForUtmeldingVedKvpAvslutning(aktorId, avsluttetAv, kodeverkBruker, sluttDato);
         });
 
         metricsService.kvpStoppet();
+    }
+
+    private void registrerKandidatForUtmeldingVedKvpAvslutning(AktorId aktorId, String avsluttetAv, KodeverkBruker kodeverkBruker, ZonedDateTime sluttDato) {
+        OppfolgingsperiodeEntity gjeldendeOppfolgingsperiode = oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId).orElse(null);
+        if (gjeldendeOppfolgingsperiode == null) {
+            secureLog.info("Fant ingen gjeldende oppfølgingsperiode ved KVP-avslutning for aktorId {}, hopper over kandidat for utmelding", aktorId);
+            return;
+        }
+
+        var utfortAvType = kodeverkBruker == SYSTEM
+                ? KandidatForUtmeldingHendelseUtfortAvType.SYSTEM
+                : KandidatForUtmeldingHendelseUtfortAvType.VEILEDER;
+
+        AvsluttetKvp hendelse = new AvsluttetKvp(
+                gjeldendeOppfolgingsperiode.getUuid(),
+                utfortAvType,
+                avsluttetAv,
+                "veilarboppfolging",
+                sluttDato.toInstant()
+        );
+        kandidatForUtmeldingService.handterUtmeldingsHendelse(hendelse);
+    }
+
+    private void fjernKandidatForUtmeldingVedKvpStart(AktorId aktorId) {
+        OppfolgingsperiodeEntity gjeldendeOppfolgingsperiode = oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId).orElse(null);
+        if (gjeldendeOppfolgingsperiode == null) {
+            return;
+        }
+        fjernKandidatForUtmeldingService.fjernKandidatForUtmelding(gjeldendeOppfolgingsperiode.getUuid());
     }
 
     public void avsluttKvpVedEnhetBytte(AktorId aktorId, String nyEnhet) {

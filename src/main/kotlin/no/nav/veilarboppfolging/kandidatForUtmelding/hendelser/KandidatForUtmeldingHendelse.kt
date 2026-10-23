@@ -33,6 +33,7 @@ sealed class KandidatForUtmeldingHendelse(
             ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET -> KandidatForUtmeldingTagDto.ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET
             ForlengelseHendelseType.FORLENGELSE_UTLOPT -> KandidatForUtmeldingTagDto.FORLENGELSE_UTLOPT
             IkkeLengerAapHendelseType.AVSLUTTET_AAP_SAK -> KandidatForUtmeldingTagDto.AVSLUTTET_AAP_SAK
+            AvsluttetKvpHendelseType.AVSLUTTET_KVP -> KandidatForUtmeldingTagDto.AVSLUTTET_KVP
             ForlengelseHendelseType.FORLENGELSE_OPPRETTET,
             ForlengelseHendelseType.FORLENGELSE_ENDRET,
             InaktivertIArenaHendelseType.INAKTIVERT_I_ARENA,
@@ -61,6 +62,10 @@ enum class InaktivertIArenaHendelseType : KandidatForUtmeldingHendelseType {
 
 enum class IkkeLengerAapHendelseType: KandidatForUtmeldingHendelseType {
     AVSLUTTET_AAP_SAK
+}
+
+enum class AvsluttetKvpHendelseType : KandidatForUtmeldingHendelseType {
+    AVSLUTTET_KVP
 }
 
 enum class KandidatForUtmeldingHendelseUtfortAvType {

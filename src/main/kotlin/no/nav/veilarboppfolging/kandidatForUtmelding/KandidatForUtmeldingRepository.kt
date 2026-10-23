@@ -15,6 +15,8 @@ import no.nav.common.types.identer.AktorId
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ArbeidssokerperiodeAvsluttetHendelseType
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ArbeidssøkerPeriodeAvsluttet
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.AvsluttetAapSak
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.AvsluttetKvp
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.AvsluttetKvpHendelseType
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseHendelseType
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseOpprettetEllerEndretHendelse
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseUtløptHendelse
@@ -85,6 +87,7 @@ class KandidatForUtmeldingRepository(
                     is ForlengelseHendelseType -> type.name
                     is InaktivertIArenaHendelseType -> type.name
                     is IkkeLengerAapHendelseType -> type.name
+                    is AvsluttetKvpHendelseType -> type.name
                 },
                 "hendelseData" to hendelse.hendelseDataJson,
                 "utfortAv" to hendelse.utfortAv,
@@ -211,6 +214,7 @@ class KandidatForUtmeldingRepository(
                 is ForlengelseUtløptHendelse -> AktivKandidatForUtmelding(hendelse, hendelse.avsluttesAutomatiskDato)
                 is InaktivertIArena -> null
                 is AvsluttetAapSak -> AktivKandidatForUtmelding(hendelse, hendelse.avsluttesAutomatiskDato)
+                is AvsluttetKvp -> AktivKandidatForUtmelding(hendelse, hendelse.avsluttesAutomatiskDato)
             }
         }
             .firstOrNull()
@@ -396,6 +400,7 @@ class KandidatForUtmeldingRepository(
             }
             is InaktivertIArenaHendelseType -> resultSet.toInaktivertIArena()
             is IkkeLengerAapHendelseType -> resultSet.toAvsluttetAapSakHendelse()
+            is AvsluttetKvpHendelseType -> resultSet.toAvsluttetKvpHendelse()
         }
 
     }
@@ -406,6 +411,7 @@ class KandidatForUtmeldingRepository(
             in ForlengelseHendelseType.entries.map { it.name } -> ForlengelseHendelseType.valueOf(hendelse)
             in InaktivertIArenaHendelseType.entries.map { it.name } -> InaktivertIArenaHendelseType.valueOf(hendelse)
             in IkkeLengerAapHendelseType.entries.map { it.name } -> IkkeLengerAapHendelseType.valueOf(hendelse)
+            in AvsluttetKvpHendelseType.entries.map { it.name } -> AvsluttetKvpHendelseType.valueOf(hendelse)
             else -> {
                 throw IllegalArgumentException("Ugyldig hendelse type: $hendelse")
             }
@@ -462,5 +468,13 @@ fun ResultSet.toInaktivertIArena() = InaktivertIArena(
 
 fun ResultSet.toAvsluttetAapSakHendelse() = AvsluttetAapSak(
     oppfolgingsperiodeUuid = UUID.fromString(getString("oppfolgingsperiode_uuid")),
+    hendelseTidspunkt = getTimestamp("hendelse_tidspunkt").toLocalDateTime().toInstant(ZoneOffset.UTC),
+)
+
+fun ResultSet.toAvsluttetKvpHendelse() = AvsluttetKvp(
+    oppfolgingsperiodeUuid = UUID.fromString(getString("oppfolgingsperiode_uuid")),
+    utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.valueOf(getString("utfort_av_type")),
+    utfortAv = getString("utfort_av"),
+    kilde = getString("kilde"),
     hendelseTidspunkt = getTimestamp("hendelse_tidspunkt").toLocalDateTime().toInstant(ZoneOffset.UTC),
 )
