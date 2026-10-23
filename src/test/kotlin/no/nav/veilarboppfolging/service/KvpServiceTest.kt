@@ -11,6 +11,7 @@ import no.nav.veilarboppfolging.BadRequestException
 import no.nav.veilarboppfolging.ForbiddenException
 import no.nav.veilarboppfolging.kafka.KvpPeriode
 import no.nav.veilarboppfolging.kafka.KvpPeriodeEventType
+import no.nav.veilarboppfolging.kandidatForUtmelding.FjernKandidatForUtmeldingService
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.LocalArenaOppfolging
@@ -58,6 +59,8 @@ class KvpServiceTest{
     private lateinit var oppfolgingsPeriodeRepository: OppfolgingsPeriodeRepository
     @Mock
     private lateinit var kandidatForUtmeldingService: KandidatForUtmeldingService
+    @Mock
+    private lateinit var fjernKandidatForUtmeldingService: FjernKandidatForUtmeldingService
     @Mock
     private lateinit var arenaOppfolgingService: ArenaOppfolgingService
     @Mock
@@ -127,6 +130,26 @@ class KvpServiceTest{
             eq(START_BEGRUNNELSE),
             any()
         )
+    }
+
+    @Test
+    fun startKvp_fjerner_kandidat_for_utmelding() {
+        val oppfolgingsperiodeId = java.util.UUID.randomUUID()
+        `when`(oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(AKTOR_ID)).thenReturn(
+            Optional.of(
+                no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity(
+                    uuid = oppfolgingsperiodeId,
+                    aktorId = AKTOR_ID.get(),
+                    startDato = ZonedDateTime.now().minusDays(1),
+                    sluttDato = null,
+                    kvpPerioder = emptyList()
+                )
+            )
+        )
+
+        kvpService!!.startKvp(FNR, START_BEGRUNNELSE)
+
+        verify(fjernKandidatForUtmeldingService, times(1)).fjernKandidatForUtmelding(oppfolgingsperiodeId)
     }
 
     @Test(expected = BadRequestException::class)
