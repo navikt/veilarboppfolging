@@ -179,7 +179,7 @@ public class KvpService {
                 gjeldendeOppfolgingsperiode.getUuid(),
                 utfortAvType,
                 avsluttetAv,
-                "KVP",
+                "veilarboppfolging",
                 sluttDato.toInstant()
         );
         kandidatForUtmeldingService.handterUtmeldingsHendelse(hendelse);
