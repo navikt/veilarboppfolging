@@ -51,6 +51,7 @@ import no.nav.veilarboppfolging.client.pdl.GeografiskTilknytningNr
 import no.nav.veilarboppfolging.client.pdl.PdlFolkeregisterStatusClient
 import no.nav.veilarboppfolging.client.tiltakshistorikk.TiltakshistorikkClient
 import no.nav.veilarboppfolging.client.ungdomsprogram.UngdomsprogramClient
+import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolgingTilstand
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolginsBrukerOppslagResult
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaRegistreringResultat
 import no.nav.veilarboppfolging.client.veilarbarena.RegistrerIArenaError
@@ -79,6 +80,7 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.BrukerRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.SystemRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
+import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingTilstandOppslagResult
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.LocalArenaOppfolging
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.AktiverBrukerManueltService
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelseFraSystem
@@ -298,10 +300,10 @@ open class IntegrationTest {
         startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(registrering)
     }
 
-    fun setBrukerUnderOppfolging(aktorId: AktorId, fnr: Fnr) {
+    fun setBrukerUnderOppfolging(aktorId: AktorId, fnr: Fnr): UUID {
         val bruker = OppfolgingsRegistrering.arbeidssokerRegistrering(fnr, aktorId, BrukerRegistrant(fnr))
         oppfolgingsStatusRepository.opprettOppfolging(aktorId)
-        oppfolgingsPeriodeRepository.start(bruker)
+        return oppfolgingsPeriodeRepository.start(bruker)
     }
 
     fun lagreKandidatForUtmelding(fnr: Fnr, oppfolgingsperiodeUuid: UUID) {
@@ -609,6 +611,29 @@ open class IntegrationTest {
             RegistrerIArenaError(
                 "Teknisk feil ved registrering av bruker i Arena",
                 RuntimeException("Teknisk feil ved registrering av bruker i Arena")
+            )
+        )
+    }
+
+    fun mockArenaHentOppfolgingsTilstand(fnr: Fnr) {
+        `when`(veilarbarenaClient.hentOppfolgingsbruker(fnr)).thenReturn(
+            ArenaOppfolginsBrukerOppslagResult.Success(
+                VeilarbArenaOppfolgingsBruker(
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                )
             )
         )
     }

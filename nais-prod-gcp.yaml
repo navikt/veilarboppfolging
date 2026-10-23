@@ -240,6 +240,9 @@ spec:
           cluster: prod-fss
         - application: poao-admin
           namespace: poao
+          permissions:
+            scopes:
+              - "admin"
         - application: oppgave
           namespace: aap
         - application: isoppfolgingstilfelle
