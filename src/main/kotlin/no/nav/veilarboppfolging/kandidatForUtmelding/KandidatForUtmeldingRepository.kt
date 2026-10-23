@@ -19,6 +19,8 @@ import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseHendel
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseOpprettetEllerEndretHendelse
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseUtløptHendelse
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.IkkeLengerAapHendelseType
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.IkkeLovligOpphold
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.IkkeLovligOppholdHendelseType
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.InaktivertIArena
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.InaktivertIArenaHendelseType
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.KandidatForUtmeldingHendelse
@@ -85,6 +87,7 @@ class KandidatForUtmeldingRepository(
                     is ForlengelseHendelseType -> type.name
                     is InaktivertIArenaHendelseType -> type.name
                     is IkkeLengerAapHendelseType -> type.name
+                    is IkkeLovligOppholdHendelseType -> type.name
                 },
                 "hendelseData" to hendelse.hendelseDataJson,
                 "utfortAv" to hendelse.utfortAv,
@@ -211,6 +214,7 @@ class KandidatForUtmeldingRepository(
                 is ForlengelseUtløptHendelse -> AktivKandidatForUtmelding(hendelse, hendelse.avsluttesAutomatiskDato)
                 is InaktivertIArena -> null
                 is AvsluttetAapSak -> AktivKandidatForUtmelding(hendelse, hendelse.avsluttesAutomatiskDato)
+                is IkkeLovligOpphold -> AktivKandidatForUtmelding(hendelse, hendelse.avsluttesAutomatiskDato)
             }
         }
             .firstOrNull()
@@ -396,6 +400,7 @@ class KandidatForUtmeldingRepository(
             }
             is InaktivertIArenaHendelseType -> resultSet.toInaktivertIArena()
             is IkkeLengerAapHendelseType -> resultSet.toAvsluttetAapSakHendelse()
+            is IkkeLovligOppholdHendelseType -> resultSet.toIkkeLovligOppholdHendelse()
         }
 
     }
@@ -406,6 +411,7 @@ class KandidatForUtmeldingRepository(
             in ForlengelseHendelseType.entries.map { it.name } -> ForlengelseHendelseType.valueOf(hendelse)
             in InaktivertIArenaHendelseType.entries.map { it.name } -> InaktivertIArenaHendelseType.valueOf(hendelse)
             in IkkeLengerAapHendelseType.entries.map { it.name } -> IkkeLengerAapHendelseType.valueOf(hendelse)
+            in IkkeLovligOppholdHendelseType.entries.map { it.name } -> IkkeLovligOppholdHendelseType.valueOf(hendelse)
             else -> {
                 throw IllegalArgumentException("Ugyldig hendelse type: $hendelse")
             }
@@ -461,6 +467,11 @@ fun ResultSet.toInaktivertIArena() = InaktivertIArena(
 )
 
 fun ResultSet.toAvsluttetAapSakHendelse() = AvsluttetAapSak(
+    oppfolgingsperiodeUuid = UUID.fromString(getString("oppfolgingsperiode_uuid")),
+    hendelseTidspunkt = getTimestamp("hendelse_tidspunkt").toLocalDateTime().toInstant(ZoneOffset.UTC),
+)
+
+fun ResultSet.toIkkeLovligOppholdHendelse() = IkkeLovligOpphold(
     oppfolgingsperiodeUuid = UUID.fromString(getString("oppfolgingsperiode_uuid")),
     hendelseTidspunkt = getTimestamp("hendelse_tidspunkt").toLocalDateTime().toInstant(ZoneOffset.UTC),
 )

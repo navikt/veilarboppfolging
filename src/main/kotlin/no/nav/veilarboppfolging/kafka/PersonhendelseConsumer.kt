@@ -1,11 +1,23 @@
 package no.nav.veilarboppfolging.kafka
 
+import java.time.Instant
+import java.util.UUID
 import kotlin.jvm.optionals.getOrNull
+import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.types.identer.AktorId
+import no.nav.common.types.identer.Fnr
 import no.nav.person.pdl.leesah.Endringstype
 import no.nav.person.pdl.leesah.Personhendelse
+import no.nav.veilarboppfolging.client.pdl.PdlFolkeregisterStatusClient
+import no.nav.veilarboppfolging.client.pdl.eeaLand
 import no.nav.veilarboppfolging.ident.Ident
 import no.nav.veilarboppfolging.ident.ValidIdent
+import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.IkkeLovligOpphold
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.IKKE_LOVLIG_OPPHOLD
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.INGEN_STATUS_FOLKEREGISTERET
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.UKJENT_STATUS_FOLKEREGISTERET
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.toKanStarteOppfolging
 import no.nav.veilarboppfolging.ident.AktorId as IdentAktorId
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.Dodsfall
 import no.nav.veilarboppfolging.service.AvsluttOppfolgingService
@@ -19,34 +31,88 @@ import org.springframework.stereotype.Service
 class PersonhendelseConsumer(
     private val oppfolgingService: OppfolgingService,
     private val avsluttOppfolgingService: AvsluttOppfolgingService,
+    private val aktorOppslagClient: AktorOppslagClient,
+    private val folkeregisterStatusClient: PdlFolkeregisterStatusClient,
+    private val kandidatForUtmeldingService: KandidatForUtmeldingService,
 ) {
     val logger = LoggerFactory.getLogger(PersonhendelseConsumer::class.java)
 
     fun consumePersonhendelse(kafkaMelding: ConsumerRecord<String, Personhendelse?>) {
         val personhendelse = kafkaMelding.value() ?: return
         if (personhendelse.gjelderDodsfall()) {
-            // personidenter vil inneholde alle former for identer på brukeren, både nåværende og historiske
-            val aktorIder = personhendelse.personidenter
-                .map { Ident.validate(it) }
-                .filterIsInstance<ValidIdent>()
-                .map { it.ident }
-                .filterIsInstance<IdentAktorId>()
-                .map { AktorId.of(it.value) }
+            handterDodsfall(personhendelse)
+        } else if (personhendelse.kanGjeldeLovligOpphold()) {
+            handterLovligOpphold(personhendelse)
+        }
+    }
 
-            aktorIder.forEach { aktorId ->
-                val oppfolgingsperiodeId = oppfolgingService.hentGjeldendeOppfolgingsperiode(aktorId).getOrNull()?.uuid
-                if (oppfolgingsperiodeId != null) {
-                    logger.info("Forsøker å avslutte oppfølgingsperiode $oppfolgingsperiodeId pga dødsfall")
-                    avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(Dodsfall(aktorId))
-                } else {
-                    secureLog.info("Ingen oppfølgingsperiode å avslutte for ident $aktorId pga dødsfall")
-                }
+    private fun handterDodsfall(personhendelse: Personhendelse) {
+        val aktorIder = getAktorIder(personhendelse)
+
+        aktorIder.forEach { aktorId ->
+            val oppfolgingsperiodeId = oppfolgingService.hentGjeldendeOppfolgingsperiode(aktorId).getOrNull()?.uuid
+            if (oppfolgingsperiodeId != null) {
+                logger.info("Forsøker å avslutte oppfølgingsperiode $oppfolgingsperiodeId pga dødsfall")
+                avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(Dodsfall(aktorId))
+            } else {
+                secureLog.info("Ingen oppfølgingsperiode å avslutte for ident $aktorId pga dødsfall")
             }
         }
+    }
+
+    private fun handterLovligOpphold(personhendelse: Personhendelse) {
+        val aktorId = getAktorIder(personhendelse).firstOrNull() ?: throw IllegalStateException("Ingen aktørid funnet for personhendelse")
+        val gjeldendeFnr = aktorOppslagClient.hentFnr(aktorId)
+        val oppfolgingsperiodeId = oppfolgingService.hentGjeldendeOppfolgingsperiode(gjeldendeFnr).getOrNull()?.uuid
+        if (oppfolgingsperiodeId != null) {
+            logger.info("Har mottatt hendelse som kan påvirke lovlig opphold for oppfølgingsperiodeId $oppfolgingsperiodeId")
+            val folkeregisterStatus = folkeregisterStatusClient.hentFolkeregisterStatus(gjeldendeFnr)
+            val kanStarteOppfolging = folkeregisterStatus.toKanStarteOppfolging()
+            when (kanStarteOppfolging) {
+                is IKKE_LOVLIG_OPPHOLD,
+                INGEN_STATUS_FOLKEREGISTERET,
+                UKJENT_STATUS_FOLKEREGISTERET -> lagUtmeldingskandidat(
+                    fnr = gjeldendeFnr,
+                    oppfolgingsperiodeId = oppfolgingsperiodeId,
+                    hendelseTidspunkt = personhendelse.opprettet,
+                )
+                else -> logger.info("Bruker med oppfølgingsperiode $oppfolgingsperiodeId har ingen relevante endringer i folkeregisterstatus")
+            }
+        }
+    }
+
+    private fun lagUtmeldingskandidat(fnr: Fnr, oppfolgingsperiodeId: UUID, hendelseTidspunkt: Instant) {
+        logger.info("Oppretter kandidat for utmelding for oppfølgingsperiodeId $oppfolgingsperiodeId pga endring i folkeregisterstatus")
+        kandidatForUtmeldingService.handterUtmeldingsHendelse(
+            fnr = fnr,
+            hendelse = IkkeLovligOpphold(
+                oppfolgingsperiodeUuid = oppfolgingsperiodeId,
+                hendelseTidspunkt = hendelseTidspunkt,
+            ),
+        )
     }
 
     private fun Personhendelse.gjelderDodsfall(): Boolean {
         return doedsfall?.doedsdato != null &&
                 (endringstype == Endringstype.OPPRETTET || endringstype == Endringstype.KORRIGERT)
+    }
+
+    private fun Personhendelse.kanGjeldeLovligOpphold(): Boolean {
+        val harFattStatsborgerskapILandUtenforEUellerEOS = statsborgerskap?.land != null && !eeaLand.contains(statsborgerskap.land) &&
+                    (endringstype == Endringstype.OPPRETTET || endringstype == Endringstype.KORRIGERT)
+        val harFlyttetUt = utflyttingFraNorge != null && (endringstype == Endringstype.OPPRETTET || endringstype == Endringstype.KORRIGERT)
+        val harOpphortBostedsadresse = (opplysningstype == "BostedsadresseV1" || bostedsadresse != null) && endringstype == Endringstype.OPPHOERT
+
+        return harFattStatsborgerskapILandUtenforEUellerEOS || harFlyttetUt || harOpphortBostedsadresse
+    }
+
+    private fun getAktorIder(personhendelse: Personhendelse): List<AktorId> {
+        // personidenter vil inneholde alle former for identer på brukeren, både nåværende og historiske
+        return personhendelse.personidenter
+            .map { Ident.validate(it) }
+            .filterIsInstance<ValidIdent>()
+            .map { it.ident }
+            .filterIsInstance<IdentAktorId>()
+            .map { AktorId.of(it.value) }
     }
 }

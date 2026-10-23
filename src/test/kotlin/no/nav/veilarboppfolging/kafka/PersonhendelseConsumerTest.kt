@@ -8,8 +8,13 @@ import no.nav.person.pdl.leesah.Endringstype
 import no.nav.person.pdl.leesah.Personhendelse
 import no.nav.person.pdl.leesah.doedsfall.Doedsfall
 import no.nav.person.pdl.leesah.falskidentitet.FalskIdentitet
+import no.nav.person.pdl.leesah.statsborgerskap.Statsborgerskap
+import no.nav.person.pdl.leesah.utflytting.UtflyttingFraNorge
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.veilarboppfolging.IntegrationTest
+import no.nav.veilarboppfolging.client.pdl.ForenkletFolkeregisterStatus
+import no.nav.veilarboppfolging.client.pdl.FregStatusOgStatsborgerskap
+import no.nav.veilarboppfolging.kandidatForUtmelding.dto.KandidatForUtmeldingTagDto
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -83,6 +88,98 @@ class PersonhendelseConsumerTest(
         assertThat(oppfolgingService.erUnderOppfolging(aktorId)).isFalse
     }
 
+    @Test
+    fun `utflyttet-hendelse, bruker er under oppfølging, har ikke lovlig opphold, kan avsluttes - lagrer utmeldingskandidat`() {
+        mockSytemBrukerAuthOk(aktorId, fnr)
+        startOppfolgingSomArbeidsoker(aktorId, fnr)
+        setLocalArenaOppfolging(aktorId, Formidlingsgruppe.ARBS)
+        mockTiltakshistorikk(fnr, harAktiveDeltakelser = false)
+        mockUngdomsprogram(fnr, erDeltaker = false)
+        mockAap(fnr, harAap = false)
+        mockPdlFolkeregisterStatus(fnr, FregStatusOgStatsborgerskap(
+            fregStatus = ForenkletFolkeregisterStatus.opphoert,
+            statsborgerskap = listOf("USA"),
+            under18 = false,
+        ))
+        assertThat(oppfolgingService.erUnderOppfolging(aktorId)).isTrue
+
+        val melding = ConsumerRecord("topic", 0, 0, "key", personhendelseForUtflytting(listOf(fnr.get(), aktorId.get())))
+
+        personhendelseConsumer.consumePersonhendelse(melding)
+
+        assertThat(oppfolgingService.erUnderOppfolging(aktorId)).isTrue
+        assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId)).isEqualTo(KandidatForUtmeldingTagDto.IKKE_LOVLIG_OPPHOLD)
+    }
+
+    @Test
+    fun `statsborgerskap-hendelse, bruker er under oppfølging, har ikke lovlig opphold, kan avsluttes - lagrer utmeldingskandidat`() {
+        mockSytemBrukerAuthOk(aktorId, fnr)
+        startOppfolgingSomArbeidsoker(aktorId, fnr)
+        setLocalArenaOppfolging(aktorId, Formidlingsgruppe.ARBS)
+        mockTiltakshistorikk(fnr, harAktiveDeltakelser = false)
+        mockUngdomsprogram(fnr, erDeltaker = false)
+        mockAap(fnr, harAap = false)
+        mockPdlFolkeregisterStatus(fnr, FregStatusOgStatsborgerskap(
+            fregStatus = ForenkletFolkeregisterStatus.opphoert,
+            statsborgerskap = listOf("USA"),
+            under18 = false,
+        ))
+        assertThat(oppfolgingService.erUnderOppfolging(aktorId)).isTrue
+
+        val melding = ConsumerRecord("topic", 0, 0, "key", personhendelseForStatsborgerskap(listOf(fnr.get(), aktorId.get())))
+
+        personhendelseConsumer.consumePersonhendelse(melding)
+
+        assertThat(oppfolgingService.erUnderOppfolging(aktorId)).isTrue
+        assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId)).isEqualTo(KandidatForUtmeldingTagDto.IKKE_LOVLIG_OPPHOLD)
+    }
+
+    @Test
+    fun `opphørt bostedsadresse-hendelse, bruker er under oppfølging, har ikke lovlig opphold, kan avsluttes - lagrer utmeldingskandidat`() {
+        mockSytemBrukerAuthOk(aktorId, fnr)
+        startOppfolgingSomArbeidsoker(aktorId, fnr)
+        setLocalArenaOppfolging(aktorId, Formidlingsgruppe.ARBS)
+        mockTiltakshistorikk(fnr, harAktiveDeltakelser = false)
+        mockUngdomsprogram(fnr, erDeltaker = false)
+        mockAap(fnr, harAap = false)
+        mockPdlFolkeregisterStatus(fnr, FregStatusOgStatsborgerskap(
+            fregStatus = ForenkletFolkeregisterStatus.opphoert,
+            statsborgerskap = listOf("USA"),
+            under18 = false,
+        ))
+        assertThat(oppfolgingService.erUnderOppfolging(aktorId)).isTrue
+
+        val melding = ConsumerRecord("topic", 0, 0, "key", personhendelseForOpphortBostedsadresse(listOf(fnr.get(), aktorId.get())))
+
+        personhendelseConsumer.consumePersonhendelse(melding)
+
+        assertThat(oppfolgingService.erUnderOppfolging(aktorId)).isTrue
+        assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId)).isEqualTo(KandidatForUtmeldingTagDto.IKKE_LOVLIG_OPPHOLD)
+    }
+
+    @Test
+    fun `statsborgerskap-hendelse, bruker er under oppfølging, har lovlig opphold - lagrer ikke utmeldingskandidat`() {
+        mockSytemBrukerAuthOk(aktorId, fnr)
+        startOppfolgingSomArbeidsoker(aktorId, fnr)
+        setLocalArenaOppfolging(aktorId, Formidlingsgruppe.ARBS)
+        mockTiltakshistorikk(fnr, harAktiveDeltakelser = false)
+        mockUngdomsprogram(fnr, erDeltaker = false)
+        mockAap(fnr, harAap = false)
+        mockPdlFolkeregisterStatus(fnr, FregStatusOgStatsborgerskap(
+            fregStatus = ForenkletFolkeregisterStatus.dNummer,
+            statsborgerskap = listOf("SWE"),
+            under18 = false,
+        ))
+        assertThat(oppfolgingService.erUnderOppfolging(aktorId)).isTrue
+
+        val melding = ConsumerRecord("topic", 0, 0, "key", personhendelseForStatsborgerskap(listOf(fnr.get(), aktorId.get())))
+
+        personhendelseConsumer.consumePersonhendelse(melding)
+
+        assertThat(oppfolgingService.erUnderOppfolging(aktorId)).isTrue
+        assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId)).isNull()
+    }
+
     private fun personhendelseForDodsfall(identer: List<String>): Personhendelse {
         return Personhendelse.newBuilder()
             .setHendelseId("dummyHendelseId")
@@ -92,6 +189,41 @@ class PersonhendelseConsumerTest(
             .setOpplysningstype("DoedsfallV1")
             .setEndringstype(Endringstype.OPPRETTET)
             .setDoedsfall(Doedsfall(LocalDate.now()))
+            .build()
+    }
+
+    private fun personhendelseForUtflytting(identer: List<String>): Personhendelse {
+        return Personhendelse.newBuilder()
+            .setHendelseId("dummyHendelseId")
+            .setPersonidenter(identer)
+            .setMaster("PDL")
+            .setOpprettet(Instant.now())
+            .setOpplysningstype("UtflyttingV1")
+            .setEndringstype(Endringstype.OPPRETTET)
+            .setUtflyttingFraNorge(UtflyttingFraNorge("USA", "tilflyttingssted", LocalDate.now()))
+            .build()
+    }
+
+    private fun personhendelseForStatsborgerskap(identer: List<String>): Personhendelse {
+        return Personhendelse.newBuilder()
+            .setHendelseId("dummyHendelseId")
+            .setPersonidenter(identer)
+            .setMaster("PDL")
+            .setOpprettet(Instant.now())
+            .setOpplysningstype("StatsborgerskapV1")
+            .setEndringstype(Endringstype.OPPRETTET)
+            .setStatsborgerskap(Statsborgerskap("USA", LocalDate.now(), LocalDate.now(), LocalDate.now()))
+            .build()
+    }
+
+    private fun personhendelseForOpphortBostedsadresse(identer: List<String>): Personhendelse {
+        return Personhendelse.newBuilder()
+            .setHendelseId("dummyHendelseId")
+            .setPersonidenter(identer)
+            .setMaster("PDL")
+            .setOpprettet(Instant.now())
+            .setOpplysningstype("BostedsadresseV1")
+            .setEndringstype(Endringstype.OPPHOERT)
             .build()
     }
 }
