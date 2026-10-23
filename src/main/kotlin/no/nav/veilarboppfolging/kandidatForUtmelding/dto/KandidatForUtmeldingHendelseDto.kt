@@ -19,7 +19,8 @@ enum class KandidatForUtmeldingHendelseTypeDto {
     FORLENGELSE_OPPRETTET,
     FORLENGELSE_ENDRET,
     FORLENGELSE_UTLOPT,
-    AVSLUTTET_AAP_SAK
+    AVSLUTTET_AAP_SAK,
+    AVSLUTTET_KVP
 }
 
 fun KandidatForUtmeldingHendelse.toKandidatForUtmeldingHendelseDto() = KandidatForUtmeldingHendelseDto(

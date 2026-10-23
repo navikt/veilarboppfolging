@@ -11,9 +11,11 @@ import no.nav.veilarboppfolging.BadRequestException
 import no.nav.veilarboppfolging.ForbiddenException
 import no.nav.veilarboppfolging.kafka.KvpPeriode
 import no.nav.veilarboppfolging.kafka.KvpPeriodeEventType
+import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.LocalArenaOppfolging
 import no.nav.veilarboppfolging.repository.KvpRepository
+import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
 import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity
 import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity
@@ -52,6 +54,10 @@ class KvpServiceTest{
     private lateinit var authService: AuthService
     @Mock
     private lateinit var oppfolgingsStatusRepository: OppfolgingsStatusRepository
+    @Mock
+    private lateinit var oppfolgingsPeriodeRepository: OppfolgingsPeriodeRepository
+    @Mock
+    private lateinit var kandidatForUtmeldingService: KandidatForUtmeldingService
     @Mock
     private lateinit var arenaOppfolgingService: ArenaOppfolgingService
     @Mock
@@ -218,6 +224,39 @@ class KvpServiceTest{
         } catch (e: Exception) {
             Assert.assertTrue(e is ForbiddenException)
         }
+    }
+
+    @Test
+    fun stopKvp_registrerer_kandidat_for_utmelding() {
+        val kvpId: Long = 7
+        val kvpStartTidspunkt = ZonedDateTime.now().minusDays(7)
+        gittBrukerErUnderOppfolging(kvpId)
+        gittBrukerHarAktivKvp(kvpId, kvpStartTidspunkt, ENHET)
+
+        val oppfolgingsperiodeId = java.util.UUID.randomUUID()
+        `when`(oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(AKTOR_ID)).thenReturn(
+            Optional.of(
+                no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity(
+                    uuid = oppfolgingsperiodeId,
+                    aktorId = AKTOR_ID.get(),
+                    startDato = kvpStartTidspunkt,
+                    sluttDato = null,
+                    kvpPerioder = emptyList()
+                )
+            )
+        )
+
+        AuthContextHolderThreadLocal.instance().withContext(
+            AuthTestUtils.createAuthContext(UserRole.INTERN, VEILEDER),
+            UnsafeRunnable { kvpService!!.stopKvp(FNR, STOP_BEGRUNNELSE) }
+        )
+
+        val captor = argumentCaptor<no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.AvsluttetKvp>()
+        verify(kandidatForUtmeldingService, times(1)).handterUtmeldingsHendelse(captor.capture())
+        val hendelse = captor.firstValue
+        assertThat(hendelse.oppfolgingsperiodeUuid).isEqualTo(oppfolgingsperiodeId)
+        assertThat(hendelse.type).isEqualTo(no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.AvsluttetKvpHendelseType.AVSLUTTET_KVP)
+        assertThat(hendelse.utfortAvType).isEqualTo(no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.KandidatForUtmeldingHendelseUtfortAvType.VEILEDER)
     }
 
     @Test
