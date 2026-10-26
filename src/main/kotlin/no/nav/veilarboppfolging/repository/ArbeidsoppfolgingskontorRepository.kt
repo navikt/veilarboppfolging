@@ -51,4 +51,28 @@ class ArbeidsoppfolgingskontorRepository(private val db: NamedParameterJdbcTempl
         val sql = "SELECT kontor_id FROM ao_kontor WHERE ident in (:ident) order by updated_at desc limit 1"
         return db.query(sql, params) { rs, _ -> rs.getString("kontor_id")?.let { EnhetId.of(it) } }.firstOrNull()
     }
+
+    fun hentKontorOgIdent(oppfolgingsperiodeId: UUID): AoKontorInfo? {
+        val params = mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeId)
+        val sql = """
+            SELECT ident, kontor_id
+            FROM ao_kontor
+            WHERE oppfolgingsperiode_id = :oppfolgingsperiodeId
+        """.trimIndent()
+
+        return db.query(sql, params) { rs, _ ->
+            AoKontorInfo(
+                ident = rs.getString("ident"),
+                kontor = rs.getString("kontor_id")
+            )
+        }.firstOrNull()
+    }
 }
+
+/**
+ * Ao-kontorinformasjon koblet til en konkret oppfølgingsperiode.
+ */
+data class AoKontorInfo(
+    val ident: String?,
+    val kontor: String?
+)

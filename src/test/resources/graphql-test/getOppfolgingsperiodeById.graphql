@@ -1,0 +1,19 @@
+query getOppfolgingsperiodeById($id: ID!) {
+    oppfolgingsperiode(id: $id) {
+        startTidspunkt
+        sluttTidspunkt
+        aktorId
+        kontor
+        oppdatertTidspunkt
+        startet {
+            startetAv
+            startetAvType
+            registreringsType
+        }
+        avsluttet {
+            avsluttetAv
+            avsluttetAvType
+            avregistreringsType
+        }
+    }
+}

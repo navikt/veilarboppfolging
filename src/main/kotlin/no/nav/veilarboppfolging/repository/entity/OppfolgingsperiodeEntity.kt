@@ -24,6 +24,7 @@ data class OppfolgingsperiodeEntity @JvmOverloads constructor(
     val startetAvType: RegistrantType? = null,
     val avregistreringsType: AvregistreringsType? = null,
     val avsluttetAvType: RegistrantType? = null,
+    val oppdatert: ZonedDateTime? = null,
 ) {
     fun oppdaterMedKvpPerioder(nyeKvpPerioder: List<KvpPeriodeEntity>) = this.copy(kvpPerioder = nyeKvpPerioder)
 }
