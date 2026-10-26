@@ -2,10 +2,12 @@ package no.nav.veilarboppfolging.kafka
 
 import java.time.Instant
 import java.util.UUID
+import kotlin.jvm.optionals.getOrElse
 import kotlin.jvm.optionals.getOrNull
 import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
+import no.nav.common.utils.EnvironmentUtils.isDevelopment
 import no.nav.person.pdl.leesah.Endringstype
 import no.nav.person.pdl.leesah.Personhendelse
 import no.nav.veilarboppfolging.client.pdl.ForenkletFolkeregisterStatus
@@ -16,7 +18,6 @@ import no.nav.veilarboppfolging.ident.ValidIdent
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.EndretFolkeregisterstatus
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.EndretFolkeregisterstatusHendelseType
-import no.nav.veilarboppfolging.ident.AktorId as IdentAktorId
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.Dodsfall
 import no.nav.veilarboppfolging.service.AvsluttOppfolgingService
 import no.nav.veilarboppfolging.service.OppfolgingService
@@ -24,6 +25,7 @@ import no.nav.veilarboppfolging.utils.SecureLog.secureLog
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import no.nav.veilarboppfolging.ident.AktorId as IdentAktorId
 
 @Service
 class PersonhendelseConsumer(
@@ -60,7 +62,17 @@ class PersonhendelseConsumer(
 
     private fun handterLovligOpphold(personhendelse: Personhendelse) {
         val aktorId = getAktorIder(personhendelse).firstOrNull() ?: throw IllegalStateException("Ingen aktørid funnet for personhendelse")
-        val gjeldendeFnr = aktorOppslagClient.hentFnr(aktorId)
+        val gjeldendeFnr = try {
+            aktorOppslagClient.hentFnr(aktorId)
+        } catch (e: Exception) {
+            logger.error("Fant ikke gjeldende ident for aktørid for hendelse relatert til lovlig opphold", e)
+            if (isDevelopment().getOrElse { false }) {
+                logger.warn("Ignorerer feil ved oppslag av fnr for aktørid i dev")
+                return
+            } else {
+                throw RuntimeException("Feil ved oppslag av fnr for aktørid", e)
+            }
+        }
         val oppfolgingsperiodeId = oppfolgingService.hentGjeldendeOppfolgingsperiode(gjeldendeFnr).getOrNull()?.uuid
         if (oppfolgingsperiodeId != null) {
             logger.info("Har mottatt hendelse som kan påvirke lovlig opphold for oppfølgingsperiodeId $oppfolgingsperiodeId")
