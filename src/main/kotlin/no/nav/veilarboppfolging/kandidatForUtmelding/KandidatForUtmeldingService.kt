@@ -13,7 +13,7 @@ import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ArbeidssøkerPeri
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseOpprettetEllerEndretHendelse
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseUtløptHendelse
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.AvsluttetAapSak
-import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.IkkeLovligOpphold
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.EndretFolkeregisterstatus
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.InaktivertIArena
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.KandidatForUtmeldingHendelse
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.KandidatForUtmeldingHendelseType
@@ -58,7 +58,7 @@ class KandidatForUtmeldingService(
                 is InaktivertIArena,
                 is ForlengelseUtløptHendelse,
                 is AvsluttetAapSak,
-                is IkkeLovligOpphold-> true
+                is EndretFolkeregisterstatus-> true
                 is ForlengelseOpprettetEllerEndretHendelse -> false
             }
             if (erHendelseSomAktivererKandidat && !avslutningsstatus.kanAvslutte) {

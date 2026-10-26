@@ -108,7 +108,7 @@ class PersonhendelseConsumerTest(
         personhendelseConsumer.consumePersonhendelse(melding)
 
         assertThat(oppfolgingService.erUnderOppfolging(aktorId)).isTrue
-        assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId)).isEqualTo(KandidatForUtmeldingTagDto.IKKE_LOVLIG_OPPHOLD)
+        assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId)).isEqualTo(KandidatForUtmeldingTagDto.FOLKEREGISTERSTATUS_OPPHORT)
     }
 
     @Test
@@ -131,7 +131,7 @@ class PersonhendelseConsumerTest(
         personhendelseConsumer.consumePersonhendelse(melding)
 
         assertThat(oppfolgingService.erUnderOppfolging(aktorId)).isTrue
-        assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId)).isEqualTo(KandidatForUtmeldingTagDto.IKKE_LOVLIG_OPPHOLD)
+        assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId)).isEqualTo(KandidatForUtmeldingTagDto.FOLKEREGISTERSTATUS_OPPHORT)
     }
 
     @Test
@@ -154,7 +154,7 @@ class PersonhendelseConsumerTest(
         personhendelseConsumer.consumePersonhendelse(melding)
 
         assertThat(oppfolgingService.erUnderOppfolging(aktorId)).isTrue
-        assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId)).isEqualTo(KandidatForUtmeldingTagDto.IKKE_LOVLIG_OPPHOLD)
+        assertThat(kandidatForUtmeldingService.hentKandidatForUtmeldingTag(aktorId)).isEqualTo(KandidatForUtmeldingTagDto.FOLKEREGISTERSTATUS_OPPHORT)
     }
 
     @Test
