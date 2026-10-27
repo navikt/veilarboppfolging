@@ -33,6 +33,10 @@ sealed class KandidatForUtmeldingHendelse(
             ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET -> KandidatForUtmeldingTagDto.ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET
             ForlengelseHendelseType.FORLENGELSE_UTLOPT -> KandidatForUtmeldingTagDto.FORLENGELSE_UTLOPT
             IkkeLengerAapHendelseType.AVSLUTTET_AAP_SAK -> KandidatForUtmeldingTagDto.AVSLUTTET_AAP_SAK
+            EndretFolkeregisterstatusHendelseType.FOLKEREGISTERSTATUS_FORSVUNNET -> KandidatForUtmeldingTagDto.FOLKEREGISTERSTATUS_FORSVUNNET
+            EndretFolkeregisterstatusHendelseType.FOLKEREGISTERSTATUS_OPPHORT -> KandidatForUtmeldingTagDto.FOLKEREGISTERSTATUS_OPPHORT
+            EndretFolkeregisterstatusHendelseType.FOLKEREGISTERSTATUS_UKJENT -> KandidatForUtmeldingTagDto.FOLKEREGISTERSTATUS_UKJENT
+            EndretFolkeregisterstatusHendelseType.FOLKEREGISTERSTATUS_INGEN_STATUS -> KandidatForUtmeldingTagDto.FOLKEREGISTERSTATUS_INGEN_STATUS
             ForlengelseHendelseType.FORLENGELSE_OPPRETTET,
             ForlengelseHendelseType.FORLENGELSE_ENDRET,
             InaktivertIArenaHendelseType.INAKTIVERT_I_ARENA,
@@ -61,6 +65,13 @@ enum class InaktivertIArenaHendelseType : KandidatForUtmeldingHendelseType {
 
 enum class IkkeLengerAapHendelseType: KandidatForUtmeldingHendelseType {
     AVSLUTTET_AAP_SAK
+}
+
+enum class EndretFolkeregisterstatusHendelseType: KandidatForUtmeldingHendelseType {
+    FOLKEREGISTERSTATUS_FORSVUNNET,
+    FOLKEREGISTERSTATUS_OPPHORT,
+    FOLKEREGISTERSTATUS_UKJENT,
+    FOLKEREGISTERSTATUS_INGEN_STATUS
 }
 
 enum class KandidatForUtmeldingHendelseUtfortAvType {
