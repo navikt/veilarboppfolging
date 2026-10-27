@@ -1,5 +1,3 @@
-FROM busybox:uclibc as busybox
-
 FROM gcr.io/distroless/java21
 
 COPY --from=busybox /bin/sh /bin/sh
