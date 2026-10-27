@@ -32,7 +32,7 @@ object DatastreamKontrakt {
             navn = "oppfolgingsperiode",
             kolonner = listOf(
                 Kolonne("aktor_id"),
-                Kolonne("avslutt_veileder"),
+                Kolonne("avsluttet_av"),
                 Kolonne("avsluttet_av_type", aksepterteVerdier = setOf("SYSTEM", "BRUKER", "VEILEDER", "ADMIN")),
                 Kolonne("sluttdato"),
                 Kolonne("oppdatert"),
