@@ -12,6 +12,7 @@ import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ArbeidssøkerPeri
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.AvsluttetAapSak
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseOpprettetEllerEndretHendelse
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseUtløptHendelse
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.EndretFolkeregisterstatus
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.InaktivertIArena
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.KandidatForUtmeldingHendelse
 
@@ -50,6 +51,7 @@ sealed class KandidatForUtmelding(
                 is ForlengelseUtløptHendelse -> hendelseTid.plusDays(KARENSTID_DAGER)
                 is InaktivertIArena -> null
                 is AvsluttetAapSak -> hendelseTid.plusDays(KARENSTID_DAGER)
+                is EndretFolkeregisterstatus -> hendelseTid.plusDays(KARENSTID_DAGER)
             }
         }
 
