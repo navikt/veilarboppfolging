@@ -5,6 +5,7 @@ import java.util.UUID
 import kotlin.jvm.optionals.getOrElse
 import kotlin.jvm.optionals.getOrNull
 import no.nav.common.client.aktoroppslag.AktorOppslagClient
+import no.nav.common.client.aktorregister.IngenGjeldendeIdentException
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.common.utils.EnvironmentUtils.isDevelopment
@@ -64,15 +65,10 @@ class PersonhendelseConsumer(
         val aktorId = getAktorIder(personhendelse).firstOrNull() ?: throw IllegalStateException("Ingen aktørid funnet for personhendelse")
         val gjeldendeFnr = try {
             aktorOppslagClient.hentFnr(aktorId)
-        } catch (e: Exception) {
-            logger.error("Fant ikke gjeldende ident for aktørid for hendelse relatert til lovlig opphold", e)
-            secureLog.error("Fant ikke gjeldende ident for aktørid ${aktorId.get()}. Mottatte identer: ${personhendelse.personidenter}")
-            if (isDevelopment().getOrElse { false }) {
-                logger.warn("Ignorerer feil ved oppslag av fnr for aktørid i dev")
-                return
-            } else {
-                throw RuntimeException("Feil ved oppslag av fnr for aktørid", e)
-            }
+        } catch (e: IngenGjeldendeIdentException) {
+            logger.warn("Fant ikke gjeldende ident for aktørid for hendelse relatert til lovlig opphold, ignorerer hendelse", e)
+            secureLog.warn("Fant ikke gjeldende ident for aktørid ${aktorId.get()}. Mottatte identer fra leesah-melding: ${personhendelse.personidenter}")
+            return
         }
         val oppfolgingsperiodeId = oppfolgingService.hentGjeldendeOppfolgingsperiode(gjeldendeFnr).getOrNull()?.uuid
         if (oppfolgingsperiodeId != null) {
