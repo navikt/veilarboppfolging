@@ -66,6 +66,7 @@ class PersonhendelseConsumer(
             aktorOppslagClient.hentFnr(aktorId)
         } catch (e: Exception) {
             logger.error("Fant ikke gjeldende ident for aktørid for hendelse relatert til lovlig opphold", e)
+            secureLog.error("Fant ikke gjeldende ident for aktørid ${aktorId.get()}. Mottatte identer: ${personhendelse.personidenter}")
             if (isDevelopment().getOrElse { false }) {
                 logger.warn("Ignorerer feil ved oppslag av fnr for aktørid i dev")
                 return
