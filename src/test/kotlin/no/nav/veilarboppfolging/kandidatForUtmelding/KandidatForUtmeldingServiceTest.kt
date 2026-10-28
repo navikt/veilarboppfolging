@@ -16,8 +16,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
-import java.time.ZoneId
-import java.time.ZoneOffset
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ArbeidssokerperiodeAvsluttetHendelseType
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ArbeidssøkerPeriodeAvsluttet
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseHendelseType
@@ -262,7 +260,7 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
     }
 
     @Test
-    fun `behandleKandidaterMedUtloptForlengelse - forlengelse utløpt, kan ikke avsluttes pga arbeidssøker - slettes`() {
+    fun `behandleKandidaterMedUtloptForlengelse - forlengelse utløpt, kan ikke avsluttes pga AAP - slettes`() {
         mockSytemBrukerAuthOk(AKTOR_ID, FNR)
         setBrukerUnderOppfolging(AKTOR_ID, FNR)
         setLocalArenaOppfolging(AKTOR_ID, Formidlingsgruppe.ARBS)
@@ -304,6 +302,50 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
             .filter { it.hendelse?.beskrivelseEnum == BeskrivelseEnum.FORLENGELSE_UTLOPT.name }
         assertThat(filterhendelse).isEmpty()
         assertThat(kandidatForUtmeldingRepository.erKandidatSomIkkeKunneAvsluttes(oppfolgingsperiodeUuid)).isFalse
+    }
+
+    @Test
+    fun `behandleKandidaterMedUtloptForlengelse - forlengelse utløpt, kan ikke avsluttes pga tiltak - slettes`() {
+        mockSytemBrukerAuthOk(AKTOR_ID, FNR)
+        setBrukerUnderOppfolging(AKTOR_ID, FNR)
+        setLocalArenaOppfolging(AKTOR_ID, Formidlingsgruppe.ARBS)
+        mockTiltakshistorikk(FNR, harAktiveDeltakelser = true)
+        mockUngdomsprogram(FNR, erDeltaker = false)
+        mockAap(FNR, harAap = false)
+        startOppfolgingSomArbeidsoker(AKTOR_ID, FNR)
+        val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(FNR).get().uuid
+        val arbeidssøkerPeriodeAvsluttet = ArbeidssøkerPeriodeAvsluttet(
+            utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
+            utfortAv = "A123123",
+            kilde = "kilde",
+            hendelseTidspunkt = ZonedDateTime.now().toInstant(),
+            oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
+            arbeidssokerperiodeAvsluttetHendelseType = ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
+            avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
+        )
+        kandidatForUtmeldingService.handterUtmeldingsHendelse(FNR, arbeidssøkerPeriodeAvsluttet)
+        kandidatForUtmeldingService.handterUtmeldingsHendelse(FNR, ForlengelseOpprettetEllerEndretHendelse(
+            oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
+            utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
+            utfortAv = "S112233",
+            kilde = "kilde",
+            forlengelseHendelseType = ForlengelseHendelseType.FORLENGELSE_OPPRETTET,
+            hendelseTidspunkt = ZonedDateTime.now().minusDays(29).toInstant(),
+            forlengetTil = LocalDate.now().minusDays(1)
+        )
+        )
+
+        kandidatForUtmeldingService.behandleKandidaterMedUtloptForlengelse()
+
+        assertThat(kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeUuid)).isNull()
+        assertThat(kandidatForUtmeldingRepository.hentKandidatMedForlengelse(oppfolgingsperiodeUuid)).isNull()
+        val filterhendelseId = filterkategoriRepository.hentFilterhendelseId(oppfolgingsperiodeUuid)
+        assertThat(filterhendelseId).isNotNull()
+        // Forlengelse-utløpt skal ikke ha blitt sendt på Kafka
+        val filterhendelse = getFilterhendelseRecordsStoredInKafkaOutbox(kafkaProperties.portefoljeHendelsesfilterTopic, filterhendelseId.toString())
+            .filter { it.hendelse?.beskrivelseEnum == BeskrivelseEnum.FORLENGELSE_UTLOPT.name }
+        assertThat(filterhendelse).isEmpty()
+        assertThat(kandidatForUtmeldingRepository.erKandidatSomIkkeKunneAvsluttes(oppfolgingsperiodeUuid)).isTrue
     }
 
     @Test
@@ -406,7 +448,7 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
     }
 
     @Test
-    fun `avsluttOppfolgingForKandidaterMedPassertAvsluttesAutomatiskDato - kan ikke avsluttes pga arbeidssøker lagres i kandidater_som_ikke_kunne_avsluttes og fjernes fra aktiv liste`() {
+    fun `avsluttOppfolgingForKandidaterMedPassertAvsluttesAutomatiskDato - kan ikke avsluttes pga AAP lagres i kandidater_som_ikke_kunne_avsluttes og fjernes fra aktiv liste`() {
         mockSytemBrukerAuthOk(AKTOR_ID, FNR)
         setBrukerUnderOppfolging(AKTOR_ID, FNR)
         setLocalArenaOppfolging(AKTOR_ID, Formidlingsgruppe.ARBS)
@@ -476,7 +518,7 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
     }
 
     @Test
-    fun `fjernKandidaterSomIkkeKanAvsluttesManuelt - kan ikke avsluttes pga arbeidssøker - fjernes som kandidat`() {
+    fun `fjernKandidaterSomIkkeKanAvsluttesManuelt - kan ikke avsluttes pga AAP - fjernes som kandidat`() {
         mockSytemBrukerAuthOk(AKTOR_ID, FNR)
         setBrukerUnderOppfolging(AKTOR_ID, FNR)
         setLocalArenaOppfolging(AKTOR_ID, Formidlingsgruppe.ARBS)
