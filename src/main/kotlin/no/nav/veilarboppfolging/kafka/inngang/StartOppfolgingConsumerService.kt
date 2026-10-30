@@ -103,7 +103,7 @@ class StartOppfolgingConsumerService(
                 return arenaResponse
             }
             is RegistrerIArenaError -> {
-                logger.error("Feil ved registrering av bruker i Arena", arenaResponse.throwable)
+                logger.error("Feil ved registrering av bruker i Arena: ${arenaResponse.message}", arenaResponse.throwable)
                 throw RuntimeException(arenaResponse.message, arenaResponse.throwable.cause)
             }
         }
