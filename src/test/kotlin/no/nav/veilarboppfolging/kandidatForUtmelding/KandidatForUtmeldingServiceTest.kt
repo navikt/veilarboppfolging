@@ -16,8 +16,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
-import java.time.ZoneId
-import java.time.ZoneOffset
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ArbeidssokerperiodeAvsluttetHendelseType
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ArbeidssøkerPeriodeAvsluttet
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseHendelseType
@@ -25,6 +23,7 @@ import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseOppret
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.InaktivertIArena
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.InaktivertIArenaHendelseType
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.KandidatForUtmeldingHendelseUtfortAvType
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.KanIkkeAvslutteBegrunnelse
 
 class KandidatForUtmeldingServiceTest : IntegrationTest() {
 
@@ -134,7 +133,7 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
 
         assertThat(kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeId)).isNull()
         assertThat(filterkategoriRepository.hentFilterhendelseId(oppfolgingsperiodeId)).isNull()
-        assertThat(kandidatForUtmeldingRepository.erKandidatSomIkkeKunneAvsluttes(oppfolgingsperiodeId)).isTrue
+        assertThat(kandidatForUtmeldingRepository.erKandidatSomIkkeKunneAvsluttes(oppfolgingsperiodeId)).isFalse
     }
 
     @Test
@@ -164,7 +163,34 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
     }
 
     @Test
-    fun `lagreKandidatForUtmelding avslutter ikke oppfølging hvis bruker inaktiveres i Arena og ikke kan avsluttes`() {
+    fun `lagreKandidatForUtmelding avslutter ikke oppfølging hvis bruker inaktiveres i Arena og ikke kan avsluttes pga ungdomsprogram`() {
+        mockSytemBrukerAuthOk(AKTOR_ID, FNR)
+        setBrukerUnderOppfolging(AKTOR_ID, FNR)
+        setLocalArenaOppfolging(AKTOR_ID, Formidlingsgruppe.ARBS)
+        mockTiltakshistorikk(FNR, harAktiveDeltakelser = false)
+        mockUngdomsprogram(FNR, erDeltaker = true)
+        mockAap(FNR, harAap = false)
+        startOppfolgingSomArbeidsoker(AKTOR_ID, FNR)
+        val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(FNR).get().uuid
+
+        kandidatForUtmeldingService.handterUtmeldingsHendelse(
+            FNR,
+            InaktivertIArena(
+                hendelseTidspunkt = ZonedDateTime.now().toInstant(),
+                oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
+                iservFraDato = LocalDate.now(),
+            )
+        )
+
+        val hendelse = kandidatForUtmeldingRepository.hentSisteHendelseForKandidat(oppfolgingsperiodeUuid)
+        assertThat(hendelse).isNotNull
+        assertThat(hendelse?.type).isEqualTo(InaktivertIArenaHendelseType.INAKTIVERT_I_ARENA)
+        assertThat(kandidatForUtmeldingRepository.erKandidatSomIkkeKunneAvsluttes(oppfolgingsperiodeUuid)).isTrue
+        assertThat(kandidatForUtmeldingRepository.erAktivEllerForlengetKandidatForUtmelding(oppfolgingsperiodeUuid)).isFalse
+    }
+
+    @Test
+    fun `lagreKandidatForUtmelding avslutter ikke oppfølging hvis bruker inaktiveres i Arena og ikke kan avsluttes pga AAP`() {
         mockSytemBrukerAuthOk(AKTOR_ID, FNR)
         setBrukerUnderOppfolging(AKTOR_ID, FNR)
         setLocalArenaOppfolging(AKTOR_ID, Formidlingsgruppe.ARBS)
@@ -186,7 +212,7 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
         val hendelse = kandidatForUtmeldingRepository.hentSisteHendelseForKandidat(oppfolgingsperiodeUuid)
         assertThat(hendelse).isNotNull
         assertThat(hendelse?.type).isEqualTo(InaktivertIArenaHendelseType.INAKTIVERT_I_ARENA)
-        assertThat(kandidatForUtmeldingRepository.erKandidatSomIkkeKunneAvsluttes(oppfolgingsperiodeUuid)).isTrue
+        assertThat(kandidatForUtmeldingRepository.erKandidatSomIkkeKunneAvsluttes(oppfolgingsperiodeUuid)).isFalse
         assertThat(kandidatForUtmeldingRepository.erAktivEllerForlengetKandidatForUtmelding(oppfolgingsperiodeUuid)).isFalse
     }
 
@@ -234,7 +260,7 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
     }
 
     @Test
-    fun `behandleKandidaterMedUtloptForlengelse - forlengelse utløpt, kan ikke avsluttes - slettes`() {
+    fun `behandleKandidaterMedUtloptForlengelse - forlengelse utløpt, kan ikke avsluttes pga AAP - slettes`() {
         mockSytemBrukerAuthOk(AKTOR_ID, FNR)
         setBrukerUnderOppfolging(AKTOR_ID, FNR)
         setLocalArenaOppfolging(AKTOR_ID, Formidlingsgruppe.ARBS)
@@ -264,6 +290,50 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
         )
         )
         mockAap(FNR, harAap = true)
+
+        kandidatForUtmeldingService.behandleKandidaterMedUtloptForlengelse()
+
+        assertThat(kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeUuid)).isNull()
+        assertThat(kandidatForUtmeldingRepository.hentKandidatMedForlengelse(oppfolgingsperiodeUuid)).isNull()
+        val filterhendelseId = filterkategoriRepository.hentFilterhendelseId(oppfolgingsperiodeUuid)
+        assertThat(filterhendelseId).isNotNull()
+        // Forlengelse-utløpt skal ikke ha blitt sendt på Kafka
+        val filterhendelse = getFilterhendelseRecordsStoredInKafkaOutbox(kafkaProperties.portefoljeHendelsesfilterTopic, filterhendelseId.toString())
+            .filter { it.hendelse?.beskrivelseEnum == BeskrivelseEnum.FORLENGELSE_UTLOPT.name }
+        assertThat(filterhendelse).isEmpty()
+        assertThat(kandidatForUtmeldingRepository.erKandidatSomIkkeKunneAvsluttes(oppfolgingsperiodeUuid)).isFalse
+    }
+
+    @Test
+    fun `behandleKandidaterMedUtloptForlengelse - forlengelse utløpt, kan ikke avsluttes pga tiltak - slettes`() {
+        mockSytemBrukerAuthOk(AKTOR_ID, FNR)
+        setBrukerUnderOppfolging(AKTOR_ID, FNR)
+        setLocalArenaOppfolging(AKTOR_ID, Formidlingsgruppe.ARBS)
+        mockTiltakshistorikk(FNR, harAktiveDeltakelser = true)
+        mockUngdomsprogram(FNR, erDeltaker = false)
+        mockAap(FNR, harAap = false)
+        startOppfolgingSomArbeidsoker(AKTOR_ID, FNR)
+        val oppfolgingsperiodeUuid = oppfolgingService.hentGjeldendeOppfolgingsperiode(FNR).get().uuid
+        val arbeidssøkerPeriodeAvsluttet = ArbeidssøkerPeriodeAvsluttet(
+            utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
+            utfortAv = "A123123",
+            kilde = "kilde",
+            hendelseTidspunkt = ZonedDateTime.now().toInstant(),
+            oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
+            arbeidssokerperiodeAvsluttetHendelseType = ArbeidssokerperiodeAvsluttetHendelseType.ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
+            avslutningsarsak = BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST.toString()
+        )
+        kandidatForUtmeldingService.handterUtmeldingsHendelse(FNR, arbeidssøkerPeriodeAvsluttet)
+        kandidatForUtmeldingService.handterUtmeldingsHendelse(FNR, ForlengelseOpprettetEllerEndretHendelse(
+            oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
+            utfortAvType = KandidatForUtmeldingHendelseUtfortAvType.VEILEDER,
+            utfortAv = "S112233",
+            kilde = "kilde",
+            forlengelseHendelseType = ForlengelseHendelseType.FORLENGELSE_OPPRETTET,
+            hendelseTidspunkt = ZonedDateTime.now().minusDays(29).toInstant(),
+            forlengetTil = LocalDate.now().minusDays(1)
+        )
+        )
 
         kandidatForUtmeldingService.behandleKandidaterMedUtloptForlengelse()
 
@@ -378,7 +448,7 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
     }
 
     @Test
-    fun `avsluttOppfolgingForKandidaterMedPassertAvsluttesAutomatiskDato - kan ikke avsluttes lagres i kandidater_som_ikke_kunne_avsluttes og fjernes fra aktiv liste`() {
+    fun `avsluttOppfolgingForKandidaterMedPassertAvsluttesAutomatiskDato - kan ikke avsluttes pga AAP lagres i kandidater_som_ikke_kunne_avsluttes og fjernes fra aktiv liste`() {
         mockSytemBrukerAuthOk(AKTOR_ID, FNR)
         setBrukerUnderOppfolging(AKTOR_ID, FNR)
         setLocalArenaOppfolging(AKTOR_ID, Formidlingsgruppe.ARBS)
@@ -414,7 +484,7 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
 
         assertThat(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID).get().underOppfolging).isTrue()
         assertThat(kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeUuid)).isNull()
-        assertThat(kandidatForUtmeldingRepository.erKandidatSomIkkeKunneAvsluttes(oppfolgingsperiodeUuid)).isTrue
+        assertThat(kandidatForUtmeldingRepository.erKandidatSomIkkeKunneAvsluttes(oppfolgingsperiodeUuid)).isFalse
     }
 
     @Test
@@ -448,7 +518,7 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
     }
 
     @Test
-    fun `fjernKandidaterSomIkkeKanAvsluttesManuelt - kan ikke avsluttes - fjernes som kandidat`() {
+    fun `fjernKandidaterSomIkkeKanAvsluttesManuelt - kan ikke avsluttes pga AAP - fjernes som kandidat`() {
         mockSytemBrukerAuthOk(AKTOR_ID, FNR)
         setBrukerUnderOppfolging(AKTOR_ID, FNR)
         setLocalArenaOppfolging(AKTOR_ID, Formidlingsgruppe.ARBS)
@@ -485,7 +555,7 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
 
         assertThat(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID).get().underOppfolging).isTrue()
         assertThat(kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeUuid)).isNull()
-        assertThat(kandidatForUtmeldingRepository.erKandidatSomIkkeKunneAvsluttes(oppfolgingsperiodeUuid)).isTrue
+        assertThat(kandidatForUtmeldingRepository.erKandidatSomIkkeKunneAvsluttes(oppfolgingsperiodeUuid)).isFalse
 
         val filterhendelseId = filterkategoriRepository.hentFilterhendelseId(oppfolgingsperiodeUuid)
         assertThat(filterhendelseId).isNotNull()
@@ -539,6 +609,30 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
         val filterhendelse = getFilterhendelseRecordsStoredInKafkaOutbox(kafkaProperties.portefoljeHendelsesfilterTopic, filterhendelseId.toString())
             .filter { it.operasjon == Operasjon.STOPP }
         assertThat(filterhendelse).isEmpty()
+    }
+
+    @Test
+    fun `skalLagreKandidatSomIkkeKunneAvsluttes - gir riktig svar` () {
+        assertThat(kandidatForUtmeldingService.skalLagreKandidatSomIkkeKunneAvsluttes(listOf(KanIkkeAvslutteBegrunnelse.BRUKER_VAR_IKKE_UNDER_OPPFOLGING))).isFalse
+        assertThat(kandidatForUtmeldingService.skalLagreKandidatSomIkkeKunneAvsluttes(listOf(KanIkkeAvslutteBegrunnelse.BRUKER_HAR_AKTIVE_TILTAKSDELTAKELSER))).isTrue
+        assertThat(kandidatForUtmeldingService.skalLagreKandidatSomIkkeKunneAvsluttes(listOf(KanIkkeAvslutteBegrunnelse.BRUKER_ER_DELTAKER_I_UNGDOMSPROGRAMMET))).isTrue
+        assertThat(kandidatForUtmeldingService.skalLagreKandidatSomIkkeKunneAvsluttes(listOf(KanIkkeAvslutteBegrunnelse.BRUKER_ER_REGISTRERT_SOM_ARBEIDSSOKER))).isFalse
+        assertThat(kandidatForUtmeldingService.skalLagreKandidatSomIkkeKunneAvsluttes(listOf(KanIkkeAvslutteBegrunnelse.BRUKER_MOTTAR_ELLER_HAR_SOKT_OM_AAP))).isFalse
+        assertThat(kandidatForUtmeldingService.skalLagreKandidatSomIkkeKunneAvsluttes(listOf(KanIkkeAvslutteBegrunnelse.OPPFOLGINGEN_ER_FORLENGET))).isFalse
+        assertThat(kandidatForUtmeldingService.skalLagreKandidatSomIkkeKunneAvsluttes(listOf(KanIkkeAvslutteBegrunnelse.BRUKER_VAR_UNDER_KVP))).isTrue
+
+        assertThat(kandidatForUtmeldingService.skalLagreKandidatSomIkkeKunneAvsluttes(listOf(
+            KanIkkeAvslutteBegrunnelse.BRUKER_ER_DELTAKER_I_UNGDOMSPROGRAMMET,
+            KanIkkeAvslutteBegrunnelse.BRUKER_HAR_AKTIVE_TILTAKSDELTAKELSER,
+        ))).isTrue
+        assertThat(kandidatForUtmeldingService.skalLagreKandidatSomIkkeKunneAvsluttes(listOf(
+            KanIkkeAvslutteBegrunnelse.BRUKER_MOTTAR_ELLER_HAR_SOKT_OM_AAP,
+            KanIkkeAvslutteBegrunnelse.BRUKER_HAR_AKTIVE_TILTAKSDELTAKELSER,
+        ))).isFalse
+        assertThat(kandidatForUtmeldingService.skalLagreKandidatSomIkkeKunneAvsluttes(listOf(
+            KanIkkeAvslutteBegrunnelse.BRUKER_MOTTAR_ELLER_HAR_SOKT_OM_AAP,
+            KanIkkeAvslutteBegrunnelse.BRUKER_ER_REGISTRERT_SOM_ARBEIDSSOKER,
+        ))).isFalse
     }
 }
 

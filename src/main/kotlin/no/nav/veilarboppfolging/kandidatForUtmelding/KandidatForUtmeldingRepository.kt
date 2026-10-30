@@ -73,7 +73,7 @@ class KandidatForUtmeldingRepository(
         )
     }
 
-    private fun insertUtmeldingsHendelse(hendelse: KandidatForUtmeldingHendelse): UUID {
+    fun insertUtmeldingsHendelse(hendelse: KandidatForUtmeldingHendelse): UUID {
         val sql = """
             INSERT INTO kandidater_for_utmelding_hendelser(utmeldingshendelse_id, hendelse, hendelse_data, utfort_av, utfort_av_type, kilde, oppfolgingsperiode_uuid, hendelse_tidspunkt)
             VALUES (gen_random_uuid(), :hendelse, :hendelseData::jsonb, :utfortAv, :utfortAvType, :kilde, :oppfolgingsperiode_uuid, :hendelseTidspunkt)

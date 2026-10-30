@@ -70,6 +70,7 @@ import no.nav.veilarboppfolging.service.AuthService
 import no.nav.veilarboppfolging.service.AvsluttOppfolgingService
 import no.nav.veilarboppfolging.service.ManuellStatusService
 import no.nav.veilarboppfolging.service.OppfolgingService
+import no.nav.veilarboppfolging.utils.SecureLog.secureLog
 import org.slf4j.LoggerFactory
 import org.springframework.graphql.data.method.annotation.Argument
 import org.springframework.graphql.data.method.annotation.LocalContextValue
@@ -327,11 +328,14 @@ class GraphqlController(
     }
 
 
-    fun fnrFraContext(fnr: String?): EksternBrukerId {
+    fun fnrFraContext(ident: String?): EksternBrukerId {
         return when {
             authService.erEksternBruker() -> Fnr.of(authService.innloggetBrukerIdent)
-            fnr.isNullOrEmpty() -> throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Fnr er påkrevd")
-            else -> fnr.toCommonIdent { throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Ugyldig ident i spørring") }
+            ident.isNullOrEmpty() -> throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Fnr er påkrevd")
+            else -> ident.toCommonIdent {
+                secureLog.warn("Mottok ugyldig ident: $ident")
+                throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Ugyldig ident i spørring")
+            }
         }
     }
 
@@ -570,8 +574,7 @@ class GraphqlController(
 
     @QueryMapping
     fun oppfolgingsperiode(@Argument id: String): OppfolgingsperiodeDetaljerDto? {
-        authService.skalVereSystemBruker()
-        authService.sjekkAtApplikasjonErIAllowList(listOf(POAO_ADMIN))
+        authService.skalVereInternBruker()
         authService.sjekkAtTokenHarScope("admin")
 
         val oppfolgingsperiodeId = runCatching { UUID.fromString(id) }

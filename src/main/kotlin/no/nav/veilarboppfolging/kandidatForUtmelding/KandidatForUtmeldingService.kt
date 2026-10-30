@@ -45,6 +45,13 @@ class KandidatForUtmeldingService(
     private val BATCH_SIZE = 1000
     private val logger = LoggerFactory.getLogger(this::class.java)
 
+    private val avslutningsstatuserSomIkkeSkalLagresSomKandidaterSomIkkeKanAvsluttes = listOf(
+        KanIkkeAvslutteBegrunnelse.BRUKER_VAR_IKKE_UNDER_OPPFOLGING,
+        KanIkkeAvslutteBegrunnelse.BRUKER_ER_REGISTRERT_SOM_ARBEIDSSOKER,
+        KanIkkeAvslutteBegrunnelse.BRUKER_MOTTAR_ELLER_HAR_SOKT_OM_AAP,
+        KanIkkeAvslutteBegrunnelse.OPPFOLGINGEN_ER_FORLENGET,
+    )
+
     fun handterUtmeldingsHendelse(hendelse: KandidatForUtmeldingHendelse) {
         val fnr = finnFnrForOppfolgingsperiode(hendelse.oppfolgingsperiodeUuid)
         handterUtmeldingsHendelse(fnr.first, hendelse)
@@ -68,11 +75,16 @@ class KandidatForUtmeldingService(
                     return@executeWithoutResult
                 }
                 logger.info("Kandidat kunne ikke avsluttes selvom ${hendelse::class.simpleName}, oppfølgingsperiode ${hendelse.oppfolgingsperiodeUuid}")
-                kandidatForUtmeldingRepository.lagreKandidatSomIkkeKunneAvsluttesOgHendelse(
-                    hendelse = hendelse,
-                    oppfolgingsperiodeId = hendelse.oppfolgingsperiodeUuid,
-                    begrunnelse = avslutningsstatus.begrunnelse,
-                )
+                if (skalLagreKandidatSomIkkeKunneAvsluttes(avslutningsstatus.begrunnelse)) {
+                    kandidatForUtmeldingRepository.lagreKandidatSomIkkeKunneAvsluttesOgHendelse(
+                        hendelse = hendelse,
+                        oppfolgingsperiodeId = hendelse.oppfolgingsperiodeUuid,
+                        begrunnelse = avslutningsstatus.begrunnelse,
+                    )
+                } else {
+                    logger.info("Lagrer ikke kandidat som ikke kunne avsluttes for oppfølgingsperiode med id ${hendelse.oppfolgingsperiodeUuid}, men lagrer hendelsen for historikk")
+                    kandidatForUtmeldingRepository.insertUtmeldingsHendelse(hendelse)
+                }
                 kandidatForUtmeldingRepository.fjernKandidat(hendelse.oppfolgingsperiodeUuid)
                 return@executeWithoutResult
             }
@@ -161,7 +173,10 @@ class KandidatForUtmeldingService(
                     val resultat =
                         avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(KandidatUtmeldtEtter28Dager(aktorId))
                     if (resultat is KunneIkkeAvsluttes) {
-                        if (resultat.begrunnelse.contains(KanIkkeAvslutteBegrunnelse.OPPFOLGINGEN_ER_FORLENGET)) {
+                        if (resultat.begrunnelse.contains(KanIkkeAvslutteBegrunnelse.BRUKER_VAR_IKKE_UNDER_OPPFOLGING)) {
+                            fjernKandidatForUtmeldingService.fjernKandidatForUtmelding(kandidat.oppfolgingsperiodeId)
+                            logger.info("Kandidat med oppfølgingsperiode ${kandidat.oppfolgingsperiodeId} var allerede avsluttet, fjerner kandidat")
+                        } else if (resultat.begrunnelse.contains(KanIkkeAvslutteBegrunnelse.OPPFOLGINGEN_ER_FORLENGET)) {
                             logger.warn("Kandidat med oppfølgingsperiode ${kandidat.oppfolgingsperiodeId} er forlenget og kan ikke avsluttes automatisk, og skal heller ikke fjernes fra kandidat-tabellen (race condition)")
                         } else {
                             lagreKandidatSomIkkeKunneAvsluttes(kandidat.oppfolgingsperiodeId, resultat.begrunnelse)
@@ -235,12 +250,14 @@ class KandidatForUtmeldingService(
     private fun lagreKandidatSomIkkeKunneAvsluttes(oppfolgingsperiodeId: UUID, begrunnelse: List<KanIkkeAvslutteBegrunnelse>) {
         val oppfolgingsperiode = oppfolgingsPeriodeRepository.hentOppfolgingsperiode(oppfolgingsperiodeId.toString())
             .getOrElse { throw IllegalStateException("Oppfølgingsperiode med id $oppfolgingsperiodeId finnes ikke") }
-        if (oppfolgingsperiode.sluttDato == null) {
+        if (oppfolgingsperiode.sluttDato == null && skalLagreKandidatSomIkkeKunneAvsluttes(begrunnelse)) {
             logger.info("Lagrer kandidat med oppfølgingsperiode $oppfolgingsperiodeId som kandidat som ikke kan avsluttes")
             kandidatForUtmeldingRepository.lagreKandidatSomIkkeKunneAvsluttes(
                 oppfolgingsperiodeId,
                 begrunnelse
             )
+        } else {
+            logger.info("Lagrer ikke kandidat som ikke kunne avsluttes for oppfølgingsperiode med id $oppfolgingsperiodeId")
         }
     }
 
@@ -253,5 +270,9 @@ class KandidatForUtmeldingService(
 
     fun hentAktivEllerForelengetKandidat(oppfolgingsperiodeId: UUID): KandidatForUtmelding? {
         return kandidatForUtmeldingRepository.hentAktivEllerForlengetKandidat(oppfolgingsperiodeId)
+    }
+
+    fun skalLagreKandidatSomIkkeKunneAvsluttes(begrunnelse: List<KanIkkeAvslutteBegrunnelse>): Boolean {
+        return !begrunnelse.any { it in avslutningsstatuserSomIkkeSkalLagresSomKandidaterSomIkkeKanAvsluttes }
     }
 }

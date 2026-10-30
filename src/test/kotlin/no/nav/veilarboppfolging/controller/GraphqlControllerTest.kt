@@ -67,15 +67,8 @@ class GraphqlControllerTest: IntegrationTest() {
         return fnr to aktorId
     }
 
-    private fun mockPoaoAdminSystemBrukerAuth(aktorId: AktorId, fnr: Fnr) {
-        mockSytemBrukerAuthOk(aktorId, fnr)
-        val claims = JWTClaimsSet.Builder()
-            .issuer("microsoftonline.com")
-            .claim("azp_name", "cluster:poao:poao-admin")
-            .claim("roles", listOf("access_as_application"))
-            .claim("scp", "admin")
-            .build()
-        `when`(authContextHolder.idTokenClaims).thenReturn(Optional.of(claims))
+    private fun mockPoaoAdminInternBrukerAuth(veilederUuid: UUID, navIdent: NavIdent, aktorId: AktorId, fnr: Fnr) {
+        mockInternBrukerAuthOk(veilederUuid, aktorId, fnr, navIdent, "admin")
     }
 
     @Test
@@ -691,12 +684,15 @@ class GraphqlControllerTest: IntegrationTest() {
     @Test
     fun `skal returnere oppfolgingsperiode oppslatt med id`() {
         val veilederNavIdent = NavIdent("B143314")
+        val veilederUuid = UUID.randomUUID()
         val enhet = EnhetId("1212")
         val (fnr, aktorId) = defaultBruker()
-        mockPoaoAdminSystemBrukerAuth(aktorId, fnr)
+        mockPoaoAdminInternBrukerAuth(veilederUuid, veilederNavIdent, aktorId, fnr)
         mockArenaHentOppfolgingsTilstand(fnr)
         val periodeId = setBrukerUnderOppfolging(aktorId, fnr)
         setAoKontor(fnr, aktorId, enhet.get())
+        mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Permit, tilgangType = TilgangType.SKRIVE)
+        mockPoaoTilgangHarTilgangTilEnhet(veilederUuid, enhet)
         avsluttOppfolgingManueltSomVeileder(aktorId, veilederNavIdent, "fordi")
 
         val result = tester
@@ -725,7 +721,9 @@ class GraphqlControllerTest: IntegrationTest() {
     fun `skal returnere apen oppfolgingsperiode uten sluttidspunkt og avsluttet-info`() {
         val enhet = EnhetId("1212")
         val (fnr, aktorId) = defaultBruker()
-        mockPoaoAdminSystemBrukerAuth(aktorId, fnr)
+        val veilederUuid = UUID.randomUUID()
+        val veilederNavIdent = NavIdent("A123123")
+        mockPoaoAdminInternBrukerAuth(veilederUuid, veilederNavIdent, aktorId, fnr)
         mockArenaHentOppfolgingsTilstand(fnr)
         val periodeId = setBrukerUnderOppfolging(aktorId, fnr)
         setAoKontor(fnr, aktorId, enhet.get())
@@ -753,7 +751,9 @@ class GraphqlControllerTest: IntegrationTest() {
     @Test
     fun `skal returnere null ved oppslag pa ukjent oppfolgingsperiode-id`() {
         val (fnr, aktorId) = defaultBruker()
-        mockPoaoAdminSystemBrukerAuth(aktorId, fnr)
+        val veilederUuid = UUID.randomUUID()
+        val veilederNavIdent = NavIdent("A123123")
+        mockPoaoAdminInternBrukerAuth(veilederUuid, veilederNavIdent, aktorId, fnr)
 
         val result = tester
             .documentName("getOppfolgingsperiodeById")
@@ -767,13 +767,9 @@ class GraphqlControllerTest: IntegrationTest() {
     @Test
     fun `skal returnere feil nar poao-admin mangler admin-scope`() {
         val (fnr, aktorId) = defaultBruker()
-        mockSytemBrukerAuthOk(aktorId, fnr)
-        val claims = JWTClaimsSet.Builder()
-            .issuer("microsoftonline.com")
-            .claim("azp_name", "cluster:poao:poao-admin")
-            .claim("roles", listOf("access_as_application"))
-            .build()
-        `when`(authContextHolder.idTokenClaims).thenReturn(Optional.of(claims))
+        val veilederNavIdent = NavIdent("A123123")
+        val veilederUuid = UUID.randomUUID()
+        mockInternBrukerAuthOk(veilederUuid,  aktorId, fnr, veilederNavIdent)
 
         val result = tester
             .documentName("getOppfolgingsperiodeById")
