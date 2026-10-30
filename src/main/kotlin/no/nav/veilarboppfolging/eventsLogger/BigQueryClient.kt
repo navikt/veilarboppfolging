@@ -75,6 +75,7 @@ class BigQueryClientImplementation(private val bigQuery: BigQuery): BigQueryClie
                 "timestamp" to ZonedDateTime.now().toOffsetDateTime().toString(),
                 "event" to BigQueryEventType.OPPFOLGINGSPERIODE_SLUTT.name,
                 "avregistreringsType" to avregistrering.getAvregistreringsType().name,
+                "avsluttetAvType" to avregistrering.avsluttetAv.getType().name,
                 "erAktivIArena" to aktivIArena,
                 "erKandidatForUtmelding" to (kandidatForUtmeldingHendelseType != null),
                 "kandidatForUtmeldingHendelseType" to kandidatForUtmeldingHendelseType?.toString()
