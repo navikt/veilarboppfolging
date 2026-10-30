@@ -158,7 +158,7 @@ class VeilarbarenaClientImpl(
                 is RequestResult.Fail ->  RegistrerIArenaError("Noe gikk galt ved registrering av bruker i Arena", response.reason)
             }
         } catch (e: Exception) {
-            return RegistrerIArenaError("Uventet feil ved registrer bruker via veilarbarena", e)
+            return RegistrerIArenaError("Uventet feil ved registrer bruker via veilarbarena: ${e.message}", e)
         }
     }
 
@@ -176,7 +176,7 @@ class VeilarbarenaClientImpl(
                 is RequestResult.Fail ->  RegistrerIArenaError("Noe gikk galt ved registrering av bruker i Arena", response.reason)
             }
         } catch (e: Exception) {
-            return RegistrerIArenaError("Uventet feil ved registrer bruker via veilarbarena", e)
+            return RegistrerIArenaError("Uventet feil ved registrer bruker via veilarbarena: ${e.message}", e)
         }
     }
 
