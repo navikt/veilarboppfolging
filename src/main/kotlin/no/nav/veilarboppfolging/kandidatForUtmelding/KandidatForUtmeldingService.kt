@@ -173,7 +173,10 @@ class KandidatForUtmeldingService(
                     val resultat =
                         avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(KandidatUtmeldtEtter28Dager(aktorId))
                     if (resultat is KunneIkkeAvsluttes) {
-                        if (resultat.begrunnelse.contains(KanIkkeAvslutteBegrunnelse.OPPFOLGINGEN_ER_FORLENGET)) {
+                        if (resultat.begrunnelse.contains(KanIkkeAvslutteBegrunnelse.BRUKER_VAR_IKKE_UNDER_OPPFOLGING)) {
+                            fjernKandidatForUtmeldingService.fjernKandidatForUtmelding(kandidat.oppfolgingsperiodeId)
+                            logger.info("Kandidat med oppfølgingsperiode ${kandidat.oppfolgingsperiodeId} var allerede avsluttet, fjerner kandidat")
+                        } else if (resultat.begrunnelse.contains(KanIkkeAvslutteBegrunnelse.OPPFOLGINGEN_ER_FORLENGET)) {
                             logger.warn("Kandidat med oppfølgingsperiode ${kandidat.oppfolgingsperiodeId} er forlenget og kan ikke avsluttes automatisk, og skal heller ikke fjernes fra kandidat-tabellen (race condition)")
                         } else {
                             lagreKandidatSomIkkeKunneAvsluttes(kandidat.oppfolgingsperiodeId, resultat.begrunnelse)
