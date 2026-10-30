@@ -575,7 +575,6 @@ class GraphqlController(
     @QueryMapping
     fun oppfolgingsperiode(@Argument id: String): OppfolgingsperiodeDetaljerDto? {
         authService.skalVereInternBruker()
-        authService.sjekkAtApplikasjonErIAllowList(listOf(POAO_ADMIN))
         authService.sjekkAtTokenHarScope("admin")
 
         val oppfolgingsperiodeId = runCatching { UUID.fromString(id) }

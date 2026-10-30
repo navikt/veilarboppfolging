@@ -404,11 +404,12 @@ open class IntegrationTest {
             `when`(authContextHolder.uid).thenReturn(Optional.of(fnr.get()))
     }
 
-    fun mockInternBrukerAuthOk(veilederIOD: UUID,aktørId: AktorId, fnr: Fnr, navIdent: NavIdent = NavIdent("A123456")) {
+    fun mockInternBrukerAuthOk(veilederIOD: UUID,aktørId: AktorId, fnr: Fnr, navIdent: NavIdent = NavIdent("A123456"), scp: String? = null) {
         val claims = JWTClaimsSet.Builder()
             .issuer("microsoftonline.com")
             .claim("azp_name", "cluster:team:veilarbvedtaksstotte")
             .claim("oid", veilederIOD.toString())
+            .let { if (scp != null) it.claim("scp", scp) else it }
             .build()
 
         `when`(authContextHolder.idTokenClaims).thenReturn(Optional.of(claims))
