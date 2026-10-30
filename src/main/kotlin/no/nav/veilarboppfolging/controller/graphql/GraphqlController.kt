@@ -574,7 +574,7 @@ class GraphqlController(
 
     @QueryMapping
     fun oppfolgingsperiode(@Argument id: String): OppfolgingsperiodeDetaljerDto? {
-        authService.skalVereSystemBruker()
+        authService.skalVereInternBruker()
         authService.sjekkAtApplikasjonErIAllowList(listOf(POAO_ADMIN))
         authService.sjekkAtTokenHarScope("admin")
 
