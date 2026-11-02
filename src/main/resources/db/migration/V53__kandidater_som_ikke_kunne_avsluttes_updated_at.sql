@@ -1,0 +1,3 @@
+alter table kandidater_som_ikke_kunne_avsluttes add column updated_at timestamp default current_timestamp;
+
+update kandidater_som_ikke_kunne_avsluttes set updated_at = created_at;
