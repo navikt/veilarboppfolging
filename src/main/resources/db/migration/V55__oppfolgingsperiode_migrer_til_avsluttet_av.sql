@@ -1,1 +1,0 @@
-UPDATE oppfolgingsperiode SET avsluttet_av = avslutt_veileder;

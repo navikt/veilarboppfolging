@@ -40,7 +40,7 @@ public class OppfolgingsPeriodeRepository {
     private final TransactionTemplate transactor;
 
     private final static String hentOppfolingsperioderSQL =
-            "SELECT uuid, aktor_id, avsluttet_av, startdato, sluttdato, avslutt_begrunnelse, start_begrunnelse, startet_av, startet_av_type, avregistrering_type, avsluttet_av_type, oppdatert " +
+            "SELECT uuid, aktor_id, avslutt_veileder, startdato, sluttdato, avslutt_begrunnelse, start_begrunnelse, startet_av, startet_av_type, avregistrering_type, avsluttet_av_type, oppdatert " +
                     "FROM OPPFOLGINGSPERIODE ";
 
     @Autowired
@@ -236,7 +236,7 @@ public class OppfolgingsPeriodeRepository {
         return new OppfolgingsperiodeEntity(
                 UUID.fromString(result.getString("uuid")),
                 result.getString("aktor_id"),
-                result.getString("avsluttet_av"),
+                result.getString("avslutt_veileder"),
                 hentZonedDateTime(result, "startdato"),
                 hentZonedDateTime(result, "sluttdato"),
                 result.getString("avslutt_begrunnelse"),
