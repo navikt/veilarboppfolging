@@ -157,6 +157,21 @@ class KandidatForUtmeldingRepository(
         )
     }
 
+    fun oppdaterKandidatSomIkkeKunneAvsluttes(oppfolgingsperiodeId: UUID, begrunnelse: List<KanIkkeAvslutteBegrunnelse>) {
+        db.update(
+            """
+            UPDATE kandidater_som_ikke_kunne_avsluttes
+            SET begrunnelse = :begrunnelse,
+                updated_at = current_timestamp
+            WHERE oppfolgingsperiode_uuid = :oppfolgingsperiodeId
+            """.trimIndent(),
+            mapOf(
+                "oppfolgingsperiodeId" to oppfolgingsperiodeId.toString(),
+                "begrunnelse" to begrunnelse.joinToString(",") { it.name },
+            ),
+        )
+    }
+
     fun fjernKandidatSomIkkeKunneAvsluttes(oppfolgingsperiodeId: UUID) {
         val sql = """
             DELETE FROM kandidater_som_ikke_kunne_avsluttes
@@ -315,6 +330,37 @@ class KandidatForUtmeldingRepository(
                 "batchSize" to batchSize
             ),
         ) { rs, _ -> KandidatForUtmelding.fromHendelse(resultSetToUtmeldingsHendelse(rs)) }
+    }
+
+    // henter kandidater som ikke kan avsluttes fra tiden før vi sluttet å lagre for hendelser vi vil fange opp senere
+    fun hentKandidaterSomIkkeKanAvsluttes(offset: Int, batchSize: Int): List<KandidatSomIkkeKanAvsluttes> {
+        return db.query(
+            """
+            SELECT *
+            FROM kandidater_som_ikke_kunne_avsluttes
+            WHERE updated_at < '2026-10-29 22:17:57.290000'
+            ORDER BY updated_at
+            OFFSET :offset ROWS FETCH NEXT :batchSize ROWS ONLY
+            """.trimIndent(),
+            mapOf(
+                "offset" to offset,
+                "batchSize" to batchSize
+            ),
+        ) { rs, _ -> rs.toKandidatSomIkkeKanAvsluttes() }
+    }
+
+    @TestOnly
+    fun hentKandidatSomIkkeKanAvsluttes(oppfolgingsperiodeId: UUID): KandidatSomIkkeKanAvsluttes? {
+        return db.query(
+            """
+            SELECT *
+            FROM kandidater_som_ikke_kunne_avsluttes
+            WHERE oppfolgingsperiode_uuid = :oppfolgingsperiodeId
+            """.trimIndent(),
+            mapOf(
+                "oppfolgingsperiodeId" to oppfolgingsperiodeId.toString()
+            ),
+        ) { rs, _ -> rs.toKandidatSomIkkeKanAvsluttes() }.firstOrNull()
     }
 
     fun oppdaterSistSjekket(oppfolgingsperiodeId: UUID) {
@@ -476,4 +522,10 @@ fun ResultSet.toEndretFolkeregisterstatusHendelse() = EndretFolkeregisterstatus(
     oppfolgingsperiodeUuid = UUID.fromString(getString("oppfolgingsperiode_uuid")),
     hendelseTidspunkt = getTimestamp("hendelse_tidspunkt").toLocalDateTime().toInstant(ZoneOffset.UTC),
     endretFolkeregisterstatusHendelseType = EndretFolkeregisterstatusHendelseType.valueOf(getString("hendelse")),
+)
+
+fun ResultSet.toKandidatSomIkkeKanAvsluttes() = KandidatSomIkkeKanAvsluttes(
+    oppfolgingsperiodeId = UUID.fromString(getString("oppfolgingsperiode_uuid")),
+    sisteUtmeldingshendelseId = UUID.fromString(getString("siste_utmeldingshendelse_id")),
+    begrunnelse = getStringOrNull("begrunnelse"),
 )
