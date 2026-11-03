@@ -43,7 +43,7 @@ class KandidatForUtmeldingCron(
 
     // midlertidig jobb som skal fjerne radene som ligger i kandidater_som_ikke_kan_avsluttes hvis årsaken er hendelser som vi håndterer nå,
     // eller oppdatere dem med eventuelt flere årsaker hvis de mangler årsaker til at de ikke kan avsluttes
-    @Scheduled(cron = "0 30 * * * *")
+    @Scheduled(cron = "0 0,15,30,45 * * * *")
     fun oppdaterEllerSlettKandidaterSomIkkeKanAvsluttes() {
         if (!leaderElectionClient.isLeader) {
             return
