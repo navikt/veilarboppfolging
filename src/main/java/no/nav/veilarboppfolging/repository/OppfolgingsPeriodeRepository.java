@@ -40,7 +40,7 @@ public class OppfolgingsPeriodeRepository {
     private final TransactionTemplate transactor;
 
     private final static String hentOppfolingsperioderSQL =
-            "SELECT uuid, aktor_id, avslutt_veileder, startdato, sluttdato, avslutt_begrunnelse, start_begrunnelse, startet_av, startet_av_type, avregistrering_type, avsluttet_av_type, oppdatert " +
+            "SELECT uuid, aktor_id, avsluttet_av, startdato, sluttdato, avslutt_begrunnelse, start_begrunnelse, startet_av, startet_av_type, avregistrering_type, avsluttet_av_type, oppdatert " +
                     "FROM OPPFOLGINGSPERIODE ";
 
     @Autowired
@@ -77,7 +77,7 @@ public class OppfolgingsPeriodeRepository {
             Timestamp sluttTimestamp = Timestamp.from(sluttDato.toInstant());
             return db.queryForObject(""" 
                             UPDATE OPPFOLGINGSPERIODE
-                            SET avslutt_veileder = ?,
+                            SET avsluttet_av = ?,
                             avslutt_begrunnelse = ?,
                             sluttDato = ?,
                             oppdatert = CURRENT_TIMESTAMP,
@@ -191,7 +191,7 @@ public class OppfolgingsPeriodeRepository {
     private void endPeriode(AktorId aktorId, Registrant registrant, String begrunnelse, AvregistreringsType avregistreringsType) {
         db.update("" +
                         "UPDATE OPPFOLGINGSPERIODE " +
-                        "SET avslutt_veileder = ?, " +
+                        "SET avsluttet_av = ?, " +
                         "avslutt_begrunnelse = ?, " +
                         "sluttDato = CURRENT_TIMESTAMP, " +
                         "oppdatert = CURRENT_TIMESTAMP, " +
@@ -232,7 +232,7 @@ public class OppfolgingsPeriodeRepository {
         return new OppfolgingsperiodeEntity(
                 UUID.fromString(result.getString("uuid")),
                 result.getString("aktor_id"),
-                result.getString("avslutt_veileder"),
+                result.getString("avsluttet_av"),
                 hentZonedDateTime(result, "startdato"),
                 hentZonedDateTime(result, "sluttdato"),
                 result.getString("avslutt_begrunnelse"),
