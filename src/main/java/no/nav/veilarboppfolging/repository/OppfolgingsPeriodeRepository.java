@@ -78,7 +78,6 @@ public class OppfolgingsPeriodeRepository {
             return db.queryForObject(""" 
                             UPDATE OPPFOLGINGSPERIODE
                             SET avslutt_veileder = ?,
-                            avsluttet_av = ?,
                             avslutt_begrunnelse = ?,
                             sluttDato = ?,
                             oppdatert = CURRENT_TIMESTAMP,
@@ -89,7 +88,6 @@ public class OppfolgingsPeriodeRepository {
                             RETURNING *
                             """,
                     OppfolgingsPeriodeRepository::mapTilOppfolgingsperiode,
-                    registrant.getIdent(),
                     registrant.getIdent(),
                     begrunnelse,
                     sluttTimestamp,
@@ -194,7 +192,6 @@ public class OppfolgingsPeriodeRepository {
         db.update("" +
                         "UPDATE OPPFOLGINGSPERIODE " +
                         "SET avslutt_veileder = ?, " +
-                        "avsluttet_av = ?, " +
                         "avslutt_begrunnelse = ?, " +
                         "sluttDato = CURRENT_TIMESTAMP, " +
                         "oppdatert = CURRENT_TIMESTAMP, " +
@@ -202,7 +199,6 @@ public class OppfolgingsPeriodeRepository {
                         "avsluttet_av_type = ? " +
                         "WHERE aktor_id = ? " +
                         "AND sluttDato IS NULL",
-                registrant.getIdent(),
                 registrant.getIdent(),
                 begrunnelse,
                 avregistreringsType.name(),
