@@ -343,7 +343,7 @@ class KandidatForUtmeldingRepositoryTest {
     }
 
     @Test
-    fun `hentAlleKandidaterSistSjekketForMerEnnEnDagSiden - henter både aktive og forlengede kandidater`() {
+    fun `hentAlleKandidaterSistSjekketForMerEnnEnDagSiden - henter bare aktive kandidater`() {
         val forlengetOppfolgingsbruker = arbeidssokerRegistrering(fnr, aktorId, BrukerRegistrant(fnr))
         oppfolgingsStatusRepository.opprettOppfolging(aktorId)
         oppfolgingsPeriodeRepository.start(forlengetOppfolgingsbruker)
@@ -386,8 +386,8 @@ class KandidatForUtmeldingRepositoryTest {
 
         val alleKandidater = kandidatForUtmeldingRepository.hentAlleKandidaterSistSjekketForMerEnnEnDagSiden(0, 10)
 
-        assertThat(alleKandidater).hasSize(2)
-        assertThat(alleKandidater.find { it is ForlengetKandidat }).isNotNull
+        assertThat(alleKandidater).hasSize(1)
+        assertThat(alleKandidater.find { it is ForlengetKandidat }).isNull()
         assertThat(alleKandidater.find { it is AktivKandidatForUtmelding }).isNotNull
     }
 
