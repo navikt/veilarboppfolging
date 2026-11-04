@@ -1,0 +1,1 @@
+ALTER TABLE oppfolgingsperiode DROP COLUMN avsluttet_av;
