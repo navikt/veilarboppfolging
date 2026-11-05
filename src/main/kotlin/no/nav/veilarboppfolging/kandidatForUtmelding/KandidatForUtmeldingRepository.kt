@@ -63,7 +63,7 @@ class KandidatForUtmeldingRepository(
             INSERT INTO kandidater_som_ikke_kunne_avsluttes(oppfolgingsperiode_uuid, siste_utmeldingshendelse_id, begrunnelse)
             VALUES (:oppfolgingsperiodeId, :sisteUtmeldingshendelseId, :begrunnelse)
             ON CONFLICT (oppfolgingsperiode_uuid)
-            DO UPDATE SET siste_utmeldingshendelse_id = :sisteUtmeldingshendelseId, begrunnelse = :begrunnelse
+            DO UPDATE SET siste_utmeldingshendelse_id = :sisteUtmeldingshendelseId, begrunnelse = :begrunnelse, updated_at = current_timestamp
             """.trimIndent(),
             mapOf(
                 "oppfolgingsperiodeId" to oppfolgingsperiodeId.toString(),
@@ -147,7 +147,8 @@ class KandidatForUtmeldingRepository(
             WHERE oppfolgingsperiode_uuid = :oppfolgingsperiodeId
             ON CONFLICT (oppfolgingsperiode_uuid) DO UPDATE
             SET siste_utmeldingshendelse_id = excluded.siste_utmeldingshendelse_id,
-                begrunnelse = excluded.begrunnelse
+                begrunnelse = excluded.begrunnelse,
+                updated_at = current_timestamp
             """.trimIndent(),
             mapOf(
                 "oppfolgingsperiodeId" to oppfolgingsperiodeId.toString(),
@@ -297,7 +298,7 @@ class KandidatForUtmeldingRepository(
         ) { rs, _ -> AktivKandidatForUtmelding(sisteHendelse = resultSetToUtmeldingsHendelse(rs), avsluttesAutomatiskDato = DbUtils.hentZonedDateTime(rs, "avsluttes_automatisk_dato") ?: throw IllegalStateException("avsluttes_automatisk_dato should not be null for aktiv kandidat")) }
     }
 
-    // OBS: Denne henter ikke avsluttes automatisk-dato eller forlenget til som er lagret i kandidater_for_utmelding, men beregner det utifra hendelsen.
+    // OBS: Denne henter ikke avsluttes automatisk-dato som er lagret i kandidater_for_utmelding, men beregner det utifra hendelsen.
     // Denne funksjonen brukes for å sjekke om kandidater kan avsluttes, og da er det uansett ikke relevant.
     fun hentAlleKandidaterSistSjekketForMerEnnEnDagSiden(offset: Int, batchSize: Int): List<KandidatForUtmelding> {
         return db.query(
@@ -305,7 +306,7 @@ class KandidatForUtmeldingRepository(
             SELECT kfuh.*
             FROM kandidater_for_utmelding kfu
             JOIN kandidater_for_utmelding_hendelser kfuh ON kfu.siste_utmeldingshendelse_id = kfuh.utmeldingshendelse_id
-            WHERE kfu.sist_sjekket < current_timestamp - interval '1 day'
+            WHERE kfu.sist_sjekket < current_timestamp - interval '1 day' and kfu.forlenget_til IS NULL
             ORDER BY kfu.sist_sjekket
             OFFSET :offset ROWS FETCH NEXT :batchSize ROWS ONLY
             """.trimIndent(),
