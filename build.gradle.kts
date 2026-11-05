@@ -1,18 +1,18 @@
 val kotlinVersion = "2.4.21"
-val flywayVersion = "13.10.3"
+val flywayVersion = "13.11.1"
 val commonVersion = "4.2026.10.19_05.55-7add0b457c1d"
 val ptoSchemaVersion = "2.2026.06.16_10.51-c03b8278b27d"
 val poaoTilgangVersion = "4.2026.10.19_08.33-adf6165e823a"
 val wiremockVersion = "3.13.2"
 val schedlockVersion = "7.10.1"
 val googleCloudLibrariesBomVersion = "26.90.0"
-val springDoc = "3.1.1"
+val springDoc = "3.2.0"
 val tmsMicrofrontendBuilder = "3.0.0"
 val tmsVarselBuilder = "2.2.0"
 val logstashVersion = "9.0"
 val avroVersion = "1.12.2"
 val confluentKafkaAvroVersion = "8.2.0"
-val okHttpVersion = "5.5.0"
+val okHttpVersion = "5.5.1"
 val dabBigQuerySchemaVersion = "2026.08.13-08.27.6add270b9bee"
 
 // Overstyrer Tomcat-versjonen som Spring Boots dependency-management ellers ville valgt,
@@ -24,7 +24,7 @@ plugins {
     val kotlinVersion = "2.4.20"
     kotlin("jvm") version kotlinVersion
     kotlin("plugin.spring") version kotlinVersion
-    id("org.springframework.boot") version "4.1.1"
+    id("org.springframework.boot") version "4.1.2"
     id("io.spring.dependency-management") version "1.1.7"
     id("jacoco")
     id("org.sonarqube") version "7.5.0.8588"
