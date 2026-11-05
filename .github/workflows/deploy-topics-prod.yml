@@ -20,25 +20,25 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
       - name: Deploy kafka topic privat-oppfolgingshendelse-prod
-        uses: nais/deploy/actions/deploy@9850be311389ca754d9a9f2280615419d738c891
+        uses: nais/deploy/actions/deploy@033f70f2484ddfa91dc3d878e06ced3113f996ad
         env:
           CLUSTER: prod-gcp
           RESOURCE: kafka-topics/privat-oppfolgingshendelse-prod.yaml
           PRINT_PAYLOAD: true
       - name: Deploy kafka topic siste-oppfolgingsperiode-v2-prod
-        uses: nais/deploy/actions/deploy@9850be311389ca754d9a9f2280615419d738c891
+        uses: nais/deploy/actions/deploy@033f70f2484ddfa91dc3d878e06ced3113f996ad
         env:
           CLUSTER: prod-gcp
           RESOURCE: kafka-topics/siste-oppfolgingsperiode-v2-prod.yaml
           PRINT_PAYLOAD: true
       - name: Deploy kafka topic siste-oppfolgingsperiode-v3-prod
-        uses: nais/deploy/actions/deploy@9850be311389ca754d9a9f2280615419d738c891
+        uses: nais/deploy/actions/deploy@033f70f2484ddfa91dc3d878e06ced3113f996ad
         env:
           CLUSTER: prod-gcp
           RESOURCE: kafka-topics/siste-oppfolgingsperiode-v3-prod.yaml
           PRINT_PAYLOAD: true
       - name: Deploy kafka topic start-oppfolging-prod
-        uses: nais/deploy/actions/deploy@9850be311389ca754d9a9f2280615419d738c891
+        uses: nais/deploy/actions/deploy@033f70f2484ddfa91dc3d878e06ced3113f996ad
         env:
           CLUSTER: prod-gcp
           RESOURCE: kafka-topics/start-oppfolging-prod.yaml
