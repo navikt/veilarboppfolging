@@ -13,9 +13,9 @@ class ArbeidsoppfolgingsKontorServiceTest : IntegrationTest() {
          val enhetId = "1234"
          val fnr: Fnr = Fnr.of("12345678910")
          val aktorId: AktorId = AktorId.of("1234523423")
+         mockHentIdenter(fnr, aktorId)
          startOppfolgingSomArbeidsoker(aktorId, fnr)
          setAoKontor(fnr, aktorId, enhetId)
-         mockHentIdenter(fnr, aktorId)
          val service = ArbeidsoppfolgingsKontorService(arbeidsoppfolgingskontorRepository, aktorOppslagClient)
 
          val result = service.hentOppfolgingsEnhetId(fnr)
@@ -29,6 +29,7 @@ class ArbeidsoppfolgingsKontorServiceTest : IntegrationTest() {
         val historiskFnr = randomFnr()
         val nyttFnr: Fnr = randomFnr()
         val aktorId: AktorId = AktorId.of("1234523423")
+        mockHentIdenter(historiskFnr, aktorId)
         startOppfolgingSomArbeidsoker(aktorId, historiskFnr)
         setAoKontor(historiskFnr, aktorId, enhetId)
         mockHentIdenter(nyttFnr, aktorId, listOf(historiskFnr))

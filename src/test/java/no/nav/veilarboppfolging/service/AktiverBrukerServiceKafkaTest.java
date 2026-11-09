@@ -20,6 +20,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -55,6 +56,7 @@ public class AktiverBrukerServiceKafkaTest extends IntegrationTest {
 
         when(aktorOppslagClient.hentAktorId(fnr)).thenReturn(aktorId);
         when(aktorOppslagClient.hentFnr(aktorId)).thenReturn(fnr);
+        mockHentIdenter(fnr, aktorId, new ArrayList<>());
 
         consumerClient = KafkaConsumerClientBuilder.builder()
                 .withProperties(kafkaTestConsumerProperties(kafkaContainer.getBrokersAsString()))

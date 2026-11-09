@@ -107,7 +107,8 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
                 mock(),
                 mock(),
                 transactor,
-                "https://test.nav.no"
+                "https://test.nav.no",
+                authService
         );
 
         when(authService.getFnrOrThrow(AKTOR_ID)).thenReturn(FNR);
