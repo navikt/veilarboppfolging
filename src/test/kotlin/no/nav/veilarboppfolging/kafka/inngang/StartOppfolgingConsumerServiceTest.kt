@@ -40,6 +40,7 @@ class StartOppfolgingConsumerServiceTest(
     fun setUp() {
         `when`(aktorOppslagClient.hentAktorId(fnr)).thenReturn(aktorId)
         `when`(aktorOppslagClient.hentFnr(aktorId)).thenReturn(fnr)
+        mockHentIdenter(fnr, aktorId)
     }
 
     @Test

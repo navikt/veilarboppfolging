@@ -18,6 +18,7 @@ import no.nav.poao_tilgang.client.TilgangType;
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe;
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe;
 import no.nav.veilarboppfolging.ForbiddenException;
+import no.nav.veilarboppfolging.UnderOppfolgingPaAnnenAktorIdException;
 import no.nav.veilarboppfolging.arbeidssokerperiode.AktivArbeidssokerperiodeRepository;
 import no.nav.veilarboppfolging.client.aap.AapClient;
 import no.nav.veilarboppfolging.client.digdir_krr.KRRData;
@@ -149,7 +150,8 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
                 fjernKandidatForUtmeldingService,
                 bigQueryClient,
                 transactor,
-                "https://test.nav.no"
+                "https://test.nav.no",
+                authService
                 );
 
 
@@ -157,6 +159,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
         when(authService.getAktorIdOrThrow(fnr)).thenReturn(aktorId);
         when(authService.getFnrOrThrow(aktorId)).thenReturn(fnr);
+        when(authService.getAlleAktorIderOrThrow(fnr)).thenReturn(List.of(aktorId));
         when(aktorOppslagClient.hentIdenter(fnr)).thenReturn(new BrukerIdenter(fnr, aktorId, List.of(), List.of()));
         stubArenaTilstand();
         stubArenaStatus();
@@ -179,6 +182,42 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         verify(kafkaProducerService, times(1)).publiserOppfolgingsperiode(any(OppfolgingsperiodeDTO.class));
         verify(kafkaProducerService).publiserVisAoMinSideMicrofrontend(aktorId, fnr);
         verify(kafkaProducerService, times(1)).publiserMinSideBeskjed(any(Fnr.class), anyString(), anyString());
+    }
+
+    @Test
+    public void skal_feile_hvis_bruker_er_under_oppfolging_pa_annen_aktorid() {
+        Fnr nyttFnr = Fnr.of(randomString(11));
+        AktorId nyAktorId = AktorId.of(randomString(13));
+        settTilstandFormidlingsgruppe("IARBS");
+        oppfolgingsStatusRepository.opprettOppfolging(aktorId);
+        assertTrue(oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId).isEmpty());
+        startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.Companion.arenaSyncOppfolgingBrukerRegistrering(fnr, aktorId, Formidlingsgruppe.IARBS, Kvalifiseringsgruppe.BATT));
+        assertUnderOppfolgingLagret(aktorId);
+
+        when(authService.getAlleAktorIderOrThrow(nyttFnr)).thenReturn(List.of(aktorId, nyAktorId));
+
+        assertThrows(UnderOppfolgingPaAnnenAktorIdException.class, () -> {
+            startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.Companion.arenaSyncOppfolgingBrukerRegistrering(nyttFnr, nyAktorId, Formidlingsgruppe.IARBS, Kvalifiseringsgruppe.BATT));
+        });
+    }
+
+    @Test
+    public void skal_ikke_feile_hvis_bruker_har_avsluttet_oppfolging_pa_annen_aktorid() {
+        Fnr nyttFnr = Fnr.of(randomString(11));
+        AktorId nyAktorId = AktorId.of(randomString(13));
+        when(manuellStatusService.hentDigdirKontaktinfo(nyttFnr)).thenReturn(new KRRData(false, nyttFnr.get(), false, false));
+        settTilstandFormidlingsgruppe("IARBS");
+        oppfolgingsStatusRepository.opprettOppfolging(aktorId);
+        assertTrue(oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId).isEmpty());
+        startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.Companion.arenaSyncOppfolgingBrukerRegistrering(fnr, aktorId, Formidlingsgruppe.IARBS, Kvalifiseringsgruppe.BATT));
+        avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(new ManuellAvregistrering(aktorId, new VeilederRegistrant(new NavIdent(VEILEDER)), ""));
+        assertEquals(1, oppfolgingsPeriodeRepository.hentAvsluttetOppfolgingsperioder(aktorId).size());
+
+        when(authService.getAlleAktorIderOrThrow(nyttFnr)).thenReturn(List.of(aktorId, nyAktorId));
+
+        startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.Companion.arenaSyncOppfolgingBrukerRegistrering(nyttFnr, nyAktorId, Formidlingsgruppe.IARBS, Kvalifiseringsgruppe.BATT));
+
+        assertUnderOppfolgingLagret(nyAktorId);
     }
 
     @Test

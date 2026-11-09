@@ -2,7 +2,6 @@ package no.nav.veilarboppfolging
 
 import jakarta.servlet.http.HttpServletResponse
 import no.nav.common.client.aktorregister.IngenGjeldendeIdentException
-import org.apache.arrow.flatbuf.Null
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.ControllerAdvice
@@ -35,6 +34,7 @@ class FantIkkeBrukerIArenaException() : VeilarboppfolgingException("Fant ikke br
         logger.warn("Fant ikke oppfolgingsbruker i arena")
     }
 }
+class UnderOppfolgingPaAnnenAktorIdException(message: String) : VeilarboppfolgingException(message)
 
 @ControllerAdvice
 class DefaultExceptionHandler {
@@ -100,6 +100,7 @@ class DefaultExceptionHandler {
                 is FantIkkeBrukerIArenaException -> response.sendError(HttpStatus.NOT_FOUND.value(), ex.message)
                 is UnauthorizedException -> response.sendError(HttpStatus.UNAUTHORIZED.value(), ex.message)
                 is NetworkException -> response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), ex.message)
+                is UnderOppfolgingPaAnnenAktorIdException -> response.sendError(HttpStatus.BAD_REQUEST.value(), ex.message)
             }
         }
     }

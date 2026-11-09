@@ -50,6 +50,7 @@ class ArbeidssøkerperiodeConsumerServiceTest(
     fun setUp() {
         `when`(aktorOppslagClient.hentAktorId(Fnr.of(fnr))).thenReturn(aktørId)
         `when`(aktorOppslagClient.hentFnr(aktørId)).thenReturn(Fnr.of(fnr))
+        mockHentIdenter(Fnr.of(fnr), aktørId)
     }
 
     @Test

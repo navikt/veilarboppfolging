@@ -3,6 +3,7 @@ package no.nav.veilarboppfolging.service
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
+import no.nav.veilarboppfolging.UnderOppfolgingPaAnnenAktorIdException
 import no.nav.veilarboppfolging.client.digdir_krr.KRRData
 import no.nav.veilarboppfolging.eventsLogger.BigQueryClient
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService
@@ -38,7 +39,8 @@ open class StartOppfolgingService(
     val bigQueryClient: BigQueryClient,
     val transactor: TransactionTemplate,
     @Value("\${app.env.nav-no-url}")
-    val navNoUrl: String
+    val navNoUrl: String,
+    val authService: AuthService,
 ) {
     val log = LoggerFactory.getLogger(StartOppfolgingService::class.java)
 
@@ -46,8 +48,19 @@ open class StartOppfolgingService(
         val aktorId = oppfolgingsRegistrering.aktorId
         val fnr = oppfolgingsRegistrering.fnr
         val kontaktinfo = manuellStatusService.hentDigdirKontaktinfo(fnr)
+        val alleAktorIder = authService.getAlleAktorIderOrThrow(fnr)
 
         transactor.executeWithoutResult { _ ->
+            if (alleAktorIder.size > 1) {
+                alleAktorIder.filter { it != aktorId }
+                    .forEach {
+                        val oppfolgingsperiode = oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(it).getOrNull()
+                        if (oppfolgingsperiode != null) {
+                            log.error("Bruker er allerede under oppfølging med en annen aktørId, oppfølgingsperiode: ${oppfolgingsperiode.uuid}")
+                            throw UnderOppfolgingPaAnnenAktorIdException("Bruker er allerede under oppfølging med en annen ident. Kontakt brukerstøtte.")
+                        }
+                    }
+            }
             val maybeOppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId)
             val erUnderOppfolging = maybeOppfolging
                 .getOrNull()?.underOppfolging ?: false
