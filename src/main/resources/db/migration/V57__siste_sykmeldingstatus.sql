@@ -1,4 +1,4 @@
-create table sykmeldingstatus
+create table siste_sykmeldingstatus
 (
     aktor_id         varchar primary key,
     fnr              varchar                             not null,
