@@ -18,6 +18,8 @@ import no.nav.veilarboppfolging.repository.entity.MaalEntity;
 import no.nav.veilarboppfolging.repository.entity.ManuellStatusEntity;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
 import no.nav.veilarboppfolging.repository.enums.KodeverkBruker;
+import no.nav.veilarboppfolging.sykmeldingstatus.SisteSykmeldingstatusRepository;
+import no.nav.veilarboppfolging.sykmeldingstatus.SisteSykmeldingstatusService;
 import no.nav.veilarboppfolging.test.DbTestUtils;
 import no.nav.veilarboppfolging.test.IsolatedDatabaseTest;
 import org.junit.Before;
@@ -64,6 +66,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
     private OppfolgingService oppfolgingServiceMock = mock(OppfolgingService.class);
     private StartOppfolgingService startOppfolgingService;
     private ArbeidsoppfolgingsKontorService arbeidsoppfolgingsKontorService = mock(ArbeidsoppfolgingsKontorService.class);
+    private SisteSykmeldingstatusRepository sisteSykmeldingstatusRepository;
 
     @Before
     public void setup() {
@@ -73,6 +76,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
         maalRepository = new MaalRepository(db, transactor);
         oppfolgingsPeriodeRepository = new OppfolgingsPeriodeRepository(db, transactor);
         manuellStatusRepository = new ManuellStatusRepository(db, transactor);
+        sisteSykmeldingstatusRepository = new SisteSykmeldingstatusRepository(new NamedParameterJdbcTemplate(db));
         DigdirClient digdirClient = fnr -> Optional.empty();
 
         ManuellStatusService manuellStatusService = new ManuellStatusService(
@@ -84,6 +88,11 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
                 digdirClient,
                 null,
                 transactor
+        );
+
+        SisteSykmeldingstatusService sisteSykmeldingstatusService = new SisteSykmeldingstatusService(
+                sisteSykmeldingstatusRepository,
+                mock()
         );
 
         oppfolgingService = new OppfolgingService(
@@ -108,7 +117,8 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
                 mock(),
                 transactor,
                 "https://test.nav.no",
-                authService
+                authService,
+                sisteSykmeldingstatusService
         );
 
         when(authService.getFnrOrThrow(AKTOR_ID)).thenReturn(FNR);

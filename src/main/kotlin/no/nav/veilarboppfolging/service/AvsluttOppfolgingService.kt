@@ -33,6 +33,7 @@ import java.time.ZonedDateTime
 import java.util.*
 import kotlin.jvm.optionals.getOrNull
 import no.nav.veilarboppfolging.arbeidssokerperiode.AktivArbeidssokerperiodeRepository
+import no.nav.veilarboppfolging.sykmeldingstatus.SisteSykmeldingstatusRepository
 
 @Service
 class AvsluttOppfolgingService(
@@ -51,6 +52,7 @@ class AvsluttOppfolgingService(
     val fjernKandidatForUtmeldingService: FjernKandidatForUtmeldingService,
     val aktorOppslagClient: AktorOppslagClient,
     val aktivArbeidssokerperiodeRepository: AktivArbeidssokerperiodeRepository,
+    val sisteSykmeldingstatusRepository: SisteSykmeldingstatusRepository,
 ) {
 
     val log = LoggerFactory.getLogger(this::class.java)
@@ -164,6 +166,7 @@ class AvsluttOppfolgingService(
             arbeidsoppfolgingskontorRepository.slettNavKontor(sistePeriode.uuid)
             fjernKandidatForUtmeldingService.fjernKandidatForUtmelding(sistePeriode.uuid)
             fjernKandidatForUtmeldingService.fjernKandidatSomIkkeKanAvsluttes(sistePeriode.uuid)
+            sisteSykmeldingstatusRepository.slettSisteSykmeldingstatus(sistePeriode.uuid)
 
             log.info("Oppfølgingsperiode avsluttet for bruker - publiserer endringer på oppfølgingsperiode-topics.")
             kafkaProducerService.publiserOppfolgingsperiode(DtoMappers.tilOppfolgingsperiodeDTO(sistePeriode))
