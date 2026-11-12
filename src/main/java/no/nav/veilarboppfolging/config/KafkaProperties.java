@@ -26,5 +26,6 @@ public record KafkaProperties(
     String startOppfolgingTopic,
     String portefoljeHendelsesfilterTopic,
     String aapHendelserTopic,
-    String pdlLeesahTopic
+    String pdlLeesahTopic,
+    String isOppfolgingstilfelleTopic
 ) {}

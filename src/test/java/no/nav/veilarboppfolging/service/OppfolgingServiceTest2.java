@@ -92,7 +92,9 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
 
         SisteSykmeldingstatusService sisteSykmeldingstatusService = new SisteSykmeldingstatusService(
                 sisteSykmeldingstatusRepository,
-                mock()
+                mock(),
+                mock(),
+                oppfolgingsPeriodeRepository
         );
 
         oppfolgingService = new OppfolgingService(
