@@ -482,7 +482,7 @@ open class IntegrationTest {
     }
 
     fun mockAktivtOppfolgingstilfelle(fnr: Fnr, aktivtOppfolgingstilfelle: OppfolgingstilfelleDTO?) {
-        `when`(isOppfolgingstilfelleClient.hentAktivtOppfolgingstilfelle(fnr.get())).thenReturn(aktivtOppfolgingstilfelle)
+        `when`(isOppfolgingstilfelleClient.hentAktivtOppfolgingstilfelle(fnr)).thenReturn(aktivtOppfolgingstilfelle)
     }
 
     fun mockPdlFolkeregisterStatus(fnr: Fnr, status: FregStatusOgStatsborgerskap) {

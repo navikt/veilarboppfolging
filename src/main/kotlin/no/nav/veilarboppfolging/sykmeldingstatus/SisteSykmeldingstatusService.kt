@@ -21,7 +21,7 @@ class SisteSykmeldingstatusService(
 
     fun hentOgLagreSisteSykmeldingstatus(oppfolgingsperiodeId: UUID, fnr: Fnr) {
         log.info("Henter siste oppfolgingstilfelle fra isyfo for oppfølgingsperiode $oppfolgingsperiodeId")
-        val sisteOppfolgingstilfelle = isOppfolgingstilfelleClient.hentAktivtOppfolgingstilfelle(fnr.get())
+        val sisteOppfolgingstilfelle = isOppfolgingstilfelleClient.hentAktivtOppfolgingstilfelle(fnr)
 
         if (sisteOppfolgingstilfelle != null) {
             val sisteSykmeldingstatus = SisteSykmeldingstatus(

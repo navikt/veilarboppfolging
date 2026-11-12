@@ -3,6 +3,7 @@ package no.nav.veilarboppfolging.client.isoppfolgingstilfelle
 import java.time.LocalDate
 import java.util.function.Supplier
 import no.nav.common.rest.client.RestUtils
+import no.nav.common.types.identer.Fnr
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.slf4j.LoggerFactory
@@ -25,23 +26,23 @@ class IsOppfolgingstilfelleClient(
         .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
         .build()
 
-    fun hentStatus(personident: String): OppfolgingstilfelleStatus? {
+    fun hentStatus(personident: Fnr): OppfolgingstilfelleStatus? {
         val dto = hentOppfolgingstilfelleStatus(personident)
         val status = dto?.utledStatus()
         logger.info("Sjekket oppfolgingstilfelle, status=$status, antallTilfeller=${dto?.oppfolgingstilfelleList?.size}")
         return status
     }
 
-    fun hentAktivtOppfolgingstilfelle(personident: String): OppfolgingstilfelleDTO? {
+    fun hentAktivtOppfolgingstilfelle(personident: Fnr): OppfolgingstilfelleDTO? {
         val dto = hentOppfolgingstilfelleStatus(personident)
         return dto?.finnAktivtOppfolgingstilfelle()
     }
 
-    private fun hentOppfolgingstilfelleStatus(personident: String): OppfolgingstilfellePersonDTO? {
+    private fun hentOppfolgingstilfelleStatus(personident: Fnr): OppfolgingstilfellePersonDTO? {
         val request = Request.Builder()
             .url("$baseUrl/api/system/v1/oppfolgingstilfelle/personident")
             .addHeader("Authorization", RestUtils.createBearerToken(tokenProvider.get()))
-            .addHeader("nav-personident", personident)
+            .addHeader("nav-personident", personident.get())
             .get()
             .build()
 
