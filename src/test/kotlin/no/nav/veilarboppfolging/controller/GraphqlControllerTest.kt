@@ -794,7 +794,7 @@ class GraphqlControllerTest: IntegrationTest() {
         setTilordnetVeileder(aktorId, navIdent)
         mockDigdir(fnr, reservertMotDigitalKommunikasjon = true, kanVarsles = false)
         mockTiltakshistorikk(fnr, harAktiveDeltakelser = true)
-        `when`(isOppfolgingstilfelleClient.hentStatus(fnr.get())).thenReturn(OppfolgingstilfelleStatus.SYKMELDT_UTEN_ARBEIDSGIVER)
+        `when`(isOppfolgingstilfelleClient.hentStatus(fnr)).thenReturn(OppfolgingstilfelleStatus.SYKMELDT_UTEN_ARBEIDSGIVER)
         mockVeilarbArenaOppfolgingsStatus(fnr= fnr, formidlingsgruppe = Formidlingsgruppe.ISERV, kanEnkeltReaktiveres = true)
 
         /* Query is hidden in test/resources/graphl-test :) */

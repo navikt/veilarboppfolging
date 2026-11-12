@@ -51,7 +51,7 @@ class IsOppfolgingstilfelleClientTest {
         )
         val client = IsOppfolgingstilfelleClient(apiUrl, { "token" }, OkHttpClient.Builder().build())
 
-        assertEquals(OppfolgingstilfelleStatus.SYKMELDT_MED_ARBEIDSGIVER, client.hentStatus("12345678910"))
+        assertEquals(OppfolgingstilfelleStatus.SYKMELDT_MED_ARBEIDSGIVER, client.hentStatus(Fnr.of("12345678910")))
     }
 
     @Test
@@ -89,7 +89,7 @@ class IsOppfolgingstilfelleClientTest {
         )
         val client = IsOppfolgingstilfelleClient(apiUrl, { "token" }, OkHttpClient.Builder().build())
 
-        assertEquals(OppfolgingstilfelleStatus.SYKMELDT_UTEN_ARBEIDSGIVER, client.hentStatus("12345678910"))
+        assertEquals(OppfolgingstilfelleStatus.SYKMELDT_UTEN_ARBEIDSGIVER, client.hentStatus(Fnr.of("12345678910")))
     }
 
     @Test
@@ -127,7 +127,7 @@ class IsOppfolgingstilfelleClientTest {
         )
         val client = IsOppfolgingstilfelleClient(apiUrl, { "token" }, OkHttpClient.Builder().build())
 
-        assertNull(client.hentStatus("12345678910"))
+        assertNull(client.hentStatus(Fnr.of("12345678910")))
     }
 
     @Test
@@ -143,7 +143,7 @@ class IsOppfolgingstilfelleClientTest {
         val client = IsOppfolgingstilfelleClient(apiUrl, { "token" }, OkHttpClient.Builder().build())
 
         assertThrows<RuntimeException> {
-            client.hentStatus(Fnr.of("12345678910").get())
+            client.hentStatus(Fnr.of("12345678910"))
         }
     }
 }

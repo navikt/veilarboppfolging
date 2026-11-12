@@ -1,19 +1,25 @@
 package no.nav.veilarboppfolging.service
 
+import java.util.Optional
+import kotlin.jvm.optionals.getOrNull
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
 import no.nav.veilarboppfolging.UnderOppfolgingPaAnnenAktorIdException
 import no.nav.veilarboppfolging.client.digdir_krr.KRRData
 import no.nav.veilarboppfolging.eventsLogger.BigQueryClient
+import no.nav.veilarboppfolging.kandidatForUtmelding.FjernKandidatForUtmeldingService
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService
+import no.nav.veilarboppfolging.oppfolgingsbruker.AdminRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ArenaSyncRegistrering
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ManuellRegistreringVeileder
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.SystemRegistrering
 import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.hendelser.OppfolgingStartetHendelseDto
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity
+import no.nav.veilarboppfolging.sykmeldingstatus.SisteSykmeldingstatusService
 import no.nav.veilarboppfolging.utils.DtoMappers
 import no.nav.veilarboppfolging.utils.OppfolgingsperiodeUtils
 import no.nav.veilarboppfolging.utils.SecureLog
@@ -22,11 +28,6 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.support.TransactionTemplate
-import java.util.*
-import kotlin.jvm.optionals.getOrNull
-import no.nav.veilarboppfolging.kandidatForUtmelding.FjernKandidatForUtmeldingService
-import no.nav.veilarboppfolging.oppfolgingsbruker.AdminRegistrant
-import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.SystemRegistrering
 
 @Service
 open class StartOppfolgingService(
@@ -41,6 +42,7 @@ open class StartOppfolgingService(
     @Value("\${app.env.nav-no-url}")
     val navNoUrl: String,
     val authService: AuthService,
+    val sisteSykmeldingstatusService: SisteSykmeldingstatusService,
 ) {
     val log = LoggerFactory.getLogger(StartOppfolgingService::class.java)
 
@@ -101,6 +103,10 @@ open class StartOppfolgingService(
                     null
                 }
             }
+            sisteSykmeldingstatusService.hentOgLagreSisteSykmeldingstatus(
+                oppfolgingsperiodeId = sistePeriode.uuid,
+                fnr = fnr,
+            )
 
             log.info("Oppfølgingsperiode startet for bruker - publiserer endringer på oppfølgingsperiode-topics.")
             kafkaProducerService.publiserOppfolgingsperiode(DtoMappers.tilOppfolgingsperiodeDTO(sistePeriode))

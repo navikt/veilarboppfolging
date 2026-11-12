@@ -22,6 +22,8 @@ import no.nav.veilarboppfolging.kafka.AapHendelseRecord
 import no.nav.veilarboppfolging.kafka.AapHendelserConsumerService
 import no.nav.veilarboppfolging.kafka.ArbeidsoppfolgingskontortilordningConsumerService
 import no.nav.veilarboppfolging.kafka.ArbeidssøkerperiodeConsumerService
+import no.nav.veilarboppfolging.kafka.IsOppfolgingstilfelleConsumerService
+import no.nav.veilarboppfolging.kafka.KafkaOppfolgingstilfellePerson
 import no.nav.veilarboppfolging.kafka.OppfolgingskontorMelding
 import no.nav.veilarboppfolging.kafka.PersonhendelseConsumer
 import no.nav.veilarboppfolging.kafka.inngang.StartOppfolgingConsumerService
@@ -50,6 +52,7 @@ open class KafkaConsumerConfig(
     private val aapHendelserConsumerService: AapHendelserConsumerService,
     private val startOppfolgingConsumerService: StartOppfolgingConsumerService,
     private val personhendelseConsumer: PersonhendelseConsumer,
+    private val isOppfolgingstilfelleConsumerService: IsOppfolgingstilfelleConsumerService,
     lockProvider: LockProvider,
     @Value("\${app.kafka.enabled}") val kafkaEnabled: Boolean
 ) {
@@ -58,7 +61,7 @@ open class KafkaConsumerConfig(
     val PERSONHENDELSE_CONSUMER_GROUP_ID: String = "veilarboppfolging-personhendelse-consumer"
 
     private var aivenConsumerClient: KafkaConsumerClient? = null
-    private var personhendelseConsumerClient: KafkaConsumerClient? = null
+    private var topicsWithLatestOffsetResetPolicyConsumerClient: KafkaConsumerClient? = null
     private var consumerRecordProcessor: KafkaConsumerRecordProcessor? = null
 
     init {
@@ -139,29 +142,47 @@ open class KafkaConsumerConfig(
                     ),
             )
 
-            val personhendelseTopicConfig = KafkaConsumerClientBuilder.TopicConfig<String, Personhendelse?>()
-                .withLogging()
-                .withMetrics(meterRegistry)
-                .withStoreOnFailure(consumerRepository)
-                .withConsumerConfig(
-                    kafkaProperties.pdlLeesahTopic,
-                    Deserializers.stringDeserializer(),
-                    avroDeserializer<Personhendelse>(),
-                    Consumer<ConsumerRecord<String, Personhendelse?>> { kafkaMelding: ConsumerRecord<String, Personhendelse?> ->
-                        personhendelseConsumer.consumePersonhendelse(
-                            kafkaMelding
-                        )
-                    }
-                )
+            val topicsWithLatestOffsetResetPolicyConfig = listOf<KafkaConsumerClientBuilder.TopicConfig<*, *>>(
+                KafkaConsumerClientBuilder.TopicConfig<String, Personhendelse?>()
+                    .withLogging()
+                    .withMetrics(meterRegistry)
+                    .withStoreOnFailure(consumerRepository)
+                    .withConsumerConfig(
+                        kafkaProperties.pdlLeesahTopic,
+                        Deserializers.stringDeserializer(),
+                        avroDeserializer<Personhendelse>(),
+                        Consumer<ConsumerRecord<String, Personhendelse?>> { kafkaMelding: ConsumerRecord<String, Personhendelse?> ->
+                            personhendelseConsumer.consumePersonhendelse(
+                                kafkaMelding
+                            )
+                        }
+                ),
+                KafkaConsumerClientBuilder.TopicConfig<String, KafkaOppfolgingstilfellePerson>()
+                    .withLogging()
+                    .withMetrics(meterRegistry)
+                    .withStoreOnFailure(consumerRepository)
+                    .withConsumerConfig(
+                        kafkaProperties.isOppfolgingstilfelleTopic,
+                        Deserializers.stringDeserializer(),
+                        Deserializers.jsonDeserializer(
+                            KafkaOppfolgingstilfellePerson::class.java
+                        ),
+                        Consumer<ConsumerRecord<String, KafkaOppfolgingstilfellePerson>> { kafkaMelding: ConsumerRecord<String, KafkaOppfolgingstilfellePerson>? ->
+                            isOppfolgingstilfelleConsumerService.consumeIsOppfolgingstilfelle(
+                                kafkaMelding
+                            )
+                        }
+                    ),
+            )
 
             aivenConsumerClient = KafkaConsumerClientBuilder.builder()
                 .withProperties(aivenConsumerProperties(CONSUMER_GROUP_ID))
                 .withTopicConfigs(topicConfigs)
                 .build()
 
-            personhendelseConsumerClient = KafkaConsumerClientBuilder.builder()
+            topicsWithLatestOffsetResetPolicyConsumerClient = KafkaConsumerClientBuilder.builder()
                 .withProperties(aivenConsumerProperties(PERSONHENDELSE_CONSUMER_GROUP_ID, autoOffsetReset = "latest"))
-                .withTopicConfig(personhendelseTopicConfig)
+                .withTopicConfigs(topicsWithLatestOffsetResetPolicyConfig)
                 .build()
 
             consumerRecordProcessor = KafkaConsumerRecordProcessorBuilder
@@ -169,11 +190,11 @@ open class KafkaConsumerConfig(
                 .withLockProvider(lockProvider)
                 .withMetrics(meterRegistry)
                 .withKafkaConsumerRepository(consumerRepository)
-                .withConsumerConfigs(ConsumerUtils.findConsumerConfigsWithStoreOnFailure(topicConfigs + personhendelseTopicConfig))
+                .withConsumerConfigs(ConsumerUtils.findConsumerConfigsWithStoreOnFailure(topicConfigs + topicsWithLatestOffsetResetPolicyConfig))
                 .build()
 
             aivenConsumerClient?.start()
-            personhendelseConsumerClient?.start()
+            topicsWithLatestOffsetResetPolicyConsumerClient?.start()
             consumerRecordProcessor?.start()
         }
     }
