@@ -140,6 +140,22 @@ open class KafkaConsumerConfig(
                             startOppfolgingConsumerService.consumeStartOppfolging(kafkaMelding)
                         }
                     ),
+                KafkaConsumerClientBuilder.TopicConfig<String, KafkaOppfolgingstilfellePerson>()
+                    .withLogging()
+                    .withMetrics(meterRegistry)
+                    .withStoreOnFailure(consumerRepository)
+                    .withConsumerConfig(
+                        kafkaProperties.isOppfolgingstilfelleTopic,
+                        Deserializers.stringDeserializer(),
+                        Deserializers.jsonDeserializer(
+                            KafkaOppfolgingstilfellePerson::class.java
+                        ),
+                        Consumer<ConsumerRecord<String, KafkaOppfolgingstilfellePerson>> { kafkaMelding: ConsumerRecord<String, KafkaOppfolgingstilfellePerson>? ->
+                            isOppfolgingstilfelleConsumerService.consumeIsOppfolgingstilfelle(
+                                kafkaMelding
+                            )
+                        }
+                    ),
             )
 
             val topicsWithLatestOffsetResetPolicyConfig = listOf<KafkaConsumerClientBuilder.TopicConfig<*, *>>(
@@ -157,22 +173,6 @@ open class KafkaConsumerConfig(
                             )
                         }
                 ),
-                KafkaConsumerClientBuilder.TopicConfig<String, KafkaOppfolgingstilfellePerson>()
-                    .withLogging()
-                    .withMetrics(meterRegistry)
-                    .withStoreOnFailure(consumerRepository)
-                    .withConsumerConfig(
-                        kafkaProperties.isOppfolgingstilfelleTopic,
-                        Deserializers.stringDeserializer(),
-                        Deserializers.jsonDeserializer(
-                            KafkaOppfolgingstilfellePerson::class.java
-                        ),
-                        Consumer<ConsumerRecord<String, KafkaOppfolgingstilfellePerson>> { kafkaMelding: ConsumerRecord<String, KafkaOppfolgingstilfellePerson>? ->
-                            isOppfolgingstilfelleConsumerService.consumeIsOppfolgingstilfelle(
-                                kafkaMelding
-                            )
-                        }
-                    ),
             )
 
             aivenConsumerClient = KafkaConsumerClientBuilder.builder()
