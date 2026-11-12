@@ -524,7 +524,7 @@ class GraphqlController(
             return null
         }
 
-        return isOppfolgingstilfelleClient.hentStatus(fnr.get())
+        return isOppfolgingstilfelleClient.hentStatus(fnr)
     }
 
     private fun hentDefaultEnhetFraNorg(fnr: Fnr): Pair<EnhetId, KildeDto>? {

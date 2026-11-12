@@ -36,6 +36,7 @@ import org.springframework.transaction.support.TransactionTemplate
 import java.time.ZonedDateTime
 import java.util.*
 import no.nav.veilarboppfolging.arbeidssokerperiode.AktivArbeidssokerperiodeRepository
+import no.nav.veilarboppfolging.sykmeldingstatus.SisteSykmeldingstatusRepository
 
 class AvsluttOppfolgingServiceTest {
     private val authService: AuthService = Mockito.mock(AuthService::class.java)
@@ -54,6 +55,7 @@ class AvsluttOppfolgingServiceTest {
     private val arbeidsoppfolgingskontorRepository: ArbeidsoppfolgingskontorRepository = Mockito.mock(ArbeidsoppfolgingskontorRepository::class.java)
     private val fjernKandidatForUtmeldingService: FjernKandidatForUtmeldingService = Mockito.mock(FjernKandidatForUtmeldingService::class.java)
     private val aktorOppslagClient: AktorOppslagClient = Mockito.mock(AktorOppslagClient::class.java)
+    private val sisteSykmeldingstatusRepository: SisteSykmeldingstatusRepository = Mockito.mock(SisteSykmeldingstatusRepository::class.java)
 
     private fun <T> any(type: Class<T>): T = Mockito.any<T>(type)
 
@@ -68,6 +70,7 @@ class AvsluttOppfolgingServiceTest {
         fjernKandidatForUtmeldingService = fjernKandidatForUtmeldingService,
         aktorOppslagClient = aktorOppslagClient,
         aktivArbeidssokerperiodeRepository = aktivArbeidssokerperiodeRepository,
+        sisteSykmeldingstatusRepository = sisteSykmeldingstatusRepository,
     )
 
     private fun arenaIservAvregistrering(): ArenaIservKanIkkeReaktiveres {

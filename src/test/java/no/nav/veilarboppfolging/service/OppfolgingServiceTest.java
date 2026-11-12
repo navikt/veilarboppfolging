@@ -4,6 +4,7 @@ import java.time.ZonedDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
@@ -45,6 +46,8 @@ import no.nav.veilarboppfolging.repository.*;
 import no.nav.veilarboppfolging.repository.entity.ManuellStatusEntity;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
 import no.nav.veilarboppfolging.repository.enums.KodeverkBruker;
+import no.nav.veilarboppfolging.sykmeldingstatus.SisteSykmeldingstatusRepository;
+import no.nav.veilarboppfolging.sykmeldingstatus.SisteSykmeldingstatusService;
 import no.nav.veilarboppfolging.test.DbTestUtils;
 import no.nav.veilarboppfolging.test.IsolatedDatabaseTest;
 import no.nav.veilarboppfolging.utils.OppfolgingsperiodeUtils;
@@ -98,6 +101,8 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     private ArbeidsoppfolgingsKontorService arbeidsoppfolgingsKontorService = mock(ArbeidsoppfolgingsKontorService.class);
     private KandidatForUtmeldingService kandidatForUtmeldingService = mock(KandidatForUtmeldingService.class);
     private FjernKandidatForUtmeldingService fjernKandidatForUtmeldingService = mock(FjernKandidatForUtmeldingService.class);
+    private SisteSykmeldingstatusRepository sisteSykmeldingstatusRepository = mock(SisteSykmeldingstatusRepository.class);
+    private SisteSykmeldingstatusService sisteSykmeldingstatusService = mock(SisteSykmeldingstatusService.class);
 
     @Before
     public void setup() {
@@ -126,7 +131,8 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
                 arbeidsoppfolgingskontorRepository,
                 fjernKandidatForUtmeldingService,
                 aktorOppslagClient,
-                aktivArbeidssokerperiodeRepository
+                aktivArbeidssokerperiodeRepository,
+                sisteSykmeldingstatusRepository
         );
         oppfolgingService = new OppfolgingService(
                 kvpService,
@@ -151,7 +157,8 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
                 bigQueryClient,
                 transactor,
                 "https://test.nav.no",
-                authService
+                authService,
+                sisteSykmeldingstatusService
                 );
 
 
@@ -625,6 +632,18 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.Companion.arenaSyncOppfolgingBrukerRegistrering(fnr, aktorId, Formidlingsgruppe.IARBS, Kvalifiseringsgruppe.IVURD));
 
         verify(manuellStatusService, times(1)).settBrukerTilManuellGrunnetReservertIKRR(aktorId);
+    }
+
+    @Test
+    public void startOppfolgingHvisIkkeAlleredeStartet__skal_lagre_sykemdlingstatus_hvis_sykmeldt() {
+        startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.Companion.arenaSyncOppfolgingBrukerRegistrering(fnr, aktorId, Formidlingsgruppe.IARBS, Kvalifiseringsgruppe.BATT));
+        assertUnderOppfolgingLagret(aktorId);
+
+        List<OppfolgingsperiodeEntity> oppfolgingsperioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId);
+        assertEquals(1, oppfolgingsperioder.size());
+        UUID sisteOppfolgingsperiodeUuid = oppfolgingsperioder.getFirst().getUuid();
+
+        verify(sisteSykmeldingstatusService, times(1)).hentOgLagreSisteSykmeldingstatus(sisteOppfolgingsperiodeUuid, fnr);
     }
 
     private void assertUnderOppfolgingLagret(AktorId aktorId) {

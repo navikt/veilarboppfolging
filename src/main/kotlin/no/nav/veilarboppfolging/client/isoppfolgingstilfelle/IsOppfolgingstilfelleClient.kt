@@ -3,10 +3,9 @@ package no.nav.veilarboppfolging.client.isoppfolgingstilfelle
 import java.time.LocalDate
 import java.util.function.Supplier
 import no.nav.common.rest.client.RestUtils
-import okhttp3.MediaType.Companion.toMediaType
+import no.nav.common.types.identer.Fnr
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import okhttp3.RequestBody.Companion.toRequestBody
 import org.slf4j.LoggerFactory
 import tools.jackson.databind.DeserializationFeature
 import tools.jackson.databind.cfg.DateTimeFeature
@@ -27,13 +26,23 @@ class IsOppfolgingstilfelleClient(
         .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
         .build()
 
-    private val mediaTypeJson = "application/json".toMediaType()
+    fun hentStatus(personident: Fnr): OppfolgingstilfelleStatus? {
+        val dto = hentOppfolgingstilfelleStatus(personident)
+        val status = dto?.utledStatus()
+        logger.info("Sjekket oppfolgingstilfelle, status=$status, antallTilfeller=${dto?.oppfolgingstilfelleList?.size}")
+        return status
+    }
 
-    fun hentStatus(personident: String): OppfolgingstilfelleStatus? {
+    fun hentAktivtOppfolgingstilfelle(personident: Fnr): OppfolgingstilfelleDTO? {
+        val dto = hentOppfolgingstilfelleStatus(personident)
+        return dto?.finnAktivtOppfolgingstilfelle()
+    }
+
+    private fun hentOppfolgingstilfelleStatus(personident: Fnr): OppfolgingstilfellePersonDTO? {
         val request = Request.Builder()
             .url("$baseUrl/api/system/v1/oppfolgingstilfelle/personident")
             .addHeader("Authorization", RestUtils.createBearerToken(tokenProvider.get()))
-            .addHeader("nav-personident", personident)
+            .addHeader("nav-personident", personident.get())
             .get()
             .build()
 
@@ -49,10 +58,7 @@ class IsOppfolgingstilfelleClient(
             val body = response.body?.string()
                 ?: throw RuntimeException("Body mangler i respons fra isoppfolgingstilfelle")
 
-            val dto = objectMapper.readValue<OppfolgingstilfellePersonDTO>(body)
-            val status = dto.utledStatus()
-            logger.info("Sjekket oppfolgingstilfelle, status=$status, antallTilfeller=${dto.oppfolgingstilfelleList.size}")
-            return status
+            return objectMapper.readValue<OppfolgingstilfellePersonDTO>(body)
         }
     }
 }
@@ -79,9 +85,7 @@ data class OppfolgingstilfelleDTO(
 )
 
 private fun OppfolgingstilfellePersonDTO.utledStatus(): OppfolgingstilfelleStatus? {
-    val aktivtTilfelle = oppfolgingstilfelleList
-        .filter { !it.end.isBefore(LocalDate.now()) }
-        .maxByOrNull { it.start }
+    val aktivtTilfelle = this.finnAktivtOppfolgingstilfelle()
         ?: return null
 
     return if (aktivtTilfelle.arbeidstakerAtTilfelleEnd) {
@@ -89,4 +93,10 @@ private fun OppfolgingstilfellePersonDTO.utledStatus(): OppfolgingstilfelleStatu
     } else {
         OppfolgingstilfelleStatus.SYKMELDT_UTEN_ARBEIDSGIVER
     }
+}
+
+private fun OppfolgingstilfellePersonDTO.finnAktivtOppfolgingstilfelle(): OppfolgingstilfelleDTO? {
+    return oppfolgingstilfelleList
+        .filter { !it.end.isBefore(LocalDate.now()) }
+        .maxByOrNull { it.start }
 }

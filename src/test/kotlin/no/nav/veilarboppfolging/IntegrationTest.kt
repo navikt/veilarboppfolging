@@ -42,6 +42,7 @@ import no.nav.veilarboppfolging.client.aoKontor.AoKontorClient
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirClient
 import no.nav.veilarboppfolging.client.digdir_krr.KRRData
 import no.nav.veilarboppfolging.client.isoppfolgingstilfelle.IsOppfolgingstilfelleClient
+import no.nav.veilarboppfolging.client.isoppfolgingstilfelle.OppfolgingstilfelleDTO
 import no.nav.veilarboppfolging.client.norg.INorgTilhorighetClient
 import no.nav.veilarboppfolging.client.oppgave.OppgaveClient
 import no.nav.veilarboppfolging.client.pdl.FregStatusOgStatsborgerskap
@@ -51,7 +52,6 @@ import no.nav.veilarboppfolging.client.pdl.GeografiskTilknytningNr
 import no.nav.veilarboppfolging.client.pdl.PdlFolkeregisterStatusClient
 import no.nav.veilarboppfolging.client.tiltakshistorikk.TiltakshistorikkClient
 import no.nav.veilarboppfolging.client.ungdomsprogram.UngdomsprogramClient
-import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolgingTilstand
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolginsBrukerOppslagResult
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaRegistreringResultat
 import no.nav.veilarboppfolging.client.veilarbarena.RegistrerIArenaError
@@ -80,7 +80,6 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.BrukerRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.SystemRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
-import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingTilstandOppslagResult
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.LocalArenaOppfolging
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.AktiverBrukerManueltService
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelseFraSystem
@@ -101,6 +100,8 @@ import no.nav.veilarboppfolging.service.AvsluttOppfolgingService
 import no.nav.veilarboppfolging.service.MetricsService
 import no.nav.veilarboppfolging.service.OppfolgingService
 import no.nav.veilarboppfolging.service.StartOppfolgingService
+import no.nav.veilarboppfolging.sykmeldingstatus.SisteSykmeldingstatusRepository
+import no.nav.veilarboppfolging.sykmeldingstatus.SisteSykmeldingstatusService
 import no.nav.veilarboppfolging.test.DbTestUtils
 import no.nav.veilarboppfolging.tokenClient.ErrorMappedAzureAdMachineToMachineTokenClient
 import no.nav.veilarboppfolging.tokenClient.ErrorMappedAzureAdOnBehalfOfTokenClient
@@ -279,6 +280,12 @@ open class IntegrationTest {
 
     @Autowired
     lateinit var aktivArbeidssokerperiodeRepository: AktivArbeidssokerperiodeRepository
+
+    @Autowired
+    lateinit var sisteSykmeldingstatusRepository: SisteSykmeldingstatusRepository
+
+    @Autowired
+    lateinit var sisteSykmeldingstatusService: SisteSykmeldingstatusService
 
     @BeforeEach
     fun beforeEach() {
@@ -472,6 +479,10 @@ open class IntegrationTest {
 
     fun mockAap(fnr: Fnr, harAap: Boolean = false) {
         `when`(aapClient.harAap(fnr.get())).thenReturn(harAap)
+    }
+
+    fun mockAktivtOppfolgingstilfelle(fnr: Fnr, aktivtOppfolgingstilfelle: OppfolgingstilfelleDTO?) {
+        `when`(isOppfolgingstilfelleClient.hentAktivtOppfolgingstilfelle(fnr)).thenReturn(aktivtOppfolgingstilfelle)
     }
 
     fun mockPdlFolkeregisterStatus(fnr: Fnr, status: FregStatusOgStatsborgerskap) {
