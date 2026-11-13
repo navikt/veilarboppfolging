@@ -1,14 +1,20 @@
 package no.nav.veilarboppfolging.sykmeldingstatus
 
+import java.time.LocalDate
+import java.time.ZonedDateTime
 import java.util.UUID
 import kotlin.jvm.optionals.getOrNull
 import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.types.identer.Fnr
 import no.nav.veilarboppfolging.client.isoppfolgingstilfelle.IsOppfolgingstilfelleClient
 import no.nav.veilarboppfolging.kafka.KafkaOppfolgingstilfellePerson
+import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseUtløptHendelse
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.IkkeLengerSykmeldtHendelse
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import org.springframework.transaction.support.TransactionTemplate
 
 @Service
 class SisteSykmeldingstatusService(
@@ -16,6 +22,8 @@ class SisteSykmeldingstatusService(
     private val isOppfolgingstilfelleClient: IsOppfolgingstilfelleClient,
     private val aktorOppslagClient: AktorOppslagClient,
     private val oppfolgingsPeriodeRepository: OppfolgingsPeriodeRepository,
+    private val transactor: TransactionTemplate,
+    private val kandidatForUtmeldingService: KandidatForUtmeldingService,
 ) {
     val log = LoggerFactory.getLogger(this::class.java)
 
@@ -75,5 +83,28 @@ class SisteSykmeldingstatusService(
         } else {
             log.info("Ignorerer syketilfelle som ikke lenger er aktivt siden vi ikke har lagret sykmeldingstatus for oppfølgingsperiode $oppfolgingsperiodeId fra før, key $key")
         }
+    }
+
+    fun opprettKandidaterForUtmelding() {
+        val avsluttetTidligereEnn = LocalDate.now().minusDays(16)
+        val sisteSykmeldingstatusIkkeLengerSykmeldtOgIkkeKandidat = sisteSykmeldingstatusRepository.hentSisteSykmeldingstatusAvsluttetOgIkkeKandidat(avsluttetTidligereEnn)
+        log.info("Behandler ${sisteSykmeldingstatusIkkeLengerSykmeldtOgIkkeKandidat.size} oppfølgingsperioder der syketilfellet ble avsluttet for $avsluttetTidligereEnn dager siden og som ikke er kandidat for utmelding")
+
+        sisteSykmeldingstatusIkkeLengerSykmeldtOgIkkeKandidat.forEach { sisteSykmeldingstatus ->
+            try {
+                transactor.executeWithoutResult { _ ->
+                    kandidatForUtmeldingService.handterUtmeldingsHendelse(
+                        IkkeLengerSykmeldtHendelse(
+                            oppfolgingsperiodeUuid = sisteSykmeldingstatus.oppfolgingsperiodeId,
+                            syketilfelleAvsluttetDato = sisteSykmeldingstatus.sluttdato,
+                            hendelseTidspunkt = ZonedDateTime.now().toInstant(),
+                        )
+                    )
+                }
+            } catch (e: Exception) {
+                log.error("Feil ved behandling av oppfølgingsperiode med id ${sisteSykmeldingstatus.oppfolgingsperiodeId} med avsluttet syketilfelle", e)
+            }
+        }
+        log.info("Ferdig med å behandle oppfølgingsperioder med avsluttet syketilfelle")
     }
 }

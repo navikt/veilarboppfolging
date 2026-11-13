@@ -1,6 +1,7 @@
 package no.nav.veilarboppfolging.sykmeldingstatus
 
 import java.sql.ResultSet
+import java.time.LocalDate
 import java.util.UUID
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Repository
@@ -43,6 +44,18 @@ class SisteSykmeldingstatusRepository(
         return db.query(sql, mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeId.toString())) { rs, _ ->
             rs.toSisteSykmeldingstatus()
         }.firstOrNull()
+    }
+
+    fun hentSisteSykmeldingstatusAvsluttetOgIkkeKandidat(avsluttetTidligereEnn: LocalDate): List<SisteSykmeldingstatus> {
+        val sql = """
+            SELECT * FROM siste_sykmeldingstatus ss
+            left join kandidater_for_utmelding kfu on ss.oppfolgingsperiode_uuid = kfu.oppfolgingsperiode_uuid
+            WHERE kfu.oppfolgingsperiode_uuid IS NULL
+            AND ss.sluttdato < :avsluttetTidligereEnn
+        """.trimIndent()
+        return db.query(sql, mapOf("avsluttetTidligereEnn" to avsluttetTidligereEnn)) { rs, _ ->
+            rs.toSisteSykmeldingstatus()
+        }
     }
 
     fun ResultSet.toSisteSykmeldingstatus() = SisteSykmeldingstatus(
