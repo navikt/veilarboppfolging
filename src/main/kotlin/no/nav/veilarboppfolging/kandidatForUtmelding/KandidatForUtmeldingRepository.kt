@@ -21,6 +21,8 @@ import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseUtløp
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.IkkeLengerAapHendelseType
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.EndretFolkeregisterstatus
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.EndretFolkeregisterstatusHendelseType
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.IkkeLengerSykmeldtHendelse
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.IkkeLengerSykmeldtHendelseType
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.InaktivertIArena
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.InaktivertIArenaHendelseType
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.KandidatForUtmeldingHendelse
@@ -88,6 +90,7 @@ class KandidatForUtmeldingRepository(
                     is InaktivertIArenaHendelseType -> type.name
                     is IkkeLengerAapHendelseType -> type.name
                     is EndretFolkeregisterstatusHendelseType -> type.name
+                    is IkkeLengerSykmeldtHendelseType -> type.name
                 },
                 "hendelseData" to hendelse.hendelseDataJson,
                 "utfortAv" to hendelse.utfortAv,
@@ -216,6 +219,7 @@ class KandidatForUtmeldingRepository(
                 is InaktivertIArena -> null
                 is AvsluttetAapSak -> AktivKandidatForUtmelding(hendelse, hendelse.avsluttesAutomatiskDato)
                 is EndretFolkeregisterstatus -> AktivKandidatForUtmelding(hendelse, hendelse.avsluttesAutomatiskDato)
+                is IkkeLengerSykmeldtHendelse -> AktivKandidatForUtmelding(hendelse, hendelse.avsluttesAutomatiskDato)
             }
         }
             .firstOrNull()
@@ -402,6 +406,7 @@ class KandidatForUtmeldingRepository(
             is InaktivertIArenaHendelseType -> resultSet.toInaktivertIArena()
             is IkkeLengerAapHendelseType -> resultSet.toAvsluttetAapSakHendelse()
             is EndretFolkeregisterstatusHendelseType -> resultSet.toEndretFolkeregisterstatusHendelse()
+            is IkkeLengerSykmeldtHendelseType -> resultSet.toIkkeLengerSykmeldtHendelse()
         }
 
     }
@@ -476,4 +481,13 @@ fun ResultSet.toEndretFolkeregisterstatusHendelse() = EndretFolkeregisterstatus(
     oppfolgingsperiodeUuid = UUID.fromString(getString("oppfolgingsperiode_uuid")),
     hendelseTidspunkt = getTimestamp("hendelse_tidspunkt").toLocalDateTime().toInstant(ZoneOffset.UTC),
     endretFolkeregisterstatusHendelseType = EndretFolkeregisterstatusHendelseType.valueOf(getString("hendelse")),
+)
+
+fun ResultSet.toIkkeLengerSykmeldtHendelse() = IkkeLengerSykmeldtHendelse(
+    oppfolgingsperiodeUuid = UUID.fromString(getString("oppfolgingsperiode_uuid")),
+    hendelseTidspunkt = getTimestamp("hendelse_tidspunkt").toLocalDateTime().toInstant(ZoneOffset.UTC),
+    syketilfelleAvsluttetDato = JsonUtils.fromJson(
+        getString("hendelse_data"),
+        IkkeLengerSykmeldtHendelse.Detaljer::class.java
+    ).syketilfelleAvsluttetDato,
 )

@@ -37,6 +37,7 @@ sealed class KandidatForUtmeldingHendelse(
             EndretFolkeregisterstatusHendelseType.FOLKEREGISTERSTATUS_OPPHORT -> KandidatForUtmeldingTagDto.FOLKEREGISTERSTATUS_OPPHORT
             EndretFolkeregisterstatusHendelseType.FOLKEREGISTERSTATUS_UKJENT -> KandidatForUtmeldingTagDto.FOLKEREGISTERSTATUS_UKJENT
             EndretFolkeregisterstatusHendelseType.FOLKEREGISTERSTATUS_INGEN_STATUS -> KandidatForUtmeldingTagDto.FOLKEREGISTERSTATUS_INGEN_STATUS
+            IkkeLengerSykmeldtHendelseType.IKKE_LENGER_SYKMELDT -> KandidatForUtmeldingTagDto.IKKE_LENGER_SYKMELDT
             ForlengelseHendelseType.FORLENGELSE_OPPRETTET,
             ForlengelseHendelseType.FORLENGELSE_ENDRET,
             InaktivertIArenaHendelseType.INAKTIVERT_I_ARENA,
@@ -72,6 +73,10 @@ enum class EndretFolkeregisterstatusHendelseType: KandidatForUtmeldingHendelseTy
     FOLKEREGISTERSTATUS_OPPHORT,
     FOLKEREGISTERSTATUS_UKJENT,
     FOLKEREGISTERSTATUS_INGEN_STATUS
+}
+
+enum class IkkeLengerSykmeldtHendelseType: KandidatForUtmeldingHendelseType {
+    IKKE_LENGER_SYKMELDT
 }
 
 enum class KandidatForUtmeldingHendelseUtfortAvType {
