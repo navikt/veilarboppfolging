@@ -187,6 +187,7 @@ class AapHendelseServiceTest {
                     erDeltakerIUngdomsprogrammet = false,
                     erArbeidssoeker = false,
                     harAap = false,
+                    erSykmeldtUtenArbeidsgiver = false,
                     begrunnelse = if (kanAvslutte) emptyList() else listOf(KanIkkeAvslutteBegrunnelse.BRUKER_VAR_UNDER_KVP),
                 )
             )

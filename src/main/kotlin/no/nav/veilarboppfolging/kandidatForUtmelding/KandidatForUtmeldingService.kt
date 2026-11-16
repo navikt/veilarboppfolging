@@ -50,6 +50,7 @@ class KandidatForUtmeldingService(
         KanIkkeAvslutteBegrunnelse.BRUKER_VAR_IKKE_UNDER_OPPFOLGING,
         KanIkkeAvslutteBegrunnelse.BRUKER_ER_REGISTRERT_SOM_ARBEIDSSOKER,
         KanIkkeAvslutteBegrunnelse.BRUKER_MOTTAR_ELLER_HAR_SOKT_OM_AAP,
+        KanIkkeAvslutteBegrunnelse.BRUKER_ER_SYKMELDT_UTEN_ARBEIDSGIVER,
         KanIkkeAvslutteBegrunnelse.OPPFOLGINGEN_ER_FORLENGET,
     )
 
