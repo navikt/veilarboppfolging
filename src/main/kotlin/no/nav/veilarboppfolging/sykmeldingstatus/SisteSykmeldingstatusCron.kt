@@ -10,7 +10,7 @@ class SisteSykmeldingstatusCron(
     private val leaderElectionClient: LeaderElectionClient,
     private val sisteSykmeldingstatusService: SisteSykmeldingstatusService,
 ) {
-    @Scheduled(cron = "0 40 * * * *")
+    @Scheduled(cron = "0 10,25,40,55 * * * *")
     fun opprettKandidaterForUtmeldingIkkeLengerSykmeldt() {
         if (!leaderElectionClient.isLeader) {
             return
