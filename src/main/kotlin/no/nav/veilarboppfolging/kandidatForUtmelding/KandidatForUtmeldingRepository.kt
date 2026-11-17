@@ -21,8 +21,8 @@ import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseUtløp
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.IkkeLengerAapHendelseType
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.EndretFolkeregisterstatus
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.EndretFolkeregisterstatusHendelseType
-import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.IkkeLengerSykmeldtHendelse
-import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.IkkeLengerSykmeldtHendelseType
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.IkkeLengerSykmeldtUtenArbeidsgiverHendelse
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.IkkeLengerSykmeldtUtenArbeidsgiverHendelseType
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.InaktivertIArena
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.InaktivertIArenaHendelseType
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.KandidatForUtmeldingHendelse
@@ -90,7 +90,7 @@ class KandidatForUtmeldingRepository(
                     is InaktivertIArenaHendelseType -> type.name
                     is IkkeLengerAapHendelseType -> type.name
                     is EndretFolkeregisterstatusHendelseType -> type.name
-                    is IkkeLengerSykmeldtHendelseType -> type.name
+                    is IkkeLengerSykmeldtUtenArbeidsgiverHendelseType -> type.name
                 },
                 "hendelseData" to hendelse.hendelseDataJson,
                 "utfortAv" to hendelse.utfortAv,
@@ -219,7 +219,7 @@ class KandidatForUtmeldingRepository(
                 is InaktivertIArena -> null
                 is AvsluttetAapSak -> AktivKandidatForUtmelding(hendelse, hendelse.avsluttesAutomatiskDato)
                 is EndretFolkeregisterstatus -> AktivKandidatForUtmelding(hendelse, hendelse.avsluttesAutomatiskDato)
-                is IkkeLengerSykmeldtHendelse -> AktivKandidatForUtmelding(hendelse, hendelse.avsluttesAutomatiskDato)
+                is IkkeLengerSykmeldtUtenArbeidsgiverHendelse -> AktivKandidatForUtmelding(hendelse, hendelse.avsluttesAutomatiskDato)
             }
         }
             .firstOrNull()
@@ -406,7 +406,7 @@ class KandidatForUtmeldingRepository(
             is InaktivertIArenaHendelseType -> resultSet.toInaktivertIArena()
             is IkkeLengerAapHendelseType -> resultSet.toAvsluttetAapSakHendelse()
             is EndretFolkeregisterstatusHendelseType -> resultSet.toEndretFolkeregisterstatusHendelse()
-            is IkkeLengerSykmeldtHendelseType -> resultSet.toIkkeLengerSykmeldtHendelse()
+            is IkkeLengerSykmeldtUtenArbeidsgiverHendelseType -> resultSet.toIkkeLengerSykmeldtHendelse()
         }
 
     }
@@ -418,7 +418,7 @@ class KandidatForUtmeldingRepository(
             in InaktivertIArenaHendelseType.entries.map { it.name } -> InaktivertIArenaHendelseType.valueOf(hendelse)
             in IkkeLengerAapHendelseType.entries.map { it.name } -> IkkeLengerAapHendelseType.valueOf(hendelse)
             in EndretFolkeregisterstatusHendelseType.entries.map { it.name } -> EndretFolkeregisterstatusHendelseType.valueOf(hendelse)
-            in IkkeLengerSykmeldtHendelseType.entries.map { it.name } -> IkkeLengerSykmeldtHendelseType.valueOf(hendelse)
+            in IkkeLengerSykmeldtUtenArbeidsgiverHendelseType.entries.map { it.name } -> IkkeLengerSykmeldtUtenArbeidsgiverHendelseType.valueOf(hendelse)
             else -> {
                 throw IllegalArgumentException("Ugyldig hendelse type: $hendelse")
             }
@@ -484,11 +484,11 @@ fun ResultSet.toEndretFolkeregisterstatusHendelse() = EndretFolkeregisterstatus(
     endretFolkeregisterstatusHendelseType = EndretFolkeregisterstatusHendelseType.valueOf(getString("hendelse")),
 )
 
-fun ResultSet.toIkkeLengerSykmeldtHendelse() = IkkeLengerSykmeldtHendelse(
+fun ResultSet.toIkkeLengerSykmeldtHendelse() = IkkeLengerSykmeldtUtenArbeidsgiverHendelse(
     oppfolgingsperiodeUuid = UUID.fromString(getString("oppfolgingsperiode_uuid")),
     hendelseTidspunkt = getTimestamp("hendelse_tidspunkt").toLocalDateTime().toInstant(ZoneOffset.UTC),
     syketilfelleAvsluttetDato = JsonUtils.fromJson(
         getString("hendelse_data"),
-        IkkeLengerSykmeldtHendelse.Detaljer::class.java
+        IkkeLengerSykmeldtUtenArbeidsgiverHendelse.Detaljer::class.java
     ).syketilfelleAvsluttetDato,
 )

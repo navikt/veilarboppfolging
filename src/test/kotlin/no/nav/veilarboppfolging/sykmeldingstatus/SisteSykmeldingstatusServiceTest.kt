@@ -10,12 +10,11 @@ import no.nav.veilarboppfolging.IntegrationTest
 import no.nav.veilarboppfolging.client.isoppfolgingstilfelle.OppfolgingstilfelleDTO
 import no.nav.veilarboppfolging.kafka.KafkaOppfolgingstilfelle
 import no.nav.veilarboppfolging.kafka.KafkaOppfolgingstilfellePerson
-import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.IkkeLengerSykmeldtHendelseType
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.IkkeLengerSykmeldtUtenArbeidsgiverHendelseType
 import no.nav.veilarboppfolging.oppfolgingsbruker.BrukerRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering.Companion.arbeidssokerRegistrering
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import org.testcontainers.shaded.org.checkerframework.checker.units.qual.h
 
 class SisteSykmeldingstatusServiceTest : IntegrationTest() {
     private val aktorId = AktorId.of("1234567890")
@@ -252,7 +251,7 @@ class SisteSykmeldingstatusServiceTest : IntegrationTest() {
 
         val aktivKandidat = kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeId)
         assertThat(aktivKandidat).isNotNull
-        assertThat(aktivKandidat?.sisteHendelse?.type).isEqualTo(IkkeLengerSykmeldtHendelseType.IKKE_LENGER_SYKMELDT)
+        assertThat(aktivKandidat?.sisteHendelse?.type).isEqualTo(IkkeLengerSykmeldtUtenArbeidsgiverHendelseType.IKKE_LENGER_SYKMELDT_UTEN_ARBEIDSGIVER)
         assertThat(sisteSykmeldingstatusRepository.hentSisteSykmeldingstatusAvsluttetOgIkkeKandidat(LocalDate.now())).isEmpty()
     }
 

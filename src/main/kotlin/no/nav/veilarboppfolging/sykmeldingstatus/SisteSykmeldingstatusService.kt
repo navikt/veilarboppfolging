@@ -10,7 +10,7 @@ import no.nav.veilarboppfolging.client.isoppfolgingstilfelle.IsOppfolgingstilfel
 import no.nav.veilarboppfolging.kafka.KafkaOppfolgingstilfellePerson
 import no.nav.veilarboppfolging.kandidatForUtmelding.FjernKandidatForUtmeldingService
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService
-import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.IkkeLengerSykmeldtHendelse
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.IkkeLengerSykmeldtUtenArbeidsgiverHendelse
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -104,7 +104,7 @@ class SisteSykmeldingstatusService(
             try {
                 transactor.executeWithoutResult { _ ->
                     kandidatForUtmeldingService.handterUtmeldingsHendelse(
-                        IkkeLengerSykmeldtHendelse(
+                        IkkeLengerSykmeldtUtenArbeidsgiverHendelse(
                             oppfolgingsperiodeUuid = sisteSykmeldingstatus.oppfolgingsperiodeId,
                             syketilfelleAvsluttetDato = sisteSykmeldingstatus.sluttdato,
                             hendelseTidspunkt = ZonedDateTime.now().toInstant(),
