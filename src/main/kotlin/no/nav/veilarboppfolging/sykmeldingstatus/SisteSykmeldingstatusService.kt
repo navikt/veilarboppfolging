@@ -8,6 +8,7 @@ import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.types.identer.Fnr
 import no.nav.veilarboppfolging.client.isoppfolgingstilfelle.IsOppfolgingstilfelleClient
 import no.nav.veilarboppfolging.kafka.KafkaOppfolgingstilfellePerson
+import no.nav.veilarboppfolging.kandidatForUtmelding.FjernKandidatForUtmeldingService
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.IkkeLengerSykmeldtHendelse
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
@@ -23,6 +24,7 @@ class SisteSykmeldingstatusService(
     private val oppfolgingsPeriodeRepository: OppfolgingsPeriodeRepository,
     private val transactor: TransactionTemplate,
     private val kandidatForUtmeldingService: KandidatForUtmeldingService,
+    private val fjernKandidatForUtmeldingService: FjernKandidatForUtmeldingService,
 ) {
     val log = LoggerFactory.getLogger(this::class.java)
 
@@ -45,42 +47,51 @@ class SisteSykmeldingstatusService(
 
     fun handterMottattIsOppfolgingstilfelle(key: String, kafkaOppfolgingstilfellePerson: KafkaOppfolgingstilfellePerson) {
         log.info("Mottatt syketilfelle for key $key")
-        val fnr = Fnr.of(kafkaOppfolgingstilfellePerson.personIdentNumber)
-        val aktorId = aktorOppslagClient.hentAktorId(fnr)
-        val oppfolgingsperiodeId = oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId)
-            .getOrNull()?.uuid
-        if (oppfolgingsperiodeId == null) {
-            log.info("Ignorerer syketilfelle med key $key: bruker har ingen gjeldende oppfolgingsperiode")
-            return
-        }
+        transactor.executeWithoutResult { _ ->
+            val fnr = Fnr.of(kafkaOppfolgingstilfellePerson.personIdentNumber)
+            val aktorId = aktorOppslagClient.hentAktorId(fnr)
 
-        val aktivtOppfolgingstilfelle = kafkaOppfolgingstilfellePerson.finnAktivtOppfolgingstilfelle()
-        if (aktivtOppfolgingstilfelle != null) {
-            val sisteSykmeldingstatus = SisteSykmeldingstatus(
-                oppfolgingsperiodeId = oppfolgingsperiodeId,
-                fnr = kafkaOppfolgingstilfellePerson.personIdentNumber,
-                startdato = aktivtOppfolgingstilfelle.start,
-                sluttdato = aktivtOppfolgingstilfelle.end,
-                harArbeidsgiver = aktivtOppfolgingstilfelle.arbeidstakerAtTilfelleEnd,
-            )
-            sisteSykmeldingstatusRepository.lagreSisteSykmeldingstatus(sisteSykmeldingstatus)
-            log.info("Lagret eller oppdaterte siste sykmeldingstatus for oppfølgingsperiode $oppfolgingsperiodeId, key $key")
-            return
-        }
+            val oppfolgingsperiodeId = oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId)
+                .getOrNull()?.uuid
+            if (oppfolgingsperiodeId == null) {
+                log.info("Ignorerer syketilfelle med key $key: bruker har ingen gjeldende oppfolgingsperiode")
+                return@executeWithoutResult
+            }
 
-        val oppfolgingstilfelleMedSisteSluttdato = kafkaOppfolgingstilfellePerson.finnOppfolgingstilfelleMedSisteSluttdato()
-        if (oppfolgingstilfelleMedSisteSluttdato != null && sisteSykmeldingstatusRepository.hentSisteSykmeldingstatus(oppfolgingsperiodeId) != null) {
-            val sisteSykmeldingstatus = SisteSykmeldingstatus(
-                oppfolgingsperiodeId = oppfolgingsperiodeId,
-                fnr = kafkaOppfolgingstilfellePerson.personIdentNumber,
-                startdato = oppfolgingstilfelleMedSisteSluttdato.start,
-                sluttdato = oppfolgingstilfelleMedSisteSluttdato.end,
-                harArbeidsgiver = oppfolgingstilfelleMedSisteSluttdato.arbeidstakerAtTilfelleEnd,
-            )
-            sisteSykmeldingstatusRepository.lagreSisteSykmeldingstatus(sisteSykmeldingstatus)
-            log.info("Oppdaterte siste sykmeldingstatus for oppfølgingsperiode $oppfolgingsperiodeId for bruker som ikke lenger er sykmeldt, key $key")
-        } else {
-            log.info("Ignorerer syketilfelle som ikke lenger er aktivt siden vi ikke har lagret sykmeldingstatus for oppfølgingsperiode $oppfolgingsperiodeId fra før, key $key")
+            val aktivtOppfolgingstilfelle = kafkaOppfolgingstilfellePerson.finnAktivtOppfolgingstilfelle()
+            if (aktivtOppfolgingstilfelle != null) {
+                val sisteSykmeldingstatus = SisteSykmeldingstatus(
+                    oppfolgingsperiodeId = oppfolgingsperiodeId,
+                    fnr = kafkaOppfolgingstilfellePerson.personIdentNumber,
+                    startdato = aktivtOppfolgingstilfelle.start,
+                    sluttdato = aktivtOppfolgingstilfelle.end,
+                    harArbeidsgiver = aktivtOppfolgingstilfelle.arbeidstakerAtTilfelleEnd,
+                )
+                sisteSykmeldingstatusRepository.lagreSisteSykmeldingstatus(sisteSykmeldingstatus)
+                log.info("Lagret eller oppdaterte siste sykmeldingstatus for oppfølgingsperiode $oppfolgingsperiodeId, key $key")
+
+                if (!aktivtOppfolgingstilfelle.arbeidstakerAtTilfelleEnd) {
+                    log.info("Bruker med oppfølgingsperiode $oppfolgingsperiodeId er sykmeldt uten arbeidsgiver, fjerner evt kandidat for utmelding")
+                    fjernKandidatForUtmeldingService.fjernKandidatForUtmelding(oppfolgingsperiodeId)
+                }
+                return@executeWithoutResult
+            }
+
+            val oppfolgingstilfelleMedSisteSluttdato =
+                kafkaOppfolgingstilfellePerson.finnOppfolgingstilfelleMedSisteSluttdato()
+            if (oppfolgingstilfelleMedSisteSluttdato != null && sisteSykmeldingstatusRepository.hentSisteSykmeldingstatus(oppfolgingsperiodeId) != null) {
+                val sisteSykmeldingstatus = SisteSykmeldingstatus(
+                    oppfolgingsperiodeId = oppfolgingsperiodeId,
+                    fnr = kafkaOppfolgingstilfellePerson.personIdentNumber,
+                    startdato = oppfolgingstilfelleMedSisteSluttdato.start,
+                    sluttdato = oppfolgingstilfelleMedSisteSluttdato.end,
+                    harArbeidsgiver = oppfolgingstilfelleMedSisteSluttdato.arbeidstakerAtTilfelleEnd,
+                )
+                sisteSykmeldingstatusRepository.lagreSisteSykmeldingstatus(sisteSykmeldingstatus)
+                log.info("Oppdaterte siste sykmeldingstatus for oppfølgingsperiode $oppfolgingsperiodeId for bruker som ikke lenger er sykmeldt, key $key")
+            } else {
+                log.info("Ignorerer syketilfelle som ikke lenger er aktivt siden vi ikke har lagret sykmeldingstatus for oppfølgingsperiode $oppfolgingsperiodeId fra før, key $key")
+            }
         }
     }
 
