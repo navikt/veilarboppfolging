@@ -418,6 +418,7 @@ class KandidatForUtmeldingRepository(
             in InaktivertIArenaHendelseType.entries.map { it.name } -> InaktivertIArenaHendelseType.valueOf(hendelse)
             in IkkeLengerAapHendelseType.entries.map { it.name } -> IkkeLengerAapHendelseType.valueOf(hendelse)
             in EndretFolkeregisterstatusHendelseType.entries.map { it.name } -> EndretFolkeregisterstatusHendelseType.valueOf(hendelse)
+            in IkkeLengerSykmeldtHendelseType.entries.map { it.name } -> IkkeLengerSykmeldtHendelseType.valueOf(hendelse)
             else -> {
                 throw IllegalArgumentException("Ugyldig hendelse type: $hendelse")
             }

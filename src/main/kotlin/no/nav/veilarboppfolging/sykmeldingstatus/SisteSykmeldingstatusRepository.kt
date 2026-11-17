@@ -52,10 +52,25 @@ class SisteSykmeldingstatusRepository(
             left join kandidater_for_utmelding kfu on ss.oppfolgingsperiode_uuid = kfu.oppfolgingsperiode_uuid
             WHERE kfu.oppfolgingsperiode_uuid IS NULL
             AND ss.sluttdato < :avsluttetTidligereEnn
+            AND ss.sist_sjekket_avslutningsstatus IS NULL 
+            AND ss.har_arbeidsgiver = false
+            AND NOT EXISTS (
+                SELECT 1 FROM kandidater_som_ikke_kunne_avsluttes ksika
+                WHERE ksika.oppfolgingsperiode_uuid = ss.oppfolgingsperiode_uuid
+            )
         """.trimIndent()
         return db.query(sql, mapOf("avsluttetTidligereEnn" to avsluttetTidligereEnn)) { rs, _ ->
             rs.toSisteSykmeldingstatus()
         }
+    }
+
+    fun oppdaterSistSjekketAvslutningsstatus(oppfolgingsperiodeId: UUID) {
+        val sql = """
+            UPDATE siste_sykmeldingstatus
+            SET sist_sjekket_avslutningsstatus = current_timestamp
+            WHERE oppfolgingsperiode_uuid = :oppfolgingsperiodeId
+        """.trimIndent()
+        db.update(sql, mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeId.toString()))
     }
 
     fun ResultSet.toSisteSykmeldingstatus() = SisteSykmeldingstatus(

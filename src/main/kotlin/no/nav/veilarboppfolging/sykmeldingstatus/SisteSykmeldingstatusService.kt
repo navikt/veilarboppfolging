@@ -9,7 +9,6 @@ import no.nav.common.types.identer.Fnr
 import no.nav.veilarboppfolging.client.isoppfolgingstilfelle.IsOppfolgingstilfelleClient
 import no.nav.veilarboppfolging.kafka.KafkaOppfolgingstilfellePerson
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService
-import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseUtløptHendelse
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.IkkeLengerSykmeldtHendelse
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import org.slf4j.LoggerFactory
@@ -87,10 +86,10 @@ class SisteSykmeldingstatusService(
 
     fun opprettKandidaterForUtmelding() {
         val avsluttetTidligereEnn = LocalDate.now().minusDays(16)
-        val sisteSykmeldingstatusIkkeLengerSykmeldtOgIkkeKandidat = sisteSykmeldingstatusRepository.hentSisteSykmeldingstatusAvsluttetOgIkkeKandidat(avsluttetTidligereEnn)
-        log.info("Behandler ${sisteSykmeldingstatusIkkeLengerSykmeldtOgIkkeKandidat.size} oppfølgingsperioder der syketilfellet ble avsluttet for $avsluttetTidligereEnn dager siden og som ikke er kandidat for utmelding")
+        val sisteSykmeldingstatusIkkeLengerSykmeldt = sisteSykmeldingstatusRepository.hentSisteSykmeldingstatusAvsluttetOgIkkeKandidat(avsluttetTidligereEnn)
+        log.info("Behandler ${sisteSykmeldingstatusIkkeLengerSykmeldt.size} oppfølgingsperioder der syketilfellet ble avsluttet for 16 dager siden")
 
-        sisteSykmeldingstatusIkkeLengerSykmeldtOgIkkeKandidat.forEach { sisteSykmeldingstatus ->
+        sisteSykmeldingstatusIkkeLengerSykmeldt.forEach { sisteSykmeldingstatus ->
             try {
                 transactor.executeWithoutResult { _ ->
                     kandidatForUtmeldingService.handterUtmeldingsHendelse(
@@ -100,6 +99,7 @@ class SisteSykmeldingstatusService(
                             hendelseTidspunkt = ZonedDateTime.now().toInstant(),
                         )
                     )
+                    sisteSykmeldingstatusRepository.oppdaterSistSjekketAvslutningsstatus(sisteSykmeldingstatus.oppfolgingsperiodeId)
                 }
             } catch (e: Exception) {
                 log.error("Feil ved behandling av oppfølgingsperiode med id ${sisteSykmeldingstatus.oppfolgingsperiodeId} med avsluttet syketilfelle", e)
