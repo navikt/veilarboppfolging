@@ -23,7 +23,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v7
       - name: deploy alerts to dev
-        uses: nais/deploy/actions/deploy@033f70f2484ddfa91dc3d878e06ced3113f996ad
+        uses: nais/deploy/actions/deploy@30ed20fc7021e78d03ca9544b0c561d37f826296
         env:
           CLUSTER: dev-gcp
           RESOURCE: >-
@@ -39,7 +39,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v7
       - name: deploy alerts to prod
-        uses: nais/deploy/actions/deploy@033f70f2484ddfa91dc3d878e06ced3113f996ad
+        uses: nais/deploy/actions/deploy@30ed20fc7021e78d03ca9544b0c561d37f826296
         env:
           CLUSTER: prod-gcp
           RESOURCE: >-
