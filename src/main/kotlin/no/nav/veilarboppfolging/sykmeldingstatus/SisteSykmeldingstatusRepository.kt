@@ -46,7 +46,7 @@ class SisteSykmeldingstatusRepository(
         }.firstOrNull()
     }
 
-    fun hentSisteSykmeldingstatusAvsluttetOgIkkeKandidat(avsluttetTidligereEnn: LocalDate): List<SisteSykmeldingstatus> {
+    fun hentSykmeldteUtenArbeidsgiverMedStatusAvsluttetSomIkkeErUtmeldingsKandidater(avsluttetTidligereEnn: LocalDate): List<SisteSykmeldingstatus> {
         val sql = """
             SELECT * FROM siste_sykmeldingstatus ss
             left join kandidater_for_utmelding kfu on ss.oppfolgingsperiode_uuid = kfu.oppfolgingsperiode_uuid
