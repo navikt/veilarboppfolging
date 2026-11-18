@@ -2,6 +2,7 @@ package no.nav.veilarboppfolging.service
 
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
+import no.nav.veilarboppfolging.config.ApplicationConfig.SYSTEM_USER_NAME
 import no.nav.veilarboppfolging.controller.response.HistorikkHendelse
 import no.nav.veilarboppfolging.controller.response.HistorikkHendelseType
 import no.nav.veilarboppfolging.oppfolgingsbruker.RegistrantType
@@ -157,7 +158,10 @@ class HistorikkService(
                     RegistrantType.VEILEDER -> KodeverkBruker.NAV
                     RegistrantType.SYSTEM -> KodeverkBruker.SYSTEM
                     RegistrantType.ADMIN -> KodeverkBruker.ADMIN
-                    null -> if (periode.avsluttetAv != null) KodeverkBruker.NAV else KodeverkBruker.SYSTEM
+                    null -> when (periode.avsluttetAv) {
+                        null, SYSTEM_USER_NAME -> KodeverkBruker.SYSTEM
+                        else -> KodeverkBruker.NAV
+                    }
                 },
                 opprettetAvBrukerId = periode.avsluttetAv,
                 dialogId = null,
