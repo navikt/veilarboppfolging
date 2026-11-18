@@ -94,7 +94,10 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
                 sisteSykmeldingstatusRepository,
                 mock(),
                 mock(),
-                oppfolgingsPeriodeRepository
+                oppfolgingsPeriodeRepository,
+                transactor,
+                mock(),
+                mock()
         );
 
         oppfolgingService = new OppfolgingService(

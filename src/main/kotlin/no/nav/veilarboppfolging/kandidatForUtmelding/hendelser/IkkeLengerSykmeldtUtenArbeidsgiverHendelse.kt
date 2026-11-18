@@ -16,7 +16,7 @@ import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.Kategori
 import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.Operasjon
 import org.postgresql.util.PGobject
 
-class IkkeLengerSykmeldtHendelse(
+class IkkeLengerSykmeldtUtenArbeidsgiverHendelse(
     oppfolgingsperiodeUuid: UUID,
     val syketilfelleAvsluttetDato: LocalDate,
     hendelseTidspunkt: Instant,
@@ -27,7 +27,7 @@ class IkkeLengerSykmeldtHendelse(
     "Modia sykefravær",
     hendelseTidspunkt,
 ) {
-    override val type: IkkeLengerSykmeldtHendelseType = IkkeLengerSykmeldtHendelseType.IKKE_LENGER_SYKMELDT
+    override val type: IkkeLengerSykmeldtUtenArbeidsgiverHendelseType = IkkeLengerSykmeldtUtenArbeidsgiverHendelseType.IKKE_LENGER_SYKMELDT_UTEN_ARBEIDSGIVER
 
     val avsluttesAutomatiskDato: ZonedDateTime = beregnAvsluttesAutomatiskDato(hendelseTidspunkt)
 
@@ -46,8 +46,8 @@ class IkkeLengerSykmeldtHendelse(
             kategori = Kategori.KANDIDAT_FOR_UTMELDING,
             operasjon = Operasjon.START,
             hendelse = FilterhendelseRecord.HendelseInnhold(
-                beskrivelse = "Ikke lenger sykmeldt",
-                beskrivelseEnum = BeskrivelseEnum.IKKE_LENGER_SYKMELDT.name,
+                beskrivelse = "Ikke lenger sykmeldt uten arbeidsgiver",
+                beskrivelseEnum = BeskrivelseEnum.IKKE_LENGER_SYKMELDT_UTEN_ARBEIDSGIVER.name,
                 tidspunkt = hendelseTidspunkt.atZone(ZoneId.of("Europe/Oslo")),
                 lenke = URI("${baseUrlVeilarbpersonflate()}/aktivitetsplan").toURL(),
                 detaljer = null,

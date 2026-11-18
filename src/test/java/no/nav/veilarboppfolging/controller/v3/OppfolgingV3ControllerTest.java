@@ -116,10 +116,10 @@ class OppfolgingV3ControllerTest {
     @Test
     void hentAvslutningStatus_skal_returnere_avslutningstatus() throws Exception {
         when(avsluttOppfolgingService.hentAvslutningstatusForManuellAvslutning(TEST_FNR)).thenReturn(
-                new AvslutningStatusData(true, true, false, LocalDate.parse("2023-01-01"), false, false, false, false, false, List.of())
+                new AvslutningStatusData(true, true, false, LocalDate.parse("2023-01-01"), false, false, false, false, false, false, List.of())
         );
 
-        String expectedJson = "{\"kanAvslutte\":true,\"underOppfolging\":true,\"underKvp\":false,\"inaktiveringsDato\":\"2023-01-01\",\"erIserv\":false,\"harAktiveTiltaksdeltakelser\":false,\"erDeltakerIUngdomsprogrammet\":false,\"erArbeidssoeker\":false,\"harAap\":false}";
+        String expectedJson = "{\"kanAvslutte\":true,\"underOppfolging\":true,\"underKvp\":false,\"inaktiveringsDato\":\"2023-01-01\",\"erIserv\":false,\"harAktiveTiltaksdeltakelser\":false,\"erDeltakerIUngdomsprogrammet\":false,\"erArbeidssoeker\":false,\"harAap\":false,\"erSykmeldtUtenArbeidsgiver\":false}";
         mockMvc.perform(post("/api/v3/oppfolging/hent-avslutning-status")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"fnr\":\"12345678900\"}")
@@ -137,7 +137,7 @@ class OppfolgingV3ControllerTest {
         when(authService.getInnloggetBrukerIdent()).thenReturn(TEST_FNR.get());
         when(authService.getAktorIdOrThrow(TEST_FNR)).thenReturn(TEST_AKTOR_ID);
         var avregistrering = new ManuellAvregistrering(TEST_AKTOR_ID, new BrukerRegistrant(TEST_FNR), "");
-        var input = new KanAvsluttesInput(true, false, false, false, false, false, false, false);
+        var input = new KanAvsluttesInput(true, false, false, false, false, false, false, false, false);
         when(avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(any()))
                 .thenReturn(KunneAvsluttesResultat.Companion.kanAvsluttes(avregistrering, input));
         var begrunnelse = "a".repeat(lengde);
@@ -164,7 +164,7 @@ class OppfolgingV3ControllerTest {
         when(authService.getInnloggetBrukerIdent()).thenReturn(TEST_FNR.get());
         when(authService.getAktorIdOrThrow(TEST_FNR)).thenReturn(TEST_AKTOR_ID);
         var avregistrering = new ManuellAvregistrering(TEST_AKTOR_ID, new BrukerRegistrant(TEST_FNR), "");
-        var input = new KanAvsluttesInput(true, false, false, false, false, true, false, false);
+        var input = new KanAvsluttesInput(true, false, false, false, false, true, false, false, false);
         when(avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(any()))
                 .thenReturn(KunneAvsluttesResultat.Companion.kanAvsluttes(avregistrering, input));
 

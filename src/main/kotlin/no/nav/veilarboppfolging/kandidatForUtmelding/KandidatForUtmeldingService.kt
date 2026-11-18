@@ -14,7 +14,7 @@ import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseOppret
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseUtløptHendelse
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.AvsluttetAapSak
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.EndretFolkeregisterstatus
-import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.IkkeLengerSykmeldtHendelse
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.IkkeLengerSykmeldtUtenArbeidsgiverHendelse
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.InaktivertIArena
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.KandidatForUtmeldingHendelse
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.KandidatForUtmeldingHendelseType
@@ -50,6 +50,7 @@ class KandidatForUtmeldingService(
         KanIkkeAvslutteBegrunnelse.BRUKER_VAR_IKKE_UNDER_OPPFOLGING,
         KanIkkeAvslutteBegrunnelse.BRUKER_ER_REGISTRERT_SOM_ARBEIDSSOKER,
         KanIkkeAvslutteBegrunnelse.BRUKER_MOTTAR_ELLER_HAR_SOKT_OM_AAP,
+        KanIkkeAvslutteBegrunnelse.BRUKER_ER_SYKMELDT_UTEN_ARBEIDSGIVER,
         KanIkkeAvslutteBegrunnelse.OPPFOLGINGEN_ER_FORLENGET,
     )
 
@@ -67,8 +68,13 @@ class KandidatForUtmeldingService(
                 is ForlengelseUtløptHendelse,
                 is AvsluttetAapSak,
                 is EndretFolkeregisterstatus,
-                is IkkeLengerSykmeldtHendelse -> true
+                is IkkeLengerSykmeldtUtenArbeidsgiverHendelse -> true
                 is ForlengelseOpprettetEllerEndretHendelse -> false
+            }
+            val hendelseGjelderForlengelse = hendelse is ForlengelseOpprettetEllerEndretHendelse || hendelse is ForlengelseUtløptHendelse
+            if (!hendelseGjelderForlengelse && kandidatForUtmeldingRepository.erAktivEllerForlengetKandidatForUtmelding(hendelse.oppfolgingsperiodeUuid) && avslutningsstatus.kanAvslutte) {
+                logger.warn("Kandidat med oppfølgingsperiode ${hendelse.oppfolgingsperiodeUuid} er allerede aktiv kandidat for utmelding, skal i utgangspunktet ikke kunne skje")
+                return@executeWithoutResult
             }
             if (erHendelseSomAktivererKandidat && !avslutningsstatus.kanAvslutte) {
                 if (!avslutningsstatus.underOppfolging) {

@@ -618,6 +618,7 @@ class KandidatForUtmeldingServiceTest : IntegrationTest() {
         assertThat(kandidatForUtmeldingService.skalLagreKandidatSomIkkeKunneAvsluttes(listOf(KanIkkeAvslutteBegrunnelse.BRUKER_ER_DELTAKER_I_UNGDOMSPROGRAMMET))).isTrue
         assertThat(kandidatForUtmeldingService.skalLagreKandidatSomIkkeKunneAvsluttes(listOf(KanIkkeAvslutteBegrunnelse.BRUKER_ER_REGISTRERT_SOM_ARBEIDSSOKER))).isFalse
         assertThat(kandidatForUtmeldingService.skalLagreKandidatSomIkkeKunneAvsluttes(listOf(KanIkkeAvslutteBegrunnelse.BRUKER_MOTTAR_ELLER_HAR_SOKT_OM_AAP))).isFalse
+        assertThat(kandidatForUtmeldingService.skalLagreKandidatSomIkkeKunneAvsluttes(listOf(KanIkkeAvslutteBegrunnelse.BRUKER_ER_SYKMELDT_UTEN_ARBEIDSGIVER))).isFalse
         assertThat(kandidatForUtmeldingService.skalLagreKandidatSomIkkeKunneAvsluttes(listOf(KanIkkeAvslutteBegrunnelse.OPPFOLGINGEN_ER_FORLENGET))).isFalse
         assertThat(kandidatForUtmeldingService.skalLagreKandidatSomIkkeKunneAvsluttes(listOf(KanIkkeAvslutteBegrunnelse.BRUKER_VAR_UNDER_KVP))).isTrue
 
