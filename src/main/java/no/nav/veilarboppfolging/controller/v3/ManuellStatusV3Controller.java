@@ -72,39 +72,4 @@ public class ManuellStatusV3Controller {
 		authService.skalVereInternBruker();
 		manuellStatusService.synkroniserManuellStatusMedDigdir(manuellStatusRequest.fnr());
 	}
-
-	@PostMapping("/manuell/sett-manuell")
-	public void settTilManuell(@RequestBody VeilederBegrunnelseRequest veilederBegrunnelseRequest) {
-		authService.skalVereInternBruker();
-
-		manuellStatusService.oppdaterManuellStatus(
-				veilederBegrunnelseRequest.fnr(), true, veilederBegrunnelseRequest.begrunnelse(),
-				KodeverkBruker.NAV, authService.getInnloggetVeilederIdent()
-		);
-	}
-
-	@PostMapping("/manuell/sett-digital")
-	public void settTilDigital(
-			@RequestBody(required = false) VeilederBegrunnelseRequest veilederBegrunnelseRequest
-	) {
-		Fnr maybeFodselsnummer = veilederBegrunnelseRequest == null ? null : veilederBegrunnelseRequest.fnr();
-		Fnr fodselsnummer = authService.hentIdentForEksternEllerIntern(maybeFodselsnummer);
-
-		if (authService.erEksternBruker()) {
-			manuellStatusService.settDigitalBruker(fodselsnummer);
-			return;
-		}
-
-		// Påkrevd for intern bruker
-		if (veilederBegrunnelseRequest == null) {
-			throw new BadRequestException("veilederBegrunnelseRequest kan ikke være null");
-		}
-
-		manuellStatusService.oppdaterManuellStatus(
-				fodselsnummer, false, veilederBegrunnelseRequest.begrunnelse(),
-				KodeverkBruker.NAV, authService.getInnloggetBrukerIdent()
-		);
-	}
-
-
 }

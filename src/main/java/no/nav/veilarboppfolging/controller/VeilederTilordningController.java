@@ -26,11 +26,4 @@ public class VeilederTilordningController {
     public TilordneVeilederResponse tilordneVeiledere(@RequestBody List<VeilederTilordning> tilordninger) {
         return veilederTilordningService.tilordneVeiledere(tilordninger);
     }
-
-    @PostMapping("{fnr}/lestaktivitetsplan")
-    public ResponseEntity<?> lestAktivitetsplan(@PathVariable("fnr") Fnr fnr) {
-        veilederTilordningService.lestAktivitetsplan(fnr);
-        return ResponseEntity.status(204).build();
-    }
-
 }

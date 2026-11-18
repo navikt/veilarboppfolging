@@ -56,38 +56,6 @@ public class ManuellStatusV3ControllerTest {
     }
 
     @Test
-    public void sett_digital_ekstern() throws Exception {
-        when(authService.erEksternBruker()).thenReturn(true);
-        mockMvc.perform(post("/api/v3/manuell/sett-digital")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(JsonUtils.toJson(manuellStatusRequest))
-        );
-
-        verify(manuellStatusService, times(1)).settDigitalBruker(any());
-    }
-
-    @Test
-    public void sett_digital_ikke_ekstern() throws Exception {
-        when(authService.erEksternBruker()).thenReturn(false);
-        mockMvc.perform(post("/api/v3/manuell/sett-digital")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(JsonUtils.toJson(manuellStatusRequest))
-        );
-
-        verify(manuellStatusService, times(0)).settDigitalBruker(any());
-    }
-
-    @Test
-    public void sett_manuell() throws Exception {
-        when(authService.erEksternBruker()).thenReturn(true);
-        ResultActions result = mockMvc.perform(post("/api/v3/manuell/sett-manuell")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(JsonUtils.toJson(manuellStatusRequest))
-        );
-        assert (result.andReturn().getResponse().getStatus() == 200);
-    }
-
-    @Test
     public void synkroniserManuellStatusMedDigdir__should_only_be_used_by_internal_users() throws Exception {
         mockMvc.perform(post("/api/v3/manuell/synkroniser-med-dkif")
                 .contentType(MediaType.APPLICATION_JSON)
