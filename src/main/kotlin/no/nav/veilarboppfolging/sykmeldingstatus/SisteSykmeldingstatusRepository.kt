@@ -15,7 +15,7 @@ class SisteSykmeldingstatusRepository(
             INSERT INTO siste_sykmeldingstatus(oppfolgingsperiode_uuid, fnr, startdato, sluttdato, har_arbeidsgiver)
             VALUES (:oppfolgingsperiodeId, :fnr, :startdato, :sluttdato, :harArbeidsgiver)
             ON CONFLICT (oppfolgingsperiode_uuid) 
-            DO UPDATE SET updated_at = current_timestamp, fnr = :fnr, startdato = :startdato, sluttdato = :sluttdato, har_arbeidsgiver = :harArbeidsgiver
+            DO UPDATE SET updated_at = current_timestamp, fnr = :fnr, startdato = :startdato, sluttdato = :sluttdato, har_arbeidsgiver = :harArbeidsgiver, sist_sjekket_avslutningsstatus = NULL
         """.trimIndent()
         db.update(
             sql, mapOf(
