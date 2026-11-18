@@ -122,18 +122,6 @@ class KandidatForUtmeldingRepository(
             ?: false // False if no match
     }
 
-    fun erAktivKandidatForUtmelding(oppfolgingsperiodeId: UUID): Boolean {
-        val sql = """
-            SELECT 1 FROM kandidater_for_utmelding 
-            WHERE oppfolgingsperiode_uuid = :oppfolgingsperiodeId
-            AND forlenget_til IS NULL
-        """.trimIndent()
-        return db.query(sql, mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeId.toString()))
-        { _, _ -> true }
-            .firstOrNull()
-            ?: false
-    }
-
     fun hentAktivKandidat(oppfolgingsperiodeId: UUID): AktivKandidatForUtmelding? {
         return db.query(
             """
