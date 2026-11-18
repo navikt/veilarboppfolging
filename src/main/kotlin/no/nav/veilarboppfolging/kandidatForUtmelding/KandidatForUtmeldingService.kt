@@ -71,6 +71,10 @@ class KandidatForUtmeldingService(
                 is IkkeLengerSykmeldtUtenArbeidsgiverHendelse -> true
                 is ForlengelseOpprettetEllerEndretHendelse -> false
             }
+            if (erHendelseSomAktivererKandidat && kandidatForUtmeldingRepository.erAktivKandidatForUtmelding(hendelse.oppfolgingsperiodeUuid) && avslutningsstatus.kanAvslutte) {
+                logger.warn("Kandidat med oppfølgingsperiode ${hendelse.oppfolgingsperiodeUuid} er allerede aktiv kandidat for utmelding, skal i utgangspunktet ikke kunne skje")
+                return@executeWithoutResult
+            }
             if (erHendelseSomAktivererKandidat && !avslutningsstatus.kanAvslutte) {
                 if (!avslutningsstatus.underOppfolging) {
                     logger.info("Kandidat med oppfølgingsperiode ${hendelse.oppfolgingsperiodeUuid} er ikke under oppfølging, fjerner fra kandidat for utmelding hvis den finnes")

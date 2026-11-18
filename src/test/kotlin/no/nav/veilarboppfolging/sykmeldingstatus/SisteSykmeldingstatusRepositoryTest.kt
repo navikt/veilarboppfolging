@@ -1,18 +1,12 @@
 package no.nav.veilarboppfolging.sykmeldingstatus
 
 import java.time.LocalDate
-import java.time.ZonedDateTime
 import java.util.UUID
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.veilarboppfolging.LocalDatabaseSingleton
-import no.nav.veilarboppfolging.kandidatForUtmelding.AktivKandidatForUtmelding
-import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmelding
-import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingRepository
-import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.AvsluttetAapSak
 import no.nav.veilarboppfolging.oppfolgingsbruker.BrukerRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering.Companion.arbeidssokerRegistrering
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.KanIkkeAvslutteBegrunnelse
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
 import no.nav.veilarboppfolging.test.DbTestUtils
@@ -29,7 +23,6 @@ class SisteSykmeldingstatusRepositoryTest {
     private val transactor: TransactionTemplate = DbTestUtils.createTransactor(jdbcTemplate)
     private val oppfolgingsPeriodeRepository = OppfolgingsPeriodeRepository(jdbcTemplate, transactor)
     private val oppfolgingsStatusRepository = OppfolgingsStatusRepository(NamedParameterJdbcTemplate(jdbcTemplate))
-    private val kandidatForUtmeldingRepository = KandidatForUtmeldingRepository(namedJdbcTemplate)
 
     private val aktorId = AktorId.of("4321")
     private val fnr = Fnr.of("1111119999")
@@ -101,7 +94,7 @@ class SisteSykmeldingstatusRepositoryTest {
     }
 
     @Test
-    fun `hentSykmeldteUtenArbeidsgiverMedStatusAvsluttetSomIkkeErUtmeldingsKandidater - er fortsatt sykmeldt uten arbeidsgiver - tom liste`() {
+    fun `hentSykmeldteUtenArbeidsgiverMedStatusAvsluttetSomIkkeErBehandlet - er fortsatt sykmeldt uten arbeidsgiver - tom liste`() {
         val oppfolgingsperiodeUuid = lagreOppfolgingsperiode(aktorId, fnr)
         val sisteSykmeldingstatus = SisteSykmeldingstatus(
             oppfolgingsperiodeId = oppfolgingsperiodeUuid,
@@ -112,11 +105,11 @@ class SisteSykmeldingstatusRepositoryTest {
         )
         sisteSykmeldingstatusRepository.lagreSisteSykmeldingstatus(sisteSykmeldingstatus)
 
-        assertThat(sisteSykmeldingstatusRepository.hentSykmeldteUtenArbeidsgiverMedStatusAvsluttetSomIkkeErUtmeldingsKandidater(avsluttetTidligereEnn)).isEmpty()
+        assertThat(sisteSykmeldingstatusRepository.hentSykmeldteUtenArbeidsgiverMedStatusAvsluttetSomIkkeErBehandlet(avsluttetTidligereEnn)).isEmpty()
     }
 
     @Test
-    fun `hentSykmeldteUtenArbeidsgiverMedStatusAvsluttetSomIkkeErUtmeldingsKandidater - ikke lenger sykmeldt uten arbeidsgiver - returnerer sykmeldingstatus`() {
+    fun `hentSykmeldteUtenArbeidsgiverMedStatusAvsluttetSomIkkeErBehandlet - ikke lenger sykmeldt uten arbeidsgiver - returnerer sykmeldingstatus`() {
         val oppfolgingsperiodeUuid = lagreOppfolgingsperiode(aktorId, fnr)
         val sisteSykmeldingstatus = SisteSykmeldingstatus(
             oppfolgingsperiodeId = oppfolgingsperiodeUuid,
@@ -127,14 +120,14 @@ class SisteSykmeldingstatusRepositoryTest {
         )
         sisteSykmeldingstatusRepository.lagreSisteSykmeldingstatus(sisteSykmeldingstatus)
 
-        val sykmeldingstatusAvsluttetOgIkkeKandidat = sisteSykmeldingstatusRepository.hentSykmeldteUtenArbeidsgiverMedStatusAvsluttetSomIkkeErUtmeldingsKandidater(avsluttetTidligereEnn)
+        val sykmeldingstatusAvsluttetOgIkkeKandidat = sisteSykmeldingstatusRepository.hentSykmeldteUtenArbeidsgiverMedStatusAvsluttetSomIkkeErBehandlet(avsluttetTidligereEnn)
 
         assertThat(sykmeldingstatusAvsluttetOgIkkeKandidat).isNotEmpty()
         assertThat(sykmeldingstatusAvsluttetOgIkkeKandidat).containsExactly(sisteSykmeldingstatus)
     }
 
     @Test
-    fun `hentSykmeldteUtenArbeidsgiverMedStatusAvsluttetSomIkkeErUtmeldingsKandidater - ikke lenger sykmeldt, har arbeidsgiver - tom liste`() {
+    fun `hentSykmeldteUtenArbeidsgiverMedStatusAvsluttetSomIkkeErBehandlet - ikke lenger sykmeldt, har arbeidsgiver - tom liste`() {
         val oppfolgingsperiodeUuid = lagreOppfolgingsperiode(aktorId, fnr)
         val sisteSykmeldingstatus = SisteSykmeldingstatus(
             oppfolgingsperiodeId = oppfolgingsperiodeUuid,
@@ -145,11 +138,11 @@ class SisteSykmeldingstatusRepositoryTest {
         )
         sisteSykmeldingstatusRepository.lagreSisteSykmeldingstatus(sisteSykmeldingstatus)
 
-        assertThat(sisteSykmeldingstatusRepository.hentSykmeldteUtenArbeidsgiverMedStatusAvsluttetSomIkkeErUtmeldingsKandidater(avsluttetTidligereEnn)).isEmpty()
+        assertThat(sisteSykmeldingstatusRepository.hentSykmeldteUtenArbeidsgiverMedStatusAvsluttetSomIkkeErBehandlet(avsluttetTidligereEnn)).isEmpty()
     }
 
     @Test
-    fun `hentSykmeldteUtenArbeidsgiverMedStatusAvsluttetSomIkkeErUtmeldingsKandidater - ikke lenger sykmeldt uten arbeidsgiver, er kandidat - tom liste`() {
+    fun `hentSykmeldteUtenArbeidsgiverMedStatusAvsluttetSomIkkeErBehandlet - ikke lenger sykmeldt uten arbeidsgiver, har allerede behandlet hendelse - tom liste`() {
         val oppfolgingsperiodeUuid = lagreOppfolgingsperiode(aktorId, fnr)
         val sisteSykmeldingstatus = SisteSykmeldingstatus(
             oppfolgingsperiodeId = oppfolgingsperiodeUuid,
@@ -159,38 +152,9 @@ class SisteSykmeldingstatusRepositoryTest {
             harArbeidsgiver = false,
         )
         sisteSykmeldingstatusRepository.lagreSisteSykmeldingstatus(sisteSykmeldingstatus)
-        val kandidat = AvsluttetAapSak(
-            oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
-            hendelseTidspunkt = ZonedDateTime.now().toInstant(),
-        ).let {
-            KandidatForUtmelding.fromHendelse(it) as AktivKandidatForUtmelding
-        }
-        kandidatForUtmeldingRepository.lagreKandidat(kandidat)
-        assertThat(kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeUuid)).isNotNull
+        sisteSykmeldingstatusRepository.oppdaterIkkeLengerSykmeldtUtenArbeidsgiverHendelseUtlost(oppfolgingsperiodeUuid)
 
-        assertThat(sisteSykmeldingstatusRepository.hentSykmeldteUtenArbeidsgiverMedStatusAvsluttetSomIkkeErUtmeldingsKandidater(avsluttetTidligereEnn)).isEmpty()
-    }
-
-    @Test
-    fun `hentSykmeldteUtenArbeidsgiverMedStatusAvsluttetSomIkkeErUtmeldingsKandidater - ikke lenger sykmeldt uten arbeidsgiver, er kandidat som ikke kan avsluttes - tom liste`() {
-        val oppfolgingsperiodeUuid = lagreOppfolgingsperiode(aktorId, fnr)
-        val sisteSykmeldingstatus = SisteSykmeldingstatus(
-            oppfolgingsperiodeId = oppfolgingsperiodeUuid,
-            fnr = fnr.get(),
-            startdato = LocalDate.now().minusMonths(3),
-            sluttdato = avsluttetTidligereEnn.minusDays(1),
-            harArbeidsgiver = false,
-        )
-        sisteSykmeldingstatusRepository.lagreSisteSykmeldingstatus(sisteSykmeldingstatus)
-        val kandidathendelse = AvsluttetAapSak(
-            oppfolgingsperiodeUuid = oppfolgingsperiodeUuid,
-            hendelseTidspunkt = ZonedDateTime.now().toInstant(),
-        )
-        kandidatForUtmeldingRepository.lagreKandidatSomIkkeKunneAvsluttesOgHendelse(kandidathendelse, oppfolgingsperiodeUuid, listOf(
-            KanIkkeAvslutteBegrunnelse.BRUKER_HAR_AKTIVE_TILTAKSDELTAKELSER))
-        assertThat(kandidatForUtmeldingRepository.erKandidatSomIkkeKunneAvsluttes(oppfolgingsperiodeUuid)).isTrue
-
-        assertThat(sisteSykmeldingstatusRepository.hentSykmeldteUtenArbeidsgiverMedStatusAvsluttetSomIkkeErUtmeldingsKandidater(avsluttetTidligereEnn)).isEmpty()
+        assertThat(sisteSykmeldingstatusRepository.hentSykmeldteUtenArbeidsgiverMedStatusAvsluttetSomIkkeErBehandlet(avsluttetTidligereEnn)).isEmpty()
     }
 
     private fun lagreOppfolgingsperiode(aktorId: AktorId, fnr: Fnr): UUID {

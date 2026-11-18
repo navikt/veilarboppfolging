@@ -97,8 +97,8 @@ class SisteSykmeldingstatusService(
 
     fun opprettKandidaterForUtmelding() {
         val avsluttetTidligereEnn = LocalDate.now().minusDays(16)
-        val sisteSykmeldingstatusIkkeLengerSykmeldt = sisteSykmeldingstatusRepository.hentSykmeldteUtenArbeidsgiverMedStatusAvsluttetSomIkkeErUtmeldingsKandidater(avsluttetTidligereEnn)
-        log.info("Behandler ${sisteSykmeldingstatusIkkeLengerSykmeldt.size} oppfølgingsperioder der syketilfellet ble avsluttet for 16 dager siden")
+        val sisteSykmeldingstatusIkkeLengerSykmeldt = sisteSykmeldingstatusRepository.hentSykmeldteUtenArbeidsgiverMedStatusAvsluttetSomIkkeErBehandlet(avsluttetTidligereEnn)
+        log.info("Behandler ${sisteSykmeldingstatusIkkeLengerSykmeldt.size} oppfølgingsperioder der syketilfellet ble avsluttet for mer enn 16 dager siden")
 
         sisteSykmeldingstatusIkkeLengerSykmeldt.forEach { sisteSykmeldingstatus ->
             try {
@@ -110,7 +110,7 @@ class SisteSykmeldingstatusService(
                             hendelseTidspunkt = ZonedDateTime.now().toInstant(),
                         )
                     )
-                    sisteSykmeldingstatusRepository.oppdaterSistSjekketAvslutningsstatus(sisteSykmeldingstatus.oppfolgingsperiodeId)
+                    sisteSykmeldingstatusRepository.oppdaterIkkeLengerSykmeldtUtenArbeidsgiverHendelseUtlost(sisteSykmeldingstatus.oppfolgingsperiodeId)
                 }
             } catch (e: Exception) {
                 log.error("Feil ved behandling av oppfølgingsperiode med id ${sisteSykmeldingstatus.oppfolgingsperiodeId} med avsluttet syketilfelle", e)
