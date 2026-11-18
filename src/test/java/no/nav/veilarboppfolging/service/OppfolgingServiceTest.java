@@ -1,5 +1,6 @@
 package no.nav.veilarboppfolging.service;
 
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Comparator;
 import java.util.List;
@@ -46,6 +47,7 @@ import no.nav.veilarboppfolging.repository.*;
 import no.nav.veilarboppfolging.repository.entity.ManuellStatusEntity;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
 import no.nav.veilarboppfolging.repository.enums.KodeverkBruker;
+import no.nav.veilarboppfolging.sykmeldingstatus.SisteSykmeldingstatus;
 import no.nav.veilarboppfolging.sykmeldingstatus.SisteSykmeldingstatusRepository;
 import no.nav.veilarboppfolging.sykmeldingstatus.SisteSykmeldingstatusService;
 import no.nav.veilarboppfolging.test.DbTestUtils;
@@ -388,6 +390,66 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
         verify(kafkaProducerService, never()).publiserOppfolgingsperiode(any(OppfolgingsperiodeDTO.class));
         assertHarGjeldendeOppfolgingsperiode(aktorId);
+    }
+
+    @Test
+    public void skal_ikke_kunne_avslutte_oppfolging_hvis_sykmeldt_uten_arbeidsgiver() {
+        settTilstandFormidlingsgruppe("IARBS");
+        oppfolgingsStatusRepository.opprettOppfolging(aktorId);
+        startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.Companion.arbeidssokerRegistrering(fnr, aktorId, new BrukerRegistrant(fnr)));
+        assertUnderOppfolgingLagret(aktorId);
+        settTilstandFormidlingsgruppe("ISERV");
+        UUID oppfolgingsperiodeId = oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId).orElseThrow().getUuid();
+
+        when(sisteSykmeldingstatusRepository.hentSisteSykmeldingstatus(oppfolgingsperiodeId)).thenReturn(
+                new SisteSykmeldingstatus(oppfolgingsperiodeId, fnr.get(), LocalDate.now().minusMonths(2), LocalDate.now().plusMonths(1), false)
+        );
+
+        reset(kafkaProducerService);
+        avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(new ManuellAvregistrering(aktorId, new VeilederRegistrant(new NavIdent(VEILEDER)), ""));
+
+        verify(kafkaProducerService, never()).publiserOppfolgingsperiode(any(OppfolgingsperiodeDTO.class));
+        assertHarGjeldendeOppfolgingsperiode(aktorId);
+    }
+
+    @Test
+    public void skal_kunne_avslutte_oppfolging_hvis_sykmeldt_med_arbeidsgiver() {
+        settTilstandFormidlingsgruppe("IARBS");
+        oppfolgingsStatusRepository.opprettOppfolging(aktorId);
+        startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.Companion.arbeidssokerRegistrering(fnr, aktorId, new BrukerRegistrant(fnr)));
+        assertUnderOppfolgingLagret(aktorId);
+        settTilstandFormidlingsgruppe("ISERV");
+        UUID oppfolgingsperiodeId = oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId).orElseThrow().getUuid();
+
+        when(sisteSykmeldingstatusRepository.hentSisteSykmeldingstatus(oppfolgingsperiodeId)).thenReturn(
+                new SisteSykmeldingstatus(oppfolgingsperiodeId, fnr.get(), LocalDate.now().minusMonths(2), LocalDate.now().plusMonths(1), true)
+        );
+
+        reset(kafkaProducerService);
+        avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(new ManuellAvregistrering(aktorId, new VeilederRegistrant(new NavIdent(VEILEDER)), ""));
+
+        verify(kafkaProducerService).publiserOppfolgingsperiode(any(OppfolgingsperiodeDTO.class));
+        assertFalse(harGjeldendeOppfolgingsperiode(aktorId));
+    }
+
+    @Test
+    public void skal_kunne_avslutte_oppfolging_hvis_ikke_lenger_sykmeldt_uten_arbeidsgiver() {
+        settTilstandFormidlingsgruppe("IARBS");
+        oppfolgingsStatusRepository.opprettOppfolging(aktorId);
+        startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.Companion.arbeidssokerRegistrering(fnr, aktorId, new BrukerRegistrant(fnr)));
+        assertUnderOppfolgingLagret(aktorId);
+        settTilstandFormidlingsgruppe("ISERV");
+        UUID oppfolgingsperiodeId = oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId).orElseThrow().getUuid();
+
+        when(sisteSykmeldingstatusRepository.hentSisteSykmeldingstatus(oppfolgingsperiodeId)).thenReturn(
+                new SisteSykmeldingstatus(oppfolgingsperiodeId, fnr.get(), LocalDate.now().minusMonths(2), LocalDate.now().minusDays(1), false)
+        );
+
+        reset(kafkaProducerService);
+        avsluttOppfolgingService.avsluttOppfolgingHvisKanAvsluttes(new ManuellAvregistrering(aktorId, new VeilederRegistrant(new NavIdent(VEILEDER)), ""));
+
+        verify(kafkaProducerService).publiserOppfolgingsperiode(any(OppfolgingsperiodeDTO.class));
+        assertFalse(harGjeldendeOppfolgingsperiode(aktorId));
     }
 
     @Test
