@@ -1,0 +1,1 @@
+alter table siste_sykmeldingstatus rename column sist_sjekket_avslutningsstatus to ikke_lenger_sykmeldt_uten_arbeidsgiver_hendelse_utlost;
