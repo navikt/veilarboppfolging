@@ -160,6 +160,19 @@ public class OppfolgingsPeriodeRepository {
         );
     }
 
+    public int settAvsluttetAvTypeTilSystemForAvsluttedePerioder(int batch) {
+        return db.update("""
+                  UPDATE oppfolgingsperiode
+                  SET avsluttet_av_type = 'SYSTEM'
+                  WHERE avsluttet_av = 'System' AND avsluttet_av_type IS NULL AND
+                      uuid IN (
+                      SELECT uuid FROM oppfolgingsperiode
+                      WHERE avsluttet_av = 'System' AND avsluttet_av_type IS NULL
+                      LIMIT ?
+                  )
+                  """, batch);
+    }
+
     private UUID insert(AktorId aktorId, OppfolgingStartBegrunnelse getOppfolgingStartBegrunnelse, @Nullable String startetAvIdent, RegistrantType startetAvType, @Nullable String kontorSattAvVeileder) {
         var keyholder = new GeneratedKeyHolder();
         var params = new MapSqlParameterSource()
