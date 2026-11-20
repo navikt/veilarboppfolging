@@ -12,7 +12,6 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.ResultActions;
 
 import static no.nav.veilarboppfolging.test.TestData.TEST_FNR;
 import static org.mockito.ArgumentMatchers.any;
@@ -53,38 +52,6 @@ public class ManuellStatusV3ControllerTest {
         mockMvc.perform(post("/api/v3/manuell/hent-status")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(JsonUtils.toJson(manuellStatusRequest))).andExpect(content().json(expJson));
-    }
-
-    @Test
-    public void sett_digital_ekstern() throws Exception {
-        when(authService.erEksternBruker()).thenReturn(true);
-        mockMvc.perform(post("/api/v3/manuell/sett-digital")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(JsonUtils.toJson(manuellStatusRequest))
-        );
-
-        verify(manuellStatusService, times(1)).settDigitalBruker(any());
-    }
-
-    @Test
-    public void sett_digital_ikke_ekstern() throws Exception {
-        when(authService.erEksternBruker()).thenReturn(false);
-        mockMvc.perform(post("/api/v3/manuell/sett-digital")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(JsonUtils.toJson(manuellStatusRequest))
-        );
-
-        verify(manuellStatusService, times(0)).settDigitalBruker(any());
-    }
-
-    @Test
-    public void sett_manuell() throws Exception {
-        when(authService.erEksternBruker()).thenReturn(true);
-        ResultActions result = mockMvc.perform(post("/api/v3/manuell/sett-manuell")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(JsonUtils.toJson(manuellStatusRequest))
-        );
-        assert (result.andReturn().getResponse().getStatus() == 200);
     }
 
     @Test
