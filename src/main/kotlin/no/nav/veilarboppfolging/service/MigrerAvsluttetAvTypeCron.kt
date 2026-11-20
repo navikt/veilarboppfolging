@@ -14,11 +14,11 @@ class MigrerAvsluttetAvTypeCron(
 ) {
     private val logger = LoggerFactory.getLogger(javaClass)
 
-    @Scheduled(cron = "0 * * * * *")
+    @Scheduled(cron = "0 */15 * * * *")
     fun migrerAvsluttetAvType() {
         if(!leaderElectionClient.isLeader) return
         JobRunner.run("migrer_avsluttet_av_type_system") {
-            val antall = oppfolgingsPeriodeRepository.settAvsluttetAvTypeTilSystemForAvsluttedePerioder(50_000)
+            val antall = oppfolgingsPeriodeRepository.settAvsluttetAvTypeTilSystemForAvsluttedePerioder(5000)
             logger.info("Migrerte $antall oppfølgingsperioder til avsluttet_av_type SYSTEM")
         }
     }
