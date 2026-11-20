@@ -166,7 +166,7 @@ public class OppfolgingsPeriodeRepository {
                   SET avsluttet_av_type = 'SYSTEM'
                   WHERE uuid IN (
                       SELECT uuid FROM oppfolgingsperiode
-                      WHERE  avsluttet_av = 'System' AND avsluttet_av_av_type IS NULL
+                      WHERE  avsluttet_av = 'System' AND avsluttet_av_type IS NULL
                       LIMIT ?
                   )
                   """, batch);
