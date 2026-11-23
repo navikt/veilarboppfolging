@@ -9,6 +9,7 @@ data class KanAvsluttesInput(
     val harAap: Boolean,
     val underKvp: Boolean,
     val erOppfolgingForlenget: Boolean,
+    val erSykmeldtUtenArbeidsgiver: Boolean,
 )
 
 sealed class KunneAvsluttesResultat(val kanAvsluttesInput: KanAvsluttesInput) {
@@ -42,6 +43,7 @@ sealed class KunneAvsluttesResultat(val kanAvsluttesInput: KanAvsluttesInput) {
                 if (input.erDeltakerIUngdomsprogrammet) KanIkkeAvslutteBegrunnelse.BRUKER_ER_DELTAKER_I_UNGDOMSPROGRAMMET else null,
                 if (input.erArbeidssoeker) KanIkkeAvslutteBegrunnelse.BRUKER_ER_REGISTRERT_SOM_ARBEIDSSOKER else null,
                 if (input.harAap) KanIkkeAvslutteBegrunnelse.BRUKER_MOTTAR_ELLER_HAR_SOKT_OM_AAP else null,
+                if (input.erSykmeldtUtenArbeidsgiver) KanIkkeAvslutteBegrunnelse.BRUKER_ER_SYKMELDT_UTEN_ARBEIDSGIVER else null,
                 if (!avregistreringsType.erManuellAvregistrering() && input.erOppfolgingForlenget) KanIkkeAvslutteBegrunnelse.OPPFOLGINGEN_ER_FORLENGET else null
             )
         }
@@ -77,4 +79,5 @@ enum class KanIkkeAvslutteBegrunnelse(val begrunnelse: String) {
     BRUKER_MOTTAR_ELLER_HAR_SOKT_OM_AAP("bruker mottar eller har søkt om AAP"),
     OPPFOLGINGEN_ER_FORLENGET("oppfølgingen er forlenget"),
     BRUKER_VAR_UNDER_KVP("bruker var under kvp"),
+    BRUKER_ER_SYKMELDT_UTEN_ARBEIDSGIVER("bruker er sykmeldt uten arbeidsgiver"),
 }

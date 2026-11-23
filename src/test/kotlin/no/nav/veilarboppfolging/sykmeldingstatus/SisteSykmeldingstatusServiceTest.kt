@@ -10,6 +10,7 @@ import no.nav.veilarboppfolging.IntegrationTest
 import no.nav.veilarboppfolging.client.isoppfolgingstilfelle.OppfolgingstilfelleDTO
 import no.nav.veilarboppfolging.kafka.KafkaOppfolgingstilfelle
 import no.nav.veilarboppfolging.kafka.KafkaOppfolgingstilfellePerson
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.IkkeLengerSykmeldtUtenArbeidsgiverHendelseType
 import no.nav.veilarboppfolging.oppfolgingsbruker.BrukerRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering.Companion.arbeidssokerRegistrering
 import org.assertj.core.api.Assertions.assertThat
@@ -81,6 +82,70 @@ class SisteSykmeldingstatusServiceTest : IntegrationTest() {
         assertThat(sisteSykmeldingstatusFraDb?.fnr).isEqualTo(fnr.get())
         assertThat(sisteSykmeldingstatusFraDb?.startdato).isEqualTo(startdato)
         assertThat(sisteSykmeldingstatusFraDb?.sluttdato).isEqualTo(sluttdato)
+    }
+
+    @Test
+    fun `handterMottattIsOppfolgingstilfelle - aktivt syketilfelle uten arbgiver, er kandidat for avslutning - lagrer sykmeldingstatus, fjerner kandidat`() {
+        mockSytemBrukerAuthOk(aktorId, fnr)
+        mockTiltakshistorikk(fnr, harAktiveDeltakelser = false)
+        mockUngdomsprogram(fnr, erDeltaker = false)
+        mockAap(fnr, harAap = false)
+        val oppfolgingsperiodeId = lagreOppfolgingsperiode(aktorId, fnr)
+        setLocalArenaOppfolging(aktorId, Formidlingsgruppe.ARBS)
+        lagreKandidatForUtmelding(fnr, oppfolgingsperiodeId)
+        assertThat(kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeId)).isNotNull
+        val startdato = LocalDate.now().minusDays(2)
+        val sluttdato = LocalDate.now().plusDays(10)
+        val kafkaOppfolgingstilfellePerson = getKafkaOppfolgingstilfellePerson(
+            fnr = fnr,
+            start = startdato,
+            end = sluttdato,
+            harArbeidsgiver = false,
+        )
+
+        sisteSykmeldingstatusService.handterMottattIsOppfolgingstilfelle(
+            key = UUID.randomUUID().toString(),
+            kafkaOppfolgingstilfellePerson = kafkaOppfolgingstilfellePerson,
+        )
+
+        val sisteSykmeldingstatusFraDb = sisteSykmeldingstatusRepository.hentSisteSykmeldingstatus(oppfolgingsperiodeId)
+        assertThat(sisteSykmeldingstatusFraDb).isNotNull
+        assertThat(sisteSykmeldingstatusFraDb?.fnr).isEqualTo(fnr.get())
+        assertThat(sisteSykmeldingstatusFraDb?.startdato).isEqualTo(startdato)
+        assertThat(sisteSykmeldingstatusFraDb?.sluttdato).isEqualTo(sluttdato)
+        assertThat(kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeId)).isNull()
+    }
+
+    @Test
+    fun `handterMottattIsOppfolgingstilfelle - aktivt syketilfelle med arbgiver, er kandidat for avslutning - lagrer sykmeldingstatus, fjerner ikke kandidat`() {
+        mockSytemBrukerAuthOk(aktorId, fnr)
+        mockTiltakshistorikk(fnr, harAktiveDeltakelser = false)
+        mockUngdomsprogram(fnr, erDeltaker = false)
+        mockAap(fnr, harAap = false)
+        val oppfolgingsperiodeId = lagreOppfolgingsperiode(aktorId, fnr)
+        setLocalArenaOppfolging(aktorId, Formidlingsgruppe.ARBS)
+        lagreKandidatForUtmelding(fnr, oppfolgingsperiodeId)
+        assertThat(kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeId)).isNotNull
+        val startdato = LocalDate.now().minusDays(2)
+        val sluttdato = LocalDate.now().plusDays(10)
+        val kafkaOppfolgingstilfellePerson = getKafkaOppfolgingstilfellePerson(
+            fnr = fnr,
+            start = startdato,
+            end = sluttdato,
+            harArbeidsgiver = true,
+        )
+
+        sisteSykmeldingstatusService.handterMottattIsOppfolgingstilfelle(
+            key = UUID.randomUUID().toString(),
+            kafkaOppfolgingstilfellePerson = kafkaOppfolgingstilfellePerson,
+        )
+
+        val sisteSykmeldingstatusFraDb = sisteSykmeldingstatusRepository.hentSisteSykmeldingstatus(oppfolgingsperiodeId)
+        assertThat(sisteSykmeldingstatusFraDb).isNotNull
+        assertThat(sisteSykmeldingstatusFraDb?.fnr).isEqualTo(fnr.get())
+        assertThat(sisteSykmeldingstatusFraDb?.startdato).isEqualTo(startdato)
+        assertThat(sisteSykmeldingstatusFraDb?.sluttdato).isEqualTo(sluttdato)
+        assertThat(kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeId)).isNotNull
     }
 
     @Test
@@ -164,6 +229,82 @@ class SisteSykmeldingstatusServiceTest : IntegrationTest() {
         assertThat(sisteSykmeldingstatusFraDb).isNull()
     }
 
+    @Test
+    fun `opprettKandidaterForUtmelding - ikke lenger sykmeldt, kan avsluttes - oppretter kandidat`() {
+        mockSytemBrukerAuthOk(aktorId, fnr)
+        mockTiltakshistorikk(fnr, harAktiveDeltakelser = false)
+        mockUngdomsprogram(fnr, erDeltaker = false)
+        mockAap(fnr, harAap = false)
+        val oppfolgingsperiodeId = lagreOppfolgingsperiode(aktorId, fnr)
+        setLocalArenaOppfolging(aktorId, Formidlingsgruppe.ARBS)
+        sisteSykmeldingstatusRepository.lagreSisteSykmeldingstatus(
+            SisteSykmeldingstatus(
+                oppfolgingsperiodeId = oppfolgingsperiodeId,
+                fnr = fnr.get(),
+                startdato = LocalDate.now().minusMonths(2),
+                sluttdato = LocalDate.now().minusDays(17),
+                harArbeidsgiver = false,
+            )
+        )
+
+        sisteSykmeldingstatusService.opprettKandidaterForUtmelding()
+
+        val aktivKandidat = kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeId)
+        assertThat(aktivKandidat).isNotNull
+        assertThat(aktivKandidat?.sisteHendelse?.type).isEqualTo(IkkeLengerSykmeldtUtenArbeidsgiverHendelseType.IKKE_LENGER_SYKMELDT_UTEN_ARBEIDSGIVER)
+        assertThat(sisteSykmeldingstatusRepository.hentSykmeldteUtenArbeidsgiverMedStatusAvsluttetSomIkkeErBehandlet(LocalDate.now())).isEmpty()
+    }
+
+    @Test
+    fun `opprettKandidaterForUtmelding - ikke lenger sykmeldt, kan ikke avsluttes pga tiltak - oppretter kandidat som ikke kan avsluttes`() {
+        mockSytemBrukerAuthOk(aktorId, fnr)
+        mockTiltakshistorikk(fnr, harAktiveDeltakelser = true)
+        mockUngdomsprogram(fnr, erDeltaker = false)
+        mockAap(fnr, harAap = false)
+        val oppfolgingsperiodeId = lagreOppfolgingsperiode(aktorId, fnr)
+        setLocalArenaOppfolging(aktorId, Formidlingsgruppe.ARBS)
+        sisteSykmeldingstatusRepository.lagreSisteSykmeldingstatus(
+            SisteSykmeldingstatus(
+                oppfolgingsperiodeId = oppfolgingsperiodeId,
+                fnr = fnr.get(),
+                startdato = LocalDate.now().minusMonths(2),
+                sluttdato = LocalDate.now().minusDays(17),
+                harArbeidsgiver = false,
+            )
+        )
+
+        sisteSykmeldingstatusService.opprettKandidaterForUtmelding()
+
+        assertThat(kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeId)).isNull()
+        assertThat(kandidatForUtmeldingRepository.erKandidatSomIkkeKunneAvsluttes(oppfolgingsperiodeId)).isTrue()
+        assertThat(sisteSykmeldingstatusRepository.hentSykmeldteUtenArbeidsgiverMedStatusAvsluttetSomIkkeErBehandlet(LocalDate.now())).isEmpty()
+    }
+
+    @Test
+    fun `opprettKandidaterForUtmelding - ikke lenger sykmeldt, kan ikke avsluttes pga AAP - oppretter ikke kandidat som ikke kan avsluttes`() {
+        mockSytemBrukerAuthOk(aktorId, fnr)
+        mockTiltakshistorikk(fnr, harAktiveDeltakelser = false)
+        mockUngdomsprogram(fnr, erDeltaker = false)
+        mockAap(fnr, harAap = true)
+        val oppfolgingsperiodeId = lagreOppfolgingsperiode(aktorId, fnr)
+        setLocalArenaOppfolging(aktorId, Formidlingsgruppe.ARBS)
+        sisteSykmeldingstatusRepository.lagreSisteSykmeldingstatus(
+            SisteSykmeldingstatus(
+                oppfolgingsperiodeId = oppfolgingsperiodeId,
+                fnr = fnr.get(),
+                startdato = LocalDate.now().minusMonths(2),
+                sluttdato = LocalDate.now().minusDays(17),
+                harArbeidsgiver = false,
+            )
+        )
+
+        sisteSykmeldingstatusService.opprettKandidaterForUtmelding()
+
+        assertThat(kandidatForUtmeldingRepository.hentAktivKandidat(oppfolgingsperiodeId)).isNull()
+        assertThat(kandidatForUtmeldingRepository.erKandidatSomIkkeKunneAvsluttes(oppfolgingsperiodeId)).isFalse()
+        assertThat(sisteSykmeldingstatusRepository.hentSykmeldteUtenArbeidsgiverMedStatusAvsluttetSomIkkeErBehandlet(LocalDate.now())).isEmpty()
+    }
+
     private fun lagreOppfolgingsperiode(aktorId: AktorId, fnr: Fnr): UUID {
         val oppfolgingsbruker = arbeidssokerRegistrering(fnr, aktorId, BrukerRegistrant(fnr))
         oppfolgingsStatusRepository.opprettOppfolging(aktorId)
@@ -175,6 +316,7 @@ class SisteSykmeldingstatusServiceTest : IntegrationTest() {
         fnr: Fnr,
         start: LocalDate,
         end: LocalDate,
+        harArbeidsgiver: Boolean = false,
     ): KafkaOppfolgingstilfellePerson {
         return KafkaOppfolgingstilfellePerson(
             uuid = UUID.randomUUID().toString(),
@@ -183,7 +325,7 @@ class SisteSykmeldingstatusServiceTest : IntegrationTest() {
             oppfolgingstilfelleList = listOf(
                 KafkaOppfolgingstilfelle(
                     gradertAtTilfelleEnd = false,
-                    arbeidstakerAtTilfelleEnd = false,
+                    arbeidstakerAtTilfelleEnd = harArbeidsgiver,
                     start = start,
                     end = end,
                     antallSykedager = null,

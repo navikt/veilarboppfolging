@@ -13,5 +13,6 @@ data class AvslutningStatusData(
     val erDeltakerIUngdomsprogrammet: Boolean,
     val erArbeidssoeker: Boolean,
     val harAap: Boolean,
+    val erSykmeldtUtenArbeidsgiver: Boolean,
     val begrunnelse: List<KanIkkeAvslutteBegrunnelse>
 )

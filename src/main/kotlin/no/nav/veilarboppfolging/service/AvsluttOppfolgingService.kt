@@ -139,6 +139,7 @@ class AvsluttOppfolgingService(
             erDeltakerIUngdomsprogrammet = kanAvsluttes.kanAvsluttesInput.erDeltakerIUngdomsprogrammet,
             erArbeidssoeker = kanAvsluttes.kanAvsluttesInput.erArbeidssoeker,
             harAap = kanAvsluttes.kanAvsluttesInput.harAap,
+            erSykmeldtUtenArbeidsgiver = kanAvsluttes.kanAvsluttesInput.erSykmeldtUtenArbeidsgiver,
             begrunnelse = if (kanAvsluttes is KunneIkkeAvsluttes) kanAvsluttes.begrunnelse else emptyList()
         )
     }
@@ -209,14 +210,16 @@ class AvsluttOppfolgingService(
         val erArbeidssoeker = erArbeidssoeker(avregistrering.aktorId)
         val harAap = harAap(fnr)
         val underKvp = kvpService.erUnderKvp(avregistrering.aktorId)
-        val erOppfolgingForlenget = if (oppfolging?.underOppfolging == true) {
-            val oppfolgingsperiodeId =
-                oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(avregistrering.aktorId)?.getOrNull()?.uuid
-                    ?: throw IllegalStateException("Fant ikke gjeldende oppfølgingsperiode for bruker som er under oppfølging")
-            fjernKandidatForUtmeldingService.erOppfolgingForlenget(oppfolgingsperiodeId)
+        val oppfolgingsperiodeId = if (oppfolging?.underOppfolging == true) {
+            oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(avregistrering.aktorId)?.getOrNull()?.uuid
+                ?: throw IllegalStateException("Fant ikke gjeldende oppfølgingsperiode for bruker som er under oppfølging")
         } else {
-            false
+            null
         }
+        val erSykmeldtUtenArbeidsgiver = oppfolgingsperiodeId?.let {
+            sisteSykmeldingstatusRepository.hentSisteSykmeldingstatus(it)?.erSykmeldtUtenArbeidsgiver()
+        } ?: false
+        val erOppfolgingForlenget = oppfolgingsperiodeId != null && fjernKandidatForUtmeldingService.erOppfolgingForlenget(oppfolgingsperiodeId)
         return kanAvsluttes(
             avregistrering,
             KanAvsluttesInput(
@@ -227,6 +230,7 @@ class AvsluttOppfolgingService(
                 erArbeidssoeker = erArbeidssoeker,
                 harAap = harAap,
                 underKvp = underKvp,
+                erSykmeldtUtenArbeidsgiver = erSykmeldtUtenArbeidsgiver,
                 erOppfolgingForlenget = erOppfolgingForlenget,
             )
         )

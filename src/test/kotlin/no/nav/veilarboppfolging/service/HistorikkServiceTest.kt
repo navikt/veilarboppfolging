@@ -122,20 +122,116 @@ class HistorikkServiceTest {
     }
 
     @Test
-    fun `historikk for eldre periode med System-verdi beholdes uendret`() {
+    fun `eldre System-avslutning klassifiseres som system med uendret ident og hendelsesdata`() {
+        val begrunnelse = "Avsluttet automatisk"
         val periode = mockOppfolgingsPeriode(
             startBegrunnelse = null,
             startetAv = null,
             startetAvType = null,
+            avsluttetBegrunnelse = begrunnelse,
             avsluttetAv = "System",
         )
         gitt_oppfolgingsperioder(listOf(periode))
 
-        val hendelse = historikkService.hentInstillingsHistorikk(FNR)
-            .single { it.type == HistorikkHendelseType.AVSLUTTET_OPPFOLGINGSPERIODE }
+        val hendelser = historikkService.hentInstillingsHistorikk(FNR)
+            .filter {
+                it.type == HistorikkHendelseType.STARTET_OPPFOLGINGSPERIODE ||
+                    it.type == HistorikkHendelseType.AVSLUTTET_OPPFOLGINGSPERIODE
+            }
 
-        Assertions.assertThat(hendelse.opprettetAv).isEqualTo(KodeverkBruker.NAV)
-        Assertions.assertThat(hendelse.opprettetAvBrukerId).isEqualTo("System")
+        Assertions.assertThat(hendelser).containsExactly(
+            historikkHendelse(
+                type = HistorikkHendelseType.STARTET_OPPFOLGINGSPERIODE,
+                tidspunkt = OPPFOLGING_START,
+                begrunnelse = "Startet arbeidsrettet oppfølging på bruker",
+                opprettetAvType = null,
+                opprettetAv = null,
+            ),
+            historikkHendelse(
+                type = HistorikkHendelseType.AVSLUTTET_OPPFOLGINGSPERIODE,
+                tidspunkt = OPPFOLGING_END,
+                begrunnelse = begrunnelse,
+                opprettetAvType = KodeverkBruker.SYSTEM,
+                opprettetAv = "System",
+            ),
+        )
+    }
+
+    /** Andre eldre verdier beholdes uten normalisering som del av den avgrensede rettingen. */
+    @Test
+    fun `eldre avslutning uten type beholder øvrig klassifisering og ident`() {
+        listOf(
+            null to KodeverkBruker.SYSTEM,
+            "Z999999" to KodeverkBruker.NAV,
+            "" to KodeverkBruker.NAV,
+            "system" to KodeverkBruker.NAV,
+            "System " to KodeverkBruker.NAV,
+            "Bruker" to KodeverkBruker.NAV,
+        ).forEach { (avsluttetAv, forventetType) ->
+            val periode = mockOppfolgingsPeriode(
+                startBegrunnelse = null,
+                startetAv = null,
+                startetAvType = null,
+                avsluttetAv = avsluttetAv,
+            )
+            gitt_oppfolgingsperioder(listOf(periode))
+
+            val hendelse = historikkService.hentInstillingsHistorikk(FNR)
+                .single { it.type == HistorikkHendelseType.AVSLUTTET_OPPFOLGINGSPERIODE }
+
+            Assertions.assertThat(hendelse.opprettetAv).isEqualTo(forventetType)
+            Assertions.assertThat(hendelse.opprettetAvBrukerId).isEqualTo(avsluttetAv)
+        }
+    }
+
+    /** Eksplisitt type skal overstyre både systemmarkøren og manglende ident. */
+    @Test
+    fun `eksplisitt avslutningstype prioriteres foran identverdien`() {
+        listOf(
+            RegistrantType.BRUKER to KodeverkBruker.EKSTERN,
+            RegistrantType.VEILEDER to KodeverkBruker.NAV,
+            RegistrantType.SYSTEM to KodeverkBruker.SYSTEM,
+            RegistrantType.ADMIN to KodeverkBruker.ADMIN,
+        ).forEach { (avsluttetAvType, forventetType) ->
+            listOf("System", null, "Z999999").forEach { avsluttetAv ->
+                val periode = mockOppfolgingsPeriode(
+                    startBegrunnelse = null,
+                    startetAv = null,
+                    startetAvType = null,
+                    avsluttetAv = avsluttetAv,
+                ).copy(avsluttetAvType = avsluttetAvType)
+                gitt_oppfolgingsperioder(listOf(periode))
+
+                val hendelse = historikkService.hentInstillingsHistorikk(FNR)
+                    .single { it.type == HistorikkHendelseType.AVSLUTTET_OPPFOLGINGSPERIODE }
+
+                Assertions.assertThat(hendelse.opprettetAv).isEqualTo(forventetType)
+                Assertions.assertThat(hendelse.opprettetAvBrukerId).isEqualTo(avsluttetAv)
+            }
+        }
+    }
+
+    /** En avslutningsmarkør skal ikke lage en slutthendelse når sluttdato mangler. */
+    @Test
+    fun `åpen periode med System-verdi gir bare starthendelse`() {
+        val periode = mockStartetOppfolgingsperiode().copy(avsluttetAv = "System")
+        gitt_oppfolgingsperioder(listOf(periode))
+
+        val hendelser = historikkService.hentInstillingsHistorikk(FNR)
+            .filter {
+                it.type == HistorikkHendelseType.STARTET_OPPFOLGINGSPERIODE ||
+                    it.type == HistorikkHendelseType.AVSLUTTET_OPPFOLGINGSPERIODE
+            }
+
+        Assertions.assertThat(hendelser).containsExactly(
+            historikkHendelse(
+                type = HistorikkHendelseType.STARTET_OPPFOLGINGSPERIODE,
+                tidspunkt = OPPFOLGING_START,
+                begrunnelse = "Startet arbeidsrettet oppfølging på bruker",
+                opprettetAvType = KodeverkBruker.NAV,
+                opprettetAv = periode.startetAv,
+            ),
+        )
     }
 
     @Test

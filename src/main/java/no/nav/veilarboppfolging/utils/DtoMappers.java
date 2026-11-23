@@ -61,7 +61,8 @@ public class DtoMappers {
                 avslutningStatusData.getHarAktiveTiltaksdeltakelser(),
                 avslutningStatusData.getErDeltakerIUngdomsprogrammet(),
                 avslutningStatusData.getErArbeidssoeker(),
-                avslutningStatusData.getHarAap()
+                avslutningStatusData.getHarAap(),
+                avslutningStatusData.getErSykmeldtUtenArbeidsgiver()
         );
     }
 

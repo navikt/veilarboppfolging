@@ -1,0 +1,1 @@
+alter table siste_sykmeldingstatus add column sist_sjekket_avslutningsstatus timestamp default null;
