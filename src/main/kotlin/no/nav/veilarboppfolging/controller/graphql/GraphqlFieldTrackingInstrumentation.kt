@@ -20,7 +20,7 @@ class GraphqlFieldTrackingInstrumentation(
         state: InstrumentationState?
     ): InstrumentationContext<in Any>? {
         val context = parameters.environment.graphQlContext
-        val apiConsumer = context.get<String?>("apiConsumer")
+        val apiConsumer = context.get<String>("apiConsumer")
 
         if (apiConsumer != null) {
             val fieldName = parameters.environment.field.name
