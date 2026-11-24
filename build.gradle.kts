@@ -1,11 +1,11 @@
 val kotlinVersion = "2.4.21"
-val flywayVersion = "13.12.2"
-val commonVersion = "4.2026.10.19_05.55-7add0b457c1d"
+val flywayVersion = "13.13.0"
+val commonVersion = "4.2026.11.24_01.21-c252fd5dd64e"
 val ptoSchemaVersion = "2.2026.06.16_10.51-c03b8278b27d"
-val poaoTilgangVersion = "4.2026.10.19_08.33-adf6165e823a"
+val poaoTilgangVersion = "4.2026.11.23_08.40-fd799ad27a28"
 val wiremockVersion = "3.13.2"
 val schedlockVersion = "7.11.0"
-val googleCloudLibrariesBomVersion = "26.93.0"
+val googleCloudLibrariesBomVersion = "26.94.0"
 val springDoc = "3.2.0"
 val tmsMicrofrontendBuilder = "3.0.0"
 val tmsVarselBuilder = "2.2.0"
@@ -18,16 +18,16 @@ val dabBigQuerySchemaVersion = "2026.08.13-08.27.6add270b9bee"
 // Overstyrer Tomcat-versjonen som Spring Boots dependency-management ellers ville valgt,
 // for å unngå kjente sårbarheter i den transitivt styrte tomcat-embed-core-versjonen.
 // Samme versjon som er verifisert og i bruk i veilarbportefolje.
-extra["tomcat.version"] = "11.0.25"
+extra["tomcat.version"] = "11.0.29"
 
 plugins {
-    val kotlinVersion = "2.4.20"
+    val kotlinVersion = "2.4.21"
     kotlin("jvm") version kotlinVersion
     kotlin("plugin.spring") version kotlinVersion
-    id("org.springframework.boot") version "4.1.2"
+    id("org.springframework.boot") version "4.2.0"
     id("io.spring.dependency-management") version "1.1.7"
     id("jacoco")
-    id("org.sonarqube") version "7.5.0.8588"
+    id("org.sonarqube") version "7.6.0.18749"
     id("io.github.androa.gradle.plugin.avro") version "0.0.12"
 }
 
