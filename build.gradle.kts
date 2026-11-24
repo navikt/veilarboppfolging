@@ -1,11 +1,11 @@
 val kotlinVersion = "2.4.21"
-val flywayVersion = "13.12.2"
+val flywayVersion = "13.13.0"
 val commonVersion = "4.2026.10.19_05.55-7add0b457c1d"
 val ptoSchemaVersion = "2.2026.06.16_10.51-c03b8278b27d"
 val poaoTilgangVersion = "4.2026.10.19_08.33-adf6165e823a"
 val wiremockVersion = "3.13.2"
 val schedlockVersion = "7.11.0"
-val googleCloudLibrariesBomVersion = "26.93.0"
+val googleCloudLibrariesBomVersion = "26.94.0"
 val springDoc = "3.2.0"
 val tmsMicrofrontendBuilder = "3.0.0"
 val tmsVarselBuilder = "2.2.0"
@@ -24,10 +24,10 @@ plugins {
     val kotlinVersion = "2.4.20"
     kotlin("jvm") version kotlinVersion
     kotlin("plugin.spring") version kotlinVersion
-    id("org.springframework.boot") version "4.1.2"
+    id("org.springframework.boot") version "4.2.0"
     id("io.spring.dependency-management") version "1.1.7"
     id("jacoco")
-    id("org.sonarqube") version "7.5.0.8588"
+    id("org.sonarqube") version "7.6.0.18749"
     id("io.github.androa.gradle.plugin.avro") version "0.0.12"
 }
 
