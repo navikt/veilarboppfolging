@@ -46,12 +46,11 @@ class SisteSykmeldingstatusRepository(
         }.firstOrNull()
     }
 
-    fun hentSykmeldteUtenArbeidsgiverMedStatusAvsluttetSomIkkeErBehandlet(avsluttetTidligereEnn: LocalDate): List<SisteSykmeldingstatus> {
+    fun hentSykmeldteMedStatusAvsluttetSomIkkeErBehandlet(avsluttetTidligereEnn: LocalDate): List<SisteSykmeldingstatus> {
         val sql = """
             SELECT * FROM siste_sykmeldingstatus ss
             WHERE ss.sluttdato < :avsluttetTidligereEnn
-            AND ss.ikke_lenger_sykmeldt_uten_arbeidsgiver_hendelse_utlost IS NULL 
-            AND ss.har_arbeidsgiver = false
+            AND ss.ikke_lenger_sykmeldt_uten_arbeidsgiver_hendelse_utlost IS NULL
         """.trimIndent()
         return db.query(sql, mapOf("avsluttetTidligereEnn" to avsluttetTidligereEnn)) { rs, _ ->
             rs.toSisteSykmeldingstatus()

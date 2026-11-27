@@ -6,30 +6,29 @@ import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.util.UUID
 import no.nav.common.json.JsonUtils
-import no.nav.veilarboppfolging.repository.getStringOrNull
-import org.jetbrains.annotations.TestOnly
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
-import org.springframework.stereotype.Repository
-import kotlin.collections.firstOrNull
 import no.nav.common.types.identer.AktorId
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ArbeidssokerperiodeAvsluttetHendelseType
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ArbeidssøkerPeriodeAvsluttet
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.AvsluttetAapSak
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.EndretFolkeregisterstatus
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.EndretFolkeregisterstatusHendelseType
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseHendelseType
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseOpprettetEllerEndretHendelse
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseUtløptHendelse
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.IkkeLengerAapHendelseType
-import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.EndretFolkeregisterstatus
-import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.EndretFolkeregisterstatusHendelseType
-import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.IkkeLengerSykmeldtUtenArbeidsgiverHendelse
-import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.IkkeLengerSykmeldtUtenArbeidsgiverHendelseType
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.IkkeLengerSykmeldtHendelseType
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.IkkeLengerSykmeldtHendelse
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.InaktivertIArena
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.InaktivertIArenaHendelseType
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.KandidatForUtmeldingHendelse
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.KandidatForUtmeldingHendelseType
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.KandidatForUtmeldingHendelseUtfortAvType
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.KanIkkeAvslutteBegrunnelse
+import no.nav.veilarboppfolging.repository.getStringOrNull
 import no.nav.veilarboppfolging.utils.DbUtils
+import org.jetbrains.annotations.TestOnly
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
+import org.springframework.stereotype.Repository
 
 @Repository
 class KandidatForUtmeldingRepository(
@@ -90,7 +89,7 @@ class KandidatForUtmeldingRepository(
                     is InaktivertIArenaHendelseType -> type.name
                     is IkkeLengerAapHendelseType -> type.name
                     is EndretFolkeregisterstatusHendelseType -> type.name
-                    is IkkeLengerSykmeldtUtenArbeidsgiverHendelseType -> type.name
+                    is IkkeLengerSykmeldtHendelseType -> type.name
                 },
                 "hendelseData" to hendelse.hendelseDataJson,
                 "utfortAv" to hendelse.utfortAv,
@@ -219,7 +218,7 @@ class KandidatForUtmeldingRepository(
                 is InaktivertIArena -> null
                 is AvsluttetAapSak -> AktivKandidatForUtmelding(hendelse, hendelse.avsluttesAutomatiskDato)
                 is EndretFolkeregisterstatus -> AktivKandidatForUtmelding(hendelse, hendelse.avsluttesAutomatiskDato)
-                is IkkeLengerSykmeldtUtenArbeidsgiverHendelse -> AktivKandidatForUtmelding(hendelse, hendelse.avsluttesAutomatiskDato)
+                is IkkeLengerSykmeldtHendelse -> AktivKandidatForUtmelding(hendelse, hendelse.avsluttesAutomatiskDato)
             }
         }
             .firstOrNull()
@@ -271,6 +270,17 @@ class KandidatForUtmeldingRepository(
             mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeId.toString()),
         ) { rs, _ -> resultSetToUtmeldingsHendelse(rs) }
             .firstOrNull()
+    }
+
+    fun hentAlleHendelserForKandidat(oppfolgingsperiodeId: UUID): List<KandidatForUtmeldingHendelse> {
+        return db.query(
+            """
+            SELECT *
+            FROM kandidater_for_utmelding_hendelser
+            WHERE oppfolgingsperiode_uuid = :oppfolgingsperiodeId order by created_at desc
+            """.trimIndent(),
+            mapOf("oppfolgingsperiodeId" to oppfolgingsperiodeId.toString()),
+        ) { rs, _ -> resultSetToUtmeldingsHendelse(rs) }
     }
 
     fun hentAlleKandidatForUtmeldingHendelser(aktorId: AktorId): List<KandidatForUtmeldingHendelse> {
@@ -406,7 +416,7 @@ class KandidatForUtmeldingRepository(
             is InaktivertIArenaHendelseType -> resultSet.toInaktivertIArena()
             is IkkeLengerAapHendelseType -> resultSet.toAvsluttetAapSakHendelse()
             is EndretFolkeregisterstatusHendelseType -> resultSet.toEndretFolkeregisterstatusHendelse()
-            is IkkeLengerSykmeldtUtenArbeidsgiverHendelseType -> resultSet.toIkkeLengerSykmeldtHendelse()
+            is IkkeLengerSykmeldtHendelseType -> resultSet.toIkkeLengerSykmeldtHendelse()
         }
 
     }
@@ -418,7 +428,7 @@ class KandidatForUtmeldingRepository(
             in InaktivertIArenaHendelseType.entries.map { it.name } -> InaktivertIArenaHendelseType.valueOf(hendelse)
             in IkkeLengerAapHendelseType.entries.map { it.name } -> IkkeLengerAapHendelseType.valueOf(hendelse)
             in EndretFolkeregisterstatusHendelseType.entries.map { it.name } -> EndretFolkeregisterstatusHendelseType.valueOf(hendelse)
-            in IkkeLengerSykmeldtUtenArbeidsgiverHendelseType.entries.map { it.name } -> IkkeLengerSykmeldtUtenArbeidsgiverHendelseType.valueOf(hendelse)
+            in IkkeLengerSykmeldtHendelseType.entries.map { it.name } -> IkkeLengerSykmeldtHendelseType.valueOf(hendelse)
             else -> {
                 throw IllegalArgumentException("Ugyldig hendelse type: $hendelse")
             }
@@ -484,11 +494,12 @@ fun ResultSet.toEndretFolkeregisterstatusHendelse() = EndretFolkeregisterstatus(
     endretFolkeregisterstatusHendelseType = EndretFolkeregisterstatusHendelseType.valueOf(getString("hendelse")),
 )
 
-fun ResultSet.toIkkeLengerSykmeldtHendelse() = IkkeLengerSykmeldtUtenArbeidsgiverHendelse(
+fun ResultSet.toIkkeLengerSykmeldtHendelse() = IkkeLengerSykmeldtHendelse(
     oppfolgingsperiodeUuid = UUID.fromString(getString("oppfolgingsperiode_uuid")),
     hendelseTidspunkt = getTimestamp("hendelse_tidspunkt").toLocalDateTime().toInstant(ZoneOffset.UTC),
     syketilfelleAvsluttetDato = JsonUtils.fromJson(
         getString("hendelse_data"),
-        IkkeLengerSykmeldtUtenArbeidsgiverHendelse.Detaljer::class.java
+        IkkeLengerSykmeldtHendelse.Detaljer::class.java
     ).syketilfelleAvsluttetDato,
+    ikkeLengerSykmeldtHendelseType = IkkeLengerSykmeldtHendelseType.valueOf(getString("hendelse")),
 )

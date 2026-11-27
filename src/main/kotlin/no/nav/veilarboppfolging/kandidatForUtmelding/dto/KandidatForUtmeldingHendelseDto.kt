@@ -25,6 +25,7 @@ enum class KandidatForUtmeldingHendelseTypeDto {
     FOLKEREGISTERSTATUS_UKJENT,
     FOLKEREGISTERSTATUS_INGEN_STATUS,
     IKKE_LENGER_SYKMELDT_UTEN_ARBEIDSGIVER,
+    IKKE_LENGER_SYKMELDT_MED_ARBEIDSGIVER,
 }
 
 fun KandidatForUtmeldingHendelse.toKandidatForUtmeldingHendelseDto() = KandidatForUtmeldingHendelseDto(

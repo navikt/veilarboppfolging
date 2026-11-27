@@ -37,7 +37,8 @@ sealed class KandidatForUtmeldingHendelse(
             EndretFolkeregisterstatusHendelseType.FOLKEREGISTERSTATUS_OPPHORT -> KandidatForUtmeldingTagDto.FOLKEREGISTERSTATUS_OPPHORT
             EndretFolkeregisterstatusHendelseType.FOLKEREGISTERSTATUS_UKJENT -> KandidatForUtmeldingTagDto.FOLKEREGISTERSTATUS_UKJENT
             EndretFolkeregisterstatusHendelseType.FOLKEREGISTERSTATUS_INGEN_STATUS -> KandidatForUtmeldingTagDto.FOLKEREGISTERSTATUS_INGEN_STATUS
-            IkkeLengerSykmeldtUtenArbeidsgiverHendelseType.IKKE_LENGER_SYKMELDT_UTEN_ARBEIDSGIVER -> KandidatForUtmeldingTagDto.IKKE_LENGER_SYKMELDT_UTEN_ARBEIDSGIVER
+            IkkeLengerSykmeldtHendelseType.IKKE_LENGER_SYKMELDT_UTEN_ARBEIDSGIVER -> KandidatForUtmeldingTagDto.IKKE_LENGER_SYKMELDT_UTEN_ARBEIDSGIVER
+            IkkeLengerSykmeldtHendelseType.IKKE_LENGER_SYKMELDT_MED_ARBEIDSGIVER -> KandidatForUtmeldingTagDto.IKKE_LENGER_SYKMELDT_MED_ARBEIDSGIVER
             ForlengelseHendelseType.FORLENGELSE_OPPRETTET,
             ForlengelseHendelseType.FORLENGELSE_ENDRET,
             InaktivertIArenaHendelseType.INAKTIVERT_I_ARENA,
@@ -75,8 +76,9 @@ enum class EndretFolkeregisterstatusHendelseType: KandidatForUtmeldingHendelseTy
     FOLKEREGISTERSTATUS_INGEN_STATUS
 }
 
-enum class IkkeLengerSykmeldtUtenArbeidsgiverHendelseType: KandidatForUtmeldingHendelseType {
-    IKKE_LENGER_SYKMELDT_UTEN_ARBEIDSGIVER
+enum class IkkeLengerSykmeldtHendelseType: KandidatForUtmeldingHendelseType {
+    IKKE_LENGER_SYKMELDT_UTEN_ARBEIDSGIVER,
+    IKKE_LENGER_SYKMELDT_MED_ARBEIDSGIVER
 }
 
 enum class KandidatForUtmeldingHendelseUtfortAvType {

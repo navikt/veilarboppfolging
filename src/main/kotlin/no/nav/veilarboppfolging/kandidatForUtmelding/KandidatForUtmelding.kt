@@ -1,6 +1,5 @@
 package no.nav.veilarboppfolging.kandidatForUtmelding
 
-import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmelding.Companion.KARENSTID_DAGER
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -8,12 +7,13 @@ import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.util.UUID
+import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmelding.Companion.KARENSTID_DAGER
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ArbeidssøkerPeriodeAvsluttet
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.AvsluttetAapSak
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.EndretFolkeregisterstatus
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseOpprettetEllerEndretHendelse
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseUtløptHendelse
-import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.EndretFolkeregisterstatus
-import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.IkkeLengerSykmeldtUtenArbeidsgiverHendelse
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.IkkeLengerSykmeldtHendelse
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.InaktivertIArena
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.KandidatForUtmeldingHendelse
 
@@ -53,7 +53,7 @@ sealed class KandidatForUtmelding(
                 is InaktivertIArena -> null
                 is AvsluttetAapSak -> hendelseTid.plusDays(KARENSTID_DAGER)
                 is EndretFolkeregisterstatus -> hendelseTid.plusDays(KARENSTID_DAGER)
-                is IkkeLengerSykmeldtUtenArbeidsgiverHendelse -> hendelseTid.plusDays(KARENSTID_DAGER)
+                is IkkeLengerSykmeldtHendelse -> hendelseTid.plusDays(KARENSTID_DAGER)
             }
         }
 
