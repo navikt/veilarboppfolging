@@ -14,7 +14,7 @@ import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseOppret
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseUtløptHendelse
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.AvsluttetAapSak
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.EndretFolkeregisterstatus
-import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.IkkeLengerSykmeldtUtenArbeidsgiverHendelse
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.IkkeLengerSykmeldtHendelse
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.InaktivertIArena
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.KandidatForUtmeldingHendelse
 import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.KandidatForUtmeldingHendelseType
@@ -68,7 +68,7 @@ class KandidatForUtmeldingService(
                 is ForlengelseUtløptHendelse,
                 is AvsluttetAapSak,
                 is EndretFolkeregisterstatus,
-                is IkkeLengerSykmeldtUtenArbeidsgiverHendelse -> true
+                is IkkeLengerSykmeldtHendelse -> true
                 is ForlengelseOpprettetEllerEndretHendelse -> false
             }
             val hendelseGjelderForlengelse = hendelse is ForlengelseOpprettetEllerEndretHendelse || hendelse is ForlengelseUtløptHendelse
@@ -144,6 +144,10 @@ class KandidatForUtmeldingService(
 
     fun hentUtmeldingsKandidatHendelser(aktorId: AktorId): List<KandidatForUtmeldingHendelse> {
         return kandidatForUtmeldingRepository.hentAlleKandidatForUtmeldingHendelser(aktorId)
+    }
+
+    fun hentUtmeldingsKandidatHendelser(oppfolgingsperiodeId: UUID): List<KandidatForUtmeldingHendelse> {
+        return kandidatForUtmeldingRepository.hentAlleHendelserForKandidat(oppfolgingsperiodeId)
     }
 
     fun hentAktivForlengelse(oppfolgingsperiodeId: UUID): ForlengelseOpprettetEllerEndretHendelse? {
@@ -276,7 +280,7 @@ class KandidatForUtmeldingService(
         bigQueryClient.loggForlengelseHendelse(hendelse, forrigeHendelseType)
     }
 
-    fun hentAktivEllerForelengetKandidat(oppfolgingsperiodeId: UUID): KandidatForUtmelding? {
+    fun hentAktivEllerForlengetKandidat(oppfolgingsperiodeId: UUID): KandidatForUtmelding? {
         return kandidatForUtmeldingRepository.hentAktivEllerForlengetKandidat(oppfolgingsperiodeId)
     }
 

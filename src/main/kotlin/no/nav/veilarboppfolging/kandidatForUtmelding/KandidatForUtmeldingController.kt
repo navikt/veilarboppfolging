@@ -64,7 +64,7 @@ class KandidatForUtmeldingController(
         }
         forlengelseDTO.valider()
 
-        val kandidat = kandidatForUtmeldingService.hentAktivEllerForelengetKandidat(oppfolgingsperiodeId)
+        val kandidat = kandidatForUtmeldingService.hentAktivEllerForlengetKandidat(oppfolgingsperiodeId)
             ?: throw ResponseStatusException(HttpStatus.CONFLICT, "Kan ikke forlenge person som ikke er kandidat")
 
         val forlengelseHendelse = ForlengelseOpprettetEllerEndretHendelse(

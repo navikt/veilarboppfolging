@@ -9,8 +9,11 @@ import no.nav.common.types.identer.Fnr
 import no.nav.veilarboppfolging.client.isoppfolgingstilfelle.IsOppfolgingstilfelleClient
 import no.nav.veilarboppfolging.kafka.KafkaOppfolgingstilfellePerson
 import no.nav.veilarboppfolging.kandidatForUtmelding.FjernKandidatForUtmeldingService
+import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmelding
 import no.nav.veilarboppfolging.kandidatForUtmelding.KandidatForUtmeldingService
-import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.IkkeLengerSykmeldtUtenArbeidsgiverHendelse
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.ForlengelseHendelseType
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.IkkeLengerSykmeldtHendelseType
+import no.nav.veilarboppfolging.kandidatForUtmelding.hendelser.IkkeLengerSykmeldtHendelse
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -74,6 +77,16 @@ class SisteSykmeldingstatusService(
             if (!aktivtOppfolgingstilfelle.arbeidstakerAtTilfelleEnd) {
                 log.info("Bruker med oppfølgingsperiode $oppfolgingsperiodeId er sykmeldt uten arbeidsgiver, fjerner evt kandidat for utmelding")
                 fjernKandidatForUtmeldingService.fjernKandidatForUtmelding(oppfolgingsperiodeId)
+            } else {
+                val kandidat = kandidatForUtmeldingService.hentAktivEllerForlengetKandidat(oppfolgingsperiodeId) ?: return
+
+                if (kandidat.erIkkeLengerSykmeldtMedArbeidsgiver()) {
+                    log.info("Bruker med oppfølgingsperiode $oppfolgingsperiodeId er kandidat pga sykmeldt med arbeidsgiver, fjerner kandidat for utmelding")
+                    fjernKandidatForUtmeldingService.fjernKandidatForUtmelding(oppfolgingsperiodeId)
+                } else if (kandidat.erForlenget() && kandidat.sisteHendelseForForlengelseVarSykmeldtMedArbeidsgiver()) {
+                    log.info("Bruker med oppfølgingsperiode $oppfolgingsperiodeId er forlenget kandidat pga sykmeldt med arbeidsgiver, fjerner kandidat for utmelding")
+                    fjernKandidatForUtmeldingService.fjernKandidatForUtmelding(oppfolgingsperiodeId)
+                }
             }
             return
         }
@@ -97,17 +110,22 @@ class SisteSykmeldingstatusService(
 
     fun opprettKandidaterForUtmelding() {
         val avsluttetTidligereEnn = LocalDate.now().minusDays(16)
-        val sisteSykmeldingstatusIkkeLengerSykmeldt = sisteSykmeldingstatusRepository.hentSykmeldteUtenArbeidsgiverMedStatusAvsluttetSomIkkeErBehandlet(avsluttetTidligereEnn)
+        val sisteSykmeldingstatusIkkeLengerSykmeldt = sisteSykmeldingstatusRepository.hentSykmeldteMedStatusAvsluttetSomIkkeErBehandlet(avsluttetTidligereEnn)
         log.info("Behandler ${sisteSykmeldingstatusIkkeLengerSykmeldt.size} oppfølgingsperioder der syketilfellet ble avsluttet for mer enn 16 dager siden")
 
         sisteSykmeldingstatusIkkeLengerSykmeldt.forEach { sisteSykmeldingstatus ->
             try {
                 transactor.executeWithoutResult { _ ->
                     kandidatForUtmeldingService.handterUtmeldingsHendelse(
-                        IkkeLengerSykmeldtUtenArbeidsgiverHendelse(
+                        IkkeLengerSykmeldtHendelse(
                             oppfolgingsperiodeUuid = sisteSykmeldingstatus.oppfolgingsperiodeId,
                             syketilfelleAvsluttetDato = sisteSykmeldingstatus.sluttdato,
                             hendelseTidspunkt = ZonedDateTime.now().toInstant(),
+                            ikkeLengerSykmeldtHendelseType = if (sisteSykmeldingstatus.harArbeidsgiver) {
+                                IkkeLengerSykmeldtHendelseType.IKKE_LENGER_SYKMELDT_MED_ARBEIDSGIVER
+                            } else {
+                                IkkeLengerSykmeldtHendelseType.IKKE_LENGER_SYKMELDT_UTEN_ARBEIDSGIVER
+                            }
                         )
                     )
                     sisteSykmeldingstatusRepository.oppdaterIkkeLengerSykmeldtUtenArbeidsgiverHendelseUtlost(sisteSykmeldingstatus.oppfolgingsperiodeId)
@@ -117,5 +135,19 @@ class SisteSykmeldingstatusService(
             }
         }
         log.info("Ferdig med å behandle oppfølgingsperioder med avsluttet syketilfelle")
+    }
+
+    private fun KandidatForUtmelding.erIkkeLengerSykmeldtMedArbeidsgiver(): Boolean {
+        return this.sisteHendelse.type == IkkeLengerSykmeldtHendelseType.IKKE_LENGER_SYKMELDT_MED_ARBEIDSGIVER
+    }
+
+    private fun KandidatForUtmelding.erForlenget(): Boolean {
+        return this.sisteHendelse.type is ForlengelseHendelseType
+    }
+
+    private fun KandidatForUtmelding.sisteHendelseForForlengelseVarSykmeldtMedArbeidsgiver(): Boolean {
+        val kandidathendelser = kandidatForUtmeldingService.hentUtmeldingsKandidatHendelser(oppfolgingsperiodeId)
+        val sisteHendelseIkkeForlengelse = kandidathendelser.firstOrNull { it.type !is ForlengelseHendelseType }
+        return sisteHendelseIkkeForlengelse?.type == IkkeLengerSykmeldtHendelseType.IKKE_LENGER_SYKMELDT_MED_ARBEIDSGIVER
     }
 }

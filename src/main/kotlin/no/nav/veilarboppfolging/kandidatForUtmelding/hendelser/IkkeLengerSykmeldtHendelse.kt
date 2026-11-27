@@ -16,10 +16,11 @@ import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.Kategori
 import no.nav.veilarboppfolging.kandidatForUtmelding.filterhendelse.Operasjon
 import org.postgresql.util.PGobject
 
-class IkkeLengerSykmeldtUtenArbeidsgiverHendelse(
+class IkkeLengerSykmeldtHendelse(
     oppfolgingsperiodeUuid: UUID,
     val syketilfelleAvsluttetDato: LocalDate,
     hendelseTidspunkt: Instant,
+    ikkeLengerSykmeldtHendelseType: IkkeLengerSykmeldtHendelseType,
 ) : KandidatForUtmeldingHendelse(
     oppfolgingsperiodeUuid,
     KandidatForUtmeldingHendelseUtfortAvType.SYSTEM,
@@ -27,7 +28,7 @@ class IkkeLengerSykmeldtUtenArbeidsgiverHendelse(
     "Modia sykefravær",
     hendelseTidspunkt,
 ) {
-    override val type: IkkeLengerSykmeldtUtenArbeidsgiverHendelseType = IkkeLengerSykmeldtUtenArbeidsgiverHendelseType.IKKE_LENGER_SYKMELDT_UTEN_ARBEIDSGIVER
+    override val type: IkkeLengerSykmeldtHendelseType = ikkeLengerSykmeldtHendelseType
 
     val avsluttesAutomatiskDato: ZonedDateTime = beregnAvsluttesAutomatiskDato(hendelseTidspunkt)
 
@@ -46,8 +47,14 @@ class IkkeLengerSykmeldtUtenArbeidsgiverHendelse(
             kategori = Kategori.KANDIDAT_FOR_UTMELDING,
             operasjon = Operasjon.START,
             hendelse = FilterhendelseRecord.HendelseInnhold(
-                beskrivelse = "Ikke lenger sykmeldt uten arbeidsgiver",
-                beskrivelseEnum = BeskrivelseEnum.IKKE_LENGER_SYKMELDT_UTEN_ARBEIDSGIVER.name,
+                beskrivelse = when (type) {
+                    IkkeLengerSykmeldtHendelseType.IKKE_LENGER_SYKMELDT_UTEN_ARBEIDSGIVER -> "Ikke lenger sykmeldt uten arbeidsgiver"
+                    IkkeLengerSykmeldtHendelseType.IKKE_LENGER_SYKMELDT_MED_ARBEIDSGIVER -> "Ikke lenger sykmeldt med arbeidsgiver"
+                },
+                beskrivelseEnum = when (type) {
+                    IkkeLengerSykmeldtHendelseType.IKKE_LENGER_SYKMELDT_UTEN_ARBEIDSGIVER -> BeskrivelseEnum.IKKE_LENGER_SYKMELDT_UTEN_ARBEIDSGIVER.name
+                    IkkeLengerSykmeldtHendelseType.IKKE_LENGER_SYKMELDT_MED_ARBEIDSGIVER -> BeskrivelseEnum.IKKE_LENGER_SYKMELDT_MED_ARBEIDSGIVER.name
+                },
                 tidspunkt = hendelseTidspunkt.atZone(ZoneId.of("Europe/Oslo")),
                 lenke = URI("${baseUrlVeilarbpersonflate()}/aktivitetsplan").toURL(),
                 detaljer = null,
